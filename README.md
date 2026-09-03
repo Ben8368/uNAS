@@ -1,6 +1,6 @@
 # uNAS
 
-> 正式产品名：uNAS。当前处于 **Phase 0 / 产品、设计与治理**，仓库尚无产品源码。
+> 正式产品名：uNAS。当前处于 **Phase 1 / Frontend Demo**；已迁入仅使用浏览器内置 mock 数据的 React/Vite Demo，并提供 WXT Manifest V3 构建物；未接入真实文件、引擎或后端能力。
 
 uNAS 计划成为一个以 Manifest V3 浏览器扩展交付的本地优先新标签页工作区：用桌面级交互组织网址、本地文件和内置工具，在浏览器内完成常见图片、媒体、PDF 与 ZIP 任务。扩展是唯一产品，不另建面向用户的托管 Web 应用或传统桌面程序。
 
@@ -26,7 +26,7 @@ uNAS 计划成为一个以 Manifest V3 浏览器扩展交付的本地优先新�
 | 文件 | 用户选择/拖入/授权，IndexedDB/OPFS 为候选内部存储 |
 | 引擎 | Image → ZIP → PDF → Media，逐模块探针和 Gate |
 
-当前所有框架、库和能力均为设计或计划，不代表依赖已安装、格式已支持或性能已验证。
+前端 Demo 的依赖已锁定在 workspace；界面展示的文件、任务和处理结果仍均为 mock，不代表任何格式支持、真实输出或性能已验证。
 
 ## 文档入口
 
@@ -42,15 +42,23 @@ uNAS 计划成为一个以 Manifest V3 浏览器扩展交付的本地优先新�
 
 ## 开始开发前
 
-产品源码只能在 [ROADMAP.md](docs/ROADMAP.md) 的 Gate G0 经维护者确认后开始。Phase 1 只允许 Frontend Demo、mock scenario 和不含真实 engine/WASM 的扩展壳；真实文件和引擎能力从 Phase 2 探针开始获得证据。
+Phase 1 只允许 Frontend Demo、mock scenario 和不含真实 engine/WASM 的扩展壳；真实文件和引擎能力从 Phase 2 探针开始获得证据。当前 Demo 同时提供 Vite 本地演示与 WXT Manifest V3 的 New Tab、Workspace 和 Service Worker 壳。
 
 ## 文档验证
 
-```powershell
-node scripts/governance-docs-check.mjs
+```bash
+pnpm -w run verify
 ```
 
-检查通过只代表文档预算、路由、链接和 ADR 格式有效，不代表视觉、浏览器或文件能力通过。
+检查通过覆盖文档治理、Demo 单元测试、类型检查与构建；不代表视觉、目标浏览器扩展、文件或引擎能力通过。
+
+构建 Chrome 解包扩展：
+
+```bash
+pnpm -w run build:extension
+```
+
+构建物位于 `apps/extension/.output/chrome-mv3/`。在 Chrome 扩展管理页面开启开发者模式后，选择“加载已解压的扩展程序”，并选择该目录。
 
 ## 发布边界
 

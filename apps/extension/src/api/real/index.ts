@@ -1,0 +1,18 @@
+import type { UnasDemoApi } from 'unas-src/api/types'
+
+import * as filesystem from './filesystem'
+import * as fonts from './fonts'
+import * as jobs from './jobs'
+import * as logs from './logs'
+import * as metrics from './metrics'
+import * as tasks from './tasks'
+
+/** Real HTTP API implementation used by default. */
+export const realApi = {
+  ...tasks,
+  ...jobs,
+  ...filesystem,
+  ...metrics,
+  ...logs,
+  ...fonts,
+} satisfies UnasDemoApi

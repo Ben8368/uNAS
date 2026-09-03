@@ -1,0 +1,19 @@
+.fm-asset-summary {
+  display: grid;
+  gap: 3px;
+  margin: 8px 10px;
+  border: 1px solid rgba(84,255,183,.13);
+  border-radius: 8px;
+  background: rgba(84,255,183,.06);
+  padding: 8px 10px;
+}
+
+.fm-asset-summary strong {
+  color: rgba(255,255,255,.82);
+  font-size: 12px;
+}
+
+.fm-asset-summary span {
+  color: rgba(255,255,255,.48);
+  font-size: 11px;
+}

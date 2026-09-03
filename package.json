@@ -7,7 +7,13 @@
     "node": ">=22"
   },
   "scripts": {
+    "build:demo": "cd apps/extension && ./node_modules/.bin/tsc --noEmit && ./node_modules/.bin/vite build",
+    "build:extension": "cd apps/extension && ./node_modules/.bin/wxt build --browser chrome --mv3",
+    "dev:demo": "cd apps/extension && ./node_modules/.bin/vite --host 0.0.0.0",
+    "dev:extension": "cd apps/extension && ./node_modules/.bin/wxt --browser chrome --mv3",
     "docs:governance:check": "node scripts/governance-docs-check.mjs",
-    "verify": "node scripts/governance-docs-check.mjs"
+    "test:demo": "cd apps/extension && ./node_modules/.bin/vitest run",
+    "typecheck:demo": "cd apps/extension && ./node_modules/.bin/tsc --noEmit",
+    "verify": "node scripts/governance-docs-check.mjs && cd apps/extension && ./node_modules/.bin/vitest run && ./node_modules/.bin/tsc --noEmit && ./node_modules/.bin/vite build && ./node_modules/.bin/wxt build --browser chrome --mv3"
   }
 }

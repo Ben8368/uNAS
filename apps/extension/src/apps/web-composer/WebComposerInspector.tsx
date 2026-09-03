@@ -1,0 +1,85 @@
+import type { WebComposerPresetState } from '#contracts'
+
+import { ResizableAppSidebar } from 'unas-src/components/ResizableAppSidebar'
+import type { PresetDefinition } from './presets/types'
+import { setSlotVisibility, updateSlotText } from './slotState'
+import { WebComposerCanvasInspector } from './WebComposerCanvasInspector'
+import { WebComposerElementOutline } from './WebComposerElementOutline'
+import {
+  WebComposerSlotEditor,
+  type WebComposerSlotMetrics,
+} from './WebComposerSlotEditor'
+
+export type { WebComposerSlotMetrics } from './WebComposerSlotEditor'
+
+export function WebComposerInspector({
+  preset,
+  state,
+  selectedSlotId,
+  metrics,
+  onStateChange,
+  onSelectSlot,
+}: {
+  preset: PresetDefinition
+  state: WebComposerPresetState
+  selectedSlotId: string | null
+  metrics?: WebComposerSlotMetrics | null
+  onStateChange: (state: WebComposerPresetState) => void
+  onSelectSlot: (slotId: string | null) => void
+}) {
+  const selectedSlot = selectedSlotId
+    ? preset.slots.find((slot) => slot.id === selectedSlotId)
+    : undefined
+  const selectedValue = selectedSlot ? state.slots[selectedSlot.id] : undefined
+  const selectionAnnouncement = selectedSlot
+    ? `已选择：${selectedSlot.label}${selectedValue?.visible === false ? '，当前已隐藏' : ''}`
+    : '当前显示画布主题设置'
+
+  return (
+    <ResizableAppSidebar
+      className="wc-inspector wc-context-inspector"
+      storageKey="web-composer"
+      aria-label="预设上下文编辑器"
+    >
+      <div className="wc-context-panel">
+        <WebComposerElementOutline
+          slots={preset.slots}
+          state={state}
+          selectedSlotId={selectedSlotId}
+          onSelectSlot={onSelectSlot}
+          onSelectCanvas={() => onSelectSlot(null)}
+          onRestoreSlot={(slotId) => onStateChange(setSlotVisibility(state, slotId, true))}
+        />
+
+        <div className="wc-context-content">
+          {selectedSlot && selectedValue ? (
+            <>
+              <button
+                type="button"
+                className="wc-context-back"
+                onClick={() => onSelectSlot(null)}
+              >
+                ← 返回画布主题
+              </button>
+              <WebComposerSlotEditor
+                key={selectedSlot.id}
+                slot={selectedSlot}
+                value={selectedValue}
+                state={state}
+                metrics={metrics}
+                onStateChange={onStateChange}
+                onTextChange={(slotId, patch) => onStateChange(updateSlotText(state, slotId, patch))}
+              />
+            </>
+          ) : (
+            <WebComposerCanvasInspector
+              state={state}
+              onStateChange={onStateChange}
+            />
+          )}
+        </div>
+      </div>
+      <p className="wc-visually-hidden" aria-live="polite">{selectionAnnouncement}</p>
+    </ResizableAppSidebar>
+  )
+}

@@ -1,0 +1,51 @@
+<!doctype html>
+<html class="light" lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>uNAS 演示</title>
+    <link href="/static/fonts/web-composer-fonts.css" rel="stylesheet" />
+    <link rel="preload" href="/static/bg/live/wallpaper-3-dark.webp" as="image" />
+    <link rel="preload" href="/static/app/icons/default/download-center.png" as="image" />
+  </head>
+  <body>
+    <div id="root">
+      <main style="display:grid;min-height:100vh;place-items:center;padding:24px;background:#0a0e1a;color:#e2e8f0;font:16px system-ui,sans-serif">
+        <p role="status">正在启动 uNAS Demo…</p>
+      </main>
+    </div>
+    <div id="window-portal"></div>
+    <script>
+      if (window.location.protocol === 'file:') {
+        document.getElementById('root').innerHTML = `
+          <main style="display:grid;min-height:100vh;place-items:center;padding:24px;background:#0a0e1a;color:#e2e8f0;font:16px system-ui,sans-serif">
+            <section style="max-width:560px;padding:28px;border:1px solid #334155;border-radius:16px;background:#111827">
+              <h1 style="margin:0 0 12px">uNAS Demo 不能直接通过文件打开</h1>
+              <p style="line-height:1.6">此页面引用 TypeScript 源码，浏览器不会从 <code>file://</code> 路径编译它。</p>
+              <p style="line-height:1.6">请运行 <code>pnpm -w run dev:demo</code> 后访问终端显示的本地地址，或运行 <code>pnpm -w run build:extension</code>，并在 Chrome 中加载 <code>.output/chrome-mv3</code>。</p>
+            </section>
+          </main>`
+      }
+    </script>
+    <script type="module">
+      if (window.location.protocol !== 'file:') {
+        const root = document.getElementById('root')
+        const showStartupError = (error) => {
+          const message = error instanceof Error ? error.message : String(error)
+          root.innerHTML = `
+            <main style="display:grid;min-height:100vh;place-items:center;padding:24px;background:#0a0e1a;color:#e2e8f0;font:16px system-ui,sans-serif">
+              <section style="max-width:640px;padding:28px;border:1px solid #7f1d1d;border-radius:16px;background:#1f1115">
+                <h1 style="margin:0 0 12px">uNAS Demo 启动失败</h1>
+                <p style="line-height:1.6">请重新加载页面；若问题持续，请重新构建并重新加载扩展。</p>
+                <pre style="margin:16px 0 0;white-space:pre-wrap;color:#fecaca">${message}</pre>
+              </section>
+            </main>`
+        }
+        window.addEventListener('error', (event) => showStartupError(event.error || event.message), { once: true })
+        window.addEventListener('unhandledrejection', (event) => showStartupError(event.reason), { once: true })
+        import('/src/main.tsx').catch(showStartupError)
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,63 @@
+import type { RuntimeMetrics } from './types'
+
+export function clampPercent(value: number | undefined) {
+  return Math.max(0, Math.min(Number(value || 0), 100))
+}
+
+export function formatUptime(totalSeconds = 0) {
+  const d = Math.floor(totalSeconds / 86400)
+  const h = Math.floor((totalSeconds % 86400) / 3600)
+  const m = Math.floor((totalSeconds % 3600) / 60)
+  const s = Math.floor(totalSeconds % 60)
+  return `${d}天${h}时${m}分${s}秒`
+}
+
+export function serviceTitle(service: NonNullable<RuntimeMetrics['services']>[number]) {
+  return [service.id, service.detail || service.dep || service.status].filter(Boolean).join(' · ')
+}
+
+export function serviceName(service: NonNullable<RuntimeMetrics['services']>[number]) {
+  return service.name || service.id
+}
+
+export function normalizeServices(services: NonNullable<RuntimeMetrics['services']>) {
+  return services
+    .filter((service) => service.id !== 'frontend')
+}
+
+export function frontendModeLabel(logMode?: string) {
+  if (logMode === 'development') return '开发模式'
+  return ''
+}
+
+export function taskStatusClass(status: string) {
+  if (status === 'running') return 'rp-task-status--running'
+  if (status === 'pending') return 'rp-task-status--pending'
+  if (status === 'paused') return 'rp-task-status--paused'
+  return ''
+}
+
+export function summarizeGroupStatuses(tasks: NonNullable<RuntimeMetrics['tasks']>) {
+  const counts = new Map<string, number>()
+  tasks.forEach((task) => {
+    const label = task.status_label || task.status
+    counts.set(label, (counts.get(label) || 0) + 1)
+  })
+  return Array.from(counts.entries())
+    .map(([label, count]) => `${count} ${label}`)
+    .join(' / ')
+}
+
+export function appTypeForTaskGroup(type: string, label: string) {
+  const text = `${type} ${label}`.toLowerCase()
+  if (text.includes('download') || text.includes('下载')) return 'fetcher'
+  return ''
+}
+
+export function formatBytes(value: number | undefined) {
+  const bytes = Number(value || 0)
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 102.4) / 10} KB`
+  if (bytes < 1024 * 1024 * 1024) return `${Math.round(bytes / 1024 / 102.4) / 10} MB`
+  return `${Math.round(bytes / 1024 / 1024 / 102.4) / 10} GB`
+}

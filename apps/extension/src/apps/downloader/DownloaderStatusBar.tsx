@@ -1,0 +1,53 @@
+import { useCallback, useState } from 'react'
+
+import { fetchSystemRuntimeMetrics } from 'unas-src/api'
+import { useVisibilityPolling } from 'unas-src/hooks/useVisibilityPolling'
+import { useSystemStore } from 'unas-src/store'
+
+const ZERO_SPEED = { text: '0 B/s' }
+
+type DownloaderStatusBarProps = {
+  detailOpen: boolean
+  onToggleDetail: () => void
+}
+
+export function DownloaderStatusBar({ detailOpen, onToggleDetail }: DownloaderStatusBarProps) {
+  const [network, setNetwork] = useState({
+    upload: ZERO_SPEED,
+    download: ZERO_SPEED,
+  })
+  const systemLifecycle = useSystemStore((state) => state.systemLifecycle)
+
+  const refreshNetwork = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const metrics = await fetchSystemRuntimeMetrics(signal)
+      if (signal?.aborted) return
+      if (metrics.network) {
+        setNetwork({
+          upload: normalizeNetworkSpeed(metrics.network.upload),
+          download: normalizeNetworkSpeed(metrics.network.download),
+        })
+      }
+    } catch {
+      if (signal?.aborted) return
+      // 保留上次成功显示的网络速率
+    }
+  }, [])
+
+  useVisibilityPolling(refreshNetwork, 1000, systemLifecycle === 'running')
+
+  return (
+    <footer className="dl-status">
+      <span className="dl-speed">
+        ↓ {network.download?.text || '0 B/s'} <span>|</span> ↑ {network.upload?.text || '0 B/s'}
+      </span>
+      <button type="button" className="dl-task-detail" onClick={onToggleDetail}>
+        {detailOpen ? '收起详情' : '任务详情'}
+      </button>
+    </footer>
+  )
+}
+
+function normalizeNetworkSpeed(value?: { text?: string }) {
+  return { text: value?.text || ZERO_SPEED.text }
+}

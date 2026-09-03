@@ -1,0 +1,166 @@
+﻿/* Shared application chrome: sizes and control rhythm used inside app windows. */
+:root {
+  --app-control-height: 32px;
+  --app-input-height: 34px;
+  --app-control-radius: 6px;
+  --app-control-font-size: 12px;
+  --app-control-padding-x: 12px;
+  --app-sidebar-width: 200px;
+  --app-sidebar-row-height: 32px;
+  --app-sidebar-row-radius: 6px;
+  --app-sidebar-row-gap: 10px;
+  --app-sidebar-row-padding-x: 11px;
+  --app-sidebar-font-size: 12.5px;
+  --app-list-header-height: 40px;
+  --app-list-row-height: 46px;
+  --app-list-font-size: 13px;
+  --app-list-folder-icon-width: 28px;
+  --app-list-folder-icon-height: 24px;
+}
+
+.app-resizable-sidebar-host {
+  position: relative;
+}
+
+.app-resizable-sidebar {
+  min-width: 0;
+}
+
+.app-sidebar-resize-handle {
+  position: absolute;
+  z-index: 20;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--app-sidebar-width) - 4px);
+  width: 8px;
+  border: 0;
+  outline: none;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.app-sidebar-resize-handle::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 2px;
+  background: transparent;
+  content: '';
+  transition: background .12s ease, box-shadow .12s ease;
+}
+
+.app-sidebar-resize-handle:hover::before,
+.app-sidebar-resize-handle:focus-visible::before,
+.app-resizable-sidebar--resizing + .app-sidebar-resize-handle::before {
+  background: rgba(77,171,255,.82);
+  box-shadow: 0 0 0 1px rgba(77,171,255,.16), 0 0 10px rgba(77,171,255,.28);
+}
+
+.app-surface {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-surface__header {
+  flex: 0 0 auto;
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid var(--mt-divider);
+}
+
+.app-surface__header h2 {
+  margin: 0;
+  color: var(--mt-text-0);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.app-surface__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.mt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--app-control-height);
+  gap: 6px;
+  border: 1px solid var(--mt-border);
+  border-radius: var(--app-control-radius);
+  background: var(--mt-fill);
+  color: var(--mt-text-0);
+  padding: 0 var(--app-control-padding-x);
+  cursor: pointer;
+  font-size: var(--app-control-font-size);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.mt-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,.09);
+  color: #fff;
+}
+
+.mt-btn--primary {
+  border-color: rgba(0,102,255,.4);
+  background: var(--mt-brand);
+  color: #fff;
+}
+
+.mt-btn:disabled {
+  cursor: not-allowed;
+  opacity: .6;
+}
+
+.mt-field {
+  display: grid;
+  gap: 5px;
+  color: var(--mt-text-1);
+  font-size: 12px;
+}
+
+.mt-field input,
+.mt-field select,
+.mt-field textarea,
+.mt-path-input input,
+.mt-picker__tools select {
+  width: 100%;
+  min-height: var(--app-input-height);
+  border: 1px solid var(--mt-border);
+  border-radius: var(--app-control-radius);
+  background: var(--mt-fill);
+  color: var(--mt-text-0);
+  padding: 0 10px;
+  outline: none;
+  font-size: var(--app-control-font-size);
+}
+
+select option {
+  background: #17191f;
+  color: #f8fafc;
+}
+
+select option:checked,
+select option:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
+.mt-field textarea {
+  min-height: 120px;
+  padding: 8px 10px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.mt-path-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}

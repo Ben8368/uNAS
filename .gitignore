@@ -1,5 +1,6 @@
 # Dependencies and builds
 node_modules/
+.pnpm-store/
 dist/
 build/
 .output/
@@ -29,3 +30,7 @@ Thumbs.db
 fixtures/local/
 benchmarks/output/
 *.wasm.tmp
+
+# Source-supplied presentation videos stay local until license and distribution
+# evidence is recorded. They are not required for typecheck or unit tests.
+apps/extension/public/static/web-composer/videos/
