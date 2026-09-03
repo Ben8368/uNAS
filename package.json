@@ -1,0 +1,13 @@
+{
+  "name": "unas",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "docs:governance:check": "node scripts/governance-docs-check.mjs",
+    "verify": "node scripts/governance-docs-check.mjs"
+  }
+}
