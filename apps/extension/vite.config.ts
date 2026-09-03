@@ -22,7 +22,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
-        webComposerPreview: path.resolve(__dirname, 'web-composer-preview.html'),
       },
     },
   },

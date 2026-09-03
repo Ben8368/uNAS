@@ -73,7 +73,7 @@ const directoryEntries: Record<string, { directories: FileEntry[]; files: FileEn
     files: [file('README-demo.txt', 1200, 'txt')],
   },
   '/Workspace/Downloads': { directories: [], files: [file('brand-track.mp3', 7_600_000, 'mp3'), file('product-launch.mp4', 152_000_000, 'mp4')] },
-  '/Workspace/Exports': { directories: [], files: [file('brand-film-h265.mp4', 84_200_000, 'mp4'), file('web-composer-cover.png', 1_240_000, 'png')] },
+  '/Workspace/Exports': { directories: [], files: [file('brand-film-h265.mp4', 84_200_000, 'mp4'), file('transcode-cover.png', 1_240_000, 'png')] },
   '/Workspace/Images': { directories: [], files: [file('lumora-cover.png', 1_240_000, 'png'), file('logo-white.svg', 3_200, 'svg')] },
   '/Workspace/PSD': { directories: [], files: [file('brand-key-visual.psd', 24_300_000, 'psd')] },
 }
@@ -115,7 +115,7 @@ export const demoApi = {
   async cancelTask(taskId: string) { tasks = tasks.map((task) => task.task_id === taskId ? { ...task, status: 'cancelled', stage: '已取消', updated_at: unixNow() } : task); log('NOTICE', '取消演示下载', taskId); return { ok: true } },
   async deleteTaskRecord(taskId: string) { tasks = tasks.filter((task) => task.task_id !== taskId); return { ok: true } },
   async clearTaskRecords(taskIds) { tasks = taskIds?.length ? tasks.filter((task) => !taskIds.includes(task.task_id)) : []; return { ok: true } },
-  getFetchTaskFileUrl() { return '/static/web-composer/lumora-train-overlay.png' },
+  getFetchTaskFileUrl() { return '/static/app/icons/default/download-center.png' },
 
   async listJobs() { return { ok: true, jobs } },
   async getJob(jobId: string) { const job = jobs.find((item) => item.id === jobId); return { ok: Boolean(job), job } },
@@ -135,9 +135,6 @@ export const demoApi = {
   async getWorkOrder(workOrderId: string) { return { ok: workOrderId === workOrder.id, workOrder: workOrderId === workOrder.id ? workOrder : undefined } },
   async updateWorkOrder(next: WorkOrder) { workOrder = { ...next, updatedAt: unixNow() }; log('NOTICE', '保存演示 PSD 工单', next.psdFileName); return { ok: true } },
   async applyWorkOrder() { const job = makeJob('psd.apply', '演示 PSD 应用', 'succeeded', 100); jobs = [job, ...jobs]; log('NOTICE', '完成演示 PSD 输出', '未调用 Photoshop。'); return { ok: true, job, message: '演示工单已完成；未调用 Photoshop。' } },
-  async submitWebComposerPng() { const job = makeJob('web.render.image', '网页合成演示 PNG', 'succeeded', 100); jobs = [job, ...jobs]; return job },
-  async submitWebComposerVideo() { const job = makeJob('web.render.video', '网页合成演示视频', 'succeeded', 100); jobs = [job, ...jobs]; return job },
-
   async listSystemFonts() { return { ok: true, fonts: [{ postScriptName: 'NotoSans-Regular', family: 'Noto Sans', style: 'Regular' }, { postScriptName: 'Inter-Regular', family: 'Inter', style: 'Regular' }, { postScriptName: 'HelveticaNeue-Bold', family: 'Helvetica Neue', style: 'Bold' }] } },
 
   async getWorkspace() { return { ok: true, project_root: '/Workspace', workspace: { project_root: '/Workspace', downloads: '/Workspace/Downloads', exports: '/Workspace/Exports' } } },
@@ -151,7 +148,7 @@ export const demoApi = {
   async emptyFilebrowserTrash() { return { ok: true } },
   async setWorkspace(workspace: string) { return { ok: true, workspace } },
   async uploadFilebrowserFile(directory: string, upload: File) { const path = `${directory}/${upload.name}`; directoryEntries[directory] ??= { directories: [], files: [] }; directoryEntries[directory].files.push({ name: upload.name, path, size: upload.size, modified: isoNow(), type: 'file', extension: upload.name.split('.').pop() }); return { ok: true, path, name: upload.name } },
-  filebrowserFileDownloadUrl() { return '/static/web-composer/lumora-train-overlay.png' },
+  filebrowserFileDownloadUrl() { return '/static/app/icons/default/file-manager.png' },
 
   async getSystemMetrics() {
     const active = jobs.filter((job) => job.status === 'running')

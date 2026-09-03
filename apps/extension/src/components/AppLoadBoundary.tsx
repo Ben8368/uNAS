@@ -1,5 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
+import { reloadAfterExtensionAssetLoadError } from 'unas-src/extensionAssetRecovery'
+
 type AppLoadBoundaryProps = {
   resetKey: string
   children: ReactNode
@@ -19,6 +21,7 @@ export class AppLoadBoundary extends Component<AppLoadBoundaryProps, AppLoadBoun
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('应用加载失败', error, info.componentStack)
+    reloadAfterExtensionAssetLoadError(error)
   }
 
   componentDidUpdate(previous: AppLoadBoundaryProps) {

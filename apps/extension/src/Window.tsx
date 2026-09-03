@@ -2,7 +2,6 @@
 import { WINDOW_CHROME } from 'unas-src/appPresentation'
 import { getApiRuntimePresentation } from 'unas-src/api/runtime'
 import { getAppIcon } from 'unas-src/icon-library'
-import { WindowHeaderPortalContext } from 'unas-src/windowHeaderPortal'
 
 type WindowStatus = {
   tone: 'online' | 'offline' | 'pending'
@@ -14,7 +13,7 @@ function WindowStatusBadge({ appType }: { appType?: string }) {
   const [status, setStatus] = useState<WindowStatus | null>(null)
 
   useEffect(() => {
-    if (!appType || !['fetcher', 'file-manager', 'transcode', 'web-composer'].includes(appType)) {
+    if (!appType || !['fetcher', 'file-manager', 'transcode'].includes(appType)) {
       setStatus(null)
       return
     }
@@ -44,12 +43,11 @@ export function DesktopWindow({
   onFocus: (id: string) => void; onDrag: (id: string, x: number, y: number) => void;
   onResize: (id: string, width: number, height: number) => void;
 }) {
-  const [headerPortalTarget, setHeaderPortalTarget] = useState<HTMLDivElement | null>(null)
   const dragS = useRef({ cx: 0, cy: 0, wx: 0, wy: 0 })
   const resizeS = useRef({ cx: 0, cy: 0, ww: 0, wh: 0, wx: 0, wy: 0, dir: '' })
 
   const startDrag = useCallback((e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('.wc') || isMaximized) return
+    if ((e.target as HTMLElement).closest('.mt-window-controls') || isMaximized) return
     onFocus(windowId)
     dragS.current = { cx: e.clientX, cy: e.clientY, wx: ix, wy: iy }
     let frame: number | null = null
@@ -145,8 +143,7 @@ export function DesktopWindow({
   const activeIcon = getAppIcon(appType ?? '')
 
   return (
-    <WindowHeaderPortalContext.Provider value={headerPortalTarget}>
-      <div
+    <div
         className={`mt-window ${isActive ? 'mt-window--active' : ''} ${isMaximized ? 'mt-window--maximized' : ''}`}
         style={{ width: w, height: h, left, top, zIndex }}
         onMouseDown={() => onFocus(windowId)}
@@ -156,10 +153,8 @@ export function DesktopWindow({
             {activeIcon && <img src={activeIcon} alt="" />}
             <strong>{title}</strong>
           </div>
-          <div className="mt-window-controls wc">
-            {appType === 'web-composer'
-              ? <div className="mt-window-header-portal" ref={setHeaderPortalTarget} />
-              : <WindowStatusBadge appType={appType} />}
+          <div className="mt-window-controls">
+            <WindowStatusBadge appType={appType} />
             <button className="mt-window-btn mt-window-btn--min" title="最小化" onClick={(e) => { e.stopPropagation(); onMinimize(windowId) }}>
               <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
             </button>
@@ -184,7 +179,6 @@ export function DesktopWindow({
             <div className="mt-resize-handle mt-resize-se" onMouseDown={(e) => startResize(e, 'se')} />
           </>
         )}
-      </div>
-    </WindowHeaderPortalContext.Provider>
+    </div>
   )
 }

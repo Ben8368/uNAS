@@ -23,7 +23,6 @@ import type {
   TranscodeCommandPreviewResponse,
   TrashListResponse,
   UnreadNotificationResponse,
-  WebComposerCaptureMetadata,
   WorkspaceResponse,
 } from '#contracts'
 
@@ -81,9 +80,6 @@ export interface UnasDemoApi {
   getWorkOrder(workOrderId: string): Promise<WorkOrderGetResponse>
   updateWorkOrder(workOrder: WorkOrder): Promise<OkResult>
   applyWorkOrder(workOrderId: string, outputPath?: string, outputGrantId?: string): Promise<{ ok: boolean; job: JobRecord; message?: string }>
-  submitWebComposerPng(capture: ArrayBuffer, metadata: WebComposerCaptureMetadata): Promise<JobRecord>
-  submitWebComposerVideo(capture: ArrayBuffer, metadata: WebComposerCaptureMetadata): Promise<JobRecord>
-
   listSystemFonts(): Promise<FontsListResponse>
 
   getWorkspace(): Promise<WorkspaceResponse>

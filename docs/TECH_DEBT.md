@@ -12,7 +12,7 @@
 
 ### TD-001：Phase 1 样式文件需要按组件拆分
 
-- **优先级 / 位置 / 来源 / 目标阶段：** P2 / `apps/extension/src/apps/web-composer/presets/presets.css`、`apps/extension/src/styles/browser.css`、`apps/extension/src/styles/downloader/base.css`、`apps/extension/src/styles/psd.css` / Phase 1 Demo 迁入 / G1 前。
+- **优先级 / 位置 / 来源 / 目标阶段：** P2 / `apps/extension/src/styles/browser.css`、`apps/extension/src/styles/downloader/base.css`、`apps/extension/src/styles/psd.css` / Phase 1 Demo 迁入 / G1 前。
 - **当前妥协与原因：** 为完整保留已迁入 Demo 的视觉和交互，暂时保留超过 450 行的样式文件，其中前三者超过 500 行。
 - **影响与最坏结果：** 组件职责不清会提高回归、主题调整和维护成本。
 - **偿还方案：** 按 App、组件和 token 边界拆分样式；不改变公开 class contract。

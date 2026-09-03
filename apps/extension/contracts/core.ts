@@ -1,4 +1,4 @@
-export type WorkbenchAppId = 'browser' | 'file-manager' | 'fetcher' | 'transcode' | 'ps' | 'web-composer' | 'settings' | 'logs'
+export type WorkbenchAppId = 'browser' | 'file-manager' | 'fetcher' | 'transcode' | 'ps' | 'settings' | 'logs'
 
 export type OkResult = {
   ok: boolean

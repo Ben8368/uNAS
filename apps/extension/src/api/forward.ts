@@ -27,8 +27,6 @@ export const scanPsd = forwardMethod('scanPsd')
 export const getWorkOrder = forwardMethod('getWorkOrder')
 export const updateWorkOrder = forwardMethod('updateWorkOrder')
 export const applyWorkOrder = forwardMethod('applyWorkOrder')
-export const submitWebComposerPng = forwardMethod('submitWebComposerPng')
-export const submitWebComposerVideo = forwardMethod('submitWebComposerVideo')
 
 export const listSystemFonts = forwardMethod('listSystemFonts')
 
