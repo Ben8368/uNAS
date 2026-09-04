@@ -53,7 +53,7 @@ Frontend Demo 阶段的优先级是：交互真实性 > 状态完整 > 无障碍
 
 ## 6. 浏览器与扩展矩阵
 
-目标矩阵由 Gate G0 确认。每项真实验收记录：
+目标矩阵须在 Gate G1 前确认；当前未定的浏览器版本、验证 OS 和参考视口由 RISK-001 跟踪。每项真实验收记录：
 
 - OS、设备 CPU/内存、浏览器与精确版本、扩展版本。
 - New Tab override、Workspace 页面、Service Worker、CSP 和存储上下文。

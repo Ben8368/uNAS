@@ -13,7 +13,7 @@
 
 - TypeScript 是产品编排、contract、UI、Worker 和 adapter 的主语言，并启用 strict 模式。
 - pnpm workspace 管理 `apps/*`、`packages/*`、`workers/*`；包之间使用显式依赖和导出边界。
-- Web 壳采用 React + Vite，Extension 壳采用 WXT；精确版本在 Gate G1 后根据探针锁定。
+- Web 壳采用 React + Vite，Extension 壳采用 WXT；Phase 1 Demo 的精确版本以 `apps/extension/package.json` 与锁文件为准。未来引擎依赖仍须在对应探针后锁定。
 - Rust/C++ 不用于第一阶段业务编排；必要的 codec/archive 能力优先使用可审计的现成 WASM。
 - 未来 Native Helper 可使用更适合系统能力的语言，但必须通过同一版本化 contract 连接。
 

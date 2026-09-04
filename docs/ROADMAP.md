@@ -18,7 +18,7 @@ Roadmap 只描述阶段结果和门禁；具体工作包见 [DEVELOPMENT_BLUEPRI
 - 确认前端 Demo 先行、真实能力后置，并接受 mock 真实性边界。
 - 确认 System/Tool/Link App 类型和 V1 非目标。
 - 接受 ADR 0001、0003–0006；ADR 0002 已由 0005 替代。
-- 决定 Chrome 最低版本策略、验证 OS 和 Wide/Regular 参考视口。
+- 接受浏览器基线尚待确认这一 Phase 1 演示限制；Chrome 最低版本策略、验证 OS 和 Wide/Regular 参考视口须在 G1 前记录。该项由 RISK-001 跟踪，不阻断 mock Demo 实现。
 - 文档治理检查通过；当前阻断风险有 owner 或明确接受人。
 
 ## Phase 1：Frontend Demo

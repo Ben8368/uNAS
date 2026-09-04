@@ -11,32 +11,32 @@ Phase 1 先完成可交互的扩展前端 Demo，用于确认产品结构、桌�
 - 不为了做 Demo 在 React 组件中直接调用浏览器 API 或引擎库。
 - Demo 的“成功”只代表交互验收通过，不代表任何格式、性能或浏览器能力已验证。
 
-## 2. 计划技术基线
+## 2. 当前 Phase 1 技术基线
 
-- TypeScript strict。
-- React 作为界面与组件模型。
-- WXT 管理 Manifest V3 entrypoint 和 Vite 构建。
-- CSS Custom Properties 作为 token 载体，CSS Modules 或同等局部样式机制承载组件样式。
-- Storybook 类组件工作台、Vitest 类单元测试、Playwright 类扩展 E2E 为计划方向；精确依赖与版本在对应 Gate 锁定。
+- TypeScript strict 与 React 18 作为界面和组件模型。
+- Vite 用于本地 Demo；WXT 管理 Chrome MV3 的 New Tab、Workspace 与 Service Worker entrypoint。
+- CSS Custom Properties 承载 token；组件样式按 `src/styles/` 的职责拆分，不使用 CSS Modules。
+- Zustand 承载本地 UI 状态，Framer Motion 与 Lucide React 是当前已锁定的前端依赖。
+- Vitest 覆盖单元测试，Playwright 覆盖本地 MV3 的扩展 E2E。
 
-不在 Gate 前锁定动画库、状态库、路由库或大型 UI 套件。Liquid Glass 需要原创材料层和严格降级，禁止直接套用通用“毛玻璃后台模板”。
+精确版本和完整依赖清单以 [apps/extension/package.json](../apps/extension/package.json) 与锁文件为准。当前没有引擎、WASM、真实文件或额外 Manifest 权限；未来引擎依赖仍须在对应探针完成后评估并锁定。Liquid Glass 需要原创材料层和严格降级，禁止直接套用通用“毛玻璃后台模板”。
 
 ## 3. 前端分层
 
 ```text
-entrypoints/newtab | workspace | background | content
-  → screens / app views
-    → desktop patterns
-      → system components
-        → primitives + tokens
+当前：entrypoints/newtab | workspace
+  → extensionPageBootstrap → App / app views → demo API
+entrypoints/background
+  → Workspace 路由与消息校验
 
-screens
+后续真实能力：screens
   → application ports
     → mock runtime (Phase 1)
     → real runtime adapters (Phase 3+)
 ```
 
-- entrypoint 只负责启动、上下文绑定和错误边界。
+- 当前 New Tab 与 Workspace 共用启动器、错误边界和 demo API；background 只安装 Workspace 路由。
+- content script 与 offscreen 仅保留为架构设计，Phase 1 没有对应 entrypoint 或权限。
 - screen 负责组合，不持有文件系统或 engine 实例。
 - desktop pattern 只实现窗口、Dock、启动和布局语义。
 - application port 暴露 App、Files、Tasks、Settings 等用例。
@@ -72,6 +72,8 @@ Mock 规则：
 - 构建信息、About 或 Demo Banner 显示 `executionSource: mock`。
 - 真实 adapter 接入后，mock 仍用于组件、视觉回归和失败路径测试。
 
+当前注册表还展示文件管理、下载、Media、PSD、Image、PDF、Archive、任务中心、设置与日志等 mock App。下载和 PSD 仅用于复用既有界面中的模拟任务/工单路径，不构成真实下载、浏览器登录态、Photoshop 或本机文件能力，也不扩大 [PRODUCT.md](PRODUCT.md) 的 V1 真实能力候选。
+
 ## 6. 状态边界
 
 - Desktop state：布局、Dock、窗口、焦点和主题。
@@ -80,7 +82,7 @@ Mock 规则：
 - Task projection：公共状态、进度和错误，不保存引擎私有对象。
 - Capability state：可用性、原因、限制和证据，不能硬编码为浏览器名单。
 
-状态容器的具体库后置决定；先以接口、事件和持久化边界约束，避免形成单个全局 store。
+Phase 1 已使用 Zustand 管理本地 UI 状态；仍须以接口、事件和持久化边界约束，避免形成单个无边界的全局 store。
 
 ## 7. 性能约束
 
