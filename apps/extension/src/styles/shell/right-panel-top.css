@@ -19,31 +19,21 @@
   position: absolute;
   z-index: 2;
   top: 34%;
-  left: -56px;
-  width: 48px;
+  left: -26px;
+  width: 26px;
   min-height: 44px;
   border: 0;
   border-radius: 0;
   background: transparent;
   color: rgba(255,255,255,.72);
   font: inherit;
-  font-size: 24px;
-  font-weight: 400;
-  letter-spacing: 0;
-  text-shadow: 0 1px 3px rgba(0,0,0,.52);
-  white-space: nowrap;
   cursor: pointer;
 }
 
 .rp-edge-trigger:hover,
 .rp-edge-trigger:focus-visible {
   background: transparent;
-  color: #fff;
 }
-
-.rp-edge-trigger span { display: block; line-height: 1; transition: transform .12s ease; }
-.rp-edge-trigger:hover span,
-.rp-edge-trigger:focus-visible span { transform: scale(1.12); }
 
 .rp-panel-content {
   display: flex;

@@ -1,0 +1,46 @@
+/*
+ * Window surfaces are owned here. App views may use the semantic variables
+ * below, but must not choose a competing top-level background color.
+ */
+:root {
+  --window-surface: #182332;
+  --window-surface-sidebar: #142031;
+  --window-surface-raised: #203046;
+  --window-surface-control: #293b50;
+  --window-text: #eff4fa;
+  --window-text-muted: #b8c5d6;
+  --window-border: #667b94;
+  --window-focus-ring: #b6dcff;
+
+  /* Compatibility aliases for existing app primitives. */
+  --color-content: var(--window-surface);
+  --color-control: var(--window-surface-control);
+  --color-text: var(--window-text);
+  --color-muted: var(--window-text-muted);
+  --color-line: var(--window-border);
+  --color-glass: rgba(24, 35, 50, .92);
+  --focus-ring: var(--window-focus-ring);
+}
+
+html[data-theme='light'] {
+  --window-surface: #f4f7fb;
+  --window-surface-sidebar: #eaf0f7;
+  --window-surface-raised: #ffffff;
+  --window-surface-control: #e2eaf4;
+  --window-text: #182c45;
+  --window-text-muted: #455c78;
+  --window-border: #8093aa;
+  --window-focus-ring: #165dab;
+  --color-glass: rgba(241, 246, 253, .96);
+}
+
+html[data-high-contrast='true'] {
+  --window-surface: #050b14;
+  --window-surface-sidebar: #050b14;
+  --window-surface-raised: #050b14;
+  --window-surface-control: #142e4b;
+  --window-text: #fff;
+  --window-text-muted: #fff;
+  --window-border: #fff;
+  --window-focus-ring: #ffe66d;
+}

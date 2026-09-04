@@ -1,12 +1,11 @@
-﻿@import './app-window.css';
+@import './window-theme.css';
+@import './app-window.css';
 @import './app-controls.css';
 @import './shell.css';
 @import './file-manager.css';
 @import './log-viewer.css';
 @import './downloader.css';
 @import './browser.css';
-@import './transcode.css';
-@import './psd.css';
 
 .settings-app {
   --mt-surface: rgba(15, 18, 26, .78);
@@ -22,13 +21,13 @@
   height: 100%;
   min-height: 0;
   color: var(--mt-text-0);
-  background: linear-gradient(135deg, rgba(9, 12, 18, .68), rgba(13, 16, 23, .42));
+  background: var(--window-surface);
 }
 
 .settings-sidebar {
   border-right: 1px solid var(--mt-divider);
   padding: 16px 10px;
-  background: rgba(7, 10, 15, .42);
+  background: var(--window-surface-sidebar);
 }
 
 .settings-nav {

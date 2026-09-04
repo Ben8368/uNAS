@@ -1,14 +1,5 @@
 /* Shared appearance and viewport behavior. Loaded after each App's local styles. */
-:root {
-  --desktop-top: 20px;
-  --color-content: #182332;
-  --color-control: #293b50;
-  --color-text: #eff4fa;
-  --color-muted: #b8c5d6;
-  --color-line: #667b94;
-  --color-glass: rgba(19, 30, 44, .92);
-  --focus-ring: #b6dcff;
-}
+:root { --desktop-top: 20px; }
 html, body, #root { font-family: system-ui, 'Microsoft YaHei', sans-serif; }
 button, input, select, textarea { font: inherit; }
 button, select, input:not([type='checkbox']):not([type='radio']), textarea { min-height: 36px; }
@@ -16,7 +7,8 @@ button:not(:disabled), select { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
 :focus-visible { outline: 3px solid var(--focus-ring) !important; outline-offset: 2px; }
 .mt-window:focus { outline: none; }
-.mt-window:focus-visible { outline-offset: -3px; }
+/* The window root receives programmatic focus on launch; only its controls need a visible focus ring. */
+.mt-window:focus-visible { outline: none !important; }
 .mt-window-header, .mt-resize-handle { touch-action: none; }
 .mt-main, .mt-windows { top: var(--desktop-top); }
 .mt-main { right: 20px; }
@@ -45,10 +37,6 @@ button:disabled { cursor: not-allowed; }
 .mt-window-status { flex-shrink: 0; white-space: nowrap; color: var(--color-text); }
 .mt-window-btn { min-width: 36px; color: var(--color-text); font-size: 20px; }
 
-html[data-theme='light'] {
-  --color-content: #f4f7fb; --color-control: #e2eaf4; --color-text: #182c45;
-  --color-muted: #455c78; --color-line: #8093aa; --color-glass: rgba(241,246,253,.96); --focus-ring: #165dab;
-}
 /* Legacy App selectors retain their class contract while consuming the shared tokens. */
 html[data-theme='light'] :is(.settings-app, .fm-app, .dl-app, .psd-app, .transcode-app, .log-viewer) {
   --mt-surface: #fff; --mt-fill: #e4ecf5; --mt-fill-2: #d3e0ef; --mt-border: #8c9db2; --mt-divider: #bac8d8;
@@ -60,7 +48,6 @@ html[data-theme='light'] .mt-window-body :is(input, select, textarea, option, bu
 html[data-theme='light'] .mt-window-body :is(input, textarea)::placeholder { color: var(--color-muted); }
 html[data-theme='light'] .mt-window-body :is(.fm-row--selected, [aria-selected='true'], [aria-pressed='true']) { background: #d2e3f6; }
 html[data-reduce-transparency='true'] :is(.mt-left-nav, .mt-window, .mt-window-header, .mt-launcher-overlay, .mt-launcher, .mt-right-panel, .rp-panel-content) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background-color: var(--color-content) !important; }
-html[data-high-contrast='true'] { --color-content: #050b14; --color-control: #142e4b; --color-text: #fff; --color-muted: #fff; --color-line: #fff; --focus-ring: #ffe66d; }
 html[data-high-contrast='true'] :is(.mt-window, .mt-window-body, .mt-window-header, .mt-window-body main, .mt-window-body aside, .rp-panel-content, .demo-tool, .settings-app) { background: #050b14 !important; color: #fff !important; }
 html[data-high-contrast='true'] .mt-window-body :is(p, span, label, small, strong, button, input, select, textarea, h2, h3) { color: #fff !important; background-color: #050b14 !important; border-color: #fff !important; }
 html[data-reduce-motion='true'] *, html[data-reduce-motion='true'] *::before, html[data-reduce-motion='true'] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

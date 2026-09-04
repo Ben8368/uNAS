@@ -1,4 +1,4 @@
-﻿/* ===== Downloader App ===== */
+/* ===== Downloader App ===== */
 .dl-app {
   position: relative;
   display: grid;
@@ -6,8 +6,8 @@
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  background: rgba(10,12,18,.65);
-  color: rgba(255,255,255,.88);
+  background: var(--window-surface);
+  color: var(--window-text);
   /* 侧栏底栏与主区状态栏同高，保证顶部分隔线齐平 */
   --dl-footer-h: 48px;
 }
@@ -17,7 +17,7 @@
   flex-direction: column;
   min-width: 0;
   border-right: 1px solid rgba(255,255,255,.07);
-  background: rgba(5,6,8,.96);
+  background: var(--window-surface-sidebar);
   padding: 8px 0 0;
 }
 
@@ -102,7 +102,7 @@
   overflow: hidden;
   position: relative;
   padding: 14px 16px calc(var(--dl-footer-h) + 6px);
-  background: rgba(16,17,21,.92);
+  background: var(--window-surface);
 }
 
 .dl-stage {

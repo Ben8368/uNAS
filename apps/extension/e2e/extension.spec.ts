@@ -4,35 +4,39 @@ test('New Tab override launches and reuses one Workspace; invalid messages are r
   const page = await extension.context.newPage()
   await page.goto('chrome://newtab/')
   await expect(page.getByRole('navigation', { name: '应用快捷方式' })).toBeVisible()
-  await page.locator('.app-icon--image').click()
+  await page.locator('.app-icon--fetcher').click()
   await expect.poll(() => extension.context.pages().filter((tab) => tab.url().includes('/workspace.html')).length).toBe(1)
   const owner = extension.context.pages().find((tab) => tab.url().includes('/workspace.html'))!
-  await expect(owner.locator('[data-app-id="image"]')).toBeVisible()
+  const fetcherWindow = owner.locator('[data-app-id="fetcher"]')
+  await expect(fetcherWindow).toBeVisible()
+  await expect(fetcherWindow).toHaveCSS('outline-style', 'none')
+  await expect(owner.locator('.rp-edge-trigger')).toBeEmpty()
   const second = await extension.context.newPage()
   await second.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
-  await second.locator('.app-icon--pdf').click()
-  await expect(owner.locator('[data-app-id="pdf"]')).toBeVisible()
+  await second.locator('.app-icon--file-manager').click()
+  await expect(owner.locator('[data-app-id="file-manager"]')).toBeVisible()
+  await expect(second.locator('.app-icon--ps, .app-icon--transcode, .app-icon--pdf, .app-icon--image, .app-icon--archive')).toHaveCount(0)
   expect(extension.context.pages().filter((tab) => tab.url().includes('/workspace.html'))).toHaveLength(1)
   const responses = await second.evaluate(async () => {
     const runtime = (globalThis as unknown as { chrome: { runtime: { sendMessage: (message: unknown) => Promise<{ ok: boolean }> } } }).chrome.runtime
     return Promise.all([
-      { schemaVersion: 2, action: 'workspace.launch', appId: 'image' },
+      { schemaVersion: 2, action: 'workspace.launch', appId: 'fetcher' },
       { schemaVersion: 1, action: 'workspace.launch', appId: 'javascript:alert(1)' },
-      { schemaVersion: 1, action: 'workspace.launch', appId: 'image', url: 'https://example.com' },
+      { schemaVersion: 1, action: 'workspace.launch', appId: 'fetcher', url: 'https://example.com' },
     ].map((message) => runtime.sendMessage(message)))
   })
   expect(responses.every((response) => response.ok === false)).toBe(true)
   expect(extension.context.pages().filter((tab) => tab.url().includes('/workspace.html'))).toHaveLength(1)
   const duplicate = await extension.context.newPage()
-  await duplicate.goto(`chrome-extension://${extension.extensionId}/workspace.html#image`)
+  await duplicate.goto(`chrome-extension://${extension.extensionId}/workspace.html#fetcher`)
   await expect(duplicate.getByRole('heading', { name: 'Workspace 已在另一标签页运行' })).toBeVisible()
-  await expect(duplicate.locator('[data-app-id="image"]')).toHaveCount(0)
+  await expect(duplicate.locator('[data-app-id="fetcher"]')).toHaveCount(0)
   await duplicate.close()
   expect(extension.remoteRequests).toEqual([])
   expect(extension.errors).toEqual([])
 })
 
-test('partial failure keeps successful fixture and exposes failed item; denied authorization is explicit', async ({ extension }) => {
+test('partial failure keeps successful fixture and exposes the failed item', async ({ extension }) => {
   const page = await workspace(extension, 'file-manager')
   const app = page.locator('[data-app-id="file-manager"]')
   await expect(app.locator('.fm-address')).toHaveText('/Workspace')
@@ -44,13 +48,6 @@ test('partial failure keeps successful fixture and exposes failed item; denied a
   await expect(app.getByRole('status')).toContainText('sample-document')
   await expect(app.getByRole('button', { name: 'sample-image.png，模拟文件', exact: true })).toBeVisible()
   await expect(app.getByRole('button', { name: 'sample-document.pdf，模拟文件', exact: true })).toHaveCount(0)
-  await closeApp(page, 'file-manager')
-  const psd = await openApp(page, 'ps')
-  await revealRuntimePanel(page)
-  await page.getByRole('combobox', { name: '模拟场景' }).selectOption('permission-denied')
-  await openApp(page, 'ps')
-  await psd.getByRole('button', { name: '模拟选择文件', exact: true }).click()
-  await expect(psd).toContainText('模拟授权已拒绝')
   expect(await page.locator('input[type="file"]').count()).toBe(0)
   expect(extension.errors).toEqual([])
 })
@@ -82,7 +79,7 @@ test('fixture intake, mock result inspection and trash restoration never select 
   expect(extension.errors).toEqual([])
 })
 
-test('download cancellation and Task Center agree; closing PSD stops observation without cancelling the job', async ({ extension }) => {
+test('download cancellation and Task Center agree', async ({ extension }) => {
   const page = await workspace(extension, 'fetcher')
   const downloader = page.locator('[data-app-id="fetcher"]')
   await downloader.getByRole('button', { name: '添加任务', exact: true }).click()
@@ -101,35 +98,6 @@ test('download cancellation and Task Center agree; closing PSD stops observation
   await closeApp(page, 'tasks')
   const reopened = await openApp(page, 'fetcher')
   await expect(reopened.locator('.dl-row').filter({ hasText: 'example.org' })).toContainText(/取消/)
-  await closeApp(page, 'fetcher')
-  const psd = await openApp(page, 'ps')
-  await psd.getByRole('button', { name: '模拟扫描', exact: true }).click()
-  await expect(psd.getByRole('button', { name: '取消当前任务' })).toBeVisible()
-  await closeApp(page, 'ps')
-  const taskCenter = await openApp(page, 'tasks')
-  await expect(taskCenter.locator('li').filter({ hasText: '模拟 PSD 扫描' })).toContainText('running')
-  await revealRuntimePanel(page)
-  await page.getByRole('button', { name: '推进模拟步骤' }).click()
-  await page.getByRole('button', { name: '推进模拟步骤' }).click()
-  await expect(taskCenter.locator('li').filter({ hasText: '模拟 PSD 扫描' })).toContainText('succeeded')
   expect(extension.remoteRequests).toEqual([])
   expect(extension.errors).toEqual([])
 })
-
-for (const kind of ['image', 'pdf', 'archive']) {
-  test(`${kind} completes only after explicit mock scenario steps`, async ({ extension }) => {
-    const page = await workspace(extension, kind)
-    const app = page.locator(`[data-app-id="${kind}"]`)
-    await app.getByRole('button', { name: '模拟选择固定 fixture' }).click()
-    await app.getByRole('button', { name: '创建模拟任务' }).click()
-    await expect(app.getByRole('status')).toContainText('running')
-    await revealRuntimePanel(page)
-    await page.getByRole('button', { name: '推进模拟步骤' }).click()
-    await page.getByRole('button', { name: '推进模拟步骤' }).click()
-    await expect(app.getByRole('status')).toContainText('succeeded')
-    await expect(app.getByRole('status')).toContainText('没有可下载文件')
-    expect(await page.locator('input[type="file"]').count()).toBe(0)
-    expect(extension.remoteRequests).toEqual([])
-    expect(extension.errors).toEqual([])
-  })
-}

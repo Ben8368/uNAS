@@ -3,7 +3,7 @@ import { createWorkspaceRouter, validateLaunchMessage } from './workspaceRouter'
 import { claimWorkspace } from './workspaceSession'
 import { installWorkspaceRouter } from './extensionAdapter'
 const sender = { id: 'unas', url: 'chrome-extension://unas/newtab.html', frameId: 0 }
-const launch = { schemaVersion: 1, action: 'workspace.launch', appId: 'image' }
+const launch = { schemaVersion: 1, action: 'workspace.launch', appId: 'fetcher' }
 describe('Workspace routing boundary', () => {
   it('accepts only internal top-level pages and exact versioned app intents', () => {
     expect(validateLaunchMessage(launch, sender, 'unas')).toBe(true)
@@ -15,30 +15,30 @@ describe('Workspace routing boundary', () => {
     const create = vi.fn(async () => { exists = true })
     const focus = vi.fn(async () => {})
     const route = createWorkspaceRouter({ discover: async () => exists ? [{ tabId: 4, windowId: 2 }] : [], create, focus })
-    await Promise.all([route('image'), route('pdf')])
+    await Promise.all([route('file-manager'), route('fetcher')])
     expect(create).toHaveBeenCalledTimes(1)
-    expect(focus).toHaveBeenCalledWith(4, 2, 'pdf')
+    expect(focus).toHaveBeenCalledWith(4, 2, 'fetcher')
   })
   it('does not poison later launches after discovery failure', async () => {
     const discover = vi.fn().mockRejectedValueOnce(new Error('unavailable')).mockResolvedValue([])
     const create = vi.fn(async () => {})
     const route = createWorkspaceRouter({ discover, create, focus: async () => {} })
-    await expect(route('image')).rejects.toThrow('unavailable')
-    await route('pdf')
+    await expect(route('file-manager')).rejects.toThrow('unavailable')
+    await route('fetcher')
     expect(create).toHaveBeenCalledOnce()
   })
   it('does not keep stale tab ids after a Workspace was closed or navigated away', async () => {
     const create = vi.fn(async () => {})
     const focus = vi.fn(async () => {})
     const route = createWorkspaceRouter({ discover: async () => [], create, focus })
-    await Promise.all([route('image'), route('archive')])
+    await Promise.all([route('file-manager'), route('tasks')])
     expect(create).toHaveBeenCalledTimes(2)
     expect(focus).not.toHaveBeenCalled()
   })
   it('does not guess the owner when duplicate Workspace pages exist', async () => {
     const focus = vi.fn(async () => {})
     const route = createWorkspaceRouter({ discover: async () => [{ tabId: 4, windowId: 2 }, { tabId: 5, windowId: 2 }], create: async () => {}, focus })
-    await expect(route('image')).rejects.toThrow('多个 Workspace')
+    await expect(route('file-manager')).rejects.toThrow('多个 Workspace')
     expect(focus).not.toHaveBeenCalled()
   })
   it('reports missing getContexts instead of opening duplicate Workspace', async () => {

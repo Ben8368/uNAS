@@ -12,7 +12,7 @@ const cases = [
 
 for (const sample of cases) {
   test(`layout evidence: ${sample.name}`, async ({ extension }, testInfo) => {
-    const page = await workspace(extension, 'image')
+    const page = await workspace(extension, 'fetcher')
     await page.setViewportSize({ width: sample.width, height: sample.height })
     await page.emulateMedia({ colorScheme: sample.theme, reducedMotion: sample.reducedMotion ? 'reduce' : 'no-preference', contrast: sample.highContrast ? 'more' : 'no-preference' })
     await page.getByRole('button', { name: '设置', exact: true }).click()
@@ -22,13 +22,11 @@ for (const sample of cases) {
     await expect(page.locator('html')).toHaveAttribute('data-theme', sample.theme)
     if (sample.reducedMotion) await expect(page.locator('html')).toHaveAttribute('data-reduce-motion', 'true')
     if (sample.highContrast) await expect(page.locator('html')).toHaveAttribute('data-high-contrast', 'true')
-    const app = page.locator('[data-app-id="image"]')
-    const fixtureButton = app.getByRole('button', { name: '模拟选择固定 fixture' })
-    await fixtureButton.focus()
+    const app = page.locator('[data-app-id="fetcher"]')
+    const submitButton = app.getByRole('button', { name: '添加任务', exact: true })
+    await submitButton.focus()
     await page.keyboard.press('Enter')
-    const submitButton = app.getByRole('button', { name: '创建模拟任务' })
-    await expect(submitButton).toBeEnabled()
-    await submitButton.scrollIntoViewIfNeeded()
+    await expect(app.getByRole('button', { name: /^(添加模拟任务|确认添加)$/ })).toBeVisible()
     const bounds = await app.boundingBox()
     expect(bounds).not.toBeNull()
     expect(bounds!.x).toBeGreaterThanOrEqual(0)
@@ -46,14 +44,13 @@ for (const sample of cases) {
   })
 }
 
-for (const appId of ['ps', 'fetcher', 'file-manager']) {
+for (const appId of ['fetcher', 'file-manager', 'tasks']) {
   for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }]) {
     test(`existing App layout: ${appId} ${viewport.width}`, async ({ extension }, testInfo) => {
       const page = await workspace(extension, appId)
       await page.setViewportSize(viewport)
       const app = page.locator(`[data-app-id="${appId}"]`)
       if (appId === 'file-manager') await expect(app.locator('.fm-address')).toHaveText('/Workspace')
-      if (appId === 'ps') await expect(app.getByRole('button', { name: '模拟扫描', exact: true })).toBeEnabled()
       if (appId === 'fetcher') await app.getByRole('button', { name: '添加任务', exact: true }).click()
       const bounds = await app.boundingBox()
       expect(bounds!.x).toBeGreaterThanOrEqual(0)

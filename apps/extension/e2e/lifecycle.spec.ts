@@ -1,36 +1,4 @@
-import { test, expect, workspace, openApp } from './fixtures'
-
-test('Workspace close publishes interruption, releases ownership and refresh resets fixtures', async ({ extension }) => {
-  const owner = await workspace(extension, 'image')
-  const newtab = await extension.context.newPage()
-  await newtab.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
-  const summary = newtab.getByRole('complementary', { name: 'Workspace 任务摘要' })
-  const app = owner.locator('[data-app-id="image"]')
-  await app.getByRole('button', { name: '模拟选择固定 fixture' }).click()
-  await app.getByRole('button', { name: '创建模拟任务' }).click()
-  await expect(summary).toContainText('demo-job-001')
-  const duplicate = await extension.context.newPage()
-  await duplicate.goto(`chrome-extension://${extension.extensionId}/workspace.html#tasks`)
-  await expect(duplicate.getByRole('heading', { name: 'Workspace 已在另一标签页运行' })).toBeVisible()
-  owner.on('dialog', dialog => dialog.accept())
-  await owner.close({ runBeforeUnload: true })
-  await expect(summary).toContainText('Workspace 已关闭')
-  await expect(summary).toContainText('failed')
-  await duplicate.getByRole('button', { name: '重新确认所有权' }).click()
-  await expect(duplicate.locator('[data-app-id="tasks"]')).toBeVisible()
-  await expect(summary).not.toContainText('demo-job-001')
-  const freshApp = await openApp(duplicate, 'image')
-  await freshApp.getByRole('button', { name: '模拟选择固定 fixture' }).click()
-  await freshApp.getByRole('button', { name: '创建模拟任务' }).click()
-  await expect(summary).toContainText('demo-job-001')
-  duplicate.on('dialog', dialog => dialog.accept())
-  await duplicate.reload()
-  await expect(duplicate.locator('[data-app-id="image"]')).toBeVisible()
-  await expect(summary).not.toContainText('demo-job-001')
-  await expect(duplicate.locator('[data-app-id="image"]')).toContainText('尚无当前任务')
-  expect(extension.errors).toEqual([])
-  expect(extension.remoteRequests).toEqual([])
-})
+import { test, expect } from './fixtures'
 
 test('Link App validates HTTPS and persists create, edit and delete across reloads', async ({ extension }) => {
   const page = await extension.context.newPage()

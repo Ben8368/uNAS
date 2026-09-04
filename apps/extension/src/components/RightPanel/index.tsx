@@ -104,9 +104,7 @@ export function RightPanel() {
           setIsOpen((open) => !open)
           event.currentTarget.blur()
         }}
-      >
-        <span aria-hidden="true">{isOpen ? '›' : '‹'}</span>
-      </button>
+      />
       <div id="runtime-status-panel" className="rp-panel-content">
       <div className="rp-card">
         <div className="rp-card-head rp-runtime-head">
