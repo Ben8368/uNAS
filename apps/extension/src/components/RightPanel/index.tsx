@@ -21,6 +21,7 @@ import {
 } from './utils'
 
 export function RightPanel() {
+  const [isOpen, setIsOpen] = useState(false)
   const [metrics, setMetrics] = useState<RuntimeMetrics>(EMPTY_METRICS)
   const [netUpData, setNetUpData] = useState<number[]>(Array.from({ length: 40 }, () => 0))
   const [netDownData, setNetDownData] = useState<number[]>(Array.from({ length: 40 }, () => 0))
@@ -91,15 +92,20 @@ export function RightPanel() {
     : '未采样'
 
   return (
-    <aside className="mt-right-panel" aria-label="运行状态">
+    <aside className={`mt-right-panel${isOpen ? ' mt-right-panel--open' : ''}`} aria-label="运行状态">
       <button
         type="button"
         className="rp-edge-trigger"
-        aria-label="显示运行状态"
+        aria-label={isOpen ? '收起运行状态' : '显示运行状态'}
         aria-controls="runtime-status-panel"
-        title="悬停或聚焦以显示运行状态"
+        aria-expanded={isOpen}
+        title={isOpen ? '隐藏运行状态' : '显示运行状态'}
+        onClick={(event) => {
+          setIsOpen((open) => !open)
+          event.currentTarget.blur()
+        }}
       >
-        <span aria-hidden="true">‹</span>
+        <span aria-hidden="true">{isOpen ? '›' : '‹'}</span>
       </button>
       <div id="runtime-status-panel" className="rp-panel-content">
       <div className="rp-card">

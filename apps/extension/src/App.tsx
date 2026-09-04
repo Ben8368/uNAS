@@ -10,7 +10,6 @@ import { useAppearance } from 'unas-src/hooks/useAppearance'
 import { useWorkspaceSession } from 'unas-src/hooks/useWorkspaceSession'
 import { isWorkspaceSurface } from 'unas-src/runtime/extensionAdapter'
 import { isWorkspaceApp } from 'unas-src/runtime/workspaceRouter'
-import { TaskProjection } from 'unas-src/components/TaskProjection'
 import { launchStatus } from 'unas-src/runtime/launchStatus'
 
 export default function App() {
@@ -45,7 +44,7 @@ export default function App() {
         {workspace && session.state !== 'owner' && <section className="workspace-status" role="status"><h1>Workspace {session.state === 'pending' ? '正在确认所有权' : session.state === 'conflict' ? '已在另一标签页运行' : '所有权能力不可用'}</h1><p>此页面不会执行模拟任务。关闭其他 Workspace 后可重试；真实任务恢复能力尚未接入。</p><button type="button" onClick={session.retry}>重新确认所有权</button></section>}
       </div>
       {(!workspace || session.state === 'owner') && <><WindowContainer /><AppLauncher onOpenApp={handleOpenApp} /></>}
-      {workspace && session.state === 'owner' ? <RightPanel /> : <TaskProjection />}
+      {(!workspace || session.state === 'owner') && <RightPanel />}
     </div>
   )
 }
