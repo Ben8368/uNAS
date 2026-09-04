@@ -1,0 +1,129 @@
+/* Shared table */
+.psd-slot-table,
+.psd-wo-table {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow-y: auto;
+  border: 1px solid var(--mt-border);
+  border-radius: 6px;
+  background: var(--mt-border);
+  flex: 1;
+  min-height: 0;
+}
+
+.psd-slot-row {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) minmax(180px, .8fr) minmax(140px, .6fr) 130px;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(24,26,32,.9);
+  color: var(--mt-text-1);
+  font-size: 13px;
+  align-items: center;
+}
+
+.psd-slot-row--head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgba(16,17,21,.98);
+  color: var(--mt-text-0);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 2px solid var(--mt-border);
+}
+
+/* Work-order table rows */
+.psd-wo-row {
+  display: grid;
+  grid-template-columns: 40px minmax(120px, .5fr) minmax(140px, .7fr) minmax(160px, 1fr) minmax(120px, .6fr) 100px;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(24,26,32,.9);
+  align-items: center;
+  font-size: 13px;
+  color: var(--mt-text-1);
+}
+
+.psd-wo-row--head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgba(16,17,21,.98);
+  color: var(--mt-text-0);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 2px solid var(--mt-border);
+}
+
+.psd-layer-path {
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-size: 12px;
+  color: rgba(167,139,250,.85);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.psd-text-preview {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--mt-text-0);
+}
+
+/* Editor header */
+.psd-editor { overflow: hidden; }
+
+.psd-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: rgba(24,26,32,.8);
+  border: 1px solid var(--mt-border);
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.psd-editor-header strong { color: var(--mt-text-0); font-size: 15px; }
+
+/* Work-order inputs */
+.psd-wo-input {
+  padding: 6px 10px;
+  background: rgba(15,16,20,.7);
+  border: 1px solid var(--mt-border);
+  border-radius: 4px;
+  color: var(--mt-text-0);
+  font-size: 12px;
+  font-family: inherit;
+  width: 100%;
+  min-width: 0;
+}
+
+.psd-wo-input:focus {
+  outline: none;
+  border-color: rgba(239,68,68,.6);
+  background: rgba(20,21,26,.9);
+}
+
+.psd-wo-input:disabled { opacity: 0.4; cursor: not-allowed; }
+.psd-wo-input::placeholder { color: var(--mt-text-1); opacity: 0.5; }
+
+.psd-so-badge {
+  display: inline-block;
+  padding: 2px 5px;
+  margin-right: 4px;
+  background: rgba(168,85,247,.12);
+  border: 1px solid rgba(168,85,247,.24);
+  border-radius: 3px;
+  font-size: 10px;
+  color: rgba(216,180,254,.85);
+  font-weight: 600;
+}
+

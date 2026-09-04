@@ -10,7 +10,7 @@ html, body, #root {
 }
 
 :root {
-  --mt-wp: url('/static/bg/live/wallpaper-3-dark.webp');
+  --mt-wp: linear-gradient(125deg, #071525, #172f53);
   --mt-brand: #0066ff;
   --mt-brand-light: rgba(0,102,255,.12);
   --mt-surface: rgba(255,255,255,.86);

@@ -44,14 +44,14 @@ export function DesktopIcons({ onOpenApp }: { onOpenApp: (id: string) => void })
       style={{ '--desktop-icon-rows': rows } as CSSProperties}
     >
       {getLauncherApps().map((app) => (
-        <div
+        <button type="button"
           key={app.id}
           className={`app-icon app-icon--${app.id}`}
           onClick={() => onOpenApp(app.id)}
         >
           <AppIconImage src={app.icon} alt={app.label} variant="desktop" />
           <span className="app-icon-label">{app.label}</span>
-        </div>
+        </button>
       ))}
     </div>
   )

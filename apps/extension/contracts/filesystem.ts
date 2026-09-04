@@ -26,6 +26,7 @@ export type DiskListResponse = OkResult & {
 }
 
 export type FileEntry = {
+  executionSource?: 'mock' | 'real'
   name: string
   path: string
   size: number
@@ -46,6 +47,7 @@ export type CreateDirectoryResponse = OkResult & {
 }
 
 export type TrashEntry = {
+  executionSource?: 'mock' | 'real'
   id: string
   name: string
   original_path: string

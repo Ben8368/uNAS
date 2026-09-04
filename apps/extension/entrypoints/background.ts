@@ -1,5 +1,6 @@
 import { defineBackground } from 'wxt/utils/define-background'
+import { installWorkspaceRouter } from 'unas-src/runtime/extensionAdapter'
 
 export default defineBackground(() => {
-  // Phase 1 mock Demo deliberately keeps the service worker free of task state.
+  installWorkspaceRouter()
 })

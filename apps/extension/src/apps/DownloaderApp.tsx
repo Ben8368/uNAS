@@ -1,8 +1,8 @@
 // Simplified DownloaderApp for v2 - AI features removed
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { analyzeDownloadStrategy, submitFetch } from 'unas-src/api'
-import { getDesktopBrowserBridge } from 'unas-src/desktopBrowser'
+import { submitFetch } from 'unas-src/api'
+import { describeBatch, runBatch } from 'unas-src/application/batch'
 import { DownloaderAddForm } from 'unas-src/apps/downloader/DownloaderAddForm'
 import { DownloaderDetailDrawer } from 'unas-src/apps/downloader/DownloaderDetailDrawer'
 import {
@@ -22,16 +22,6 @@ import { useDownloaderTaskData } from 'unas-src/apps/downloader/useDownloaderTas
 import { DirectoryPickerDialog } from 'unas-src/apps/FileManagerApp'
 import type { CookieBrowser } from 'unas-src/apps/downloader/types'
 import type { FetchTaskDraft } from '#contracts'
-
-const COOKIE_BROWSER_LABELS: Record<CookieBrowser, string> = {
-  none: '不使用浏览器登录态',
-  chrome: 'Chrome',
-  edge: 'Edge',
-  safari: 'Safari',
-  firefox: 'Firefox',
-}
-
-const BROWSER_DOWNLOAD_CHANNEL_ID = 'download-browser-channel'
 
 export function DownloaderApp() {
   const { historyTasks, queueTasks, mergedTasks, pollError, fetchHistoryTasks, refreshLists, setOptimisticTasks } = useDownloaderTaskData()
@@ -61,7 +51,6 @@ export function DownloaderApp() {
         output_dir: form.taskOutputDir || '/Workspace/Downloads',
         compatible_format: form.taskCompatibleFormat,
         max_concurrent: 1,
-        ...(form.taskCookieBrowser !== 'none' ? { cookies_from_browser: form.taskCookieBrowser } : {}),
       }
 
       const result = await submitFetch(draft)
@@ -90,18 +79,6 @@ export function DownloaderApp() {
     ],
   )
 
-  const submitBrowserDownloads = useCallback(async (urls: string[]) => {
-    const bridge = getDesktopBrowserBridge()
-    if (!bridge) throw new Error('浏览器资源下载需要在 uNAS 桌面端中使用。')
-    const channel = await bridge.create(BROWSER_DOWNLOAD_CHANNEL_ID, 'about:blank', { sessionScope: 'default' })
-    if (!channel.ok) throw new Error(channel.error)
-    for (const url of urls) {
-      const result = await bridge.downloadUrl(BROWSER_DOWNLOAD_CHANNEL_ID, url)
-      if (!result.ok) throw new Error(result.error)
-    }
-    void refreshLists()
-  }, [refreshLists])
-
   const submitNewTask = useCallback(async () => {
     if (!form.taskUrl.trim() || form.addingTask) return
     form.setAddingTask(true)
@@ -113,33 +90,26 @@ export function DownloaderApp() {
         .map((url) => url.trim())
         .filter((url) => url.length > 0)
 
-      const analyses = await Promise.all(urls.map((url) => analyzeDownloadStrategy({ url })))
-      const browserUrls = urls.filter((_url, index) => analyses[index]?.analysis?.route === 'browser')
-      const ytdlpUrls = urls.filter((_url, index) => analyses[index]?.analysis?.route !== 'browser')
-      if (ytdlpUrls.length) await submitTaskPayloads(ytdlpUrls)
-      if (browserUrls.length) await submitBrowserDownloads(browserUrls)
-      form.setTaskUrl('')
-      form.setShowAddForm(false)
+      const result = await runBatch(urls, (url) => submitTaskPayloads([url]))
+      form.setTaskUrl(result.failed.map(({ item }) => item).join('\n'))
+      if (result.failed.length) form.setSubmitError(describeBatch('提交模拟下载任务', result))
+      else {
+        actions.setActionError(describeBatch('提交模拟下载任务', result))
+        form.setShowAddForm(false)
+      }
+
     } catch (err: unknown) {
       form.setSubmitError(err instanceof Error ? err.message : '下载任务提交失败')
     } finally {
       form.setAddingTask(false)
     }
-  }, [form, submitTaskPayloads, submitBrowserDownloads, actions, refreshLists])
+  }, [form, submitTaskPayloads, actions, refreshLists])
 
   const confirmCookieBrowserChange = useCallback(
     (browser: CookieBrowser) => {
-      if (browser === 'none') {
-        form.setTaskCookieBrowser(browser)
-        return
-      }
-      const label = COOKIE_BROWSER_LABELS[browser]
-      const confirmed = window.confirm(
-        `使用 ${label} 登录态前，需要你先自行完全退出 ${label}。uNAS 不会自动关闭已经打开的浏览器。确认使用 ${label} 登录态？`,
-      )
-      if (confirmed) {
-        form.setTaskCookieBrowser(browser)
-      }
+      form.setTaskCookieBrowser('none')
+      if (browser !== 'none') form.setSubmitError('当前 Demo 不读取浏览器登录态或 Cookie。请使用不带登录态的模拟任务。')
+
     },
     [form],
   )
@@ -177,8 +147,8 @@ export function DownloaderApp() {
           onStopSelected={actions.stopSelected}
           canRetrySelected={selection.canRetrySelected}
           onRetrySelected={() => {
-            actions.retrySelected().then(() => {
-              selection.clearSelection()
+            actions.retrySelected().then((result) => {
+              selection.setSelectedIds(new Set(result?.failed.map(({ item }) => item.id) ?? []))
               selection.setSelectedCategory('all')
             })
           }}
@@ -188,8 +158,8 @@ export function DownloaderApp() {
           canClearRecords={selection.canClearRecords}
           clearRecordsTitle={selection.clearRecordsTitle}
           onClearRecords={() => {
-            actions.clearRecords().then(() => {
-              selection.clearSelection()
+            actions.clearRecords().then((result) => {
+              selection.setSelectedIds(new Set(result?.failed.map(({ item }) => item.id) ?? []))
               selection.setSelectedTaskId(null)
             })
           }}
@@ -228,7 +198,7 @@ export function DownloaderApp() {
           />
 
           {(actions.actionError || pollError) && (
-            <div className="dl-action-error">{actions.actionError || pollError}</div>
+            <div role="status" className="dl-action-error">{actions.actionError || pollError}</div>
           )}
         </div>
 
@@ -250,7 +220,7 @@ export function DownloaderApp() {
         open={form.directoryPickerOpen}
         value={form.taskOutputDir}
         mode="directory"
-        title="选择下载保存目录"
+        title="选择模拟结果目录"
         confirmLabel="使用此目录"
         onClose={() => form.setDirectoryPickerOpen(false)}
         onPick={form.setTaskOutputDir}

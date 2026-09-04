@@ -10,6 +10,10 @@ const PsdApp = lazy(() => import('unas-src/apps/PsdApp').then((module) => ({ def
 const SettingsApp = lazy(() => import('unas-src/apps/SettingsApp').then((module) => ({ default: module.SettingsApp })))
 const TranscodeApp = lazy(() => import('unas-src/apps/TranscodeApp').then((module) => ({ default: module.TranscodeApp })))
 const LogViewer = lazy(() => import('unas-src/LogViewer').then((module) => ({ default: module.LogViewer })))
+const ImageApp = lazy(() => import('unas-src/apps/DemoToolApp').then((module) => ({ default: module.ImageApp })))
+const PdfApp = lazy(() => import('unas-src/apps/DemoToolApp').then((module) => ({ default: module.PdfApp })))
+const ArchiveApp = lazy(() => import('unas-src/apps/DemoToolApp').then((module) => ({ default: module.ArchiveApp })))
+const TaskCenterApp = lazy(() => import('unas-src/apps/DemoToolApp').then((module) => ({ default: module.TaskCenterApp })))
 
 export type RegisteredApp = {
   id: WorkbenchAppId
@@ -22,10 +26,14 @@ export type RegisteredApp = {
 }
 
 export const appRegistry: RegisteredApp[] = [
-  { id: 'browser', label: 'Scry浏览器', title: 'Scry浏览器', icon: APP_ICON_PATHS.browser, component: BrowserApp, status: 'beta' },
+  { id: 'browser', label: '网址 App', title: '网址 App', icon: APP_ICON_PATHS.browser, component: BrowserApp, status: 'beta' },
+  { id: 'image', label: 'Image', title: 'Image · 模拟转换', icon: APP_ICON_PATHS.image, component: ImageApp, status: 'beta' },
+  { id: 'pdf', label: 'PDF', title: 'PDF · 模拟提取', icon: APP_ICON_PATHS.pdf, component: PdfApp, status: 'beta' },
+  { id: 'archive', label: 'Archive', title: 'Archive · 模拟打包', icon: APP_ICON_PATHS.archive, component: ArchiveApp, status: 'beta' },
+  { id: 'tasks', label: '任务中心', title: 'Task Center', icon: APP_ICON_PATHS.tasks, component: TaskCenterApp, status: 'beta' },
   { id: 'file-manager', label: '文件管理', title: '文件管理', icon: APP_ICON_PATHS.fileManager, component: FileManagerApp, status: 'stable' },
   { id: 'fetcher', label: '下载', title: '下载', icon: APP_ICON_PATHS.fetcher, component: DownloaderApp, status: 'stable' },
-  { id: 'transcode', label: '转码', title: '转码', icon: APP_ICON_PATHS.transcode, component: TranscodeApp, status: 'hidden', launcherVisible: false },
+  { id: 'transcode', label: 'Media', title: 'Media · 模拟转码', icon: APP_ICON_PATHS.transcode, component: TranscodeApp, status: 'beta' },
   { id: 'ps', label: 'PS', title: 'PS', icon: APP_ICON_PATHS.ps, component: PsdApp, status: 'beta' },
   { id: 'settings', label: '设置', title: '设置', icon: APP_ICON_PATHS.settings, component: SettingsApp, status: 'beta', launcherVisible: false },
   { id: 'logs', label: '日志', title: '日志', icon: APP_ICON_PATHS.logs, component: LogViewer, status: 'hidden', launcherVisible: false },

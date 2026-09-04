@@ -1,6 +1,6 @@
 # uNAS
 
-> 正式产品名：uNAS。当前处于 **Phase 1 / Frontend Demo**；已迁入仅使用浏览器内置 mock 数据的 React/Vite Demo，并提供 WXT Manifest V3 构建物；未接入真实文件、引擎或后端能力。
+> 正式产品名：uNAS。当前阶段与验证范围见 [CONTEXT.md](CONTEXT.md)。本地 Demo 只使用固定模拟数据，不读取真实文件或执行真实转换。
 
 uNAS 计划成为一个以 Manifest V3 浏览器扩展交付的本地优先新标签页工作区：用桌面级交互组织网址、本地文件和内置工具，在浏览器内完成常见图片、媒体、PDF 与 ZIP 任务。扩展是唯一产品，不另建面向用户的托管 Web 应用或传统桌面程序。
 
@@ -44,21 +44,25 @@ uNAS 计划成为一个以 Manifest V3 浏览器扩展交付的本地优先新�
 
 Phase 1 只允许 Frontend Demo、mock scenario 和不含真实 engine/WASM 的扩展壳；真实文件和引擎能力从 Phase 2 探针开始获得证据。当前 Demo 同时提供 Vite 本地演示与 WXT Manifest V3 的 New Tab、Workspace 和 Service Worker 壳。
 
-## 文档验证
+## 开发与验证
 
 ```bash
-pnpm -w run verify
+pnpm verify
 ```
 
-检查通过覆盖文档治理、Demo 单元测试、类型检查与构建；不代表视觉、目标浏览器扩展、文件或引擎能力通过。
+该跨平台入口覆盖文档治理、Demo 边界、依赖清单、单元测试、类型检查、Vite/WXT 构建、素材哈希及包体预算。它不代替扩展 E2E 或人工验收。
+
+本地演示运行 `pnpm dev:demo`；工具会打开独立 Workspace。顶部可选择固定场景、重置和手动推进模拟步骤。重置会关闭 App 并清空本轮状态，文件入口仅添加内置 fixture。
 
 构建 Chrome 解包扩展：
 
 ```bash
-pnpm -w run build:extension
+pnpm build:extension
 ```
 
 构建物位于 `apps/extension/.output/chrome-mv3/`。在 Chrome 扩展管理页面开启开发者模式后，选择“加载已解压的扩展程序”，并选择该目录。
+
+首次准备自动化浏览器，运行 `pnpm --dir apps/extension exec playwright install chromium`；之后运行 `pnpm test:e2e`。它加载独立配置中的 MV3 构建物，检查跨标签与模拟流程，并保存布局截图；不操作已有浏览器配置。报告在 `apps/extension/playwright-report/`，截图与失败 trace 在 `apps/extension/test-results/`。证据解释见 [本轮验收记录](docs/archive/reviews/2026-09-04-demo-remediation.md)，素材与依赖说明见 [ASSETS.md](docs/ASSETS.md)。
 
 ## 发布边界
 

@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 1,
+  "scope": "Installed declared runtime dependency graph plus direct build/test tools. Dev transitive dependencies and public distribution approval are not certified.",
+  "records": [
+    {
+      "name": "@playwright/test",
+      "version": "1.62.1",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "Apache-2.0",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "45873d00a0dd243596deb4aa23b2493b3d1f0671921bf2538ea431d7380220eb"
+        },
+        {
+          "file": "NOTICE",
+          "sha256": "6d602191187b35b9b01d2cffa01c8469c2c8d9de8a96f1bf868e0f264f51c81d"
+        }
+      ],
+      "repository": "git+https://github.com/microsoft/playwright.git"
+    },
+    {
+      "name": "@types/node",
+      "version": "22.20.1",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ],
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped.git"
+    },
+    {
+      "name": "@types/react",
+      "version": "18.3.31",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ],
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped.git"
+    },
+    {
+      "name": "@types/react-dom",
+      "version": "18.3.7",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ],
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped.git"
+    },
+    {
+      "name": "@vitejs/plugin-react",
+      "version": "4.7.0",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "29b68325fe026047d13e187b44c33b2acacf7dc647dec4583702e59f235e13b5"
+        }
+      ],
+      "repository": "git+https://github.com/vitejs/vite-plugin-react.git"
+    },
+    {
+      "name": "framer-motion",
+      "version": "12.43.0",
+      "scope": "runtime-declared",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "5ff46083b88563822b0560dd6221ab89d2f74bc97a52d4c97a75020fd62c6f32"
+        }
+      ],
+      "repository": "https://github.com/motiondivision/motion/"
+    },
+    {
+      "name": "js-tokens",
+      "version": "4.0.0",
+      "scope": "runtime-declared",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "2213d91c606205c71eb051a199478cdc2adde945893404d7f1421436dd6d5cc1"
+        }
+      ],
+      "repository": "lydell/js-tokens"
+    },
+    {
+      "name": "loose-envify",
+      "version": "1.4.0",
+      "scope": "runtime-declared",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "4eb7543b08d955a6d23fcc224601d43ff566e775be918805e26210d7f6eb4893"
+        }
+      ],
+      "repository": "git://github.com/zertosh/loose-envify.git"
+    },
+    {
+      "name": "lucide-react",
+      "version": "0.468.0",
+      "scope": "runtime-declared",
+      "declaredLicense": "ISC",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "1e7290b35280a048667bbf0ebabac1c7fd52a75300e8b2946ac165715997f2bc"
+        }
+      ],
+      "repository": "https://github.com/lucide-icons/lucide.git"
+    },
+    {
+      "name": "motion-dom",
+      "version": "12.43.0",
+      "scope": "runtime-declared",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "1bf0dc3f7727723e5a032ed12164a47cf92c05204cb1a3485f123c24e2833ed1"
+        }
+      ],
+      "repository": "https://github.com/motiondivision/motion"
+    },
+    {
+      "name": "motion-utils",
+      "version": "12.39.0",
+      "scope": "runtime-declared",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "1bf0dc3f7727723e5a032ed12164a47cf92c05204cb1a3485f123c24e2833ed1"
+        }
+      ],
+      "repository": "https://github.com/motiondivision/motion"
+    },
+    {
+      "name": "react",
+      "version": "18.3.1",
+      "scope": "runtime-declared",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85"
+        }
+      ],
+      "repository": "https://github.com/facebook/react.git"
+    },
+    {
+      "name": "react-dom",
+      "version": "18.3.1",
+      "scope": "runtime-declared",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85"
+        }
+      ],
+      "repository": "https://github.com/facebook/react.git"
+    },
+    {
+      "name": "scheduler",
+      "version": "0.23.2",
+      "scope": "runtime-declared",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85"
+        }
+      ],
+      "repository": "https://github.com/facebook/react.git"
+    },
+    {
+      "name": "tslib",
+      "version": "2.8.1",
+      "scope": "runtime-declared",
+      "declaredLicense": "0BSD",
+      "licenseFiles": [
+        {
+          "file": "LICENSE.txt",
+          "sha256": "210b19e543130388c68654b7497e967119ce17145f66ab7d85688fbd70f08751"
+        }
+      ],
+      "repository": "https://github.com/Microsoft/tslib.git"
+    },
+    {
+      "name": "typescript",
+      "version": "5.9.3",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "Apache-2.0",
+      "licenseFiles": [
+        {
+          "file": "LICENSE.txt",
+          "sha256": "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47"
+        }
+      ],
+      "repository": "https://github.com/microsoft/TypeScript.git"
+    },
+    {
+      "name": "vite",
+      "version": "6.4.3",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "008938a3441801ca3960f8e3ccb4c0738e7996442a53063141d57d3769a7344d"
+        }
+      ],
+      "repository": "git+https://github.com/vitejs/vite.git"
+    },
+    {
+      "name": "vitest",
+      "version": "4.1.11",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "881d660c26831481b697e39724d4a35c9f86e07b67156d4aeb693a0b39910435"
+        }
+      ],
+      "repository": "git+https://github.com/vitest-dev/vitest.git"
+    },
+    {
+      "name": "wxt",
+      "version": "0.21.4",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "MIT",
+      "licenseFiles": [],
+      "repository": "git+https://github.com/wxt-dev/wxt.git"
+    },
+    {
+      "name": "zustand",
+      "version": "5.0.15",
+      "scope": "runtime-declared",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "c1e6e266563517467b1bf874817d23e426f3149252bd7d42758cd697514b8417"
+        }
+      ],
+      "repository": "git+https://github.com/pmndrs/zustand.git"
+    }
+  ]
+}

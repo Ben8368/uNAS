@@ -58,7 +58,7 @@ export function DownloaderDetailDrawer({
 
               <div className="dl-detail-card dl-detail-card--snapshots">
                 <div className="dl-detail-block">
-                  <label>下载请求快照</label>
+                  <label>模拟请求快照（executionSource: mock）</label>
                   <pre>{detailRequest || '-'}</pre>
                 </div>
 

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 
-import { cancelJob, listJobs, submitTranscodeJob, probeTranscodeSource, previewTranscodeCommand } from 'unas-src/api'
+import { cancelJob, getJob, listJobs, submitTranscodeJob, probeTranscodeSource, previewTranscodeCommand } from 'unas-src/api'
 import type { JobRecord, TranscodeJobDraft, TranscodeSourceInfo } from 'unas-src/api/types'
 import { formatEstimatedSize, TRANSCODE_PRESETS, TRANSCODE_PRESET_EXTENSIONS } from 'unas-src/apps/transcode/helpers'
 import { TranscodeJobSections } from 'unas-src/apps/transcode/TranscodeJobSections'
 import { ResizableAppSidebar } from 'unas-src/components/ResizableAppSidebar'
 import { useExternalReadGrant } from 'unas-src/hooks/useExternalPathGrant'
+import { describeBatch, runBatch } from 'unas-src/application/batch'
 import { useVisibilityPolling } from 'unas-src/hooks/useVisibilityPolling'
 
 export function TranscodeApp() {
@@ -134,7 +135,7 @@ export function TranscodeApp() {
         ...(isReencode && useTargetBitrate ? { targetBitrateKbps } : {}),
         ...(isReencode && enableVmaf ? { enableVmaf } : {}),
       })
-      setNotice(`已创建：${job.title}`)
+      setNotice(`已创建模拟任务：${job.title}`)
       await refreshJobs()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : '转码任务提交失败')
@@ -148,27 +149,22 @@ export function TranscodeApp() {
     if (paths.length === 0 || batchSubmitting) return
     setBatchSubmitting(true)
     setBatchResult('')
-    let succeeded = 0
     const isReencode = preset !== 'copy' && preset !== 'remux'
-    for (const path of paths) {
-      try {
-        const fileName = path.split('/').pop() ?? 'output'
-        const baseName = fileName.replace(/\.[^.]+$/, '')
-        const ext = TRANSCODE_PRESET_EXTENSIONS[preset]
-        const outPath = `/Workspace/Exports/${baseName}.${ext}`
-        await submitTranscodeJob({
-          inputPath: path,
-          outputPath: outPath,
-          preset,
-          ...(isReencode ? { videoCrf, videoEncodePreset, audioBitrate } : {}),
-          ...(isReencode && useTargetBitrate ? { targetBitrateKbps } : {}),
-          ...(isReencode && enableVmaf ? { enableVmaf } : {}),
-        })
-        succeeded += 1
-      } catch {
-      }
-    }
-    setBatchResult(`已提交 ${succeeded}/${paths.length} 个批量任务`)
+    const result = await runBatch(paths, async (path) => {
+      const fileName = path.split('/').pop() ?? 'output'
+      const baseName = fileName.replace(/\.[^.]+$/, '')
+      const ext = TRANSCODE_PRESET_EXTENSIONS[preset]
+      await submitTranscodeJob({
+        inputPath: path,
+        outputPath: `/Workspace/Exports/${baseName}.${ext}`,
+        preset,
+        ...(isReencode ? { videoCrf, videoEncodePreset, audioBitrate } : {}),
+        ...(isReencode && useTargetBitrate ? { targetBitrateKbps } : {}),
+        ...(isReencode && enableVmaf ? { enableVmaf } : {}),
+      })
+    })
+    setBatchResult(describeBatch('提交模拟任务', result))
+    setBatchPaths(result.failed.map(({ item }) => item).join('\n'))
     setBatchSubmitting(false)
     await refreshJobs()
   }, [batchPaths, batchSubmitting, preset, videoCrf, videoEncodePreset, audioBitrate, useTargetBitrate, targetBitrateKbps, enableVmaf, refreshJobs])
@@ -178,6 +174,8 @@ export function TranscodeApp() {
     setNotice('')
     try {
       await cancelJob(jobId)
+      const result = await getJob(jobId)
+      setNotice(result.job?.status === 'canceled' ? '模拟任务已确认取消。' : result.job?.status === 'succeeded' ? '任务已完成，取消未生效。' : '取消请求已发送，尚未确认终态。')
       await refreshJobs()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : '取消任务失败')
@@ -195,9 +193,11 @@ export function TranscodeApp() {
       </ResizableAppSidebar>
 
       <main className="transcode-panel">
+        <p role="status">executionSource: mock · 参数、分析和结果仅演示交互，不读取文件或证明编解码器支持，不生成媒体文件。使用顶部「推进模拟步骤」推进任务。</p>
+        {inputGrant.message && <p role="status">{inputGrant.message}</p>}
         <form className="transcode-form" onSubmit={submit}>
           <label className="mt-field">
-            <span>输入路径</span>
+            <span>模拟输入路径</span>
             <div style={{ display: 'flex', gap: '4px' }}>
               <input
                 value={inputGrant.displayPath}
@@ -223,9 +223,9 @@ export function TranscodeApp() {
                 type="button"
                 className="mt-btn"
                 onClick={() => void inputGrant.importExternal()}
-                title="从外部导入文件（需要桌面版）"
+                title="使用固定元数据夹具模拟授权"
               >
-                从外部导入
+                模拟选择文件
               </button>
             </div>
           </label>
@@ -251,7 +251,7 @@ export function TranscodeApp() {
             </div>
           )}
           <label className="mt-field">
-            <span>输出路径</span>
+            <span>模拟输出位置</span>
             <input value={outputPath} onChange={(event) => setOutputPath(event.target.value)} placeholder="/Workspace/Exports/output.mp4" />
           </label>
           <label className="mt-field">
@@ -315,7 +315,7 @@ export function TranscodeApp() {
               </label>
               {sourceInfo && sourceInfo.durationSeconds && (
                 <div className="transcode-estimate">
-                  预估输出体积：{formatEstimatedSize(sourceInfo, videoCrf, useTargetBitrate ? targetBitrateKbps : undefined, audioBitrate)}
+                  模拟体积估算（非真实性能或输出）：{formatEstimatedSize(sourceInfo, videoCrf, useTargetBitrate ? targetBitrateKbps : undefined, audioBitrate)}
                 </div>
               )}
               {commandPreview && (
@@ -330,7 +330,7 @@ export function TranscodeApp() {
             <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="可选" />
           </label>
           <button className="mt-btn mt-btn--primary transcode-submit" type="submit" disabled={(!inputGrant.displayPath.trim() && !inputGrant.grantId) || !outputPath.trim() || submitting}>
-            {submitting ? '提交中' : '开始转码'}
+            {submitting ? '提交中' : '模拟转码'}
           </button>
         </form>
 

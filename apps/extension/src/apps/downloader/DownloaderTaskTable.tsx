@@ -101,20 +101,20 @@ export function DownloaderTaskTable({
               role="menuitem"
               className="dl-row-menu-item"
               disabled={!getTaskDownloadFilePath(menu.task)}
-              title={getTaskDownloadFilePath(menu.task) ? '通过前端下载任务产物' : '任务尚未记录可下载文件'}
+              title={getTaskDownloadFilePath(menu.task) ? '查看固定模拟结果，不包含文件下载' : '任务尚未记录模拟结果'}
               onClick={() => runAction('download_file', menu.task)}
             >
-              下载文件
+              查看模拟结果
             </button>
             <button
               type="button"
               role="menuitem"
               className="dl-row-menu-item"
               disabled={!isTaskRetryable(menu.task)}
-              title={isTaskRetryable(menu.task) ? '使用原始参数重新提交下载' : '当前状态不支持重新下载'}
+              title={isTaskRetryable(menu.task) ? '使用原始参数重新提交模拟任务' : '当前状态不支持重新模拟'}
               onClick={() => runAction('retry', menu.task)}
             >
-              重新下载
+              重新模拟
             </button>
           </div>,
           document.body,

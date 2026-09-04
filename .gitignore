@@ -5,6 +5,8 @@ dist/
 build/
 .output/
 coverage/
+playwright-report/
+test-results/
 
 # Local runtime data
 .tmp/
@@ -30,7 +32,3 @@ Thumbs.db
 fixtures/local/
 benchmarks/output/
 *.wasm.tmp
-
-# Source-supplied presentation videos stay local until license and distribution
-# evidence is recorded. They are not required for typecheck or unit tests.
-apps/extension/public/static/web-composer/videos/

@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-04T11:42:37.7957350+08:00",
+  "baseCommit": "afaf08b84110e0d10925f3fa8a46d4688fb9e69a",
+  "workingTree": "Uncommitted remediation; hashes identify the tested build, not a published release.",
+  "environment": {
+    "browser": "151.0.7922.34",
+    "os": "win32 10.0.26200 x64",
+    "extensionPath": "C:\\uNAS\\apps\\extension\\.output\\chrome-mv3",
+    "extensionId": "leeikmidmidcdnpibpdpjnocmmobiikg",
+    "headless": true,
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "evidence": "Unpacked MV3 in bundled Chromium; not installed system Chrome certification."
+  },
+  "verification": [
+    {
+      "command": "pnpm verify",
+      "exitCode": 0,
+      "testFiles": 13,
+      "unitTests": 81
+    },
+    {
+      "command": "pnpm test:e2e",
+      "exitCode": 0,
+      "tests": 22,
+      "durationSeconds": 42.3
+    }
+  ],
+  "package": {
+    "totalBytes": 431268,
+    "initialStaticJavaScriptBytes": 213069,
+    "publicAssetBytes": 3934
+  },
+  "limitations": [
+    "Bundled headless Chromium; not installed Chrome stable certification.",
+    "200% layout simulation is a reduced CSS viewport, not actual browser zoom.",
+    "No real file, engine, codec, performance or full accessibility support claim.",
+    "Images and build live in ignored output directories and are replaced by later runs."
+  ],
+  "screenshots": [
+    {
+      "path": "apps/extension/test-results/extension-e2e/layout-existing-App-layout-fetcher-1024/fetcher-1024.png",
+      "bytes": 207882,
+      "sha256": "07a7a94e9e2f2e7c02edcfe637f63ebeea90ab8ed3f3aec02fe7b1caa72ef31b"
+    },
+    {
+      "path": "apps/extension/test-results/extension-e2e/layout-existing-App-layout-fetcher-1440/fetcher-1440.png",
+      "bytes": 435873,
+      "sha256": "42d5afdcd2a7f39cca7b9d94c92a656d3d6e266c1168d25544ed506ac73347d3"
+    },
+    {
+      "path": "apps/extension/test-results/extension-e2e/layout-existing-App-layout-file-manager-1024/file-manager-1024.png",
+      "bytes": 123829,
+      "sha256": "948d4051dc312e2addce62ce51fe6b6575cf7a68779eb5ea158704564abab246"
+    },
+    {
+      "path": "apps/extension/test-results/extension-e2e/layout-existing-App-layout-file-manager-1440/file-manager-1440.png",
+      "bytes": 347869,
+      "sha256": "6efd778e1715c7b71bef66ca569bdbc6c66b7c121c24c23c8e0fcbcd5f5f5002"
+    },
+    {
+      "path": "apps/extension/test-results/extension-e2e/layout-existing-App-layout-ps-1024/ps-1024.png",
+      "bytes": 104129,
+      "sha256": "7665e699569aabb4264f0a4d5268aab5172de4372116812287406cf34a808b21"
+    },
+    {
+      "path": "apps/extension/test-results/extension-e2e/layout-existing-App-layout-ps-1440/ps-1440.png",
+      "bytes": 326629,
+      "sha256": "badea06f03d714b6cce51e399989d9cdf1fe71be3708f2d0832819109efdc416"
+    },
+    {
+      "path": "apps/extension/test-results/extension-e2e/layout-layout-evidence-200-percent-layout-simulation/200-percent-layout-simulation.png",
+      "bytes": 82650,
+      "sha256": "22e099cf74ea3dbf352d92748bf89c96f961d6d6e4f9e812960e3ef7b8c22d8c"
+    },
+    {
+      "path": "apps/extension/test-results/extension-e2e/layout-layout-evidence-compact-dark/compact-dark.png",
+      "bytes": 84770,
+      "sha256": "46eaf9e355e05899f81b272fd85e2b09529e20108bf4b3009e05ec9a4d875733"
+    },
+    {
+      "path": "apps/extension/test-results/extension-e2e/layout-layout-evidence-high-contrast/high-contrast.png",
+      "bytes": 111008,
+      "sha256": "1660e1c3dfe07a70b8dacdfd43cc2834c2918f9db1ab8315bffd66fa6bb14102"
+    },
+    {
+      "path": "apps/extension/test-results/extension-e2e/layout-layout-evidence-reduced-motion/reduced-motion.png",
+      "bytes": 332367,
+      "sha256": "5bed0ea7e20442e8b0fd7fec3e0b546e0e8da7f0a6bb5263bc120494eaa0d60b"
+    },
+    {
+      "path": "apps/extension/test-results/extension-e2e/layout-layout-evidence-regular-dark/regular-dark.png",
+      "bytes": 110278,
+      "sha256": "e57a158a0dff9774e37deff2bf22d8452ce7fc99e469277faaaf9e2e098ded01"
+    },
+    {
+      "path": "apps/extension/test-results/extension-e2e/layout-layout-evidence-wide-dark/wide-dark.png",
+      "bytes": 332454,
+      "sha256": "27cbfcf8688217a17fe3aa7ac8b9ef80f3cbb3d837e4b3c5b8b0dde92cf01713"
+    },
+    {
+      "path": "apps/extension/test-results/extension-e2e/layout-layout-evidence-wide-light/wide-light.png",
+      "bytes": 332183,
+      "sha256": "b74ede5111da6230b56aa4f21806bbbb753e072ad9d82637adc851ffafd1b280"
+    }
+  ],
+  "build": [
+    {
+      "path": "apps/extension/.output/chrome-mv3/assets/main-BUp9AC_p.css",
+      "bytes": 83025,
+      "sha256": "e17b8f1d723be4ea4e0285f270aa3de27bd896c3bdfd1ed33bd812c6d0ce7ff8"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/background.js",
+      "bytes": 3574,
+      "sha256": "9532740f7a0634ca6a594aaf830f8eb1e44c1f11f12434821d56cda60e9808f9"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/batch-PgElRnzK.js",
+      "bytes": 865,
+      "sha256": "734313d433163edcc44daaee6f64a7ba4bee87ac52f97f9ef297cc21854dd5d7"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/BrowserApp-HssNnNcj.js",
+      "bytes": 5006,
+      "sha256": "92e66665a4dae94d0e87109a8cb79e8edd72e8b871d2706ee0b593cd521cf664"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/DemoToolApp-Bx_VcYn6.js",
+      "bytes": 4364,
+      "sha256": "724692d96bf349b617316f812c8186ecd818bcea2b76fc75604c506918438636"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/DirectoryPickerDialog-BbRxIrOq.js",
+      "bytes": 17651,
+      "sha256": "95fc1686a6cd949ae11f456807e2c77d8ed3aa315c74068643eead0d967c494d"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/DownloaderApp-TC2TvjIP.js",
+      "bytes": 38079,
+      "sha256": "097bd9bd72773730185684eb48e6916790cea22cbd5953fbfb0c74874291e682"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/extensionPageBootstrap-BDhAezah.js",
+      "bytes": 3574,
+      "sha256": "8094cd85d8c3c60405aa8c86ea024354a7d5b989937e566bd24646fdf94da12f"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/FileManagerApp-DUysh-1n.js",
+      "bytes": 13148,
+      "sha256": "9213cb560a1b797be2cc1ad90324b4f977def096b248f2079c3993dda050e8b6"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/LogViewer-B3uuqQKU.js",
+      "bytes": 7736,
+      "sha256": "e70209340d6d263472c67ab3fd84547ffb60feedad2cd86965f422cc34526db9"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/main-B23q4Y3Q.js",
+      "bytes": 209495,
+      "sha256": "b3e124160e03f161f4fc5732ed1ecc30d15862f963e8115c4f7fa19be51f8282"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/PsdApp-B4dtPHG7.js",
+      "bytes": 17068,
+      "sha256": "2d11cc6ffe421301bf658958390a51c213a3efe8b007a9d1179882c21ed59e6e"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/ResizableAppSidebar-D0wtwkzf.js",
+      "bytes": 2241,
+      "sha256": "848bcfe49bf455eb4b716bd72b1940e67e760b9339201d0301c3a898c44e5f44"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/runtime-Cwuad7-3.js",
+      "bytes": 2216,
+      "sha256": "cb647754546c1e5840625e5b5f572ceff923bbd9013c3a02105e1fafdc252a7b"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/SettingsApp-D3-rhqf1.js",
+      "bytes": 2860,
+      "sha256": "83593320e4174c1074144a8a50d0b4ab3926d608163874d068bf6b634dcd842e"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/TranscodeApp-CCqYSvoB.js",
+      "bytes": 13769,
+      "sha256": "ef0d5a888ae209283b373290c91d86d27b4ae064379b0ee42d7ce97677cc0190"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/chunks/useExternalPathGrant-BjsW8AxF.js",
+      "bytes": 1196,
+      "sha256": "a20d434c50d398f7edc232d1d09b9d0bb620e2f95afcf0da98d9be2018409c0f"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/favicon.svg",
+      "bytes": 251,
+      "sha256": "3b5d87e653c6c5a6e55a45ee4e43c34404328cbaf71eef389938290b36588472"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/manifest.json",
+      "bytes": 249,
+      "sha256": "01d56c35f8bb68c560fc488087826b714b73300c04912f16bb599b2f318e64f4"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/newtab.html",
+      "bytes": 605,
+      "sha256": "696f70edb498e39d7d14dacde7f76c562a56e479daa8793cc7170b3f7eadb8fb"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/static/app/icons/default/archive.svg",
+      "bytes": 348,
+      "sha256": "05386f37e5b64f9e2a14efac6b019256924997d571fa4c4b58c4175614c1b977"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/static/app/icons/default/browser.svg",
+      "bytes": 349,
+      "sha256": "2399831666af361a873b4d5fe7760121ca4d038850e885c419b9fc634a77a14a"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/static/app/icons/default/document.svg",
+      "bytes": 318,
+      "sha256": "7a3eb52704950c72dee6775a55556dbd620d74ae29819cc50043b0638097ce31"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/static/app/icons/default/download.svg",
+      "bytes": 307,
+      "sha256": "69a6136edc97b1ec3946c33d82bf7ed0a21912da486daccd1cd006cda96343bc"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/static/app/icons/default/files.svg",
+      "bytes": 310,
+      "sha256": "749fece49fef26fd36080de81398aa2927154bca9440822677ba086b4268c249"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/static/app/icons/default/image.svg",
+      "bytes": 374,
+      "sha256": "f7225a2a6d775221a8376819b6856e6d046cf4c5032543ed0545d8544336cc6e"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/static/app/icons/default/layers.svg",
+      "bytes": 326,
+      "sha256": "af89c50dd82f6aed451d75d6f6c1aed60ec1756bdd080b670b723bc36e25802e"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/static/app/icons/default/logs.svg",
+      "bytes": 309,
+      "sha256": "55dc973f8b594f6679b71394d05c781b44470432932a4f5459740baff57627e9"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/static/app/icons/default/media.svg",
+      "bytes": 334,
+      "sha256": "0a2d0f513dd9845eb2e5dcdfd21f8f9522b8221ddf3e34db868a5beb1de5de1e"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/static/app/icons/default/settings.svg",
+      "bytes": 386,
+      "sha256": "a44fd247fba626cda4875bd118cf1d99dbb1ab4388458d25111e7442d175382f"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/static/app/icons/default/tasks.svg",
+      "bytes": 322,
+      "sha256": "7022c57535109a10748b59f1bde748cefa2b44a3d6ebe2ac8082d15c56cf7c97"
+    },
+    {
+      "path": "apps/extension/.output/chrome-mv3/workspace.html",
+      "bytes": 613,
+      "sha256": "73b058573606c1a05b2edb95875c544f8786ff2af738cf476b07ebd78029b0d1"
+    }
+  ]
+}

@@ -1,243 +1,41 @@
-﻿import { getApiRuntimePresentation, shutdownSystem } from 'unas-src/api'
-import { ApiRequestError } from 'unas-src/api/http'
-import { markAllNotificationsAsRead } from 'unas-src/api'
-import { getAppIcon } from 'unas-src/icon-library'
-import { getDesktopSystemBridge } from 'unas-src/desktopBrowser'
-import { useVisibilityPolling } from 'unas-src/hooks/useVisibilityPolling'
-import {
-  IconBell,
-  IconGear,
-  IconGlobe,
-  IconGrid,
-  IconMonitor,
-  IconPower,
-  IconUser,
-} from 'unas-src/LeftNavbarIcons'
-import { useNotificationUnreadStore } from 'unas-src/notificationUnreadStore'
-import { useLogViewerStore } from 'unas-src/logViewerStore'
-import { useSystemStore } from 'unas-src/store'
-import { getErrorMessage } from 'unas-src/utils'
-import { useWindowStore } from 'unas-src/windowStore'
 import { useState } from 'react'
+import { getAppIcon } from 'unas-src/icon-library'
+import { IconBell, IconGear, IconGrid, IconMonitor, IconPower } from 'unas-src/LeftNavbarIcons'
+import { useSystemStore } from 'unas-src/store'
+import { useWindowStore } from 'unas-src/windowStore'
 
 export function LeftNavbar() {
-  const {
-    beginSystemShutdown,
-    completeSystemShutdown,
-    resetSystemLifecycle,
-    showLauncher,
-    systemLifecycle,
-    toggleLauncher,
-  } = useSystemStore()
-  const windows = useWindowStore((state) => state.windows)
-  const openWindow = useWindowStore((state) => state.openWindow)
-  const minimizeWindow = useWindowStore((state) => state.minimizeWindow)
-  const focusWindow = useWindowStore((state) => state.focusWindow)
-  const unreadNotificationCount = useNotificationUnreadStore((s) => s.unreadNotificationCount)
-  const pullUnreadNotificationCount = useNotificationUnreadStore((s) => s.pullUnreadNotificationCount)
-  const setUnreadNotificationCount = useNotificationUnreadStore((s) => s.setUnreadNotificationCount)
-  const openNotifications = useLogViewerStore((s) => s.openNotifications)
-  const [showPowerMenu, setShowPowerMenu] = useState(false)
-  const [isShuttingDown, setIsShuttingDown] = useState(false)
-  const [powerComplete, setPowerComplete] = useState<'shutdown' | null>(null)
-  const runtime = getApiRuntimePresentation()
-
-  const uniqueRunningApps = windows.filter(
-    (windowItem, index, allWindows) =>
-      allWindows.findIndex((candidate) => candidate.appType === windowItem.appType) === index,
-  )
-
-  useVisibilityPolling(pullUnreadNotificationCount, 3000, systemLifecycle === 'running')
-
-  function doClick(appType: string) {
-    const existingWindow = windows.find((windowItem) => windowItem.appType === appType)
-    if (!existingWindow) return
-
-    if (existingWindow.isMinimized) {
-      openWindow(appType)
-      return
-    }
-
-    const topZIndex = Math.max(...windows.map((windowItem) => windowItem.zIndex))
-    if (existingWindow.zIndex === topZIndex) {
-      minimizeWindow(existingWindow.id)
-      return
-    }
-
-    focusWindow(existingWindow.id)
+  const { showLauncher, toggleLauncher } = useSystemStore()
+  const { windows, openWindow, minimizeWindow, focusWindow } = useWindowStore()
+  const [showInfo, setShowInfo] = useState(false)
+  const topZ = Math.max(0, ...windows.map((item) => item.zIndex))
+  function activate(appType: string) {
+    const existing = windows.find((item) => item.appType === appType)
+    if (!existing || existing.isMinimized) { openWindow(appType); return }
+    if (existing.zIndex === topZ) minimizeWindow(existing.id)
+    else focusWindow(existing.id)
   }
-
-  async function doShutdown() {
-    if (isShuttingDown) return
-    if (!window.confirm(runtime.shutdown.confirm)) return
-
-    setIsShuttingDown(true)
-    beginSystemShutdown()
-
-    const desktopSystem = getDesktopSystemBridge()
-    if (desktopSystem) {
-      // 桌面模式下必须走 IPC：本地 API 的关机 token 只在桌面主进程与本地 API 之间传递，不会暴露给 Web UI。
-      const result = await desktopSystem.shutdown()
-      if (result.ok) {
-        completeSystemShutdown()
-        setPowerComplete('shutdown')
-      } else {
-        window.alert(result.error || runtime.shutdown.fallbackError)
-        setIsShuttingDown(false)
-        resetSystemLifecycle()
-      }
-      return
-    }
-
-    try {
-      await shutdownSystem()
-      completeSystemShutdown()
-      setPowerComplete('shutdown')
-    } catch (error: unknown) {
-      // No status means network-layer failure — server likely exited before responding
-      if (error instanceof ApiRequestError && (error.status === undefined || error.status >= 500)) {
-        completeSystemShutdown()
-        setPowerComplete('shutdown')
-        return
-      }
-      // 纯 Web 模式下本地 API 会拒绝未授权的关机请求（403），这是预期行为而非故障。
-      if (error instanceof ApiRequestError && error.status === 403) {
-        window.alert(runtime.shutdown.webModeUnavailable)
-        setIsShuttingDown(false)
-        resetSystemLifecycle()
-        return
-      }
-      window.alert(getErrorMessage(error) || runtime.shutdown.fallbackError)
-      setIsShuttingDown(false)
-      resetSystemLifecycle()
-    }
-  }
-
-  if (powerComplete) {
-    return (
-      <div className="mt-shutdown-overlay">
-        <div className="mt-shutdown-card">
-          <div className="mt-shutdown-card__title">{runtime.shutdown.completeTitle}</div>
-          <div className="mt-shutdown-card__body">
-            {runtime.shutdown.completeBody}
-          </div>
-          <button type="button" className="mt-shutdown-card__reload" onClick={() => window.location.reload()}>
-            返回桌面
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  const topZIndex = Math.max(...windows.map((windowItem) => windowItem.zIndex), 0)
-
   return (
-    <div className="mt-left-nav">
+    <nav className="mt-left-nav" aria-label="桌面导航">
       <div className="mt-left-nav__section mt-left-nav__section--top">
-        <NavButton icon={<IconMonitor />} tooltip="uNAS" />
-        <NavButton icon={<IconGrid />} tooltip="所有应用" active={showLauncher} onClick={toggleLauncher} />
+        <NavButton icon={<IconMonitor />} label="显示桌面" onClick={() => windows.forEach((item) => minimizeWindow(item.id))} />
+        <NavButton icon={<IconGrid />} label="所有应用" active={showLauncher} onClick={toggleLauncher} />
       </div>
-
       <div className="mt-left-nav__sep" />
-
       <div className="mt-left-nav__section mt-left-nav__section--apps">
-        {uniqueRunningApps.map((windowItem) => (
-          <button
-            key={windowItem.id}
-            onClick={() => doClick(windowItem.appType)}
-            title={windowItem.title}
-            className={`mt-left-nav__app-btn ${windowItem.zIndex === topZIndex ? 'mt-left-nav__app-btn--active' : ''}`}
-          >
-            <img src={getAppIcon(windowItem.appType)} alt={windowItem.title} />
-          </button>
-        ))}
+        {windows.map((item) => <button key={item.id} type="button" title={item.title} aria-label={`切换到${item.title}`} onClick={() => activate(item.appType)}
+          className={`mt-left-nav__app-btn ${item.zIndex === topZ && !item.isMinimized ? 'mt-left-nav__app-btn--active' : ''}`}><img src={getAppIcon(item.appType)} alt="" /></button>)}
       </div>
-
-      <div className="mt-left-nav__sep mt-left-nav__sep--bottom" />
-
       <div className="mt-left-nav__section mt-left-nav__section--bottom">
-        <NavButton icon={<IconGlobe />} tooltip="网络" />
-        <div className="mt-left-nav__notify-wrap">
-          <NavButton
-            icon={<IconBell />}
-            tooltip="日志"
-            active={windows.some((item) => item.appType === 'logs' && !item.isMinimized)}
-            onClick={() => {
-              openNotifications()
-              void (async () => {
-                try {
-                  await markAllNotificationsAsRead()
-                  setUnreadNotificationCount(0)
-                } catch {
-                  await pullUnreadNotificationCount()
-                }
-                openWindow('logs')
-              })()
-            }}
-          />
-          {unreadNotificationCount > 0 && (
-            <div className="mt-left-nav__badge">
-              {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
-            </div>
-          )}
-        </div>
-        <NavButton icon={<IconUser />} tooltip="账号" />
-        <NavButton icon={<IconGear />} tooltip="设置" onClick={() => openWindow('settings')} />
-        <NavButton
-          ariaLabel="power-menu"
-          icon={<IconPower />}
-          tooltip={isShuttingDown ? '关闭中...' : '退出'}
-          active={showPowerMenu}
-          onClick={() => setShowPowerMenu((visible) => !visible)}
-          disabled={isShuttingDown}
-        />
+        <NavButton icon={<IconBell />} label="演示日志" onClick={() => openWindow('logs')} />
+        <NavButton icon={<IconGear />} label="设置" onClick={() => openWindow('settings')} />
+        <NavButton icon={<IconPower />} label="演示能力说明" active={showInfo} onClick={() => setShowInfo(!showInfo)} />
       </div>
-
-      {showPowerMenu && (
-        <div className="mt-left-nav__power-menu">
-          <button
-            type="button"
-            aria-label="shutdown-backend"
-            className="mt-left-nav__power-btn"
-            onClick={() => {
-              setShowPowerMenu(false)
-              void doShutdown()
-            }}
-          >
-            <IconPower />
-            <span>关闭</span>
-          </button>
-        </div>
-      )}
-    </div>
+      {showInfo && <div className="mt-left-nav__power-menu" role="status"><p>这是本地模拟演示，没有关闭电脑或后端服务的能力。</p><button type="button" className="mt-btn" onClick={() => setShowInfo(false)}>知道了</button></div>}
+    </nav>
   )
 }
 
-function NavButton({
-  icon,
-  tooltip,
-  active,
-  onClick,
-  disabled,
-  ariaLabel,
-}: {
-  icon: React.ReactNode
-  tooltip: string
-  active?: boolean
-  onClick?: () => void
-  disabled?: boolean
-  ariaLabel?: string
-}) {
-  return (
-    <button
-      onClick={onClick}
-      title={tooltip}
-      aria-label={ariaLabel}
-      disabled={disabled}
-      className={`sb-btn ${active ? 'sb-btn--active' : ''}`}
-      style={{ opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
-    >
-      {icon}
-    </button>
-  )
+function NavButton({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active?: boolean; onClick: () => void }) {
+  return <button type="button" title={label} aria-label={label} aria-pressed={active} onClick={onClick} className={`sb-btn ${active ? 'sb-btn--active' : ''}`}>{icon}</button>
 }

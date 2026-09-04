@@ -10,13 +10,7 @@
 
 ## 活跃技术债
 
-### TD-001：Phase 1 样式文件需要按组件拆分
-
-- **优先级 / 位置 / 来源 / 目标阶段：** P2 / `apps/extension/src/styles/browser.css`、`apps/extension/src/styles/downloader/base.css`、`apps/extension/src/styles/psd.css` / Phase 1 Demo 迁入 / G1 前。
-- **当前妥协与原因：** 为完整保留已迁入 Demo 的视觉和交互，暂时保留超过 450 行的样式文件，其中前三者超过 500 行。
-- **影响与最坏结果：** 组件职责不清会提高回归、主题调整和维护成本。
-- **偿还方案：** 按 App、组件和 token 边界拆分样式；不改变公开 class contract。
-- **验证方式：** 对应组件状态测试、Vite/WXT 构建，以及 Wide/Regular 的视觉回归。
+暂无活跃条目。TD-001 的拆分、验证范围与关闭记录见 [2026-09 归档](archive/tech-debt/2026-09.md)。
 
 不得用空的“以后优化”占位；产生真实妥协时按下列字段登记：
 

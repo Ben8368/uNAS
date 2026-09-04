@@ -7,13 +7,17 @@
     "node": ">=22"
   },
   "scripts": {
-    "build:demo": "cd apps/extension && ./node_modules/.bin/tsc --noEmit && ./node_modules/.bin/vite build",
-    "build:extension": "cd apps/extension && ./node_modules/.bin/wxt build --browser chrome --mv3",
-    "dev:demo": "cd apps/extension && ./node_modules/.bin/vite --host 0.0.0.0",
-    "dev:extension": "cd apps/extension && ./node_modules/.bin/wxt --browser chrome --mv3",
+    "build:demo": "pnpm --dir apps/extension run build",
+    "build:extension": "pnpm --dir apps/extension run build:extension",
+    "dev:demo": "pnpm --dir apps/extension run dev",
+    "dev:extension": "pnpm --dir apps/extension run dev:extension",
     "docs:governance:check": "node scripts/governance-docs-check.mjs",
-    "test:demo": "cd apps/extension && ./node_modules/.bin/vitest run",
-    "typecheck:demo": "cd apps/extension && ./node_modules/.bin/tsc --noEmit",
-    "verify": "node scripts/governance-docs-check.mjs && cd apps/extension && ./node_modules/.bin/vitest run && ./node_modules/.bin/tsc --noEmit && ./node_modules/.bin/vite build && ./node_modules/.bin/wxt build --browser chrome --mv3"
+    "test:demo": "pnpm --dir apps/extension run test",
+    "typecheck:demo": "pnpm --dir apps/extension run typecheck",
+    "check:demo": "node scripts/demo-boundary-check.mjs",
+    "check:package": "node scripts/demo-package-check.mjs",
+    "check:dependencies": "node scripts/dependency-inventory.mjs --check",
+    "test:e2e": "pnpm build:extension && pnpm --dir apps/extension run test:e2e",
+    "verify": "pnpm docs:governance:check && pnpm check:demo && pnpm check:dependencies && pnpm test:demo && pnpm typecheck:demo && pnpm build:demo && pnpm build:extension && pnpm check:package"
   }
 }

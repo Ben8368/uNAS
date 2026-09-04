@@ -1,6 +1,9 @@
 import type { OkResult } from './core.js'
 
 export type JobKind =
+  | 'image.convert'
+  | 'pdf.extract'
+  | 'archive.create'
   | 'download.video'
   | 'download.audio'
   | 'download.subtitle'
@@ -21,6 +24,7 @@ export type JobProgress = {
 }
 
 export type JobRecord = {
+  executionSource?: 'mock' | 'real'
   id: string
   kind: JobKind
   status: JobStatus
@@ -42,6 +46,7 @@ export type JobRecord = {
 export type AssetKind = 'video' | 'audio' | 'subtitle' | 'image' | 'psd' | 'folder' | 'document' | 'other'
 
 export type AssetRecord = {
+  executionSource?: 'mock' | 'real'
   id: string
   kind: AssetKind
   name: string

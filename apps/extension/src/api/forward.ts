@@ -57,3 +57,12 @@ export const getUnreadNotificationCount = forwardMethod('getUnreadNotificationCo
 export const fetchNotifications = forwardMethod('fetchNotifications')
 export const clearNotifications = forwardMethod('clearNotifications')
 export const markAllNotificationsAsRead = forwardMethod('markAllNotificationsAsRead')
+
+export const requestReadGrant = forwardMethod('requestReadGrant')
+export const requestWriteGrant = forwardMethod('requestWriteGrant')
+export const getDemoSnapshot = forwardMethod('getDemoSnapshot')
+export const resetDemoScenario = forwardMethod('resetDemoScenario')
+export const advanceDemoScenario = forwardMethod('advanceDemoScenario')
+export const subscribeDemo = forwardMethod('subscribeDemo')
+export const submitDemoTool = forwardMethod('submitDemoTool')
+export const interruptDemoTasks = forwardMethod('interruptDemoTasks')

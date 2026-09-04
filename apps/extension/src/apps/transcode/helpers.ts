@@ -1,13 +1,13 @@
 import type { TranscodeJobDraft, TranscodeSourceInfo } from 'unas-src/api/types'
 
 export const TRANSCODE_PRESETS: Array<{ value: NonNullable<TranscodeJobDraft['preset']>; label: string }> = [
-  { value: 'mp4-h265-aac', label: 'MP4 H.265 / AAC（推荐）' },
-  { value: 'mp4-h264-aac', label: 'MP4 H.264 / AAC' },
-  { value: 'mkv-h265-aac', label: 'MKV H.265 / AAC（保留字幕）' },
-  { value: 'remux', label: 'Remux（仅转封装）' },
-  { value: 'audio-aac', label: 'AAC 音频' },
-  { value: 'audio-mp3', label: 'MP3 音频' },
-  { value: 'copy', label: '流复制' },
+  { value: 'mp4-h265-aac', label: '模拟参数 · MP4 H.265 / AAC' },
+  { value: 'mp4-h264-aac', label: '模拟参数 · MP4 H.264 / AAC' },
+  { value: 'mkv-h265-aac', label: '模拟参数 · MKV H.265 / AAC（字幕选项）' },
+  { value: 'remux', label: '模拟参数 · Remux 转封装' },
+  { value: 'audio-aac', label: '模拟参数 · AAC 音频' },
+  { value: 'audio-mp3', label: '模拟参数 · MP3 音频' },
+  { value: 'copy', label: '模拟参数 · 流复制' },
 ]
 
 export const TRANSCODE_PRESET_EXTENSIONS: Record<NonNullable<TranscodeJobDraft['preset']>, string> = {

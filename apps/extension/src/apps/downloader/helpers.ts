@@ -108,7 +108,7 @@ export function getTaskVideoFilePath(task: DownloadTask): string {
   return typeof p === 'string' && p.trim().length > 0 ? p.trim() : ''
 }
 
-/** 本地字幕路径（用于工作台 AI 分析字幕） */
+/** 模拟记录中的字幕路径文本；不代表存在文件或字幕分析能力。 */
 export function getTaskSubtitleFilePath(task: DownloadTask): string {
   const info = extractTaskInfo(task)
   const p = info.subtitle_path
@@ -122,7 +122,7 @@ export function getTaskDownloadFilePath(task: DownloadTask): string {
   return getTaskVideoFilePath(task) || getTaskSubtitleFilePath(task)
 }
 
-/** 是否可向工作台跳转并做「AI 切片 / 导出片段」（需本地视频） */
+/** 遗留记录形状检查；不代表存在真实 AI 切片或导出能力。 */
 export function canWorkbenchAiSlice(task: DownloadTask): boolean {
   return task.status === 'completed' && Boolean(getTaskVideoFilePath(task))
 }
@@ -232,23 +232,24 @@ export function extractTaskDetailRows(task: DownloadTask): DetailRow[] {
   const taskSubmitEndpoint = getApiRuntimePresentation().taskSubmitEndpoint
 
   return [
+    { label: '执行来源', value: 'mock（无真实网络请求或输出）' },
     { label: '任务 ID', value: task.id },
     { label: '识别平台', value: platform.label },
     { label: '当前状态', value: task.status },
     { label: '当前阶段', value: stage },
     { label: '解析器', value: (info.extractor_key as string) || (info.extractor as string) || '-' },
     { label: '来源链接', value: (info.webpage_url as string) || (params.url as string) || task.name },
-    { label: '真实下载链接', value: directMediaUrl },
-    { label: '请求方式', value: requestMethod },
+    { label: '模拟媒体 URL', value: directMediaUrl },
+    { label: '模拟请求方式', value: requestMethod },
     { label: '传输协议', value: (info.protocol as string) || '-' },
     { label: '格式标识', value: (info.format_id as string) || '-' },
     { label: '文件类型', value: (info.ext as string) || '-' },
     { label: '视频标题', value: (info.title as string) || task.name },
     { label: '上传者', value: (info.uploader as string) || '-' },
-    { label: '输出目录', value: (params.output_dir as string) || '默认下载目录' },
-    { label: '下载文件', value: (info.local_path as string) || '-' },
-    { label: '字幕文件', value: (info.subtitle_path as string) || '-' },
-    { label: '质量策略', value: (params.quality as string) || 'h264' },
+    { label: '模拟结果目录', value: (params.output_dir as string) || '/Workspace/Downloads（模拟）' },
+    { label: '模拟文件记录', value: (info.local_path as string) || '无真实文件' },
+    { label: '模拟字幕记录', value: (info.subtitle_path as string) || '无真实字幕' },
+    { label: '模拟质量参数', value: (params.quality as string) || (params.compatible_format ? 'H.264 / MP4（模拟）' : '默认模拟参数') },
     { label: '提交接口', value: taskSubmitEndpoint },
     { label: '创建时间', value: formatAbsoluteTime(task.created_at) },
     { label: '开始时间', value: formatAbsoluteTime(task.started_at) },
@@ -269,6 +270,7 @@ export function extractTaskRequestSnapshot(task: DownloadTask): Record<string, u
       : {}
 
   return {
+    executionSource: 'mock',
     platform: platform.label,
     extractor: (info.extractor_key as string) || (info.extractor as string) || '-',
     submit_endpoint: taskSubmitEndpoint,
@@ -278,6 +280,6 @@ export function extractTaskRequestSnapshot(task: DownloadTask): Record<string, u
     protocol: (info.protocol as string) || '-',
     format_id: (info.format_id as string) || '-',
     file_ext: (info.ext as string) || '-',
-    headers: Object.keys(headers).length > 0 ? headers : '当前任务结果尚未持久化额外请求头',
+    headers: Object.keys(headers).length > 0 ? headers : '未发起网络请求；无真实请求头',
   }
 }

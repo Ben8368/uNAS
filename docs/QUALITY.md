@@ -121,3 +121,5 @@ docs governance → lint → typecheck → component/contract → build → sele
 ```
 
 视觉、真机、性能和商店材料可分命令，但对应 Gate 必须显式调用；未运行项写明原因，不能由构建通过代替。
+
+现有 Demo 的跨平台入口是 `pnpm verify`；MV3 独立浏览器回归是 `pnpm test:e2e`（先构建扩展）。首次运行需要安装 Playwright Chromium。E2E 的浏览器版本、环境、截图和失败 trace 必须与结果一起记录；视口模拟不等于实际浏览器 200% 缩放或目标设备性能。

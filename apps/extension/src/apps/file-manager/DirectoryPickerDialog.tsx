@@ -32,6 +32,8 @@ export function DirectoryPickerDialog({
     setError,
     navigate,
     resetHistory,
+    invalidate,
+    checkpoint,
     goBack,
     goForward,
     canGoBack,
@@ -58,11 +60,13 @@ export function DirectoryPickerDialog({
   useEffect(() => {
     if (!open) return
     let alive = true
+    resetHistory()
+    const isCurrent = checkpoint()
 
     async function init() {
       try {
         const [diskData, workspace] = await Promise.all([fetchFilebrowserDisks(), getWorkspace()])
-        if (!alive) return
+        if (!alive || !isCurrent()) return
 
         const nextDisks = diskData?.disks || []
         const workspacePath = workspace?.workspace?.project_root || workspace?.project_root || ''
@@ -72,7 +76,6 @@ export function DirectoryPickerDialog({
         setDisks(nextDisks)
         setActiveDiskPath(nextDisks.find((disk: DiskInfo) => isPathOnDisk(browsePath, disk.path))?.path || '')
         setSearchText('')
-        resetHistory()
         setSelectedPath(canPickDirectory ? initialPath : initialSelection)
 
         if (browsePath) {
@@ -80,7 +83,7 @@ export function DirectoryPickerDialog({
           if (alive && data?.path && canPickDirectory) setSelectedPath(data.path)
         }
       } catch (err: unknown) {
-        if (alive) {
+        if (alive && isCurrent()) {
           setSelectedPath('')
           setError(getErrorMessage(err) || '目录选择器初始化失败')
         }
@@ -90,8 +93,9 @@ export function DirectoryPickerDialog({
     void init()
     return () => {
       alive = false
+      invalidate()
     }
-  }, [canPickDirectory, canPickFile, navigate, open, resetHistory, value])
+  }, [checkpoint, invalidate, canPickDirectory, canPickFile, navigate, open, resetHistory, value])
 
   useEffect(() => {
     if (!addressFocusedRef.current) setAddressDraft(currentPath)
@@ -113,8 +117,6 @@ export function DirectoryPickerDialog({
     if (data?.path) {
       if (canPickDirectory) setSelectedPath(data.path)
       setAddressDraft(data.path)
-    } else {
-      setAddressDraft(currentPath)
     }
   }, [addressDraft, canPickDirectory, currentPath, navigate])
 
@@ -131,7 +133,9 @@ export function DirectoryPickerDialog({
   }, [files, searchText])
 
   const currentParent = parentPath(currentPath)
-  const confirmedPath = selectedPath || (canPickDirectory ? currentPath : '')
+  const selectedEntry = [...directories, ...files].find((entry) => entry.path === selectedPath)
+  const validSelection = selectedEntry && (selectedEntry.type === 'file' ? canPickFile : canPickDirectory)
+  const confirmedPath = validSelection ? selectedPath : canPickDirectory ? currentPath : ''
   const searchPlaceholder = mode === 'directory' ? '搜索文件夹' : '搜索文件或文件夹'
 
   const handleNewFolder = async () => {
@@ -150,12 +154,13 @@ export function DirectoryPickerDialog({
     }
     const newPath = joinPath(currentPath, trimmed)
     setMkdirBusy(true)
+    const stillHere = checkpoint()
     setError('')
     try {
       await createFilebrowserDirectory(newPath)
-      await navigate(currentPath, false)
+      if (stillHere()) await navigate(currentPath, false)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err))
+      if (stillHere()) setError(err instanceof Error ? err.message : String(err))
     } finally {
       setMkdirBusy(false)
     }
@@ -167,7 +172,11 @@ export function DirectoryPickerDialog({
   }, [currentPath, disks])
 
   useEffect(() => {
-    if (!canPickDirectory || !currentPath) return
+    if (!currentPath) return
+    if (!canPickDirectory) {
+      setSelectedPath((prev) => cwdCoversSelection(currentPath, prev) ? prev : '')
+      return
+    }
     setSelectedPath((prev) => {
       if (!prev) return currentPath
       return cwdCoversSelection(currentPath, prev) ? prev : currentPath
@@ -178,14 +187,14 @@ export function DirectoryPickerDialog({
 
   const dialog = (
     <div className="fm-picker fm-picker--app-root" onClick={onClose}>
-      <div className="fm-picker__panel fm-picker__panel--compact" onClick={(event) => event.stopPropagation()}>
+      <div role="dialog" aria-modal="true" aria-label={title} onKeyDown={(event) => { if (event.key === 'Escape') { event.stopPropagation(); onClose() } }} className="fm-picker__panel fm-picker__panel--compact" onClick={(event) => event.stopPropagation()}>
         <div className="fm-picker__header">
           <div>
             <strong>{title}</strong>
             <div className="fm-picker__hint">
               {mode === 'directory'
-                ? '顶部地址栏可直接粘贴路径，按 Enter 或失焦跳转；双击进入文件夹，单击文件夹后确认。'
-                : '顶部地址栏可直接粘贴路径，按 Enter 或失焦跳转；双击进入文件夹，单击文件后确认。'}
+                ? '当前仅选择固定模拟目录。顶部地址栏可直接粘贴路径，按 Enter 或失焦跳转；双击进入文件夹，单击文件夹后确认。'
+                : '当前仅选择固定模拟条目。顶部地址栏可直接粘贴路径，按 Enter 或失焦跳转；双击进入文件夹，单击文件后确认。'}
             </div>
           </div>
           <button type="button" className="fm-icon-btn" title="关闭" onClick={onClose}>
@@ -264,7 +273,7 @@ export function DirectoryPickerDialog({
             <button
               type="button"
               className="fm-action-btn fm-action-btn--primary"
-              disabled={!confirmedPath}
+              disabled={!confirmedPath || loading || mkdirBusy || !!error}
               onClick={() => {
                 if (!confirmedPath) return
                 onPick(confirmedPath)

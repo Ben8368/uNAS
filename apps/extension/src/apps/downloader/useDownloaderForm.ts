@@ -6,7 +6,7 @@ export function useDownloaderForm() {
   const [taskUrl, setTaskUrl] = useState('')
   const [taskOutputDir, setTaskOutputDir] = useState('')
   const [taskCookieBrowser, setTaskCookieBrowser] = useState<CookieBrowser>('none')
-  // 下载选项（字幕策略由下载器统一自动处理）
+  // 仅记录模拟格式参数；不读取字幕或执行转码。
   const [taskCompatibleFormat, setTaskCompatibleFormat] = useState(false)
   const [addingTask, setAddingTask] = useState(false)
   const [submitError, setSubmitError] = useState('')

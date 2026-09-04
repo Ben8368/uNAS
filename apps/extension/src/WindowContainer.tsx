@@ -1,5 +1,5 @@
 ﻿import { getRegisteredApp } from 'unas-src/appRegistry'
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 
 import { AppLoadBoundary } from 'unas-src/components/AppLoadBoundary'
 import { DesktopWindow } from 'unas-src/Window'
@@ -7,7 +7,23 @@ import { useWindowStore } from 'unas-src/windowStore'
 
 export function WindowContainer() {
   const { windows, closeWindow, minimizeWindow, maximizeWindow, focusWindow, dragWindow, resizeWindow } = useWindowStore()
-  const maxZ = Math.max(0, ...windows.map((w) => w.zIndex))
+  const maxZ = Math.max(0, ...windows.filter((w) => !w.isMinimized).map((w) => w.zIndex))
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if (!event.altKey) return
+      const visible = windows.filter((item) => !item.isMinimized).sort((a, b) => a.zIndex - b.zIndex)
+      if (event.key === 'F6' && visible.length) {
+        event.preventDefault()
+        focusWindow(visible[0].id)
+      }
+      if (event.shiftKey && event.key.toLowerCase() === 'w' && visible.length) {
+        event.preventDefault()
+        closeWindow(visible[visible.length - 1].id)
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [windows, closeWindow, focusWindow])
 
   return (
     <div className="mt-windows">

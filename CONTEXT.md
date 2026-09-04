@@ -1,8 +1,8 @@
 # 当前状态
 
-> **最后确认：** 2026-09-03
+> **最后确认：** 2026-09-04
 > **阶段：** Phase 1 / Frontend Demo
-> **产品代码：** 已迁入 React/Vite mock Demo，并具备 WXT 的 New Tab、Workspace 与 Service Worker entrypoint；尚未接入真实文件、引擎或后端。
+> **产品代码：** React/Vite/WXT mock Demo；确定性 scenario、Workspace owner、跨标签摘要和 HTTPS Link 已实现，尚未接入真实文件、引擎或后端。
 
 ## 当前决策
 
@@ -15,19 +15,18 @@
 
 ## 近期优先级
 
-1. 按 [前端指南](docs/FRONTEND_GUIDE.md) 和 [开发蓝图](docs/DEVELOPMENT_BLUEPRINT.md) 补齐 Phase 1 mock scenario、响应式、无障碍和扩展演示证据。
-2. 验证 WXT 解包扩展的 New Tab、Workspace 复用、刷新与多标签摘要路径。
+1. 依据 [风险台账](docs/RISK_REGISTER.md) 确认 G1 的 Chrome/OS/视口基线和视觉验收负责人。
+2. 按 [验收记录](docs/archive/reviews/2026-09-04-demo-remediation.md) 补齐 Chrome 稳定版、真实缩放、辅助技术与性能人工证据。
 3. 在 Demo 验收后执行 Extension/File/Image 等 Phase 2 探针，再决定真实能力接入范围。
 
 ## 当前阻断与风险
 
 - Chrome 最低版本策略、验证 OS、参考视口、素材许可证和风险 owner 仍待决定；RISK-001 因维护者接受 Phase 1 演示迁移而不再阻断当前开发，但仍阻断 G1。
-- 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；WXT 构建物只证明最小 MV3 壳存在，尚未完成 Chrome 解包与生命周期验收。
+- 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；已开展独立 Chromium 解包自动化，不代表 G1 批准或真实引擎/生命周期探针完成。
 
 ## 最近验证
 
-- 2026-09-03：扩展原生、前端先行文档重构后，`node scripts/governance-docs-check.mjs` 通过；不代表任何前端或文件能力存在。
-- 2026-09-03：维护者确认以完整迁入的前端工程作为 Phase 1 mock Demo；验证结果见本轮开发记录。
+- 2026-09-04：Windows `pnpm verify` 通过（81 项单测、类型检查、Vite/WXT 构建、隔离/依赖/包体检查）；E2E 与截图的最终环境、结果和边界见 [验收记录](docs/archive/reviews/2026-09-04-demo-remediation.md)。
 
 ## 按需入口
 

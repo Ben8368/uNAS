@@ -29,6 +29,7 @@ export type TextLayerRecord = {
 }
 
 export type WorkOrder = {
+  executionSource?: 'mock' | 'real'
   id: string
   psdPath: string
   psdFileName: string

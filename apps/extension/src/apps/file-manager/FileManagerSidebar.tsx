@@ -38,7 +38,7 @@ export function FileManagerSidebar({
         {assets.length > 0 && (
           <div className="fm-asset-summary">
             <strong>资产索引</strong>
-            <span>{assets.length} 项产出</span>
+            <span>{assets.length} 项模拟资产</span>
           </div>
         )}
         {activeSection === 'local' && disks.length > 0 && (

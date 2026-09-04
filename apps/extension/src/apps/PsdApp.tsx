@@ -1,16 +1,18 @@
 import { useCallback, useState, type FormEvent } from 'react'
 
-import { applyWorkOrder, getJob, getWorkOrder, scanPsd, updateWorkOrder } from 'unas-src/api'
+import { applyWorkOrder, getWorkOrder, scanPsd, updateWorkOrder } from 'unas-src/api'
 import { useExternalReadGrant, useExternalWriteGrant } from 'unas-src/hooks/useExternalPathGrant'
 import { ResizableAppSidebar } from 'unas-src/components/ResizableAppSidebar'
-import type { JobRecord, WorkOrder, TextLayerRecord, TranslationLanguage } from '#contracts'
+import type { WorkOrder, TextLayerRecord, TranslationLanguage } from '#contracts'
 import { PsdPanels, type PsdActiveTab } from './psd/PsdPanels'
 
-const TERMINAL_STATUSES = new Set<JobRecord['status']>(['succeeded', 'failed', 'canceled'])
+import { abortableRequest } from 'unas-src/application/pollJob'
+import { usePsdTask } from './psd/usePsdTask'
 
 const DEFAULT_PSD_PATH = '/Workspace/PSD/document.psd'
 
 export function PsdApp() {
+  const task = usePsdTask()
   const [activeTab, setActiveTab] = useState<PsdActiveTab>('scan')
 
   // 扫描状态
@@ -35,7 +37,8 @@ export function PsdApp() {
 
   const scan = useCallback(async (event: FormEvent) => {
     event.preventDefault()
-    if (scanning) return
+    if (scanning || applying) return
+    const signal = task.begin()
     setScanning(true)
     setScanError('')
     setWorkOrder(null)
@@ -43,27 +46,28 @@ export function PsdApp() {
     setSaveMessage(null)
     setApplyResult(null)
     try {
-      const scanResult = await scanPsd(inputGrant.displayPath.trim(), inputGrant.grantId ?? undefined)
+      const scanResult = await abortableRequest(() => scanPsd(inputGrant.displayPath.trim(), inputGrant.grantId ?? undefined), signal)
       if (!scanResult.ok) {
         throw new Error(scanResult.message || 'PSD 扫描失败')
       }
-      // 扫描已转为异步 Job；轮询等待 Photoshop 完成后查询工单。
-      const completedJob = await pollUntilTerminal(scanResult.job.id)
+      const completedJob = await task.observe(scanResult.job.id, signal)
       if (completedJob.status !== 'succeeded') {
-        throw new Error(completedJob.errorMessage || `PSD 扫描未完成（状态：${completedJob.status}）。`)
+        throw new Error(completedJob.status === 'canceled' ? '模拟扫描任务已取消。' : completedJob.errorMessage || `模拟扫描未完成（状态：${completedJob.status}）。`)
       }
-      const woResult = await getWorkOrder(scanResult.workOrderId)
+      const woResult = await abortableRequest(() => getWorkOrder(scanResult.workOrderId), signal)
       if (!woResult.ok || !woResult.workOrder) {
         throw new Error(woResult.message || '获取工单失败')
       }
+      if (signal.aborted) return
       setWorkOrder(woResult.workOrder)
       setActiveTab('workorder')
     } catch (err: unknown) {
+      if (signal.aborted) return
       setScanError(err instanceof Error ? err.message : '扫描失败')
     } finally {
-      setScanning(false)
+      if (!signal.aborted) setScanning(false)
     }
-  }, [scanning, inputGrant.displayPath, inputGrant.grantId])
+  }, [scanning, applying, inputGrant.displayPath, inputGrant.grantId, task.begin, task.observe])
 
   const updateRecord = useCallback((index: number, field: keyof TextLayerRecord, value: unknown) => {
     if (!workOrder) return
@@ -78,6 +82,7 @@ export function PsdApp() {
     setSaveMessage(null)
     try {
       const result = await updateWorkOrder(workOrder)
+      if (!task.mounted.current) return
       if (result.ok) {
         setWorkOrderDirty(false)
         setSaveMessage({ success: true, text: '工单已保存' })
@@ -85,45 +90,48 @@ export function PsdApp() {
         setSaveMessage({ success: false, text: result.message || '保存失败' })
       }
     } catch (err: unknown) {
+      if (!task.mounted.current) return
       setSaveMessage({ success: false, text: err instanceof Error ? err.message : '保存失败' })
     } finally {
-      setSaving(false)
+      if (task.mounted.current) setSaving(false)
     }
   }, [workOrder, saving])
 
   const apply = useCallback(async (event: FormEvent) => {
     event.preventDefault()
-    if (!workOrder || applying) return
+    if (!workOrder || applying || scanning) return
     if (workOrderDirty) {
       setApplyResult({ success: false, message: '工单有未保存的修改，请先在「工单编辑」保存。' })
       return
     }
+    const signal = task.begin()
     setApplying(true)
     setApplyResult(null)
     try {
-      const result = await applyWorkOrder(workOrder.id, undefined, outputGrant.grantId ?? undefined)
+      const result = await abortableRequest(() => applyWorkOrder(workOrder.id, undefined, outputGrant.grantId ?? undefined), signal)
       if (!result.ok) {
         throw new Error(result.message || '应用失败')
       }
-      // 应用已转为异步 Job；轮询等待 Photoshop 完成后展示结果。
-      const completedJob = await pollUntilTerminal(result.job.id)
+      const completedJob = await task.observe(result.job.id, signal)
+      if (signal.aborted) return
       if (completedJob.status === 'succeeded') {
         setApplyResult({
           success: true,
-          message: '工单应用完成。',
+          message: '模拟工单应用完成；未修改或生成真实 PSD 文件。',
         })
       } else {
         setApplyResult({
           success: false,
-          message: completedJob.errorMessage || `工单应用未完成（状态：${completedJob.status}）。`,
+          message: completedJob.status === 'canceled' ? '模拟应用任务已取消。' : completedJob.errorMessage || `工单应用未完成（状态：${completedJob.status}）。`,
         })
       }
     } catch (err: unknown) {
+      if (signal.aborted) return
       setApplyResult({ success: false, message: err instanceof Error ? err.message : '应用失败' })
     } finally {
-      setApplying(false)
+      if (!signal.aborted) setApplying(false)
     }
-  }, [workOrder, applying, workOrderDirty, outputGrant.grantId])
+  }, [workOrder, applying, scanning, workOrderDirty, outputGrant.grantId, task.begin, task.observe])
 
   const enabledCount = workOrder?.records.filter((r) => r.enabled).length ?? 0
   const changedCount = workOrder?.records.filter((r) => r.enabled && (r.newText !== undefined || r.newFontFamily !== undefined)).length ?? 0
@@ -173,10 +181,15 @@ export function PsdApp() {
       </ResizableAppSidebar>
 
       <main className="psd-panel">
+        <p role="status">executionSource: mock · 所有图层、授权与结果均为固定演示数据，不读取或修改真实文件。</p>
+        <p>使用顶部「推进模拟步骤」推进模拟任务。关闭窗口只会停止观察；任务终态以任务中心为准。</p>
+        {task.jobId && <button type="button" className="mt-btn" disabled={task.cancelling} onClick={() => void task.cancel()}>{task.cancelling ? '请求取消中…' : '取消当前任务'}</button>}
+        {task.cancelMessage && <p role="status">{task.cancelMessage}</p>}
+        {inputGrant.message && <p role="status">{inputGrant.message}</p>}
         {/* 顶部文件栏 */}
         <form className="psd-form" onSubmit={scan}>
           <label className="mt-field">
-            <span>PSD / PSB 路径</span>
+            <span>模拟 PSD / PSB 路径</span>
             <div style={{ display: 'flex', gap: '4px' }}>
               <input
                 value={inputGrant.displayPath}
@@ -188,11 +201,11 @@ export function PsdApp() {
               {inputGrant.grantId && (
                 <button type="button" className="mt-btn" onClick={inputGrant.clearGrant} title="清除授权">✕</button>
               )}
-              <button type="button" className="mt-btn" onClick={inputGrant.importExternal} title="从外部导入（需要桌面版）">从外部导入</button>
+              <button type="button" className="mt-btn" onClick={inputGrant.importExternal} title="使用固定夹具模拟文件授权">模拟选择文件</button>
             </div>
           </label>
-          <button className="mt-btn mt-btn--primary" type="submit" disabled={!inputGrant.displayPath.trim() || scanning}>
-            {scanning ? '扫描中...' : '扫描文件'}
+          <button className="mt-btn mt-btn--primary" type="submit" disabled={!inputGrant.displayPath.trim() || scanning || applying}>
+            {scanning ? '扫描中...' : '模拟扫描'}
           </button>
         </form>
 
@@ -220,15 +233,4 @@ export function PsdApp() {
       </main>
     </div>
   )
-}
-
-async function pollUntilTerminal(jobId: string, timeoutMs = 300_000): Promise<JobRecord> {
-  const deadline = Date.now() + timeoutMs
-  while (Date.now() < deadline) {
-    const result = await getJob(jobId)
-    if (!result.job) throw new Error('任务记录不存在或已被清理。')
-    if (TERMINAL_STATUSES.has(result.job.status)) return result.job
-    await new Promise((resolve) => setTimeout(resolve, 500))
-  }
-  throw new Error('PSD 任务等待超时；任务可能仍在后台执行，可在任务中心查看或取消。')
 }

@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "scope": "Engineering packaging caps for the Phase 1 mock; not runtime performance claims",
+  "totalExtensionBytes": 2097152,
+  "initialNewTabJavaScriptBytes": 358400,
+  "singleAssetBytes": 16384,
+  "allPublicAssetsBytes": 65536,
+  "svgWidth": 64,
+  "svgHeight": 64
+}

@@ -50,6 +50,15 @@ for (const budget of budgets) {
 }
 
 const context = contents.get('CONTEXT.md') ?? ''
+// 当前阶段只由 Context 维护；历史阶段、Roadmap Gate 和规则不受此检查影响。
+const phase = context.match(/\*\*阶段：\*\*\s*Phase\s+(\d+)/)?.[1]
+for (const file of ['README.md', 'SECURITY.md']) {
+  const text = await readFile(resolve(root, file), 'utf8')
+  const claims = [...text.matchAll(/(?:当前处于|仍处于|项目处于)\s*\*{0,2}Phase\s+(\d+)/g)]
+  for (const claim of claims) {
+    if (claim[1] !== phase) errors.push(`${file}: 当前阶段与 CONTEXT.md 不一致，请改为引用唯一事实源`)
+  }
+}
 const prioritySection = context.match(/## 近期优先级\s+([\s\S]*?)(?=\n## |$)/)?.[1] ?? ''
 const priorities = [...prioritySection.matchAll(/^\d+\. /gm)].length
 if (priorities > 3) errors.push(`CONTEXT.md: 近期优先级不得超过 3 项，当前为 ${priorities} 项`)

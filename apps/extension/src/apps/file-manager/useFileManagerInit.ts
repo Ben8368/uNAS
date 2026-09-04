@@ -8,6 +8,7 @@ import { getErrorMessage } from 'unas-src/utils'
 const DISK_REFRESH_MS = 30_000
 
 type UseFileManagerInitOpts = {
+  checkpoint: () => () => boolean
   navigate: (path: string) => Promise<unknown>
   setError: (message: string) => void
   setDisks: (disks: DiskInfo[]) => void
@@ -15,27 +16,9 @@ type UseFileManagerInitOpts = {
   setLastLocalPath: (path: string) => void
 }
 
-async function loadDisks(
-  navigate: (path: string) => Promise<unknown>,
-  setDisks: (disks: DiskInfo[]) => void,
-  setActiveDiskPath: (path: string) => void,
-  setLastLocalPath: (path: string) => void,
-  initialPathValue: string,
-) {
-  const [diskData, workspace] = await Promise.all([fetchFilebrowserDisks(), getWorkspace()])
-  const nextDisks = diskData?.disks || []
-  const workspacePath = workspace?.workspace?.project_root || workspace?.project_root || ''
-  const initialPath = resolveInitialPath(initialPathValue, workspacePath, nextDisks)
-  setDisks(nextDisks)
-  if (initialPath) {
-    setActiveDiskPath(nextDisks.find((disk) => isPathOnDisk(initialPath, disk.path))?.path || '')
-    const data = await navigate(initialPath) as { path?: string } | null
-    if (data?.path) setLastLocalPath(data.path)
-  }
-}
-
 export function useFileManagerInit({
   navigate,
+  checkpoint,
   setError,
   setDisks,
   setActiveDiskPath,
@@ -43,13 +26,23 @@ export function useFileManagerInit({
 }: UseFileManagerInitOpts) {
   useEffect(() => {
     let alive = true
+    const isCurrent = checkpoint()
 
     async function init() {
       try {
-        await loadDisks(navigate, setDisks, setActiveDiskPath, setLastLocalPath, '')
-        if (!alive) return
+        const [diskData, workspace] = await Promise.all([fetchFilebrowserDisks(), getWorkspace()])
+        if (!alive || !isCurrent()) return
+        const nextDisks = diskData?.disks || []
+        const workspacePath = workspace?.workspace?.project_root || workspace?.project_root || ''
+        const initialPath = resolveInitialPath('', workspacePath, nextDisks)
+        setDisks(nextDisks)
+        if (initialPath) {
+          setActiveDiskPath(nextDisks.find((disk) => isPathOnDisk(initialPath, disk.path))?.path || '')
+          const data = await navigate(initialPath) as { path?: string } | null
+          if (alive && data?.path) setLastLocalPath(data.path)
+        }
       } catch (err: unknown) {
-        if (alive) setError(getErrorMessage(err) || '文件管理初始化失败')
+        if (alive && isCurrent()) setError(getErrorMessage(err) || '文件管理初始化失败')
       }
     }
 
@@ -57,7 +50,7 @@ export function useFileManagerInit({
     return () => {
       alive = false
     }
-  }, [navigate, setActiveDiskPath, setDisks, setError, setLastLocalPath])
+  }, [navigate, checkpoint, setActiveDiskPath, setDisks, setError, setLastLocalPath])
 
   useEffect(() => {
     let alive = true

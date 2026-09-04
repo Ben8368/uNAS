@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "provenance": "Original geometric SVG and CSS authored in this repository on 2026-09-04; no third-party source images.",
+  "generator": "scripts/generate-demo-assets.mjs",
+  "license": "Repository license not yet selected by maintainer; local development only. No third-party license is claimed.",
+  "publicDistributionApproved": false,
+  "assets": [
+    {
+      "path": "apps/extension/public/static/app/icons/default/browser.svg",
+      "bytes": 349,
+      "sha256": "2399831666af361a873b4d5fe7760121ca4d038850e885c419b9fc634a77a14a",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "apps/extension/public/static/app/icons/default/download.svg",
+      "bytes": 307,
+      "sha256": "69a6136edc97b1ec3946c33d82bf7ed0a21912da486daccd1cd006cda96343bc",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "apps/extension/public/static/app/icons/default/files.svg",
+      "bytes": 310,
+      "sha256": "749fece49fef26fd36080de81398aa2927154bca9440822677ba086b4268c249",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "apps/extension/public/static/app/icons/default/media.svg",
+      "bytes": 334,
+      "sha256": "0a2d0f513dd9845eb2e5dcdfd21f8f9522b8221ddf3e34db868a5beb1de5de1e",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "apps/extension/public/static/app/icons/default/layers.svg",
+      "bytes": 326,
+      "sha256": "af89c50dd82f6aed451d75d6f6c1aed60ec1756bdd080b670b723bc36e25802e",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "apps/extension/public/static/app/icons/default/settings.svg",
+      "bytes": 386,
+      "sha256": "a44fd247fba626cda4875bd118cf1d99dbb1ab4388458d25111e7442d175382f",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "apps/extension/public/static/app/icons/default/logs.svg",
+      "bytes": 309,
+      "sha256": "55dc973f8b594f6679b71394d05c781b44470432932a4f5459740baff57627e9",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "apps/extension/public/static/app/icons/default/image.svg",
+      "bytes": 374,
+      "sha256": "f7225a2a6d775221a8376819b6856e6d046cf4c5032543ed0545d8544336cc6e",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "apps/extension/public/static/app/icons/default/document.svg",
+      "bytes": 318,
+      "sha256": "7a3eb52704950c72dee6775a55556dbd620d74ae29819cc50043b0638097ce31",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "apps/extension/public/static/app/icons/default/archive.svg",
+      "bytes": 348,
+      "sha256": "05386f37e5b64f9e2a14efac6b019256924997d571fa4c4b58c4175614c1b977",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "apps/extension/public/static/app/icons/default/tasks.svg",
+      "bytes": 322,
+      "sha256": "7022c57535109a10748b59f1bde748cefa2b44a3d6ebe2ac8082d15c56cf7c97",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "apps/extension/public/favicon.svg",
+      "bytes": 251,
+      "sha256": "3b5d87e653c6c5a6e55a45ee4e43c34404328cbaf71eef389938290b36588472",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "apps/extension/src/appearance.ts",
+      "bytes": 1386,
+      "sha256": "5c8e283ca1669302e3f21dbdca141f2240ed4e680f2abd430da92e09400b01c0",
+      "kind": "procedural-css-no-bitmap"
+    }
+  ]
+}

@@ -29,6 +29,7 @@ type PsdPanelsProps = {
   applyResult: { success: boolean; message: string; outputPath?: string } | null
   onApply: FormEventHandler<HTMLFormElement>
   outputGrant: {
+    message: string
     grantId: string | null
     clearGrant: () => void
     selectOutputPath: (defaultPath?: string) => Promise<void>
@@ -53,7 +54,7 @@ export function PsdPanels(props: PsdPanelsProps) {
   if (activeTab === 'scan') {
     return (
       <section className="psd-result">
-        {!workOrder && !scanError && <div className="psd-empty">选择 PSD/PSB 文件后点击「扫描文件」，工单将自动创建。</div>}
+        {!workOrder && !scanError && <div className="psd-empty">点击「模拟扫描」查看固定 PSD 图层夹具，不读取真实 PSD/PSB 文件。</div>}
         {workOrder && (
           <>
             <div className="psd-summary">
@@ -127,17 +128,18 @@ export function PsdPanels(props: PsdPanelsProps) {
             <div style={{ display: 'flex', gap: '4px', flex: 1 }}>
               {outputGrant.grantId ? (
                 <>
-                  <span className="psd-grant-label">已授权外部路径</span>
+                  <span className="psd-grant-label">已选择模拟输出位置</span>
                   <button type="button" className="mt-btn" onClick={outputGrant.clearGrant} title="取消">✕</button>
                 </>
-              ) : <span className="psd-grant-label psd-grant-label--none">工作区 Exports 目录（自动生成文件名）</span>}
-              <button type="button" className="mt-btn" onClick={() => void outputGrant.selectOutputPath()}>选择外部路径</button>
+              ) : <span className="psd-grant-label psd-grant-label--none">模拟 Exports 条目（不生成文件）</span>}
+              <button type="button" className="mt-btn" onClick={() => void outputGrant.selectOutputPath()}>模拟选择输出位置</button>
             </div>
           </div>
           <button className="mt-btn mt-btn--primary" type="submit" disabled={applying || workOrderDirty || changedCount === 0}>
-            {applying ? '应用中（自适应算法运行中）...' : `应用工单（${changedCount} 个图层）`}
+            {applying ? '模拟应用中...' : `模拟应用工单（${changedCount} 个图层）`}
           </button>
         </form>
+        {outputGrant.message && <p role="status">{outputGrant.message}</p>}
         {applyResult && (
           <div className={`psd-message psd-message--${applyResult.success ? 'ok' : 'error'}`}>
             <strong>{applyResult.message}</strong>

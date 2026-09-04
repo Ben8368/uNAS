@@ -40,6 +40,9 @@ export type {
   UnreadNotificationResponse,
 }
 
+import type { DemoScenarioId, DemoSnapshot, MockFileMetadata, PathGrantCapabilityResult } from './demo/contracts'
+export type { DemoScenarioId, DemoSnapshot, MockFileMetadata, PathGrantCapabilityResult } from './demo/contracts'
+
 export type JobListResponse = OkResult & {
   jobs: JobRecord[]
 }
@@ -60,6 +63,14 @@ export type TranscodeJobDraft = {
 
 /** 前端 API 契约：mock 与真实服务实现均需满足此接口 */
 export interface UnasDemoApi {
+  submitDemoTool(kind: 'image' | 'pdf' | 'archive', fixtureId?: string): Promise<JobRecord>
+  interruptDemoTasks(): DemoSnapshot
+  requestReadGrant(): Promise<PathGrantCapabilityResult>
+  requestWriteGrant(defaultPath?: string): Promise<PathGrantCapabilityResult>
+  getDemoSnapshot(): DemoSnapshot
+  resetDemoScenario(id: DemoScenarioId): DemoSnapshot
+  advanceDemoScenario(): DemoSnapshot
+  subscribeDemo(listener: () => void): () => void
   submitFetch(draft: FetchTaskDraft): Promise<SubmitFetchResponse>
   analyzeDownloadStrategy(draft: { url: string; requested_route?: 'auto' | 'ytdlp' | 'browser' }): Promise<DownloadStrategyResponse>
   getActiveTasks(signal?: AbortSignal): Promise<TaskListResponse>
@@ -70,7 +81,7 @@ export interface UnasDemoApi {
   getFetchTaskFileUrl(taskId: string, path: string): string
 
   listJobs(signal?: AbortSignal): Promise<JobListResponse>
-  getJob(jobId: string): Promise<{ ok: boolean; job?: JobRecord }>
+  getJob(jobId: string, signal?: AbortSignal): Promise<{ ok: boolean; job?: JobRecord }>
   fetchAssets(): Promise<AssetListResponse>
   submitTranscodeJob(draft: TranscodeJobDraft): Promise<JobRecord>
   cancelJob(jobId: string): Promise<OkResult>
@@ -84,7 +95,7 @@ export interface UnasDemoApi {
 
   getWorkspace(): Promise<WorkspaceResponse>
   fetchFilebrowserDisks(): Promise<DiskListResponse>
-  listFilebrowserDirectory(payload: { directory: string }): Promise<DirectoryListResponse>
+  listFilebrowserDirectory(payload: { directory: string }, signal?: AbortSignal): Promise<DirectoryListResponse>
   createFilebrowserDirectory(path: string): Promise<CreateDirectoryResponse>
   deleteFilebrowserPath(path: string, toTrash?: boolean): Promise<OkResult>
   fetchFilebrowserTrash(): Promise<TrashListResponse>
@@ -92,7 +103,7 @@ export interface UnasDemoApi {
   purgeFilebrowserTrash(id: string): Promise<OkResult>
   emptyFilebrowserTrash(): Promise<OkResult>
   setWorkspace(workspace: string): Promise<SetWorkspaceResponse>
-  uploadFilebrowserFile(directory: string, file: File): Promise<OkResult & { path?: string; name?: string }>
+  uploadFilebrowserFile(directory: string, file: MockFileMetadata): Promise<OkResult & { path?: string; name?: string }>
   filebrowserFileDownloadUrl(virtualPath: string): string
 
   getSystemMetrics(signal?: AbortSignal): Promise<RuntimeMetrics>

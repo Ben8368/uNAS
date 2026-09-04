@@ -16,6 +16,7 @@ export type FetchTaskDraft = {
 }
 
 export type FetchTaskRecord = {
+  executionSource?: 'mock' | 'real'
   id: string
   task_id: string
   title: string

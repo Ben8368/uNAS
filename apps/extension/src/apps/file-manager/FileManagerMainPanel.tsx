@@ -40,7 +40,7 @@ type FileManagerToolbarProps = {
   onRestoreSelected: () => void
   onPurgeSelected: () => void
   onEmptyTrash: () => void
-  onUpload: (files: FileList) => void
+  onUpload: () => void
   onDownloadSelected: () => void
 }
 
@@ -90,27 +90,17 @@ export function FileManagerToolbar({
           </>
         ) : (
           <>
-            <label className={`fm-upload-label${!currentPath ? ' fm-upload-label--disabled' : ''}`} title="上传文件">
-              <UploadIcon />
-              <span>上传文件</span>
-              <input
-                type="file"
-                multiple
-                disabled={!currentPath}
-                style={{ display: 'none' }}
-                onChange={(e) => { if (e.target.files?.length) { onUpload(e.target.files); e.target.value = '' } }}
-              />
-            </label>
+            <ActionButton icon={<UploadIcon />} label="模拟选择文件" disabled={!currentPath} onClick={onUpload} />
             <ActionButton icon={<FolderPlusIcon />} label="新建文件夹" disabled={!currentPath} onClick={onCreateFolder} />
-            <ActionButton icon={<DownloadIcon />} label="下载" disabled={!selectedCount} onClick={onDownloadSelected} />
+            <ActionButton icon={<DownloadIcon />} label="查看模拟结果" disabled={!selectedCount} onClick={onDownloadSelected} />
             <ActionButton icon={<TrashIcon />} label="移入回收站" disabled={!selectedCount} onClick={onDeleteSelected} />
             <ActionButton icon={<MoreIcon />} label="更多" disabled />
           </>
         )}
         <span className="fm-actions-spacer" />
         <IconButton disabled={!currentParent || isTrashView} title="上一级" onClick={onGoParent}><SortIcon /></IconButton>
-        <IconButton title="列表视图"><ListIcon /></IconButton>
-        <IconButton title="网格视图"><GridIcon /></IconButton>
+        <IconButton title="当前为列表视图" disabled><ListIcon /></IconButton>
+        <IconButton title="网格视图暂未提供" disabled><GridIcon /></IconButton>
       </div>
     </>
   )
@@ -149,11 +139,23 @@ export function FileManagerEntryTable({
 
       <div className="fm-list">
         {loading && <div className="fm-empty">正在加载...</div>}
-        {!loading && error && <div className="fm-empty fm-empty--error">{error}</div>}
-        {!loading && !error && entries.map((entry) => (
+        {!loading && error && <div role="alert" className="fm-empty fm-empty--error">{error}</div>}
+        {!loading && entries.map((entry) => (
           <div
             className={`fm-row ${selected.has(entry.path) ? 'fm-row--selected' : ''}`}
             key={entry.path}
+            role="button"
+            tabIndex={0}
+            aria-pressed={selected.has(entry.path)}
+            aria-label={`${entry.name}，${entry.type === 'directory' ? '文件夹' : '模拟文件'}`}
+            onKeyDown={(event) => {
+              if (event.key === ' ') { event.preventDefault(); onToggleSelect(entry.path) }
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                if (entry.type === 'directory') onOpenDirectory(entry.path)
+                else onToggleSelect(entry.path)
+              }
+            }}
             onClick={() => onToggleSelect(entry.path)}
             onDoubleClick={() => entry.type === 'directory' && onOpenDirectory(entry.path)}
           >

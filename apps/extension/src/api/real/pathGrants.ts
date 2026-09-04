@@ -1,17 +1,16 @@
 import { apiRequest, ApiRequestError } from 'unas-src/api/http'
-import type { DesktopBrowserResult } from 'unas-src/desktopBrowser'
 import type { PathGrantInfo, PathGrantKind, PathGrantResponse } from '#contracts'
 
 export async function requestReadGrant(): Promise<PathGrantInfo | null> {
-  return unwrapDesktopGrant(await window.unasDesktop?.pathGrants?.requestRead())
+  throw new Error('CAPABILITY_UNAVAILABLE：扩展未接入真实文件授权 adapter。')
 }
 
 export async function requestWriteGrant(defaultPath?: string): Promise<PathGrantInfo | null> {
-  return unwrapDesktopGrant(await window.unasDesktop?.pathGrants?.requestWrite(defaultPath))
+  throw new Error('CAPABILITY_UNAVAILABLE：扩展未接入真实文件授权 adapter。')
 }
 
 export async function requestDirReadGrant(): Promise<PathGrantInfo | null> {
-  return unwrapDesktopGrant(await window.unasDesktop?.pathGrants?.requestDirRead())
+  throw new Error('CAPABILITY_UNAVAILABLE：扩展未接入真实文件授权 adapter。')
 }
 
 export async function getPathGrant(id: string): Promise<PathGrantInfo | null> {
@@ -29,10 +28,6 @@ export async function revokePathGrant(id: string): Promise<boolean> {
     method: 'DELETE',
   })
   return result?.ok ?? false
-}
-
-function unwrapDesktopGrant(result: DesktopBrowserResult<PathGrantInfo | null> | undefined): PathGrantInfo | null {
-  return result?.ok ? result.data : null
 }
 
 export type { PathGrantInfo, PathGrantKind }
