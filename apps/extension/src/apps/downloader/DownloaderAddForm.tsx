@@ -67,7 +67,7 @@ export function DownloaderAddForm({
             rows={4}
             style={{ resize: 'vertical', minHeight: '80px' }}
           />
-          <small className="dl-field-hint">URL 仅用于模拟任务记录，不代表平台或字幕支持。提交后可在顶部推进模拟步骤。</small>
+          <small className="dl-field-hint">URL 仅用于模拟任务记录，不代表平台或字幕支持。提交后可在右侧运行状态中推进预览步骤。</small>
         </div>
       </div>
 

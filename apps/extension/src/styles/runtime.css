@@ -1,13 +1,50 @@
-.demo-banner { position: absolute; top: 12px; left: 84px; right: 20px; z-index: 50; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; padding: 12px 16px; border-radius: 12px; background: var(--color-content, #182235); color: var(--color-text, #edf3ff); border: 1px solid #687c9e; font-size: 12px; }
-.demo-banner strong { font-size: 13px; }
-.demo-banner__controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.demo-banner button, .demo-banner select, .demo-tool button, .demo-tool input, .demo-tool select, .demo-projection button, .workspace-status button { font: inherit; color: inherit; background: var(--color-control, #283c59); border: 1px solid #778ba8; border-radius: 6px; padding: 9px 12px; min-height: 40px; }
-.demo-banner option, .demo-tool option { background: #233047; color: #f5f8ff; }
+.desktop-launch-notice {
+  position: fixed;
+  top: 18px;
+  left: 84px;
+  z-index: 600;
+  max-width: min(560px, calc(100vw - 120px));
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid #b88731;
+  border-radius: 10px;
+  background: var(--color-content, #182235);
+  color: var(--color-text, #edf3ff);
+  font-size: 12px;
+}
+
+.demo-tool button,
+.demo-tool input,
+.demo-tool select,
+.demo-projection button,
+.workspace-status button {
+  font: inherit;
+  color: inherit;
+  background: var(--color-control, #283c59);
+  border: 1px solid #778ba8;
+  border-radius: 6px;
+  padding: 9px 12px;
+  min-height: 40px;
+}
+
+.demo-tool option { background: #233047; color: #f5f8ff; }
 .demo-tool { padding: 24px; overflow: auto; height: 100%; background: var(--color-content, #192538); color: var(--color-text, #edf3ff); line-height: 1.6; }
-.demo-tool h2 { margin-top: 0; }.demo-tool p { overflow-wrap: anywhere; }.demo-tool button { margin: 4px; cursor: pointer; }.demo-tool button:disabled { opacity: .5; cursor: default; }
-.demo-tool__form { display: grid; gap: 12px; }.demo-tool__form label { display: grid; gap: 4px; }.demo-tool__form input { width: 100%; min-width: 0; box-sizing: border-box; }
-.link-apps__list { list-style: none; padding: 0; }.link-apps__list li { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px 0; border-bottom: 1px solid #5e718e; }.link-apps__list li span { overflow-wrap: anywhere; min-width: 0; }
-.demo-projection { position: absolute; top: 130px; right: 20px; width: min(300px, 34vw); max-height: calc(100vh - 160px); overflow: auto; padding: 18px; border-radius: 12px; background: var(--color-content, #192538); color: var(--color-text, #edf3ff); font-size: 12px; }.demo-projection h2 { font-size: 16px; }.demo-projection p { overflow-wrap: anywhere; }
-.workspace-status { margin: 150px 24px 24px; padding: 24px; border-radius: 12px; background: var(--color-content, #192538); color: var(--color-text, #edf3ff); }
+.demo-tool h2 { margin-top: 0; }
+.demo-tool p { overflow-wrap: anywhere; }
+.demo-tool button { margin: 4px; cursor: pointer; }
+.demo-tool button:disabled { opacity: .5; cursor: default; }
+.demo-tool__form { display: grid; gap: 12px; }
+.demo-tool__form label { display: grid; gap: 4px; }
+.demo-tool__form input { width: 100%; min-width: 0; box-sizing: border-box; }
+.link-apps__list { list-style: none; padding: 0; }
+.link-apps__list li { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px 0; border-bottom: 1px solid #5e718e; }
+.link-apps__list li span { overflow-wrap: anywhere; min-width: 0; }
+.demo-projection { position: absolute; top: 20px; right: 20px; width: min(300px, 34vw); max-height: calc(100vh - 52px); overflow: auto; padding: 18px; border-radius: 12px; background: var(--color-content, #192538); color: var(--color-text, #edf3ff); font-size: 12px; }
+.demo-projection h2 { font-size: 16px; }
+.demo-projection p { overflow-wrap: anywhere; }
+.workspace-status { margin: 0; padding: 24px; border-radius: 12px; background: var(--color-content, #192538); color: var(--color-text, #edf3ff); }
 .app-icon, .launcher-app { border: 0; background: transparent; color: inherit; font: inherit; }
-@media (max-width: 900px) { .demo-banner { left: 72px; right: 8px; font-size: 11px; max-height: 170px; overflow: auto; }.demo-projection { top: auto; bottom: 12px; width: calc(100% - 120px); max-height: 160px; }.workspace-status { margin-top: 190px; } }
+
+@media (max-width: 900px) {
+  .demo-projection { top: auto; bottom: 12px; width: calc(100% - 120px); max-height: 160px; }
+}

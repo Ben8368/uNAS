@@ -182,7 +182,7 @@ export function PsdApp() {
 
       <main className="psd-panel">
         <p role="status">executionSource: mock · 所有图层、授权与结果均为固定演示数据，不读取或修改真实文件。</p>
-        <p>使用顶部「推进模拟步骤」推进模拟任务。关闭窗口只会停止观察；任务终态以任务中心为准。</p>
+        <p>使用右侧运行状态中的预览控制推进任务。关闭窗口只会停止观察；任务终态以任务中心为准。</p>
         {task.jobId && <button type="button" className="mt-btn" disabled={task.cancelling} onClick={() => void task.cancel()}>{task.cancelling ? '请求取消中…' : '取消当前任务'}</button>}
         {task.cancelMessage && <p role="status">{task.cancelMessage}</p>}
         {inputGrant.message && <p role="status">{inputGrant.message}</p>}

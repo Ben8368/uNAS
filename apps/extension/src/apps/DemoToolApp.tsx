@@ -30,7 +30,7 @@ function DemoToolApp({ kind }: { kind: keyof typeof descriptions }) {
     <button type="button" disabled={!selected || busy || !!job && ['queued', 'running'].includes(job.status)} onClick={() => void start()}>创建模拟任务</button>
     {error && <p role="alert">{error}</p>}
     <h3>3. 查看模拟结果</h3>
-    {job ? <div role="status"><p>{job.title} · {job.status} · {job.progress?.current ?? 0}%</p>{job.errorMessage && <p>{job.errorMessage}</p>}{job.status === 'succeeded' && <p>模拟结果已生成：仅展示 metadata，没有可下载文件。</p>}{['queued', 'running', 'paused'].includes(job.status) && <button type="button" onClick={() => void cancelJob(job.id).catch((error: unknown) => setError(String(error)))}>取消模拟任务</button>}</div> : <p>尚无当前任务；创建后使用顶部“推进模拟步骤”演示进度。</p>}
+    {job ? <div role="status"><p>{job.title} · {job.status} · {job.progress?.current ?? 0}%</p>{job.errorMessage && <p>{job.errorMessage}</p>}{job.status === 'succeeded' && <p>模拟结果已生成：仅展示 metadata，没有可下载文件。</p>}{['queued', 'running', 'paused'].includes(job.status) && <button type="button" onClick={() => void cancelJob(job.id).catch((error: unknown) => setError(String(error)))}>取消模拟任务</button>}</div> : <p>尚无当前任务；创建后可在右侧运行状态中推进预览步骤。</p>}
     <button type="button" onClick={() => useWindowStore.getState().openWindow('tasks')}>打开 Task Center</button>
   </section>
 }

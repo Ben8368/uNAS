@@ -55,6 +55,13 @@ test('Link App validates HTTPS and persists create, edit and delete across reloa
   await page.reload()
   await page.locator('.app-icon--browser').click()
   await expect(app).toContainText('尚未添加网址 App')
+  await page.evaluate(() => localStorage.setItem('unas-link-apps-v1', JSON.stringify([
+    { schemaVersion: 1, id: 'duplicate', name: 'One', url: 'https://example.com/', icon: 'globe' },
+    { schemaVersion: 1, id: 'duplicate', name: 'Two', url: 'https://example.org/', icon: 'bookmark' },
+  ])))
+  await page.reload()
+  await page.locator('.app-icon--browser').click()
+  await expect(app.getByRole('alert')).toContainText('重复项目')
   expect(extension.errors).toEqual([])
   expect(extension.remoteRequests).toEqual([])
 })

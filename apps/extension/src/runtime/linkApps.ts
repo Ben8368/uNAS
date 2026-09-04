@@ -21,7 +21,16 @@ export function readLinks(): LinkApp[] {
   if (!raw) return []
   if (raw.length > 100_000) throw new Error('Link App 配置超过大小限制。')
   const value: unknown = JSON.parse(raw)
-  if (!Array.isArray(value) || value.length > 50 || value.some((link) => !link || link.schemaVersion !== 1 || typeof link.id !== 'string' || link.id.length > 80 || typeof link.name !== 'string' || typeof link.url !== 'string' || !['globe', 'bookmark'].includes(link.icon) || validateLink(link, []))) throw new Error('本地 Link App 配置无效，无法加载。')
+  if (!Array.isArray(value) || value.length > 50) throw new Error('本地 Link App 配置无效，无法加载。')
+  const ids = new Set<string>()
+  const names = new Set<string>()
+  for (const link of value) {
+    if (!link || link.schemaVersion !== 1 || typeof link.id !== 'string' || !link.id || link.id.length > 80 || typeof link.name !== 'string' || typeof link.url !== 'string' || !['globe', 'bookmark'].includes(link.icon) || validateLink(link, [])) throw new Error('本地 Link App 配置无效，无法加载。')
+    const normalizedName = link.name.trim().toLocaleLowerCase()
+    if (ids.has(link.id) || names.has(normalizedName)) throw new Error('本地 Link App 配置包含重复项目，无法加载。')
+    ids.add(link.id)
+    names.add(normalizedName)
+  }
   return value as LinkApp[]
 }
 export function saveLinks(links: LinkApp[]) {

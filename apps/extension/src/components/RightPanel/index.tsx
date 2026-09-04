@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { cancelJob, getSystemMetrics } from 'unas-src/api'
 import { useVisibilityPolling } from 'unas-src/hooks/useVisibilityPolling'
 import { useSystemStore } from 'unas-src/store'
@@ -6,6 +6,7 @@ import { getErrorMessage } from 'unas-src/utils'
 
 import { DualLineChart } from './DualLineChart'
 import { GaugeSvg } from './GaugeSvg'
+import { PreviewControls } from 'unas-src/components/PreviewControls'
 import { TaskGroupList } from './TaskGroupList'
 import { EMPTY_METRICS, type RuntimeMetrics } from './types'
 import {
@@ -90,7 +91,17 @@ export function RightPanel() {
     : '未采样'
 
   return (
-    <div className="mt-right-panel">
+    <aside className="mt-right-panel" aria-label="运行状态">
+      <button
+        type="button"
+        className="rp-edge-trigger"
+        aria-label="显示运行状态"
+        aria-controls="runtime-status-panel"
+        title="悬停或聚焦以显示运行状态"
+      >
+        <span aria-hidden="true">‹</span>
+      </button>
+      <div id="runtime-status-panel" className="rp-panel-content">
       <div className="rp-card">
         <div className="rp-card-head rp-runtime-head">
           <div className="rp-card-title">运行状态</div>
@@ -167,6 +178,8 @@ export function RightPanel() {
         onCollapse={() => setExpandedTaskType(null)}
         onCancelTask={handleTaskAction}
       />
-    </div>
+        <PreviewControls />
+      </div>
+    </aside>
   )
 }

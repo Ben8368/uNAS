@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useSyncExternalStore } from 'react'
 import { LeftNavbar } from 'unas-src/LeftNavbar'
 import { AppLauncher } from 'unas-src/AppLauncher'
 import { WindowContainer } from 'unas-src/WindowContainer'
@@ -10,14 +10,15 @@ import { useAppearance } from 'unas-src/hooks/useAppearance'
 import { useWorkspaceSession } from 'unas-src/hooks/useWorkspaceSession'
 import { isWorkspaceSurface } from 'unas-src/runtime/extensionAdapter'
 import { isWorkspaceApp } from 'unas-src/runtime/workspaceRouter'
-import { DemoBanner } from 'unas-src/components/DemoBanner'
 import { TaskProjection } from 'unas-src/components/TaskProjection'
+import { launchStatus } from 'unas-src/runtime/launchStatus'
 
 export default function App() {
   const { openWindow } = useWindowStore()
   const { setShowLauncher } = useSystemStore()
   const workspace = isWorkspaceSurface()
   const session = useWorkspaceSession(workspace)
+  const launchError = useSyncExternalStore(launchStatus.subscribe, launchStatus.getSnapshot)
   useAppearance()
 
   const handleOpenApp = useCallback((id: string) => {
@@ -37,8 +38,8 @@ export default function App() {
 
   return (
     <div className="mt-desktop">
-      <DemoBanner workspace={workspace} owner={session.state === 'owner'} />
       <LeftNavbar />
+      {launchError && <p className="desktop-launch-notice" role="alert">{launchError}</p>}
       <div className="mt-main">
         {(!workspace || session.state === 'owner') && <DesktopIcons onOpenApp={handleOpenApp} />}
         {workspace && session.state !== 'owner' && <section className="workspace-status" role="status"><h1>Workspace {session.state === 'pending' ? '正在确认所有权' : session.state === 'conflict' ? '已在另一标签页运行' : '所有权能力不可用'}</h1><p>此页面不会执行模拟任务。关闭其他 Workspace 后可重试；真实任务恢复能力尚未接入。</p><button type="button" onClick={session.retry}>重新确认所有权</button></section>}

@@ -40,9 +40,17 @@ export const test = base.extend<{ extension: Extension }>({
 })
 export { expect }
 
+export async function revealRuntimePanel(page: Page) {
+  const trigger = page.getByRole('button', { name: '显示运行状态' })
+  await expect(trigger).toBeVisible()
+  await trigger.hover()
+  await expect(page.getByLabel('预览控制')).toBeVisible()
+}
+
 export async function workspace(extension: Extension, appId: string) {
   const page = await extension.context.newPage()
   await page.goto(`chrome-extension://${extension.extensionId}/workspace.html#${appId}`)
+  await revealRuntimePanel(page)
   await expect(page.getByRole('combobox', { name: '模拟场景' })).toBeVisible()
   await expect(page.locator(`[data-app-id="${appId}"]`)).toBeVisible()
   return page

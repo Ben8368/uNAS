@@ -1,9 +1,9 @@
-import { test, expect, workspace, openApp, closeApp } from './fixtures'
+import { test, expect, workspace, openApp, closeApp, revealRuntimePanel } from './fixtures'
 
 test('New Tab override launches and reuses one Workspace; invalid messages are rejected', async ({ extension }) => {
   const page = await extension.context.newPage()
   await page.goto('chrome://newtab/')
-  await expect(page.getByRole('region', { name: '演示模式' })).toContainText('New Tab')
+  await expect(page.getByRole('navigation', { name: '应用快捷方式' })).toBeVisible()
   await page.locator('.app-icon--image').click()
   await expect.poll(() => extension.context.pages().filter((tab) => tab.url().includes('/workspace.html')).length).toBe(1)
   const owner = extension.context.pages().find((tab) => tab.url().includes('/workspace.html'))!
@@ -36,6 +36,7 @@ test('partial failure keeps successful fixture and exposes failed item; denied a
   const page = await workspace(extension, 'file-manager')
   const app = page.locator('[data-app-id="file-manager"]')
   await expect(app.locator('.fm-address')).toHaveText('/Workspace')
+  await revealRuntimePanel(page)
   await page.getByRole('combobox', { name: '模拟场景' }).selectOption('partial-failure')
   await openApp(page, 'file-manager')
   await app.getByRole('button', { name: '模拟选择文件', exact: true }).click()
@@ -45,6 +46,7 @@ test('partial failure keeps successful fixture and exposes failed item; denied a
   await expect(app.getByRole('button', { name: 'sample-document.pdf，模拟文件', exact: true })).toHaveCount(0)
   await closeApp(page, 'file-manager')
   const psd = await openApp(page, 'ps')
+  await revealRuntimePanel(page)
   await page.getByRole('combobox', { name: '模拟场景' }).selectOption('permission-denied')
   await openApp(page, 'ps')
   await psd.getByRole('button', { name: '模拟选择文件', exact: true }).click()
@@ -106,6 +108,7 @@ test('download cancellation and Task Center agree; closing PSD stops observation
   await closeApp(page, 'ps')
   const taskCenter = await openApp(page, 'tasks')
   await expect(taskCenter.locator('li').filter({ hasText: '模拟 PSD 扫描' })).toContainText('running')
+  await revealRuntimePanel(page)
   await page.getByRole('button', { name: '推进模拟步骤' }).click()
   await page.getByRole('button', { name: '推进模拟步骤' }).click()
   await expect(taskCenter.locator('li').filter({ hasText: '模拟 PSD 扫描' })).toContainText('succeeded')
@@ -120,6 +123,7 @@ for (const kind of ['image', 'pdf', 'archive']) {
     await app.getByRole('button', { name: '模拟选择固定 fixture' }).click()
     await app.getByRole('button', { name: '创建模拟任务' }).click()
     await expect(app.getByRole('status')).toContainText('running')
+    await revealRuntimePanel(page)
     await page.getByRole('button', { name: '推进模拟步骤' }).click()
     await page.getByRole('button', { name: '推进模拟步骤' }).click()
     await expect(app.getByRole('status')).toContainText('succeeded')

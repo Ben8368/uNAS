@@ -193,7 +193,7 @@ export function TranscodeApp() {
       </ResizableAppSidebar>
 
       <main className="transcode-panel">
-        <p role="status">executionSource: mock · 参数、分析和结果仅演示交互，不读取文件或证明编解码器支持，不生成媒体文件。使用顶部「推进模拟步骤」推进任务。</p>
+        <p role="status">executionSource: mock · 参数、分析和结果仅演示交互，不读取文件或证明编解码器支持，不生成媒体文件。使用右侧运行状态中的预览控制推进任务。</p>
         {inputGrant.message && <p role="status">{inputGrant.message}</p>}
         <form className="transcode-form" onSubmit={submit}>
           <label className="mt-field">
