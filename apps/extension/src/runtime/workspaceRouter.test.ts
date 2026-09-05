@@ -31,7 +31,7 @@ describe('Workspace routing boundary', () => {
     const create = vi.fn(async () => {})
     const focus = vi.fn(async () => {})
     const route = createWorkspaceRouter({ discover: async () => [], create, focus })
-    await Promise.all([route('file-manager'), route('tasks')])
+    await Promise.all([route('file-manager'), route('fetcher')])
     expect(create).toHaveBeenCalledTimes(2)
     expect(focus).not.toHaveBeenCalled()
   })

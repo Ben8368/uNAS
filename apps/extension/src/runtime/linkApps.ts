@@ -1,5 +1,6 @@
 export type LinkApp = { schemaVersion: 1; id: string; name: string; url: string; icon: 'globe' | 'bookmark' }
 const KEY = 'unas-link-apps-v1'
+const CHANGED_EVENT = 'unas-link-apps-changed'
 export function validateLinkUrl(input: string): { url: string } | { error: string } {
   if (input.length > 2048 || /[\u0000-\u0020\u007f]/.test(input)) return { error: '网址不能包含空格、控制字符或超过 2048 个字符。' }
   try {
@@ -37,6 +38,15 @@ export function saveLinks(links: LinkApp[]) {
   if (links.length > 50) throw new Error('最多保存 50 个 Link App。')
   links.forEach((link) => { const error = validateLink(link, links, link.id); if (error) throw new Error(error) })
   localStorage.setItem(KEY, JSON.stringify(links))
+  window.dispatchEvent(new Event(CHANGED_EVENT))
+}
+export function subscribeLinks(listener: () => void) {
+  window.addEventListener(CHANGED_EVENT, listener)
+  window.addEventListener('storage', listener)
+  return () => {
+    window.removeEventListener(CHANGED_EVENT, listener)
+    window.removeEventListener('storage', listener)
+  }
 }
 export function openLink(url: string) {
   const valid = validateLinkUrl(url)

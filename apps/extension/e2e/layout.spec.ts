@@ -44,7 +44,7 @@ for (const sample of cases) {
   })
 }
 
-for (const appId of ['fetcher', 'file-manager', 'tasks']) {
+for (const appId of ['fetcher', 'file-manager']) {
   for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }]) {
     test(`existing App layout: ${appId} ${viewport.width}`, async ({ extension }, testInfo) => {
       const page = await workspace(extension, appId)

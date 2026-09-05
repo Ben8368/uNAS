@@ -53,7 +53,7 @@ export function WindowContainer() {
             onResize={resizeWindow}
           >
             <AppLoadBoundary resetKey={w.appType}>
-              <Suspense fallback={<div className="mt-app-loading" role="status">正在加载应用...</div>}>
+              <Suspense fallback={null}>
                 <C />
               </Suspense>
             </AppLoadBoundary>

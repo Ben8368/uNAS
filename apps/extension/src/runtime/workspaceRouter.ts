@@ -1,4 +1,4 @@
-export const WORKSPACE_APPS = ['file-manager', 'fetcher', 'tasks'] as const
+export const WORKSPACE_APPS = ['file-manager', 'fetcher'] as const
 export type WorkspaceApp = typeof WORKSPACE_APPS[number]
 export type LaunchMessage = { schemaVersion: 1; action: 'workspace.launch'; appId: WorkspaceApp }
 export function isWorkspaceApp(value: unknown): value is WorkspaceApp {

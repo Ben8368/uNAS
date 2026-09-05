@@ -15,7 +15,7 @@ test('New Tab override launches and reuses one Workspace; invalid messages are r
   await second.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
   await second.locator('.app-icon--file-manager').click()
   await expect(owner.locator('[data-app-id="file-manager"]')).toBeVisible()
-  await expect(second.locator('.app-icon--ps, .app-icon--transcode, .app-icon--pdf, .app-icon--image, .app-icon--archive')).toHaveCount(0)
+  await expect(second.locator('.app-icon--ps, .app-icon--transcode, .app-icon--pdf, .app-icon--image, .app-icon--archive, .app-icon--tasks')).toHaveCount(0)
   expect(extension.context.pages().filter((tab) => tab.url().includes('/workspace.html'))).toHaveLength(1)
   const responses = await second.evaluate(async () => {
     const runtime = (globalThis as unknown as { chrome: { runtime: { sendMessage: (message: unknown) => Promise<{ ok: boolean }> } } }).chrome.runtime
@@ -79,7 +79,7 @@ test('fixture intake, mock result inspection and trash restoration never select 
   expect(extension.errors).toEqual([])
 })
 
-test('download cancellation and Task Center agree', async ({ extension }) => {
+test('download cancellation persists after reopening the App', async ({ extension }) => {
   const page = await workspace(extension, 'fetcher')
   const downloader = page.locator('[data-app-id="fetcher"]')
   await downloader.getByRole('button', { name: '添加任务', exact: true }).click()
@@ -90,12 +90,11 @@ test('download cancellation and Task Center agree', async ({ extension }) => {
   await row.click()
   await downloader.getByRole('button', { name: 'stop-selected-downloads' }).click()
   await expect(row).toContainText(/取消/)
+  const secondRow = downloader.locator('.dl-row').filter({ hasText: 'example.org' })
+  await secondRow.click()
+  await downloader.getByRole('button', { name: 'stop-selected-downloads' }).click()
+  await expect(secondRow).toContainText(/取消/)
   await closeApp(page, 'fetcher')
-  const tasks = await openApp(page, 'tasks')
-  await expect(tasks.locator('li').filter({ hasText: 'example.com' })).toContainText('canceled')
-  await tasks.getByRole('button', { name: '取消 模拟下载 · example.org', exact: true }).click()
-  await expect(tasks.locator('li').filter({ hasText: 'example.org' })).toContainText('canceled')
-  await closeApp(page, 'tasks')
   const reopened = await openApp(page, 'fetcher')
   await expect(reopened.locator('.dl-row').filter({ hasText: 'example.org' })).toContainText(/取消/)
   expect(extension.remoteRequests).toEqual([])

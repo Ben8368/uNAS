@@ -1,28 +1,34 @@
 import { test, expect } from './fixtures'
 
-test('Link App validates HTTPS and persists create, edit and delete across reloads', async ({ extension }) => {
+test('添加 App validates HTTPS, registers a desktop App, and persists edits', async ({ extension }) => {
   const page = await extension.context.newPage()
   await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
   await page.locator('.app-icon--browser').click()
   const app = page.locator('[data-app-id="browser"]')
   await app.getByLabel('名称', { exact: true }).fill('Example')
-  await app.getByLabel('HTTPS 网址', { exact: true }).fill('javascript:alert(1)')
-  await app.getByRole('button', { name: '添加网址 App' }).click()
+  await app.getByLabel('选择网址', { exact: true }).fill('javascript:alert(1)')
+  await app.getByRole('button', { name: '添加 App', exact: true }).click()
   await expect(app.getByRole('alert')).toContainText('只允许完整的 HTTPS')
-  await app.getByLabel('HTTPS 网址', { exact: true }).fill('https://example.com/path')
-  await app.getByRole('button', { name: '添加网址 App' }).click()
+  await app.getByLabel('选择网址', { exact: true }).fill('https://example.com/path')
+  await app.getByRole('button', { name: '添加 App', exact: true }).click()
+  const desktopApp = page.getByRole('navigation', { name: '应用快捷方式' }).locator('.app-icon').filter({ hasText: 'Example' })
+  await expect(desktopApp).toBeVisible()
+  await app.getByRole('button', { name: '关闭添加 App', exact: true }).click()
+  const externalPage = page.context().waitForEvent('page')
+  await desktopApp.click()
+  await expect(await externalPage).toHaveURL('https://example.com/path')
   await page.reload()
   await page.locator('.app-icon--browser').click()
   await expect(app.locator('li')).toContainText('https://example.com/path')
   await app.getByRole('button', { name: '编辑 Example', exact: true }).click()
   await app.getByLabel('名称', { exact: true }).fill('Changed')
-  await app.getByLabel('HTTPS 网址', { exact: true }).fill('https://example.org/updated')
+  await app.getByLabel('选择网址', { exact: true }).fill('https://example.org/updated')
   await app.getByRole('button', { name: '保存修改' }).click()
   await expect(app.locator('li')).toContainText('https://example.org/updated')
   await app.getByRole('button', { name: '删除 Changed', exact: true }).click()
   await page.reload()
   await page.locator('.app-icon--browser').click()
-  await expect(app).toContainText('尚未添加网址 App')
+  await expect(app).toContainText('尚未添加桌面 App')
   await page.evaluate(() => localStorage.setItem('unas-link-apps-v1', JSON.stringify([
     { schemaVersion: 1, id: 'duplicate', name: 'One', url: 'https://example.com/', icon: 'globe' },
     { schemaVersion: 1, id: 'duplicate', name: 'Two', url: 'https://example.org/', icon: 'bookmark' },
@@ -31,5 +37,5 @@ test('Link App validates HTTPS and persists create, edit and delete across reloa
   await page.locator('.app-icon--browser').click()
   await expect(app.getByRole('alert')).toContainText('重复项目')
   expect(extension.errors).toEqual([])
-  expect(extension.remoteRequests).toEqual([])
+  expect(extension.remoteRequests).toContain('https://example.com/path')
 })

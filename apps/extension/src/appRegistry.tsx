@@ -8,7 +8,6 @@ const DownloaderApp = lazy(() => import('unas-src/apps/DownloaderApp').then((mod
 const FileManagerApp = lazy(() => import('unas-src/apps/FileManagerApp').then((module) => ({ default: module.FileManagerApp })))
 const SettingsApp = lazy(() => import('unas-src/apps/SettingsApp').then((module) => ({ default: module.SettingsApp })))
 const LogViewer = lazy(() => import('unas-src/LogViewer').then((module) => ({ default: module.LogViewer })))
-const TaskCenterApp = lazy(() => import('unas-src/apps/DemoToolApp').then((module) => ({ default: module.TaskCenterApp })))
 
 export type RegisteredApp = {
   id: WorkbenchAppId
@@ -21,8 +20,7 @@ export type RegisteredApp = {
 }
 
 export const appRegistry: RegisteredApp[] = [
-  { id: 'browser', label: '网址 App', title: '网址 App', icon: APP_ICON_PATHS.browser, component: BrowserApp, status: 'beta' },
-  { id: 'tasks', label: '任务中心', title: 'Task Center', icon: APP_ICON_PATHS.tasks, component: TaskCenterApp, status: 'beta' },
+  { id: 'browser', label: '添加 App', title: '添加 App', icon: APP_ICON_PATHS.browser, component: BrowserApp, status: 'beta' },
   { id: 'file-manager', label: '文件管理', title: '文件管理', icon: APP_ICON_PATHS.fileManager, component: FileManagerApp, status: 'stable' },
   { id: 'fetcher', label: '下载', title: '下载', icon: APP_ICON_PATHS.fetcher, component: DownloaderApp, status: 'stable' },
   { id: 'settings', label: '设置', title: '设置', icon: APP_ICON_PATHS.settings, component: SettingsApp, status: 'beta', launcherVisible: false },
