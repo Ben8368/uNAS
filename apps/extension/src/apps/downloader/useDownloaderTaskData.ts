@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { getActiveTasks, getWeeklyHistory } from 'unas-src/api'
+import { getActiveTasks, getWeeklyHistory, subscribeDemo } from 'unas-src/api'
 import { mergeTasks } from 'unas-src/apps/downloader/helpers'
 import type { DownloadTask } from 'unas-src/apps/downloader/types'
 import { useVisibilityPolling } from 'unas-src/hooks/useVisibilityPolling'
@@ -62,51 +62,34 @@ function normalizeProgress(value: unknown) {
 }
 
 export function useDownloaderTaskData() {
-  const [tasks, setTasks] = useState<DownloadTask[]>([])
-  const [historyTasks, setHistoryTasks] = useState<DownloadTask[]>([])
+  const [{ tasks, historyTasks }, setLists] = useState<{ tasks: DownloadTask[]; historyTasks: DownloadTask[] }>({ tasks: [], historyTasks: [] })
   const [optimisticTasks, setOptimisticTasks] = useState<DownloadTask[]>([])
   const [pollError, setPollError] = useState('')
   const taskRequestGenerationRef = useRef(0)
-  const historyLoadingRef = useRef(false)
-
-  const fetchTasks = useCallback(async (signal?: AbortSignal) => {
+  const refreshLists = useCallback(async (signal?: AbortSignal) => {
     const generation = ++taskRequestGenerationRef.current
     try {
-      const activeRes = await getActiveTasks(signal)
+      const [activeRes, historyRes] = await Promise.all([getActiveTasks(signal), getWeeklyHistory(signal)])
       if (signal?.aborted || generation !== taskRequestGenerationRef.current) return
       const mappedTasks = normalizeTaskList(activeRes).map(mapApiTaskToDownloadTask)
-
+      const mappedHistory = normalizeTaskList(historyRes).map(mapApiTaskToDownloadTask)
       mappedTasks.sort((a, b) => b.created_at - a.created_at)
-      setTasks(mappedTasks)
+      mappedHistory.sort((a, b) => b.created_at - a.created_at)
+      // Publish both lists together so terminal tasks cannot reappear from an old history snapshot.
+      setLists({ tasks: mappedTasks, historyTasks: mappedHistory })
       setPollError('')
     } catch (err: unknown) {
       if (signal?.aborted || generation !== taskRequestGenerationRef.current) return
       setPollError(getErrorMessage(err) || '任务列表刷新失败')
+      throw err
     }
   }, [])
 
-  const fetchHistoryTasks = useCallback(async () => {
-    if (historyLoadingRef.current) return
-    historyLoadingRef.current = true
-    try {
-      const historyRes = await getWeeklyHistory()
-      const mappedHistory = normalizeTaskList(historyRes).map(mapApiTaskToDownloadTask)
-
-      mappedHistory.sort((a, b) => b.created_at - a.created_at)
-      setHistoryTasks(mappedHistory)
-      setPollError('')
-    } catch (err: unknown) {
-      setPollError(getErrorMessage(err) || '历史任务刷新失败')
-    } finally {
-      historyLoadingRef.current = false
-    }
-  }, [])
-
-  useVisibilityPolling(fetchTasks, 2000)
-
+  useVisibilityPolling(refreshLists, 2000)
   useEffect(() => {
-    void fetchHistoryTasks()
-  }, [fetchHistoryTasks])
+    const unsubscribe = subscribeDemo(() => { void refreshLists().catch(() => {}) })
+    return () => { unsubscribe(); taskRequestGenerationRef.current++ }
+  }, [refreshLists])
 
   useEffect(() => {
     setOptimisticTasks((prev) =>
@@ -120,17 +103,12 @@ export function useDownloaderTaskData() {
   /** history 需在合并时覆盖 queue：避免乐观任务或旧 active 占位（无 result）盖住历史里的完整落盘字段 */
   const mergedTasks = useMemo(() => mergeTasks(historyTasks, queueTasks), [historyTasks, queueTasks])
 
-  const refreshLists = useCallback(async () => {
-    await Promise.all([fetchTasks(), fetchHistoryTasks()])
-  }, [fetchHistoryTasks, fetchTasks])
-
   return {
     tasks,
     historyTasks,
     queueTasks,
     mergedTasks,
     pollError,
-    fetchHistoryTasks,
     refreshLists,
     setOptimisticTasks,
   }

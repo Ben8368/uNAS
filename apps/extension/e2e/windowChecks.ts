@@ -1,0 +1,35 @@
+import { expect, type Page } from '@playwright/test'
+
+export async function checkWindowDraftAndFocus(page: Page) {
+  await page.locator('.app-icon--browser').click()
+  const app = page.locator('[data-app-id="browser"]')
+  const name = app.getByLabel('名称', { exact: true })
+  await name.fill('未提交的 App')
+  await app.getByLabel('选择网址', { exact: true }).fill('https://example.com/draft')
+  await app.getByRole('button', { name: '最小化添加 App', exact: true }).click()
+  await expect(app).toBeHidden()
+  await expect(page.getByRole('textbox', { name: '名称', exact: true })).toHaveCount(0)
+  await page.locator('.app-icon--browser').click()
+  await expect(name).toHaveValue('未提交的 App')
+  await expect(app.getByLabel('选择网址', { exact: true })).toHaveValue('https://example.com/draft')
+
+  await page.getByRole('button', { name: '设置', exact: true }).click()
+  const settings = page.locator('[data-app-id="settings"]')
+  await expect(settings).toBeFocused()
+  await settings.getByRole('button', { name: '最小化设置', exact: true }).click()
+  await expect(app).toBeFocused()
+  await expect(page.getByRole('button', { name: '切换到添加 App' })).toHaveClass(/--active/)
+  await name.click()
+  await expect(name).toBeFocused()
+
+  await page.getByRole('button', { name: '所有应用' }).click()
+  await page.getByRole('dialog', { name: '应用启动器' }).getByRole('button', { name: '添加 App' }).click()
+  await expect(app).toBeFocused()
+  await expect(name).toHaveValue('未提交的 App')
+  await page.getByRole('button', { name: '切换到设置', exact: true }).click()
+  await expect(settings).toBeFocused()
+  await settings.getByRole('button', { name: '关闭设置', exact: true }).click()
+  await expect(app).toBeFocused()
+  await app.getByRole('button', { name: '关闭添加 App', exact: true }).click()
+  await expect(page.getByRole('button', { name: '所有应用' })).toBeFocused()
+}

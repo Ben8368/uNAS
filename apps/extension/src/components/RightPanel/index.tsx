@@ -8,6 +8,7 @@ import { DualLineChart } from './DualLineChart'
 import { GaugeSvg } from './GaugeSvg'
 import { PreviewControls } from 'unas-src/components/PreviewControls'
 import { TaskGroupList } from './TaskGroupList'
+import { TaskProjection } from 'unas-src/components/TaskProjection'
 import { EMPTY_METRICS, type RuntimeMetrics } from './types'
 import {
   clampPercent,
@@ -20,7 +21,7 @@ import {
   summarizeGroupStatuses,
 } from './utils'
 
-export function RightPanel() {
+export function RightPanel({ workspace }: { workspace: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
   const [metrics, setMetrics] = useState<RuntimeMetrics>(EMPTY_METRICS)
   const [netUpData, setNetUpData] = useState<number[]>(Array.from({ length: 40 }, () => 0))
@@ -49,8 +50,10 @@ export function RightPanel() {
   }
 
   async function handleTaskAction(taskId: string) {
+    if (!workspace) return
     try {
-      await cancelJob(taskId)
+      const result = await cancelJob(taskId)
+      if (!result.ok) throw new Error(result.message || '取消未生效，请刷新任务状态。')
       await refresh()
     } catch (err: unknown) {
       setError(getErrorMessage(err) || '任务操作失败')
@@ -173,7 +176,7 @@ export function RightPanel() {
         )}
       </div>
 
-      <TaskGroupList
+      {workspace ? <TaskGroupList
         tasks={tasks}
         groupedTasks={groupedTasks}
         expandedGroup={expandedGroup}
@@ -181,8 +184,8 @@ export function RightPanel() {
         onExpand={setExpandedTaskType}
         onCollapse={() => setExpandedTaskType(null)}
         onCancelTask={handleTaskAction}
-      />
-        <PreviewControls />
+      /> : <TaskProjection />}
+        {workspace && <PreviewControls />}
       </div>
     </aside>
   )

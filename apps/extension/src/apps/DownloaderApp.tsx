@@ -1,5 +1,5 @@
 // Simplified DownloaderApp for v2 - AI features removed
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { submitFetch } from 'unas-src/api'
 import { describeBatch, runBatch } from 'unas-src/application/batch'
@@ -24,7 +24,7 @@ import type { CookieBrowser } from 'unas-src/apps/downloader/types'
 import type { FetchTaskDraft } from '#contracts'
 
 export function DownloaderApp() {
-  const { historyTasks, queueTasks, mergedTasks, pollError, fetchHistoryTasks, refreshLists, setOptimisticTasks } = useDownloaderTaskData()
+  const { historyTasks, queueTasks, mergedTasks, pollError, refreshLists, setOptimisticTasks } = useDownloaderTaskData()
 
   const form = useDownloaderForm()
   const selection = useDownloaderSelection({ mergedTasks, historyTasks, queueTasks })
@@ -35,13 +35,6 @@ export function DownloaderApp() {
     setOptimisticTasks,
     onOptimisticTaskCreated: (task) => selection.setSelectedTaskId(task.id),
   })
-
-  // Fetch history when viewing history-related categories
-  useEffect(() => {
-    if (['completed', 'paused', 'error'].includes(selection.selectedCategory)) {
-      void fetchHistoryTasks()
-    }
-  }, [fetchHistoryTasks, selection.selectedCategory])
 
   // Submit task payloads (shared by single-URL and multi-URL paths)
   const submitTaskPayloads = useCallback(
@@ -67,7 +60,7 @@ export function DownloaderApp() {
       selection.setSelectedTaskId(optimisticTasks[0]?.id ?? result.task_id)
       selection.clearSelection()
       selection.setSelectedCategory('all')
-      void refreshLists()
+      void refreshLists().catch(() => {}) // The list hook retains its visible refresh error.
     },
     [
       form.taskCookieBrowser,

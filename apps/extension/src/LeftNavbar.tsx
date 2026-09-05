@@ -8,7 +8,7 @@ export function LeftNavbar() {
   const { showLauncher, toggleLauncher } = useSystemStore()
   const { windows, openWindow, minimizeWindow, focusWindow } = useWindowStore()
   const [showInfo, setShowInfo] = useState(false)
-  const topZ = Math.max(0, ...windows.map((item) => item.zIndex))
+  const topZ = Math.max(0, ...windows.filter((item) => !item.isMinimized).map((item) => item.zIndex))
   function activate(appType: string) {
     const existing = windows.find((item) => item.appType === appType)
     if (!existing || existing.isMinimized) { openWindow(appType); return }

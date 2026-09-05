@@ -1,5 +1,6 @@
-﻿import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { getLauncherApps } from 'unas-src/appRegistry'
+import { useLayoutEffect } from 'react'
 import { AppIconImage } from 'unas-src/components/AppIconImage'
 import { useSystemStore } from 'unas-src/store'
 
@@ -9,7 +10,7 @@ export function AppLauncher({ onOpenApp }: { onOpenApp: (id: string) => void }) 
   const inputRef = useRef<HTMLInputElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!showLauncher) return
     const previous = document.activeElement as HTMLElement | null
     const overlay = overlayRef.current

@@ -1,13 +1,27 @@
-﻿import { getRegisteredApp } from 'unas-src/appRegistry'
-import { Suspense, useEffect } from 'react'
+import { getRegisteredApp } from 'unas-src/appRegistry'
+import { Suspense, useEffect, useLayoutEffect, useRef } from 'react'
 
 import { AppLoadBoundary } from 'unas-src/components/AppLoadBoundary'
 import { DesktopWindow } from 'unas-src/Window'
 import { useWindowStore } from 'unas-src/windowStore'
+import { useSystemStore } from 'unas-src/store'
 
 export function WindowContainer() {
   const { windows, closeWindow, minimizeWindow, maximizeWindow, focusWindow, dragWindow, resizeWindow } = useWindowStore()
   const maxZ = Math.max(0, ...windows.filter((w) => !w.isMinimized).map((w) => w.zIndex))
+  const container = useRef<HTMLDivElement>(null)
+  const showLauncher = useSystemStore((state) => state.showLauncher)
+  const activeId = windows.find((w) => !w.isMinimized && w.zIndex === maxZ)?.id
+  // Focus once; cleanup must not reactivate the previously focused window.
+  useLayoutEffect(() => {
+    if (showLauncher) return
+    const active = container.current?.querySelector<HTMLElement>('.mt-window--active:not([hidden])')
+    if (active) {
+      if (!active.contains(document.activeElement)) active.focus({ preventScroll: true })
+    } else if (document.activeElement === document.body || container.current?.contains(document.activeElement)) {
+      document.querySelector<HTMLButtonElement>('[aria-label="所有应用"]')?.focus({ preventScroll: true })
+    }
+  }, [activeId, showLauncher])
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (!event.altKey) return
@@ -26,7 +40,7 @@ export function WindowContainer() {
   }, [windows, closeWindow, focusWindow])
 
   return (
-    <div className="mt-windows">
+    <div ref={container} className="mt-windows">
       {windows.map((w) => {
         const registeredApp = getRegisteredApp(w.appType)
         if (!registeredApp) return null
@@ -42,7 +56,7 @@ export function WindowContainer() {
             y={w.y}
             isMaximized={w.isMaximized}
             isMinimized={w.isMinimized}
-            isActive={w.zIndex === maxZ}
+            isActive={!w.isMinimized && w.zIndex === maxZ}
             zIndex={w.zIndex}
             appType={w.appType}
             onClose={closeWindow}
@@ -53,7 +67,7 @@ export function WindowContainer() {
             onResize={resizeWindow}
           >
             <AppLoadBoundary resetKey={w.appType}>
-              <Suspense fallback={null}>
+              <Suspense fallback={<div className="mt-app-loading" role="status">正在打开{registeredApp.title}…</div>}>
                 <C />
               </Suspense>
             </AppLoadBoundary>

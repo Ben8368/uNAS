@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode, type PointerEvent } from 'react'
+import { useLayoutEffect, useRef, useState, type ReactNode, type PointerEvent } from 'react'
 import { getAppIcon } from 'unas-src/icon-library'
 import { fitWindow } from 'unas-src/windowGeometry'
 
@@ -17,27 +17,18 @@ export function DesktopWindow({ windowId, title, width = 960, height = 640, x = 
   const [viewport, setViewport] = useState({ width: 960, height: 640 })
   const drag = useRef<{ x: number; y: number; left: number; top: number; width: number; height: number; resize: boolean } | null>(null)
   const bounds = fitWindow({ width, height, x, y }, viewport)
-  useEffect(() => {
+  useLayoutEffect(() => {
     const parent = root.current?.parentElement
     if (!parent) return
-    const update = () => setViewport({ width: parent.clientWidth, height: parent.clientHeight })
+    const update = () => setViewport((previous) => {
+      const next = { width: parent.clientWidth, height: parent.clientHeight }
+      return previous.width === next.width && previous.height === next.height ? previous : next
+    })
     const observer = new ResizeObserver(update)
     observer.observe(parent)
     update()
     return () => observer.disconnect()
-  }, [isMinimized])
-  useEffect(() => {
-    if (!isActive || isMinimized) return
-    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    const element = root.current
-    element?.focus({ preventScroll: true })
-    return () => {
-      if (element?.contains(document.activeElement) || document.activeElement === document.body) {
-        if (previous?.isConnected) previous.focus({ preventScroll: true })
-        else document.querySelector<HTMLButtonElement>('[aria-label="所有应用"]')?.focus()
-      }
-    }
-  }, [isActive, isMinimized])
+  }, [])
 
   function start(event: PointerEvent<HTMLDivElement>, resize = false) {
     if (isMaximized || (event.target as HTMLElement).closest('button')) return
@@ -55,11 +46,10 @@ export function DesktopWindow({ windowId, title, width = 960, height = 640, x = 
     else onDrag(windowId, next.x, next.y)
   }
   function finish() { drag.current = null }
-  if (isMinimized) return null
   return (
-    <div ref={root} role="region" aria-label={title} tabIndex={-1} data-app-id={appType}
+    <div ref={root} role="region" aria-label={title} tabIndex={-1} data-app-id={appType} hidden={isMinimized}
       className={`mt-window ${isActive ? 'mt-window--active' : ''} ${isMaximized ? 'mt-window--maximized' : ''}`}
-      style={{ width: isMaximized ? '100%' : bounds.width, height: isMaximized ? '100%' : bounds.height, left: isMaximized ? 0 : bounds.x, top: isMaximized ? 0 : bounds.y, zIndex }}
+      style={{ display: isMinimized ? 'none' : undefined, width: isMaximized ? '100%' : bounds.width, height: isMaximized ? '100%' : bounds.height, left: isMaximized ? 0 : bounds.x, top: isMaximized ? 0 : bounds.y, zIndex }}
       onPointerDown={() => onFocus(windowId)} onFocusCapture={() => { if (!isActive) onFocus(windowId) }}>
       <div className="mt-window-header" onPointerDown={(event) => start(event)} onPointerMove={move} onPointerUp={finish} onPointerCancel={finish} onLostPointerCapture={finish}
         onDoubleClick={(event) => { if (!(event.target as HTMLElement).closest('button')) onMaximize(windowId) }}>

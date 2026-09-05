@@ -1,6 +1,6 @@
 # 当前状态
 
-> **最后确认：** 2026-09-04
+> **最后确认：** 2026-09-05
 > **阶段：** Phase 1 / Frontend UI refinement
 > **产品代码：** React/Vite/WXT mock Demo；确定性 scenario、Workspace owner、跨标签摘要和 HTTPS Link 已实现，尚未接入真实文件、引擎或后端。
 
@@ -27,7 +27,7 @@
 
 ## 最近验证
 
-- 2026-09-04：Windows `pnpm verify` 通过（81 项单测、类型检查、Vite/WXT 构建、隔离/依赖/包体检查）；E2E 与截图的最终环境、结果和边界见 [验收记录](docs/archive/reviews/2026-09-04-demo-remediation.md)。
+- 2026-09-05：Windows `pnpm verify` 通过（84 项单测及构建/边界检查）；任务摘要同步、窗口草稿与 Web 首帧回归结果见 [验收记录](docs/archive/reviews/2026-09-05-window-task-regressions.md)，不代表 G1 批准。
 
 ## 按需入口
 

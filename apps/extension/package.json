@@ -11,6 +11,7 @@
     "dev:extension": "wxt --browser chrome --mv3",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:e2e:web": "playwright test --config playwright.web.config.ts",
     "typecheck": "tsc --noEmit",
     "build": "tsc && vite build",
     "build:extension": "wxt build --browser chrome --mv3",

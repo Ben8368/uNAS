@@ -21,7 +21,7 @@ export function writeProjection(snapshot: DemoSnapshot, ownerState: DemoProjecti
   } catch { launchStatus.set('无法保存本地任务摘要；其他 New Tab 可能显示旧数据。当前内存演示仍可继续。') }
 }
 export function observeProjection(callback: () => void) {
-  const listener = (event: StorageEvent) => { if (event.key === KEY) callback() }
+  const listener = (event: StorageEvent) => { if (event.key === KEY || event.key === null) callback() }
   window.addEventListener('storage', listener)
   return () => window.removeEventListener('storage', listener)
 }

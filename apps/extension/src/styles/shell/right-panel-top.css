@@ -79,6 +79,11 @@
 .rp-preview-controls__actions button { flex: 1; }
 .rp-preview-controls small { color: rgba(255,255,255,.45); }
 
+.rp-projection { display: grid; gap: 10px; color: rgba(255,255,255,.82); font-size: 12px; }
+.rp-projection p, .rp-projection li { overflow-wrap: anywhere; line-height: 1.6; }
+.rp-projection ul { display: grid; gap: 10px; list-style: none; }
+.rp-projection li { display: grid; gap: 3px; }
+
 @media (max-width: 600px) {
   .mt-right-panel { width: min(360px, calc(100vw - 10px)); }
 }
