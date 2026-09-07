@@ -72,19 +72,6 @@
       "repository": "git+https://github.com/vitejs/vite-plugin-react.git"
     },
     {
-      "name": "framer-motion",
-      "version": "12.43.0",
-      "scope": "runtime-declared",
-      "declaredLicense": "MIT",
-      "licenseFiles": [
-        {
-          "file": "LICENSE.md",
-          "sha256": "5ff46083b88563822b0560dd6221ab89d2f74bc97a52d4c97a75020fd62c6f32"
-        }
-      ],
-      "repository": "https://github.com/motiondivision/motion/"
-    },
-    {
       "name": "js-tokens",
       "version": "4.0.0",
       "scope": "runtime-declared",
@@ -124,32 +111,6 @@
       "repository": "https://github.com/lucide-icons/lucide.git"
     },
     {
-      "name": "motion-dom",
-      "version": "12.43.0",
-      "scope": "runtime-declared",
-      "declaredLicense": "MIT",
-      "licenseFiles": [
-        {
-          "file": "LICENSE.md",
-          "sha256": "1bf0dc3f7727723e5a032ed12164a47cf92c05204cb1a3485f123c24e2833ed1"
-        }
-      ],
-      "repository": "https://github.com/motiondivision/motion"
-    },
-    {
-      "name": "motion-utils",
-      "version": "12.39.0",
-      "scope": "runtime-declared",
-      "declaredLicense": "MIT",
-      "licenseFiles": [
-        {
-          "file": "LICENSE.md",
-          "sha256": "1bf0dc3f7727723e5a032ed12164a47cf92c05204cb1a3485f123c24e2833ed1"
-        }
-      ],
-      "repository": "https://github.com/motiondivision/motion"
-    },
-    {
       "name": "react",
       "version": "18.3.1",
       "scope": "runtime-declared",
@@ -187,19 +148,6 @@
         }
       ],
       "repository": "https://github.com/facebook/react.git"
-    },
-    {
-      "name": "tslib",
-      "version": "2.8.1",
-      "scope": "runtime-declared",
-      "declaredLicense": "0BSD",
-      "licenseFiles": [
-        {
-          "file": "LICENSE.txt",
-          "sha256": "210b19e543130388c68654b7497e967119ce17145f66ab7d85688fbd70f08751"
-        }
-      ],
-      "repository": "https://github.com/Microsoft/tslib.git"
     },
     {
       "name": "typescript",

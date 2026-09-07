@@ -5,30 +5,34 @@ type ExtensionApi = {
   runtime: {
     id: string
     getURL(path: string): string
-    onMessage: { addListener(listener: (message: unknown, sender: { id?: string; url?: string; frameId?: number }, respond: (response: { ok: false; error: string }) => void) => boolean): void }
+    onMessage: { addListener(listener: (message: unknown, sender: { id?: string; url?: string; frameId?: number }) => Promise<LaunchRejection>): void }
   }
   tabs: { create(options: { url: string; active?: boolean }): Promise<unknown> }
 }
+
+type LaunchRejection = { ok: false; error: string }
+
 function api(): ExtensionApi | undefined {
-  return (globalThis as typeof globalThis & { chrome?: ExtensionApi }).chrome
+  return (globalThis as typeof globalThis & { browser?: ExtensionApi }).browser
 }
+
 export function installToolbarAction() {
-  const chrome = api()
-  if (!chrome?.runtime?.id || !chrome.action?.onClicked) return
-  chrome.action.onClicked.addListener(async () => {
-    try { await chrome.tabs.create({ url: chrome.runtime.getURL('/newtab.html'), active: true }) }
+  const browser = api()
+  if (!browser?.runtime?.id || !browser.action?.onClicked) return
+  browser.action.onClicked.addListener(async () => {
+    try { await browser.tabs.create({ url: browser.runtime.getURL('/newtab.html'), active: true }) }
     catch (error) { console.error('无法打开 uNAS 标签页', error) }
   })
 }
+
 /** Reject old page bundles instead of allowing them to create a second desktop. */
 export function installWorkspaceRouter() {
-  const chrome = api()
-  if (!chrome?.runtime?.id) return
-  chrome.runtime.onMessage.addListener((message, sender, respond) => {
-    respond({ ok: false, error: validateLaunchMessage(message, sender, chrome.runtime.id)
+  const browser = api()
+  if (!browser?.runtime?.id) return
+  browser.runtime.onMessage.addListener(async (message, sender) => {
+    return { ok: false, error: validateLaunchMessage(message, sender, browser.runtime.id)
       ? 'App 已改为当前标签页打开，请刷新旧的 uNAS 页面后重试。'
-      : '消息来源、版本或动作无效。' })
-    return false
+      : '消息来源、版本或动作无效。' }
   })
 }
 export function isWorkspaceSurface() {

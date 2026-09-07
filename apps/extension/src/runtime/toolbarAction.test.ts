@@ -7,7 +7,7 @@ describe('toolbar action', () => {
   it('opens an active desktop tab on every click', async () => {
     const addListener = vi.fn()
     const create = vi.fn().mockResolvedValue({ id: 1, windowId: 1 })
-    vi.stubGlobal('chrome', {
+    vi.stubGlobal('browser', {
       runtime: { id: 'unas', getURL: (path: string) => `chrome-extension://unas${path}` },
       action: { onClicked: { addListener } }, tabs: { create },
     })
@@ -22,7 +22,7 @@ describe('toolbar action', () => {
     expect(log).toHaveBeenCalled()
   })
   it('does not install an action outside an extension', () => {
-    vi.stubGlobal('chrome', undefined)
+    vi.stubGlobal('browser', undefined)
     expect(installToolbarAction).not.toThrow()
   })
 })

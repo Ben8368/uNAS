@@ -23,7 +23,7 @@ test('New Tab opens every built-in App locally and rejects legacy cross-tab laun
   await expect(second.locator('.app-icon--ps, .app-icon--transcode, .app-icon--pdf, .app-icon--image, .app-icon--archive, .app-icon--tasks')).toHaveCount(0)
   expect(extension.context.pages().filter((tab) => tab.url().includes('/workspace.html'))).toHaveLength(0)
   const responses = await second.evaluate(async () => {
-    const runtime = (globalThis as unknown as { chrome: { runtime: { sendMessage: (message: unknown) => Promise<{ ok: boolean }> } } }).chrome.runtime
+    const runtime = (globalThis as unknown as { browser: { runtime: { sendMessage: (message: unknown) => Promise<{ ok: boolean }> } } }).browser.runtime
     return Promise.all([
       { schemaVersion: 1, action: 'workspace.launch', appId: 'fetcher' },
       { schemaVersion: 2, action: 'workspace.launch', appId: 'fetcher' },
@@ -94,6 +94,11 @@ test('download cancellation persists after reopening the App', async ({ extensio
   await expect(status).toHaveCSS('background-color', 'rgb(244, 247, 251)')
   await page.evaluate(() => document.documentElement.removeAttribute('data-theme'))
   await downloader.getByRole('button', { name: '添加任务', exact: true }).click()
+  await downloader.getByRole('button', { name: /选择模拟目录/ }).click()
+  const directoryPicker = page.getByRole('dialog', { name: '选择模拟结果目录' })
+  await expect(directoryPicker).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(directoryPicker).toHaveCount(0)
   await downloader.getByLabel(/^(模拟来源链接|下载链接)$/).fill('https://example.com/mock-video\nhttps://example.org/mock-video')
   await downloader.getByRole('button', { name: /^(添加模拟任务|确认添加)$/ }).click()
   const row = downloader.locator('.dl-row').filter({ hasText: 'example.com' })

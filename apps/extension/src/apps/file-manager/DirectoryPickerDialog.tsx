@@ -47,6 +47,16 @@ export function DirectoryPickerDialog({
   const [addressDraft, setAddressDraft] = useState('')
   const addressFocusedRef = useRef(false)
   const addressInputRef = useRef<HTMLInputElement>(null)
+  const dialogRef = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+    if (open && !dialog.open) dialog.showModal()
+    return () => {
+      if (dialog.open) dialog.close()
+    }
+  }, [open])
 
   const scrollAddressInputToEnd = useCallback(() => {
     const el = addressInputRef.current
@@ -186,8 +196,14 @@ export function DirectoryPickerDialog({
   if (!open) return null
 
   const dialog = (
-    <div className="fm-picker fm-picker--app-root" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-label={title} onKeyDown={(event) => { if (event.key === 'Escape') { event.stopPropagation(); onClose() } }} className="fm-picker__panel fm-picker__panel--compact" onClick={(event) => event.stopPropagation()}>
+    <dialog
+      ref={dialogRef}
+      aria-label={title}
+      className="fm-picker fm-picker--app-root"
+      onCancel={(event) => { event.preventDefault(); onClose() }}
+      onClick={(event) => { if (event.currentTarget === event.target) onClose() }}
+    >
+      <div className="fm-picker__panel fm-picker__panel--compact">
         <div className="fm-picker__header">
           <div>
             <strong>{title}</strong>
@@ -285,7 +301,7 @@ export function DirectoryPickerDialog({
           </div>
         </div>
       </div>
-    </div>
+    </dialog>
   )
 
   return portalContainer ? createPortal(dialog, portalContainer) : dialog
