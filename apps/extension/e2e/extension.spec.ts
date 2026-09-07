@@ -82,6 +82,11 @@ test('fixture intake, mock result inspection and trash restoration never select 
 test('download cancellation persists after reopening the App', async ({ extension }) => {
   const page = await workspace(extension, 'fetcher')
   const downloader = page.locator('[data-app-id="fetcher"]')
+  const status = downloader.locator('.dl-status')
+  await expect(status).toHaveCSS('background-color', 'rgb(24, 35, 50)')
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'))
+  await expect(status).toHaveCSS('background-color', 'rgb(244, 247, 251)')
+  await page.evaluate(() => document.documentElement.removeAttribute('data-theme'))
   await downloader.getByRole('button', { name: '添加任务', exact: true }).click()
   await downloader.getByLabel(/^(模拟来源链接|下载链接)$/).fill('https://example.com/mock-video\nhttps://example.org/mock-video')
   await downloader.getByRole('button', { name: /^(添加模拟任务|确认添加)$/ }).click()

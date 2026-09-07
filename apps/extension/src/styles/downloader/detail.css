@@ -19,15 +19,15 @@
   height: var(--dl-footer-h, 48px);
   box-sizing: border-box;
   padding: 0 4px;
-  border-top: 1px solid rgba(255,255,255,.07);
-  background: linear-gradient(180deg, rgba(16,17,21,0), rgba(16,17,21,.88) 20%, rgba(16,17,21,.98) 100%);
-  color: rgba(255,255,255,.65);
+  border-top: 1px solid color-mix(in srgb, var(--window-border) 32%, transparent);
+  background: var(--window-surface);
+  color: var(--window-text-muted);
   font-size: 12px;
   z-index: 10;
 }
 
 .dl-speed { flex: 1; }
-.dl-speed span { color: rgba(255,255,255,.3); }
+.dl-speed span { color: color-mix(in srgb, var(--window-text-muted) 58%, transparent); }
 
 .dl-task-detail {
   border: 0;

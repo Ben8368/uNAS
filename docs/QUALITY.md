@@ -117,9 +117,11 @@ Frontend Demo 阶段的优先级是：交互真实性 > 状态完整 > 无障碍
 Phase 0 的 `pnpm verify` 只有治理检查。引入前端后逐步扩展：
 
 ```text
-docs governance → lint → typecheck → component/contract → build → selected extension E2E
+docs governance → boundary/dependency → unit/contract → typecheck → build/package → selected extension E2E
 ```
 
 视觉、真机、性能和商店材料可分命令，但对应 Gate 必须显式调用；未运行项写明原因，不能由构建通过代替。
 
-现有 Demo 的跨平台入口是 `pnpm verify`；MV3 独立浏览器回归是 `pnpm test:e2e`（先构建扩展）。首次运行需要安装 Playwright Chromium。E2E 的浏览器版本、环境、截图和失败 trace 必须与结果一起记录；视口模拟不等于实际浏览器 200% 缩放或目标设备性能。
+现有 Demo 的跨平台入口是 `pnpm verify`；它当前依次执行治理、Demo 边界、依赖清单、Vitest、TypeScript、Vite/WXT 构建和包体检查，尚未配置 lint 工具。MV3 独立浏览器回归是 `pnpm test:e2e`（先构建扩展），Web 回归是 `pnpm --dir apps/extension run test:e2e:web`。首次运行需要安装 Playwright Chromium。
+
+GitHub Actions 在 `main` 的 push、PR 和手动触发中运行：治理检查；使用 Node 22、根 `packageManager` 声明的 pnpm 和 `pnpm install --frozen-lockfile` 的 `pnpm verify`；以及在完整验证通过后执行的 MV3/Web E2E。E2E 报告、截图和失败 trace 以 CI artifact 保留 14 天。E2E 的浏览器版本、环境、截图和失败 trace 必须与结果一起记录；视口模拟不等于实际浏览器 200% 缩放或目标设备性能。

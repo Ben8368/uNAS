@@ -27,7 +27,7 @@
 
 ## 最近验证
 
-- 2026-09-07：Windows `pnpm verify` 通过（91 项单测及构建/边界检查），23 项扩展 E2E、3 项 Web E2E 通过；Link App 持久化、错误隔离与工具栏点击入口见 [验收记录](docs/archive/reviews/2026-09-07-links-startup-toolbar.md)，不代表 G1 批准。
+- 2026-09-07：Windows `pnpm verify` 通过（91 项单测及构建/边界检查），23 项扩展 E2E、3 项 Web E2E 通过；下载 App 底栏已验证随深/浅主题采用窗口表面色。GitHub Actions 已配置治理、完整验证和浏览器回归，但尚无远端运行证据；不代表 G1 批准。
 
 ## 按需入口
 

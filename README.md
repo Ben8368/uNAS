@@ -52,7 +52,9 @@ pnpm verify
 
 该跨平台入口覆盖文档治理、Demo 边界、依赖清单、单元测试、类型检查、Vite/WXT 构建、素材哈希及包体预算。它不代替扩展 E2E 或人工验收。
 
-本地演示运行 `pnpm dev:demo`；工具会打开独立 Workspace。顶部可选择固定场景、重置和手动推进模拟步骤。重置会关闭 App 并清空本轮状态，文件入口仅添加内置 fixture。
+GitHub Actions 在针对 `main` 的推送和 PR 上分别运行治理检查、`pnpm verify` 与 Playwright 的 MV3/Web 回归；E2E 只在完整验证通过后执行，并在完成或失败时保留报告、截图和 trace。CI 仍不能替代目标 Chrome 稳定版、真实缩放、辅助技术和性能的人工证据。
+
+本地演示运行 `pnpm dev:demo`，启动后显示本地 Desktop；从 Desktop 启动 Workspace App 时会在弹窗中打开独立演示 Workspace。顶部可选择固定场景、重置和手动推进模拟步骤。重置会关闭 App 并清空本轮状态，文件入口仅添加内置 fixture。
 
 构建 Chrome 解包扩展：
 
@@ -62,7 +64,7 @@ pnpm build:extension
 
 构建物位于 `apps/extension/.output/chrome-mv3/`。在 Chrome 扩展管理页面开启开发者模式后，选择“加载已解压的扩展程序”，并选择该目录。
 
-首次准备自动化浏览器，运行 `pnpm --dir apps/extension exec playwright install chromium`；之后运行 `pnpm test:e2e`。它加载独立配置中的 MV3 构建物，检查跨标签与模拟流程，并保存布局截图；不操作已有浏览器配置。报告在 `apps/extension/playwright-report/`，截图与失败 trace 在 `apps/extension/test-results/`。证据解释见 [本轮验收记录](docs/archive/reviews/2026-09-04-demo-remediation.md)，素材与依赖说明见 [ASSETS.md](docs/ASSETS.md)。
+首次准备自动化浏览器，运行 `pnpm --dir apps/extension exec playwright install chromium`；之后运行 `pnpm test:e2e`。它加载独立配置中的 MV3 构建物，检查跨标签与模拟流程，并保存布局截图；不操作已有浏览器配置。报告在 `apps/extension/playwright-report/`，截图与失败 trace 在 `apps/extension/test-results/`。证据解释见 [本轮验收记录](docs/archive/reviews/2026-09-07-links-startup-toolbar.md)，素材与依赖说明见 [ASSETS.md](docs/ASSETS.md)。
 
 ## 发布边界
 
