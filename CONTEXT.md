@@ -17,7 +17,7 @@
 
 ## 近期优先级
 
-1. 完成 FE-11 的其余 Popover/菜单、响应式容器和 UI 分片审查，继续打磨桌面、状态抽屉、响应式与键盘路径；不改变 mock/真实边界。
+1. FE-11 已迁移启动器 Dialog 与下载行 Popover；继续审查响应式容器和 UI 分片，打磨桌面、状态抽屉、响应式与键盘路径；不改变 mock/真实边界。
 2. 补录 G1 的 Stable Chrome/OS/视口、真实缩放、辅助技术与性能人工证据；维护者已完成走查且暂未发现问题，但 RISK-001 的可复现记录仍未完整。
 3. 在 Demo 验收后执行 Extension/File/Image 等 Phase 2 探针，再决定真实能力接入范围。
 
@@ -28,7 +28,7 @@
 
 ## 最近验证
 
-- 2026-09-07：Chrome 152.0.7977.82 / win32 10.0.26200 x64；维护者已完成人工体验走查、暂未发现问题。`pnpm verify`、29 项扩展 E2E、6 项 Web E2E 均通过；原生 `browser.*`、Promise 拒绝消息、`<dialog>` Escape 与 mock 生命周期回归已验证。证据位于 `apps/extension/test-results/`；仍不代表 G1 批准或真实引擎/生命周期验证。
+- 2026-09-07：Chrome 152.0.7977.82 / win32 10.0.26200 x64；维护者已完成人工体验走查、暂未发现问题。`pnpm verify`、30 项扩展 E2E、6 项 Web E2E 均通过；原生 `browser.*`、Promise 拒绝消息、`<dialog>`/Popover Escape 与 mock 生命周期回归已验证。证据位于 `apps/extension/test-results/`；仍不代表 G1 批准或真实引擎/生命周期验证。
 
 ## 按需入口
 

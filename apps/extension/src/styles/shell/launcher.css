@@ -1,21 +1,10 @@
 ﻿/* ===== Launcher ===== */
-.mt-launcher-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 6000;
-  background: rgba(0,0,0,.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 60px;
-  animation: fadeIn .15s ease;
-}
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
 .mt-launcher {
+  position: fixed;
+  inset: auto 50% 60px auto;
+  transform: translateX(50%);
+  margin: 0;
+  padding: 0;
   width: 520px;
   max-height: 420px;
   background: rgba(20,22,30,.9);
@@ -30,7 +19,17 @@
   overflow: hidden;
 }
 
-@keyframes slideUp { from { transform: translateY(20px) scale(.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+.mt-launcher:not([open]) { display: none; }
+
+.mt-launcher::backdrop {
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn .15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateX(50%) translateY(20px) scale(.98); opacity: 0; } to { transform: translateX(50%) translateY(0) scale(1); opacity: 1; } }
 
 .mt-launcher-search {
   padding: 14px 16px;

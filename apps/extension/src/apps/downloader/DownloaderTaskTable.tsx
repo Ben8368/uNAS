@@ -1,5 +1,4 @@
-import { type MouseEvent, useCallback, useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { type CSSProperties, type MouseEvent, useCallback, useId, useRef, useState } from 'react'
 
 import { StatusIcon } from 'unas-src/apps/downloader/icons'
 import {
@@ -10,8 +9,6 @@ import {
   isTaskRetryable,
 } from 'unas-src/apps/downloader/helpers'
 import type { DownloadTask, DownloaderRowMenuAction } from 'unas-src/apps/downloader/types'
-
-const MENU_W = 180
 
 function VerticalDotsIcon() {
   return (
@@ -39,91 +36,26 @@ export function DownloaderTaskTable({
   onRowMenuAction,
 }: DownloaderTaskTableProps) {
   const multi = selectedIds.size > 0
-  const [menu, setMenu] = useState<{ task: DownloadTask; x: number; y: number } | null>(null)
+  const [openMenuTaskId, setOpenMenuTaskId] = useState<string | null>(null)
+  const menuScope = useId().replace(/:/g, '')
+  const initializedMenus = useRef(new WeakSet<HTMLDivElement>())
+  const setupPopover = useCallback((element: HTMLDivElement | null) => {
+    if (!element) return
+    element.setAttribute('popover', 'auto')
+    if (initializedMenus.current.has(element)) return
+    initializedMenus.current.add(element)
+    element.addEventListener('toggle', () => {
+      setOpenMenuTaskId(element.matches(':popover-open') ? element.dataset.taskId ?? null : null)
+    })
+  }, [])
 
-  const closeMenu = useCallback(() => setMenu(null), [])
-
-  useEffect(() => {
-    if (!menu) return
-    function onPointerDown(event: PointerEvent) {
-      const el = event.target as HTMLElement | null
-      if (el?.closest?.('[data-dl-row-menu-root]')) return
-      closeMenu()
-    }
-    document.addEventListener('pointerdown', onPointerDown, true)
-    return () => document.removeEventListener('pointerdown', onPointerDown, true)
-  }, [closeMenu, menu])
-
-  useEffect(() => {
-    if (!menu) return
-    function onScroll() {
-      closeMenu()
-    }
-    window.addEventListener('scroll', onScroll, true)
-    return () => window.removeEventListener('scroll', onScroll, true)
-  }, [closeMenu, menu])
-
-  function openMenuForTask(task: DownloadTask, event: MouseEvent<HTMLButtonElement>) {
-    event.stopPropagation()
-    const r = event.currentTarget.getBoundingClientRect()
-    const x = Math.min(r.right - MENU_W, window.innerWidth - MENU_W - 8)
-    const y = r.bottom + 4
-    setMenu((prev) => (prev?.task.id === task.id ? null : { task, x, y }))
-  }
-
-  function runAction(action: DownloaderRowMenuAction, task: DownloadTask) {
+  function runAction(action: DownloaderRowMenuAction, task: DownloadTask, menuId: string) {
     onRowMenuAction?.(action, task)
-    closeMenu()
+    document.getElementById(menuId)?.hidePopover()
   }
-
-  const portalMenu =
-    menu && typeof document !== 'undefined'
-      ? createPortal(
-          <div
-            data-dl-row-menu-root
-            className="dl-row-menu-portal"
-            style={{ left: menu.x, top: menu.y }}
-            role="menu"
-            aria-label="任务扩展操作"
-          >
-            <button
-              type="button"
-              role="menuitem"
-              className="dl-row-menu-item"
-              disabled={!getTaskSourceUrl(menu.task)}
-              title={getTaskSourceUrl(menu.task) ? '复制原始下载链接' : '无可复制的链接'}
-              onClick={() => runAction('copy_url', menu.task)}
-            >
-              复制链接
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="dl-row-menu-item"
-              disabled={!getTaskDownloadFilePath(menu.task)}
-              title={getTaskDownloadFilePath(menu.task) ? '查看固定模拟结果，不包含文件下载' : '任务尚未记录模拟结果'}
-              onClick={() => runAction('download_file', menu.task)}
-            >
-              查看模拟结果
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="dl-row-menu-item"
-              disabled={!isTaskRetryable(menu.task)}
-              title={isTaskRetryable(menu.task) ? '使用原始参数重新提交模拟任务' : '当前状态不支持重新模拟'}
-              onClick={() => runAction('retry', menu.task)}
-            >
-              重新模拟
-            </button>
-          </div>,
-          document.body,
-        )
-      : null
 
   return (
     <section className="dl-table dl-table--queue">
-      {portalMenu}
       <div className="dl-table-scroll">
         <div className="dl-head">
           <span className="dl-col-status" aria-hidden="true" />
@@ -159,6 +91,10 @@ export function DownloaderTaskTable({
           filteredTasks.map((task, index) => {
             const isSelected = multi ? selectedIds.has(task.id) : selectedTaskId === task.id
             const isPrimary = selectedTaskId === task.id
+            const menuId = `dl-task-menu-${menuScope}-${index}`
+            const anchorName = `--dl-task-menu-anchor-${menuScope}-${index}`
+            const anchorStyle = { anchorName } as CSSProperties
+            const menuStyle = { positionAnchor: anchorName } as CSSProperties
             return (
               <div
                 key={task.id}
@@ -185,14 +121,56 @@ export function DownloaderTaskTable({
                 <span className="dl-col-menu">
                   <button
                     type="button"
-                    className={`dl-row-menu-trigger ${menu?.task.id === task.id ? 'dl-row-menu-trigger--open' : ''}`}
+                    className={`dl-row-menu-trigger ${openMenuTaskId === task.id ? 'dl-row-menu-trigger--open' : ''}`}
                     aria-label="更多操作"
-                    aria-expanded={menu?.task.id === task.id}
+                    aria-expanded={openMenuTaskId === task.id}
                     aria-haspopup="menu"
-                    onClick={(event) => openMenuForTask(task, event)}
+                    ref={(element) => element?.setAttribute('popovertarget', menuId)}
+                    style={anchorStyle}
+                    onClick={(event) => event.stopPropagation()}
                   >
                     <VerticalDotsIcon />
                   </button>
+                  <div
+                    id={menuId}
+                    className="dl-row-menu-popover"
+                    ref={setupPopover}
+                    data-task-id={task.id}
+                    style={menuStyle}
+                    role="menu"
+                    aria-label="任务扩展操作"
+                  >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="dl-row-menu-item"
+                      disabled={!getTaskSourceUrl(task)}
+                      title={getTaskSourceUrl(task) ? '复制原始下载链接' : '无可复制的链接'}
+                      onClick={() => runAction('copy_url', task, menuId)}
+                    >
+                      复制链接
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="dl-row-menu-item"
+                      disabled={!getTaskDownloadFilePath(task)}
+                      title={getTaskDownloadFilePath(task) ? '查看固定模拟结果，不包含文件下载' : '任务尚未记录模拟结果'}
+                      onClick={() => runAction('download_file', task, menuId)}
+                    >
+                      查看模拟结果
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="dl-row-menu-item"
+                      disabled={!isTaskRetryable(task)}
+                      title={isTaskRetryable(task) ? '使用原始参数重新提交模拟任务' : '当前状态不支持重新模拟'}
+                      onClick={() => runAction('retry', task, menuId)}
+                    >
+                      重新模拟
+                    </button>
+                  </div>
                 </span>
               </div>
             )

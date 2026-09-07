@@ -57,7 +57,8 @@
   top: 0;
   z-index: 2;
   padding-right: 10px;
-  background: rgba(16, 17, 21, 0.96);
+  /* Keep the sticky table header continuous with its owning window surface. */
+  background: var(--window-surface);
 }
 
 .dl-body {
@@ -237,9 +238,12 @@
   display: block;
 }
 
-.dl-row-menu-portal {
+.dl-row-menu-popover {
   position: fixed;
-  z-index: 4000;
+  inset: auto;
+  top: anchor(bottom);
+  right: anchor(right);
+  margin: 4px 0 0;
   width: 180px;
   padding: 4px 0;
   border-radius: 8px;
