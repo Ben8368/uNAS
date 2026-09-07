@@ -3,7 +3,7 @@ import { persistLink, readLinks, saveLinks, validateLink, validateLinkUrl, type 
 const saved: LinkApp = { schemaVersion: 1, id: 'a', name: 'Example', url: 'https://example.com/', icon: 'globe' }
 beforeEach(() => {
   const storage = new Map<string, string>()
-  vi.stubGlobal('localStorage', { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) })
+  vi.stubGlobal('localStorage', { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value), removeItem: (key: string) => storage.delete(key) })
   vi.stubGlobal('window', { dispatchEvent: vi.fn() })
 })
 afterEach(() => vi.unstubAllGlobals())
@@ -18,33 +18,49 @@ describe('declarative Link App', () => {
     expect(validateLink(saved, [saved], 'a')).toBeNull()
     expect(validateLink({ ...saved, name: '' }, [])).toContain('名称')
   })
-  it('round-trips accepted records and preserves storage when a write exceeds the read budget', () => {
-    saveLinks([saved])
-    expect(readLinks()).toEqual([saved])
+  it('round-trips accepted records and preserves storage when a write exceeds the read budget', async () => {
+    await saveLinks([saved])
+    await expect(readLinks()).resolves.toEqual([saved])
     const links = Array.from({ length: 50 }, (_, i) => ({ ...saved, id: `link-${i}`, name: `Link ${i}`, url: `https://example.com/${'a'.repeat(1980)}` }))
-    expect(() => saveLinks(links)).toThrow('大小限制')
-    expect(readLinks()).toEqual([saved])
+    await expect(saveLinks(links)).rejects.toThrow('大小限制')
+    await expect(readLinks()).resolves.toEqual([saved])
   })
-  it('rejects duplicate identities and invalid schemas before overwriting storage', () => {
-    saveLinks([saved])
-    expect(() => saveLinks([saved, { ...saved, name: 'Other' }])).toThrow('重复项目')
-    expect(() => saveLinks([{ ...saved, schemaVersion: 2 } as unknown as LinkApp])).toThrow('配置无效')
-    expect(readLinks()).toEqual([saved])
+  it('rejects duplicate identities and invalid schemas before overwriting storage', async () => {
+    await saveLinks([saved])
+    await expect(saveLinks([saved, { ...saved, name: 'Other' }])).rejects.toThrow('重复项目')
+    await expect(saveLinks([{ ...saved, schemaVersion: 2 } as unknown as LinkApp])).rejects.toThrow('配置无效')
+    await expect(readLinks()).resolves.toEqual([saved])
   })
-  it('rejects edits to deleted or changed records without writing', () => {
-    saveLinks([])
-    expect(() => persistLink({ ...saved, name: 'Draft' }, saved)).toThrow('另一页面删除')
-    expect(readLinks()).toEqual([])
+  it('rejects edits to deleted or changed records without writing', async () => {
+    await saveLinks([])
+    await expect(persistLink({ ...saved, name: 'Draft' }, saved)).rejects.toThrow('另一页面删除')
+    await expect(readLinks()).resolves.toEqual([])
     const changed = { ...saved, name: 'Remote edit' }
-    saveLinks([changed])
-    expect(() => persistLink({ ...saved, name: 'Draft' }, saved)).toThrow('另一页面修改')
-    expect(readLinks()).toEqual([changed])
+    await saveLinks([changed])
+    await expect(persistLink({ ...saved, name: 'Draft' }, saved)).rejects.toThrow('另一页面修改')
+    await expect(readLinks()).resolves.toEqual([changed])
   })
-  it('merges edits with the latest unrelated records', () => {
+  it('merges edits with the latest unrelated records', async () => {
     const other = { ...saved, id: 'b', name: 'Other' }
-    saveLinks([saved, other])
+    await saveLinks([saved, other])
     const edited = { ...saved, name: 'Edited' }
-    expect(persistLink(edited, saved)).toEqual([edited, other])
-    expect(readLinks()).toEqual([edited, other])
+    await expect(persistLink(edited, saved)).resolves.toEqual([edited, other])
+    await expect(readLinks()).resolves.toEqual([edited, other])
+  })
+  it('migrates legacy Link Apps into extension-local storage once', async () => {
+    const extensionStorage = new Map<string, unknown>()
+    const changes = { addListener: vi.fn(), removeListener: vi.fn() }
+    vi.stubGlobal('browser', { storage: {
+      local: {
+        get: async (key: string) => ({ [key]: extensionStorage.get(key) }),
+        set: async (values: Record<string, unknown>) => { Object.entries(values).forEach(([key, value]) => extensionStorage.set(key, value)) },
+      },
+      onChanged: changes,
+    } })
+    localStorage.setItem('unas-link-apps-v1', JSON.stringify([saved]))
+
+    await expect(readLinks()).resolves.toEqual([saved])
+    expect(extensionStorage.get('unas-link-apps-v1')).toEqual([saved])
+    expect(localStorage.getItem('unas-link-apps-v1')).toBeNull()
   })
 })

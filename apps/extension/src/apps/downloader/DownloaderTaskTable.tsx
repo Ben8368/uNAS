@@ -1,4 +1,4 @@
-import { type CSSProperties, type MouseEvent, useCallback, useId, useRef, useState } from 'react'
+import { type CSSProperties, type KeyboardEvent, type MouseEvent, useCallback, useId, useRef, useState } from 'react'
 
 import { StatusIcon } from 'unas-src/apps/downloader/icons'
 import {
@@ -18,6 +18,21 @@ function VerticalDotsIcon() {
       <circle cx="8" cy="12.5" r="1.35" fill="currentColor" />
     </svg>
   )
+}
+
+function enabledMenuItems(menu: HTMLElement) {
+  return Array.from(menu.querySelectorAll<HTMLButtonElement>('[role="menuitem"]:not(:disabled)'))
+}
+
+function focusMenuItem(menu: HTMLElement, direction: 'first' | 'last' | 'next' | 'previous') {
+  const items = enabledMenuItems(menu)
+  if (!items.length) return
+  const current = items.indexOf(document.activeElement as HTMLButtonElement)
+  const index = direction === 'first' ? 0
+    : direction === 'last' ? items.length - 1
+      : direction === 'next' ? (current + 1 + items.length) % items.length
+        : (current - 1 + items.length) % items.length
+  items[index].focus()
 }
 
 type DownloaderTaskTableProps = {
@@ -52,6 +67,26 @@ export function DownloaderTaskTable({
   function runAction(action: DownloaderRowMenuAction, task: DownloadTask, menuId: string) {
     onRowMenuAction?.(action, task)
     document.getElementById(menuId)?.hidePopover()
+  }
+
+  function handleTriggerKeyDown(event: KeyboardEvent<HTMLButtonElement>, menuId: string) {
+    if (!['ArrowDown', 'ArrowUp'].includes(event.key)) return
+    const menu = document.getElementById(menuId)
+    if (!menu) return
+    event.preventDefault()
+    if (!menu.matches(':popover-open')) menu.showPopover()
+    focusMenuItem(menu, event.key === 'ArrowDown' ? 'first' : 'last')
+  }
+
+  function handleMenuKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const menu = event.currentTarget
+    const direction = event.key === 'ArrowDown' ? 'next'
+      : event.key === 'ArrowUp' ? 'previous'
+        : event.key === 'Home' ? 'first'
+          : event.key === 'End' ? 'last' : undefined
+    if (!direction) return
+    event.preventDefault()
+    focusMenuItem(menu, direction)
   }
 
   return (
@@ -128,6 +163,7 @@ export function DownloaderTaskTable({
                     ref={(element) => element?.setAttribute('popovertarget', menuId)}
                     style={anchorStyle}
                     onClick={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => handleTriggerKeyDown(event, menuId)}
                   >
                     <VerticalDotsIcon />
                   </button>
@@ -139,6 +175,7 @@ export function DownloaderTaskTable({
                     style={menuStyle}
                     role="menu"
                     aria-label="任务扩展操作"
+                    onKeyDown={handleMenuKeyDown}
                   >
                     <button
                       type="button"

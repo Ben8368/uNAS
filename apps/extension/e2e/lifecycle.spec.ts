@@ -20,7 +20,7 @@ test('cross-tab deletion preserves an editing draft and reports a conflict', asy
   await expect(app.getByRole('alert')).toContainText('另一页面删除')
   await expect(app.getByLabel('名称', { exact: true })).toHaveValue('Draft')
   await expect(app.getByRole('status')).toHaveCount(0)
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('unas-link-apps-v1')!))).toEqual([])
+  expect(await page.evaluate(async () => (await browser.storage.local.get('unas-link-apps-v1'))['unas-link-apps-v1'])).toEqual([])
   expect(extension.errors).toEqual([])
 })
 
@@ -53,10 +53,10 @@ test('添加 App validates HTTPS, registers a desktop App, and persists edits', 
   await page.reload()
   await page.locator('.app-icon--browser').click()
   await expect(app).toContainText('尚未添加桌面 App')
-  await page.evaluate(() => localStorage.setItem('unas-link-apps-v1', JSON.stringify([
+  await page.evaluate(async () => browser.storage.local.set({ 'unas-link-apps-v1': [
     { schemaVersion: 1, id: 'duplicate', name: 'One', url: 'https://example.com/', icon: 'globe' },
     { schemaVersion: 1, id: 'duplicate', name: 'Two', url: 'https://example.org/', icon: 'bookmark' },
-  ])))
+  ] }))
   await page.reload()
   await page.locator('.app-icon--browser').click()
   await expect(app.getByRole('alert')).toContainText('重复项目')

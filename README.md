@@ -54,7 +54,7 @@ pnpm verify
 
 GitHub Actions 在针对 `main` 的推送和 PR 上分别运行治理检查、`pnpm verify` 与 Playwright 的 MV3/Web 回归；E2E 只在完整验证通过后执行，并在完成或失败时保留报告、截图和 trace。CI 仍不能替代目标 Chrome 稳定版、真实缩放、辅助技术和性能的人工证据。
 
-本地演示运行 `pnpm dev:demo`，启动后显示本地 Desktop；从 Desktop 启动 Workspace App 时会在弹窗中打开独立演示 Workspace。顶部可选择固定场景、重置和手动推进模拟步骤。重置会关闭 App 并清空本轮状态，文件入口仅添加内置 fixture。
+本地演示运行 `pnpm dev:demo`，启动后显示本地 Desktop；Files/下载 App 在当前标签页打开，首次使用时建立逻辑 mock Workspace，不会创建独立可见标签页。顶部可选择固定场景、重置和手动推进模拟步骤。重置会关闭 App 并清空本轮状态，文件入口仅添加内置 fixture。
 
 构建 Chrome 解包扩展：
 

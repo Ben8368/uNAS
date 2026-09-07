@@ -26,7 +26,7 @@
 ### FE-01 扩展壳与页面边界
 
 - WXT/React/TypeScript 最小结构。
-- New Tab、Workspace、Service Worker entrypoint；Content/Offscreen 只留设计，不申请权限。
+- New Tab、Workspace、Service Worker entrypoint；Content/Offscreen 只留设计，不申请其权限。Link App 配置仅使用 `storage`，不引入 host、文件或下载权限。
 - 验证 New Tab 多实例与 Workspace 查找/复用的前端协议。
 
 ### FE-02 Design System

@@ -21,6 +21,8 @@ test('native dialog and Popover preserve launcher and task-menu semantics', asyn
   await expect(menu).toBeVisible()
   await expect.poll(() => menu.evaluate((element) => ({ tagName: element.tagName, open: element.matches(':popover-open') }))).toEqual({ tagName: 'DIV', open: true })
   await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+  await page.keyboard.press('ArrowDown')
+  await expect(menu.getByRole('menuitem', { name: '复制链接' })).toBeFocused()
   await page.keyboard.press('Escape')
   await expect(menu).toBeHidden()
   await expect(trigger).toHaveAttribute('aria-expanded', 'false')

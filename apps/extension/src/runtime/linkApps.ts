@@ -1,3 +1,10 @@
+import {
+  getExtensionLocalValue,
+  hasExtensionLocalStorage,
+  setExtensionLocalValue,
+  subscribeExtensionLocalChanges,
+} from './extensionAdapter'
+
 export type LinkApp = { schemaVersion: 1; id: string; name: string; url: string; icon: 'globe' | 'bookmark' }
 const KEY = 'unas-link-apps-v1'
 const CHANGED_EVENT = 'unas-link-apps-changed'
@@ -18,9 +25,9 @@ export function validateLink(input: Pick<LinkApp, 'name' | 'url'>, existing: Lin
   const result = validateLinkUrl(input.url)
   return 'error' in result ? result.error : null
 }
-function parseLinks(raw: string): LinkApp[] {
+function parseLinks(value: unknown): LinkApp[] {
+  const raw = JSON.stringify(value)
   if (raw.length > MAX_CONFIG_CHARACTERS) throw new Error('Link App 配置超过大小限制。')
-  const value: unknown = JSON.parse(raw)
   if (!Array.isArray(value) || value.length > 50) throw new Error('本地 Link App 配置无效，无法加载。')
   const ids = new Set<string>()
   const names = new Set<string>()
@@ -33,19 +40,35 @@ function parseLinks(raw: string): LinkApp[] {
   }
   return value as LinkApp[]
 }
-export function readLinks(): LinkApp[] {
+
+function readLegacyLinks(): LinkApp[] {
   const raw = localStorage.getItem(KEY)
-  return raw ? parseLinks(raw) : []
+  return raw ? parseLinks(JSON.parse(raw)) : []
 }
-export function saveLinks(links: LinkApp[]) {
-  if (links.length > 50) throw new Error('最多保存 50 个 Link App。')
-  const raw = JSON.stringify(links)
-  parseLinks(raw)
-  localStorage.setItem(KEY, raw)
+
+/** Use extension-local persistence in packaged pages; localStorage only keeps Vite's standalone mock usable. */
+export async function readLinks(): Promise<LinkApp[]> {
+  if (!hasExtensionLocalStorage()) return readLegacyLinks()
+  const stored = await getExtensionLocalValue(KEY)
+  if (stored !== undefined) return parseLinks(stored)
+
+  const legacy = readLegacyLinks()
+  if (legacy.length) {
+    await setExtensionLocalValue(KEY, legacy)
+    localStorage.removeItem(KEY)
+  }
+  return legacy
+}
+
+export async function saveLinks(links: LinkApp[]) {
+  const checked = parseLinks(links)
+  if (hasExtensionLocalStorage()) await setExtensionLocalValue(KEY, checked)
+  else localStorage.setItem(KEY, JSON.stringify(checked))
   window.dispatchEvent(new Event(CHANGED_EVENT))
 }
-export function persistLink(link: LinkApp, original?: LinkApp): LinkApp[] {
-  const latest = readLinks()
+
+export async function persistLink(link: LinkApp, original?: LinkApp): Promise<LinkApp[]> {
+  const latest = await readLinks()
   if (original) {
     const current = latest.find((item) => item.id === original.id)
     if (!current) throw new Error('此 App 已在另一页面删除；草稿已保留，请取消编辑后重新添加。')
@@ -54,15 +77,18 @@ export function persistLink(link: LinkApp, original?: LinkApp): LinkApp[] {
     }
   }
   const next = original ? latest.map((item) => item.id === original.id ? link : item) : [...latest, link]
-  saveLinks(next)
+  await saveLinks(next)
   return next
 }
 export function subscribeLinks(listener: () => void) {
-  window.addEventListener(CHANGED_EVENT, listener)
-  window.addEventListener('storage', listener)
+  const localStorageListener = () => listener()
+  window.addEventListener(CHANGED_EVENT, localStorageListener)
+  window.addEventListener('storage', localStorageListener)
+  const unsubscribeExtensionStorage = subscribeExtensionLocalChanges(KEY, listener)
   return () => {
-    window.removeEventListener(CHANGED_EVENT, listener)
-    window.removeEventListener('storage', listener)
+    window.removeEventListener(CHANGED_EVENT, localStorageListener)
+    window.removeEventListener('storage', localStorageListener)
+    unsubscribeExtensionStorage()
   }
 }
 export function openLink(url: string) {

@@ -8,12 +8,46 @@ type ExtensionApi = {
     onMessage: { addListener(listener: (message: unknown, sender: { id?: string; url?: string; frameId?: number }) => Promise<LaunchRejection>): void }
   }
   tabs: { create(options: { url: string; active?: boolean }): Promise<unknown> }
+  storage?: {
+    local: {
+      get(key: string): Promise<Record<string, unknown>>
+      set(values: Record<string, unknown>): Promise<void>
+    }
+    onChanged: {
+      addListener(listener: (changes: Record<string, { newValue?: unknown }>, areaName: string) => void): void
+      removeListener(listener: (changes: Record<string, { newValue?: unknown }>, areaName: string) => void): void
+    }
+  }
 }
 
 type LaunchRejection = { ok: false; error: string }
 
 function api(): ExtensionApi | undefined {
   return (globalThis as typeof globalThis & { browser?: ExtensionApi }).browser
+}
+
+/** Keep extension persistence behind the adapter; Vite's standalone mock has no extension API. */
+export function hasExtensionLocalStorage() {
+  const storage = api()?.storage
+  return Boolean(storage?.local && storage.onChanged)
+}
+
+export async function getExtensionLocalValue(key: string): Promise<unknown> {
+  return (await api()?.storage?.local.get(key))?.[key]
+}
+
+export async function setExtensionLocalValue(key: string, value: unknown) {
+  await api()?.storage?.local.set({ [key]: value })
+}
+
+export function subscribeExtensionLocalChanges(key: string, listener: () => void) {
+  const changes = api()?.storage?.onChanged
+  if (!changes) return () => {}
+  const handle = (updates: Record<string, { newValue?: unknown }>, areaName: string) => {
+    if (areaName === 'local' && Object.prototype.hasOwnProperty.call(updates, key)) listener()
+  }
+  changes.addListener(handle)
+  return () => changes.removeListener(handle)
 }
 
 export function installToolbarAction() {

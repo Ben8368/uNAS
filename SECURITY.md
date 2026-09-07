@@ -42,6 +42,7 @@ User file / archive / media    不可信输入
 ## 权限
 
 - required permissions 只包含首发核心功能当下需要的最小集合。
+- 当前 required permission 仅为 `storage`：经 extension adapter 保存 Link App 的声明式配置；不保存文件、任务内容或浏览历史。
 - optional permissions 也不得为未来预留；只在用户触发功能时解释并请求。
 - host permissions 默认不全域开放；网页资源导入优先使用 `activeTab` 或更窄的用户触发能力。
 - downloads、clipboard、contextMenus、offscreen、content script 等逐项记录用途、触发点、拒绝行为和商店披露。
@@ -51,7 +52,7 @@ User file / archive / media    不可信输入
 
 - Service Worker 随时可能终止，不保存只存在内存的关键状态，不运行长计算。
 - New Tab 可以多实例；真实任务由单一 Workspace owner 管理，消息需验证 owner/lease。
-- Phase 1 同页 App 通过逻辑 mock Workspace 共享状态：仅同源 BroadcastChannel、版本与方法/参数白名单、会话/请求匹配、消息大小与并发上限。owner 失联后客户端停止操作，不自动重放写请求；不新增权限或后台常驻能力，见 ADR 0007。
+- Phase 1 同页 App 通过逻辑 mock Workspace 共享状态：仅同源 BroadcastChannel、版本与方法/参数白名单、会话/请求匹配、消息大小与并发上限。owner 失联后客户端停止操作，不自动重放写请求；除 Link App 配置所需的 `storage` 外，不新增 host、文件或后台常驻权限，见 ADR 0007。
 - Workspace 关闭、崩溃、浏览器退出或扩展更新不能标记假成功；恢复能力必须由实测决定。
 - Offscreen Document 只用于官方允许且经探针证明必要的场景，不作为常驻应用逃生舱。
 

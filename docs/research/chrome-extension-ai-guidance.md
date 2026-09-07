@@ -7,6 +7,7 @@
 ## 来源与版本
 
 - [Chrome 官方入口](https://developer.chrome.com/docs/extensions/ai/build-with-ai?hl=en#modern_web_guidance)：本轮页面显示最后更新 2026-05-19，推荐 `chrome-extensions` 和 `modern-web-guidance` 两个 skill，以及 Chrome DevTools MCP。
+- [Chrome `storage` API](https://developer.chrome.com/docs/extensions/reference/api/storage)：2026-09-07 核对。该 API 要求声明 `storage` 权限，`storage.local` 可供全部扩展上下文异步访问；官方明确不建议以 Web Storage 保存扩展数据，因为 Service Worker 不可用且清理浏览数据会丢失。Link App 因此使用 `browser.storage.local`，Vite standalone mock 才回退 `localStorage`。
 - 本轮 npm registry 的 `modern-web-guidance` latest 为 `0.0.185`；包内扩展 skill 标记 `2026_08_06-8570fe7c`。这是检索时快照，不是 Chrome 发布版本，也不是新增 API 的发布日期。
 - [发布仓库](https://github.com/GoogleChrome/modern-web-guidance)、[源仓库](https://github.com/GoogleChrome/modern-web-guidance-src)；包自述仍是 preview。核对内容来自该版本 tarball 的 `skills/chrome-extensions` 与 `skills/modern-web-guidance/guides`，未执行 CLI、安装 skill 或更改项目依赖。
 

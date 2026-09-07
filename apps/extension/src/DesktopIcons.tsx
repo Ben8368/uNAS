@@ -5,13 +5,25 @@ import { AppIconImage } from 'unas-src/components/AppIconImage'
 import { APP_ICON_PATHS } from 'unas-src/icon-library'
 import { openLink, readLinks, subscribeLinks, type LinkApp } from 'unas-src/runtime/linkApps'
 
-function readDesktopLinks(): LinkApp[] {
-  try { return readLinks() } catch { return [] }
-}
-
 export function DesktopIcons({ onOpenApp }: { onOpenApp: (id: string) => void }) {
-  const [links, setLinks] = useState<LinkApp[]>(readDesktopLinks)
-  useEffect(() => subscribeLinks(() => setLinks(readDesktopLinks())), [])
+  const [links, setLinks] = useState<LinkApp[]>([])
+  useEffect(() => {
+    let active = true
+    const load = async () => {
+      try {
+        const next = await readLinks()
+        if (active) setLinks(next)
+      } catch {
+        if (active) setLinks([])
+      }
+    }
+    void load()
+    const unsubscribe = subscribeLinks(() => { void load() })
+    return () => {
+      active = false
+      unsubscribe()
+    }
+  }, [])
   const apps = getLauncherApps()
   return (
     <nav className="icon-grid" aria-label="应用快捷方式">
