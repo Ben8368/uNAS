@@ -1,7 +1,7 @@
 # 当前状态
 
 > **最后确认：** 2026-09-07
-> **阶段：** Phase 1 / Frontend UI refinement
+> **阶段：** Phase 1 / G1 已验收，Frontend UI refinement
 > **产品代码：** React/Vite/WXT mock Demo；确定性 scenario、Workspace owner、跨标签摘要和 HTTPS Link 已实现，尚未接入真实文件、引擎或后端。
 
 ## 当前决策
@@ -18,17 +18,17 @@
 ## 近期优先级
 
 1. FE-11 已迁移启动器 Dialog 与下载行 Popover；继续审查响应式容器和 UI 分片，打磨桌面、状态抽屉、响应式与键盘路径；不改变 mock/真实边界。
-2. 补录 G1 的 Stable Chrome/OS/视口、真实缩放、辅助技术与性能人工证据；维护者已完成走查且暂未发现问题，但 RISK-001 的可复现记录仍未完整。
-3. 在 Demo 验收后执行 Extension/File/Image 等 Phase 2 探针，再决定真实能力接入范围。
+2. 清理不再被 Demo 入口引用的旧 HTTP/本地服务 adapter，并保持前端基线、依赖与文档一致。
+3. 以已验收的 G1 证据推进 SP-01 Extension Runtime：已覆盖强制 Worker 终止与自然空闲后的事件唤醒；随后验证扩展更新与浏览器重启。真实文件与引擎仍须逐项验证后才能接入。
 
 ## 当前阻断与风险
 
-- Chrome 版本策略已由 ADR 0008 确定；本机 Chrome 为 152.0.7977.82，OS 为 win32 10.0.26200 x64；Stable 视口、真实缩放、辅助技术/性能记录、素材许可证和风险 owner 仍待补齐。RISK-001 不阻断迁移规划，但仍阻断 G1。
-- 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；已开展独立 Chromium 解包自动化，不代表 G1 批准或真实引擎/生命周期探针完成。
+- G1 已由维护者确认验收：Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工走查与自动化证据已接受；关闭记录见 [2026-09 风险归档](docs/archive/risks/2026-09.md)。这不代表真实引擎、文件权限或 MV3 长生命周期已验证。
+- 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；G2-Core 仍受 RISK-003、RISK-004、RISK-005 阻断。
 
 ## 最近验证
 
-- 2026-09-07：Chrome 152.0.7977.82 / win32 10.0.26200 x64；维护者已完成人工体验走查、暂未发现问题。`pnpm verify`、30 项扩展 E2E、6 项 Web E2E 均通过；原生 `browser.*`、Promise 拒绝消息、`<dialog>`/Popover Escape 与 mock 生命周期回归已验证。证据位于 `apps/extension/test-results/`；仍不代表 G1 批准或真实引擎/生命周期验证。
+- 2026-09-07：维护者确认 G1 已验收。Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工体验走查，以及 `pnpm verify`、30 项扩展 E2E、6 项 Web E2E 已通过；原生 `browser.*`、Promise 拒绝消息、`<dialog>`/Popover Escape 与 mock 生命周期回归已验证。清理旧 HTTP adapter 后，治理/边界/依赖/包体检查、92 项单测、类型检查、Vite/WXT 构建与 31 项扩展、6 项 Web E2E 再次通过；其中 SP-01 强制 Worker 终止/事件唤醒记录于 [SP-01](benchmarks/sp-01/README.md)。证据位于 `apps/extension/test-results/`；不代表真实引擎或完整生命周期探针完成。
 
 ## 按需入口
 

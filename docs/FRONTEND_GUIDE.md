@@ -16,7 +16,7 @@ Phase 1 先完成可交互的扩展前端 Demo，用于确认产品结构、桌�
 - TypeScript strict 与 React 18 作为界面和组件模型。
 - Vite 用于本地 Demo；WXT 管理 Chrome MV3 的 New Tab、Workspace 与 Service Worker entrypoint。
 - CSS Custom Properties 承载 token；组件样式按 `src/styles/` 的职责拆分，不使用 CSS Modules。
-- Zustand 承载本地 UI 状态，Framer Motion 与 Lucide React 是当前已锁定的前端依赖。
+- Zustand 承载本地 UI 状态，Lucide React 提供图标；动效当前以 CSS 和原生平台能力实现，未锁定动画库。
 - Vitest 覆盖单元测试，Playwright 覆盖本地 MV3 的扩展 E2E。
 
 精确版本和完整依赖清单以 [apps/extension/package.json](../apps/extension/package.json) 与锁文件为准。当前没有引擎、WASM 或真实文件能力；Manifest 仅声明 `storage`，用于经 extension adapter 持久化 Link App，且不含 host、下载、剪贴板或文件权限。未来引擎依赖仍须在对应探针完成后评估并锁定。Liquid Glass 需要原创材料层和严格降级，禁止直接套用通用“毛玻璃后台模板”。
