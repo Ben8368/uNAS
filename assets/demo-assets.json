@@ -94,6 +94,12 @@
       "bytes": 1386,
       "sha256": "5c8e283ca1669302e3f21dbdca141f2240ed4e680f2abd430da92e09400b01c0",
       "kind": "procedural-css-no-bitmap"
+    },
+    {
+      "path": "apps/extension/public/startupAppearance.js",
+      "bytes": 1866,
+      "sha256": "336a3e0e7f5a39f536a827eef24f3e58f92e49cfdcf2d2af04b47d819074106b",
+      "kind": "local-startup-prepaint-script"
     }
   ]
 }

@@ -2,6 +2,19 @@ import { test, expect } from '@playwright/test'
 import { writeFileSync } from 'node:fs'
 import { checkWindowDraftAndFocus } from '../e2e/windowChecks'
 
+test('runtime errors do not replace the Web desktop or erase a draft', async ({ page }) => {
+  await page.goto('/')
+  await page.locator('.app-icon--browser').click()
+  const name = page.getByLabel('名称', { exact: true })
+  await name.fill('Unsaved Web draft')
+  await page.evaluate(() => {
+    window.dispatchEvent(new ErrorEvent('error', { error: new Error('runtime test'), message: 'runtime test' }))
+    window.dispatchEvent(new PromiseRejectionEvent('unhandledrejection', { promise: Promise.resolve(), reason: new Error('runtime rejection test') }))
+  })
+  await expect(name).toHaveValue('Unsaved Web draft')
+  await expect(page.getByRole('navigation', { name: '应用快捷方式' })).toBeVisible()
+})
+
 test('Web StrictMode Workspace acquires ownership, preserves drafts and restores focus', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))

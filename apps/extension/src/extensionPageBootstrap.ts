@@ -21,7 +21,5 @@ function handleStartupFailure(error: unknown) {
   if (!reloadAfterExtensionAssetLoadError(error)) showStartupError(error)
 }
 
-window.addEventListener('error', (event) => handleStartupFailure(event.error || event.message), { once: true })
-window.addEventListener('unhandledrejection', (event) => handleStartupFailure(event.reason), { once: true })
-
+// Only module/bootstrap failures may replace the root; React owns it after mount.
 import('unas-src/main').catch(handleStartupFailure)

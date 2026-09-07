@@ -7,6 +7,7 @@ export default defineConfig({
     name: 'uNAS Demo',
     description: 'uNAS 的本地 mock 前端演示；不接入文件、任务或后端能力。',
     version: '0.3.0',
+    action: { default_title: '打开 uNAS' },
   },
   vite: () => ({
     plugins: [react()],

@@ -1,5 +1,29 @@
 import { test, expect } from './fixtures'
 
+test('cross-tab deletion preserves an editing draft and reports a conflict', async ({ extension }) => {
+  const page = await extension.context.newPage()
+  const other = await extension.context.newPage()
+  const url = `chrome-extension://${extension.extensionId}/newtab.html`
+  await page.goto(url)
+  await page.locator('.app-icon--browser').click()
+  const app = page.locator('[data-app-id="browser"]')
+  await app.getByLabel('名称', { exact: true }).fill('Example')
+  await app.getByLabel('选择网址').fill('https://example.com')
+  await app.getByRole('button', { name: '添加 App', exact: true }).click()
+  await app.getByRole('button', { name: '编辑 Example', exact: true }).click()
+  await app.getByLabel('名称', { exact: true }).fill('Draft')
+  await other.goto(url)
+  await other.locator('.app-icon--browser').click()
+  await other.getByRole('button', { name: '删除 Example', exact: true }).click()
+  await expect(app.locator('li')).toHaveCount(0)
+  await app.getByRole('button', { name: '保存修改', exact: true }).click()
+  await expect(app.getByRole('alert')).toContainText('另一页面删除')
+  await expect(app.getByLabel('名称', { exact: true })).toHaveValue('Draft')
+  await expect(app.getByRole('status')).toHaveCount(0)
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('unas-link-apps-v1')!))).toEqual([])
+  expect(extension.errors).toEqual([])
+})
+
 test('添加 App validates HTTPS, registers a desktop App, and persists edits', async ({ extension }) => {
   const page = await extension.context.newPage()
   await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)

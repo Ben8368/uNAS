@@ -4,13 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>uNAS Workspace Demo</title>
+    <style>
+      :root { --mt-wp: radial-gradient(ellipse at 20% 100%, #19796f 0%, transparent 62%), radial-gradient(ellipse at 95% 10%, #6173a5 0%, transparent 55%), linear-gradient(120deg, #132038, #182b46); }
+      html, body, #root { width: 100%; height: 100%; margin: 0; background-color: #132038; background-image: var(--mt-wp); background-position: center; background-repeat: no-repeat; background-size: cover; }
+    </style>
+    <script src="/startupAppearance.js"></script>
   </head>
   <body>
-    <div id="root">
-      <main style="display:grid;min-height:100vh;place-items:center;padding:24px;background:#0a0e1a;color:#e2e8f0;font:16px system-ui,sans-serif">
-        <p role="status">正在启动 uNAS Demo…</p>
-      </main>
-    </div>
+    <div id="root"></div>
     <div id="window-portal"></div>
     <script type="module" src="../../src/extensionPageBootstrap.ts"></script>
   </body>

@@ -2,6 +2,7 @@ import { createWorkspaceRouter, type LaunchMessage, type WorkspaceApp, validateL
 
 type RuntimeResponse = { ok: true } | { ok: false; error: string }
 type ExtensionApi = {
+  action: { onClicked: { addListener(listener: () => Promise<void>): void } }
   runtime: {
     id: string
     getURL(path: string): string
@@ -9,11 +10,19 @@ type ExtensionApi = {
     sendMessage(message: LaunchMessage): Promise<RuntimeResponse>
     onMessage: { addListener(listener: (message: unknown, sender: { id?: string; url?: string; frameId?: number }, respond: (response: RuntimeResponse) => void) => boolean | undefined): void }
   }
-  tabs: { create(options: { url: string }): Promise<{ id?: number; windowId: number }>; get(id: number): Promise<{ status?: string }>; update(id: number, options: { active: boolean; url: string }): Promise<unknown> }
+  tabs: { create(options: { url: string; active?: boolean }): Promise<{ id?: number; windowId: number }>; get(id: number): Promise<{ status?: string }>; update(id: number, options: { active: boolean; url: string }): Promise<unknown> }
   windows: { update(id: number, options: { focused: boolean }): Promise<unknown> }
 }
 function api(): ExtensionApi | undefined {
   return (globalThis as typeof globalThis & { chrome?: ExtensionApi }).chrome
+}
+export function installToolbarAction() {
+  const chrome = api()
+  if (!chrome?.runtime?.id || !chrome.action?.onClicked) return
+  chrome.action.onClicked.addListener(async () => {
+    try { await chrome.tabs.create({ url: chrome.runtime.getURL('/newtab.html'), active: true }) }
+    catch (error) { console.error('无法打开 uNAS 标签页', error) }
+  })
 }
 export function installWorkspaceRouter() {
   const chrome = api()

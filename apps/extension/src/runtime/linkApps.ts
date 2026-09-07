@@ -1,6 +1,7 @@
 export type LinkApp = { schemaVersion: 1; id: string; name: string; url: string; icon: 'globe' | 'bookmark' }
 const KEY = 'unas-link-apps-v1'
 const CHANGED_EVENT = 'unas-link-apps-changed'
+const MAX_CONFIG_CHARACTERS = 100_000
 export function validateLinkUrl(input: string): { url: string } | { error: string } {
   if (input.length > 2048 || /[\u0000-\u0020\u007f]/.test(input)) return { error: '网址不能包含空格、控制字符或超过 2048 个字符。' }
   try {
@@ -17,10 +18,8 @@ export function validateLink(input: Pick<LinkApp, 'name' | 'url'>, existing: Lin
   const result = validateLinkUrl(input.url)
   return 'error' in result ? result.error : null
 }
-export function readLinks(): LinkApp[] {
-  const raw = localStorage.getItem(KEY)
-  if (!raw) return []
-  if (raw.length > 100_000) throw new Error('Link App 配置超过大小限制。')
+function parseLinks(raw: string): LinkApp[] {
+  if (raw.length > MAX_CONFIG_CHARACTERS) throw new Error('Link App 配置超过大小限制。')
   const value: unknown = JSON.parse(raw)
   if (!Array.isArray(value) || value.length > 50) throw new Error('本地 Link App 配置无效，无法加载。')
   const ids = new Set<string>()
@@ -34,11 +33,29 @@ export function readLinks(): LinkApp[] {
   }
   return value as LinkApp[]
 }
+export function readLinks(): LinkApp[] {
+  const raw = localStorage.getItem(KEY)
+  return raw ? parseLinks(raw) : []
+}
 export function saveLinks(links: LinkApp[]) {
   if (links.length > 50) throw new Error('最多保存 50 个 Link App。')
-  links.forEach((link) => { const error = validateLink(link, links, link.id); if (error) throw new Error(error) })
-  localStorage.setItem(KEY, JSON.stringify(links))
+  const raw = JSON.stringify(links)
+  parseLinks(raw)
+  localStorage.setItem(KEY, raw)
   window.dispatchEvent(new Event(CHANGED_EVENT))
+}
+export function persistLink(link: LinkApp, original?: LinkApp): LinkApp[] {
+  const latest = readLinks()
+  if (original) {
+    const current = latest.find((item) => item.id === original.id)
+    if (!current) throw new Error('此 App 已在另一页面删除；草稿已保留，请取消编辑后重新添加。')
+    if (current.name !== original.name || current.url !== original.url || current.icon !== original.icon) {
+      throw new Error('此 App 已在另一页面修改；草稿已保留，请核对最新记录后重新编辑。')
+    }
+  }
+  const next = original ? latest.map((item) => item.id === original.id ? link : item) : [...latest, link]
+  saveLinks(next)
+  return next
 }
 export function subscribeLinks(listener: () => void) {
   window.addEventListener(CHANGED_EVENT, listener)

@@ -1,9 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { openLink, readLinks, saveLinks, subscribeLinks, validateLink, type LinkApp } from 'unas-src/runtime/linkApps'
+import { openLink, persistLink, readLinks, saveLinks, subscribeLinks, validateLink, type LinkApp } from 'unas-src/runtime/linkApps'
 
 export function BrowserApp() {
   const [links, setLinks] = useState<LinkApp[]>([])
   const [editing, setEditing] = useState<string | undefined>()
+  const [original, setOriginal] = useState<LinkApp | undefined>()
   const [name, setName] = useState('')
   const [url, setUrl] = useState('https://')
   const [icon, setIcon] = useState<LinkApp['icon']>('globe')
@@ -14,17 +15,21 @@ export function BrowserApp() {
     load()
     return subscribeLinks(load)
   }, [])
-  function reset() { setEditing(undefined); setName(''); setUrl('https://'); setIcon('globe') }
+  function reset() { setEditing(undefined); setOriginal(undefined); setName(''); setUrl('https://'); setIcon('globe') }
   function persist(next: LinkApp[]) {
     try { saveLinks(next); setLinks(next); setError(''); return true }
     catch (error) { setError(error instanceof Error ? error.message : '本地保存失败'); return false }
   }
   function submit(event: FormEvent) {
     event.preventDefault()
+    setNotice('')
     const message = validateLink({ name, url }, links, editing)
     if (message) { setError(message); return }
     const next: LinkApp = { schemaVersion: 1, id: editing || `link-${crypto.randomUUID()}`, name: name.trim(), url: new URL(url).href, icon }
-    if (persist(editing ? links.map((link) => link.id === editing ? next : link) : [...links, next])) { reset(); setNotice('已保存在本浏览器。') }
+    try {
+      setLinks(persistLink(next, original))
+      setError(''); reset(); setNotice('已保存在本浏览器。')
+    } catch (error) { setError(error instanceof Error ? error.message : '本地保存失败') }
   }
   return <section className="demo-tool link-apps">
     <h2>添加 App</h2>
@@ -40,7 +45,7 @@ export function BrowserApp() {
     <ul className="link-apps__list">{links.map((link) => <li key={link.id}>
       <button type="button" onClick={() => { try { openLink(link.url) } catch (error) { setError(String(error)) } }}><span aria-hidden="true">{link.icon === 'bookmark' ? '◇' : '◎'}</span> {link.name}</button>
       <span>{link.url}</span>
-      <button type="button" aria-label={`编辑 ${link.name}`} onClick={() => { setEditing(link.id); setName(link.name); setUrl(link.url); setIcon(link.icon); setNotice('') }}>编辑</button>
+      <button type="button" aria-label={`编辑 ${link.name}`} onClick={() => { setEditing(link.id); setOriginal(link); setName(link.name); setUrl(link.url); setIcon(link.icon); setNotice(''); setError('') }}>编辑</button>
       <button type="button" aria-label={`删除 ${link.name}`} onClick={() => { if (persist(links.filter((candidate) => candidate.id !== link.id))) { if (editing === link.id) reset(); setNotice(`已删除 ${link.name}`) } }}>删除</button>
     </li>)}</ul>
   </section>

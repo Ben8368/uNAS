@@ -27,7 +27,7 @@ Phase 1 先完成可交互的扩展前端 Demo，用于确认产品结构、桌�
 当前：entrypoints/newtab | workspace
   → extensionPageBootstrap → App / app views → demo API
 entrypoints/background
-  → Workspace 路由与消息校验
+  → 工具栏点击入口、Workspace 路由与消息校验
 
 后续真实能力：screens
   → application ports
@@ -35,7 +35,7 @@ entrypoints/background
     → real runtime adapters (Phase 3+)
 ```
 
-- 当前 New Tab 与 Workspace 共用启动器、错误边界和 demo API；background 只安装 Workspace 路由。
+- New Tab 与 Workspace 共用启动器、错误边界和 demo API；background 处理工具栏点击和 Workspace 路由。工具栏点击只打开固定的 New Tab 页面，不申请额外权限。
 - content script 与 offscreen 仅保留为架构设计，Phase 1 没有对应 entrypoint 或权限。
 - screen 负责组合，不持有文件系统或 engine 实例。
 - desktop pattern 只实现窗口、Dock、启动和布局语义。
@@ -72,7 +72,7 @@ Mock 规则：
 - 构建信息、About 或 Demo Banner 显示 `executionSource: mock`。
 - 真实 adapter 接入后，mock 仍用于组件、视觉回归和失败路径测试。
 
-当前注册表还展示文件管理、下载、Media、PSD、Image、PDF、Archive、任务中心、设置与日志等 mock App。下载和 PSD 仅用于复用既有界面中的模拟任务/工单路径，不构成真实下载、浏览器登录态、Photoshop 或本机文件能力，也不扩大 [PRODUCT.md](PRODUCT.md) 的 V1 真实能力候选。
+可启动 App 以源码注册表为准，不从遗留组件或 mock API 推断可用入口。下载等模拟流程不构成真实下载、浏览器登录态或本机文件能力，也不扩大 [PRODUCT.md](PRODUCT.md) 的 V1 真实能力候选。
 
 ## 6. 状态边界
 

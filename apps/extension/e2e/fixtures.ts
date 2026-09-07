@@ -11,7 +11,8 @@ export const test = base.extend<{ extension: Extension }>({
     const context = await chromium.launchPersistentContext('', {
       channel: 'chromium', headless: true,
       viewport: { width: 1440, height: 900 },
-      args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`],
+      // Allow CDP to trigger the toolbar action in this disposable test profile only.
+      args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`, '--enable-unsafe-extension-debugging'],
     })
     context.setDefaultTimeout(10_000)
     context.setDefaultNavigationTimeout(15_000)
