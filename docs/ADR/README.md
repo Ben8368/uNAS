@@ -24,5 +24,6 @@ ADR 记录影响长期维护的决定及理由。Roadmap 说明“按什么阶�
 | [0005](0005-extension-native-new-tab-workspace.md) | 已接受 | 扩展是唯一产品，New Tab + Workspace 分层 |
 | [0006](0006-frontend-demo-first.md) | 已接受 | 前端 Demo 先行，通过 mock/real adapters 演进 |
 | [0007](0007-inline-app-workspace.md) | 已接受 | 内置 App 同页打开，逻辑 Workspace 单一 owner 与受限同源客户端 |
+| [0008](0008-private-preview-modern-chrome.md) | 已接受 | 私有预览追随 Chrome Stable，原生 API 优先与主动移除旧版兼容负担 |
 
-这些 ADR 的“已接受”表示已被 Gate G0 接受的当前方案基线；若后续阶段改变边界，须以新 ADR 替代。0002 只保留历史，不再约束实现。
+“已接受”表示维护者接受的方案基线，依据见各 ADR；不等于对应源码已实现或 Gate 已通过。若后续阶段改变边界，须以新 ADR 替代。0002 只保留历史，不再约束实现。

@@ -18,7 +18,7 @@ Roadmap 只描述阶段结果和门禁；具体工作包见 [DEVELOPMENT_BLUEPRI
 - 确认前端 Demo 先行、真实能力后置，并接受 mock 真实性边界。
 - 确认 System/Tool/Link App 类型和 V1 非目标。
 - 接受 ADR 0001、0003–0006；ADR 0002 已由 0005 替代。
-- 接受浏览器基线尚待确认这一 Phase 1 演示限制；Chrome 最低版本策略、验证 OS 和 Wide/Regular 参考视口须在 G1 前记录。该项由 RISK-001 跟踪，不阻断 mock Demo 实现。
+- 版本策略按 [ADR 0008](ADR/0008-private-preview-modern-chrome.md) 执行；精确 Chrome/OS 与 Wide/Regular 参考视口须在 G1 前记录。RISK-001 不阻断 mock Demo 与基线迁移，但不因文档决策自动关闭。
 - 文档治理检查通过；当前阻断风险有 owner 或明确接受人。
 
 ## Phase 1：Frontend Demo
@@ -33,6 +33,7 @@ Roadmap 只描述阶段结果和门禁；具体工作包见 [DEVELOPMENT_BLUEPRI
 - Files、Image、Media、PDF、Archive、Task Center、Settings 的确定性 mock 流程。
 - 空态、权限拒绝、资源超限、处理中、取消、失败、成功和恢复摘要。
 - Wide/Regular、深浅主题、减少透明度、减少动态、键盘与触控验收。
+- 现代 Chrome 基线、原生扩展 adapter 与前端组件迁移；允许仅针对壳层/组件的隔离验证前移，不要求等待完整 SP-01。官方 skill 与 DevTools MCP 接入准备同步进行，不作为日常功能运行依赖。
 
 本阶段禁止真实格式承诺、真实输出、engine/WASM 和未来宽权限。
 
@@ -44,6 +45,7 @@ Roadmap 只描述阶段结果和门禁；具体工作包见 [DEVELOPMENT_BLUEPRI
 - 解包扩展验证 New Tab、Workspace 单实例复用、刷新和多标签摘要。
 - Wide/Regular、键盘、主题和无障碍降级有证据。
 - 记录真实能力接入后可能改变的交互假设。
+- 现代化迁移记录精确浏览器基线、真实消息/组件回归、删除的兼容路径与保留例外；源码与文档一致，未验证能力不得写为支持。工具安装不是 G1 必要条件，等价证据仍可由 Playwright 与人工验收提供。
 
 ## Phase 2：扩展能力探针与契约收敛
 

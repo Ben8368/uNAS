@@ -174,6 +174,8 @@ OpenIntent
 
 ## 11. 权限与消息
 
+私有预览迁移按 [ADR 0008](ADR/0008-private-preview-modern-chrome.md) 原生 Chrome 优先：`browser.*` 集中在扩展 adapter，UI/application contract 不依赖命名空间。异步请求以单一 Promise 路径为目标，不为未服务的旧版本保留永久双实现；schema、所有权和传输边界保持不变。
+
 - required permissions 保持最小；可选权限只在用户触发对应功能时请求。
 - New Tab、Workspace、Service Worker、Content Script 之间使用版本化 schema，校验 sender、origin、App、任务所有权和 payload 大小。
 - Content Script 发来的消息一律视为不可信，不能触发任意 URL 请求、任意扩展路由或未授权文件操作。

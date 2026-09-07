@@ -71,6 +71,35 @@
 - 键盘启动/切换 App、焦点陷阱、Escape、拖放替代路径和触控目标。
 - 构建证据确认 New Tab 初始 chunk 无 engine/WASM。
 - 维护者走查完整主流程并记录主观结论。
+- 验收 FE-11 的原生组件与 UI 调度迁移；保留前后截图、焦点/键盘、减少动态和性能对照。
+
+### FE-09 现代 Chrome 基线
+
+- 先记录维护者 Chrome Stable 的完整版本、OS 与参考视口，验证 `browser.*`、Promise listener 和拟用组件 API；不读日常浏览历史或用户文件。按 ADR 0008 确认 manifest 起始下限及构建目标。
+- 对齐 WXT 输出、TypeScript 类型、测试 mock 和 Playwright 环境；自动化 Chromium 不能代替目标 Stable 的证据。
+- 产出：精确环境清单、可用/不可用结果、拟移除 shim/依赖清单。核心 API 缺失时先解决基线，不默默引入永久 fallback。
+
+### FE-10 扩展 adapter 与消息迁移
+
+- 依赖 FE-09：扩展 adapter 统一原生 `browser.*`，真正异步的 runtime 请求迁移为 Promise 响应；同步拒绝无需为了语法统一变成 `async`，不将所有 listener 无条件 Promise 化。
+- 检查 WXT 包装和实际打包依赖，删除确实冗余的旧版 shim；当前源码迁移锚点为 `src/runtime/extensionAdapter.ts`、background entry、WXT 配置及相应测试，不假设仓库已经存在可移除的 polyfill。
+- 盘点旧跨标签启动协议和 `workspace.html` 兼容入口，区分“过期 bundle 防重复启动”与“旧浏览器兼容”。可删除无消费者入口，但须同步替代 ADR 0007 的对应条款，验证旧页拒绝/刷新提示；不能仅因私用取消 owner 校验。
+- 验收：New Tab、工具栏、同页 App、多页 owner、未知消息、异步失败/超时和旧页残留；BroadcastChannel 保持原传输边界，不能因 Promise 改写拓扑。
+
+### FE-11 原生组件与调度迁移
+
+- 依赖 FE-09，按顺序迁移 Dialog 焦点/Escape → Popover 与锚定菜单 → App 容器响应式 → 简单 CSS 动效/局部 View Transitions → 有测量依据的 UI 分片。
+- 优先原生替换等价的自建定位、滚动监听和动画逻辑，替换后删除旧实现，不长期保留新旧两套组件。Framer Motion 仅保留仍有必要的复杂交互；没有剩余调用且回归通过才移除依赖。
+- 每个组件保留原有公开语义，验收嵌套浮层、焦点恢复、200% 缩放、长文本、减少动态/透明度和失败态；原生 top layer 不替代完整窗口系统，也不把应用抽屉改为 Side Panel。
+- `scheduler.yield()`/任务优先级只处理主线程 UI 工作；先定位长任务并记录改善，不能把引擎计算搬回 UI。React/WXT 大版本升级只有解决具体限制时另立工作包，不作为附带升级。
+
+### FE-12 开发工具接入
+
+- 优先准备官方两个 skill 与 Chrome DevTools MCP：记录版本、来源、更新方式、关闭遥测配置和最小工具范围，审查后再安装；不加入产品运行时或随包发布。
+- 默认隔离 profile，建立构建 → 解包加载/重载 → 操作 → Console/trace → 回归证据流程；用户另行同意后才连接日常 profile。生命周期另做无调试器对照。
+- 可与 FE-09 的准备工作交错进行；工具不可用时沿用现有 Playwright/人工流程，不阻塞组件迁移，不增加产品权限。
+
+以上是计划工作包，非执行记录；本轮文档授权不触发编码、安装、浏览器设置或数据重置。默认顺序 FE-09 → FE-10 → FE-11，FE-12 按需接入；真实文件/引擎仍等后续 Gate。
 
 ## 4. Demo Scenario 格式
 
@@ -96,6 +125,10 @@ Scenario 属于测试与演示资产，不是产品支持矩阵。
 
 - New Tab override、Workspace 单实例、多标签消息、Service Worker 终止/唤醒和扩展更新。
 - CSP、静态 WASM、Dedicated Worker、可选 offscreen 和最小权限。
+- 复用 FE-09/FE-10 的环境与消息证据，仅对浏览器或依赖变化重跑相关项，不重复建设第二套基线；扩展到完整 owner 与真实 Worker 生命周期。
+- 覆盖 runtime 消息显式错误、超时与多监听器，以及灰度不可用的拒绝/升级路径；区分 Chrome 消息的 JSON 序列化与 BroadcastChannel/Worker 的 structured clone，不直接迁移 Blob/handle 传输假设。
+- 验证可选权限请求的用户手势与拒绝路径；若采用 `storage.session`，覆盖 Service Worker 重启、扩展重载与浏览器退出，不能把它当持久恢复。
+- 使用已接入的 DevTools MCP 辅助诊断或现有等价工具；生命周期结论必须另有无调试器对照，方法见 [QUALITY](QUALITY.md)。
 - 输出：生命周期矩阵、消息边界、页面关闭语义和最低浏览器策略。
 
 ### SP-02 File Workspace
@@ -132,6 +165,7 @@ Scenario 属于测试与演示资产，不是产品支持矩阵。
 
 - Chrome 解包安装、Link App 与工具关系、required/optional permissions、本地隐私说明和离线包。
 - 输出：权限清单、安装/升级/卸载步骤、包体与离线资源报告、公开分发前置项。
+- 权限清单按实际构建 manifest 核对 required/optional/host permissions、用户动作、用途、拒绝与撤销后果；不为商店或工具示例增加权限。进入未来 Store Gate 时再按官方模板生成 `CHROMEWEBSTORE.md`，引用 Product/Security 与实际证据，不复写当前阶段，也不把资料准备视为发布授权。
 
 ## 6. 探针记录格式
 
