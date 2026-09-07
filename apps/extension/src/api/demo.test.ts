@@ -5,6 +5,29 @@ import { demoScenarios, type MockFileMetadata } from './demo/contracts'
 beforeEach(() => { demoApi.resetDemoScenario('initial-state') })
 
 describe('deterministic mock scenario runtime', () => {
+  it('only protects user-submitted work, never scenario fixtures', async () => {
+    expect(demoApi.getDemoSnapshot().hasPendingUserTasks).toBe(false)
+    const job = await demoApi.submitDemoTool('image')
+    expect(demoApi.getDemoSnapshot().hasPendingUserTasks).toBe(true)
+    await demoApi.cancelJob(job.id)
+    expect(demoApi.getDemoSnapshot().hasPendingUserTasks).toBe(false)
+    expect(demoApi.getDemoSnapshot().jobs.some(job => job.status === 'running')).toBe(true)
+  })
+  it('clears close protection on completion, failure, owner loss and reset', async () => {
+    await demoApi.submitFetch({ url: 'https://example.com/a' })
+    expect(demoApi.getDemoSnapshot().hasPendingUserTasks).toBe(true)
+    demoApi.advanceDemoScenario()
+    expect(demoApi.getDemoSnapshot().hasPendingUserTasks).toBe(true)
+    demoApi.advanceDemoScenario()
+    expect(demoApi.getDemoSnapshot().hasPendingUserTasks).toBe(false)
+    await demoApi.submitDemoTool('pdf')
+    expect(demoApi.interruptDemoTasks().hasPendingUserTasks).toBe(false)
+    await demoApi.submitDemoTool('archive')
+    expect(demoApi.resetDemoScenario('initial-state').hasPendingUserTasks).toBe(false)
+    demoApi.resetDemoScenario('task-failed')
+    await demoApi.submitDemoTool('image')
+    expect(demoApi.getDemoSnapshot().hasPendingUserTasks).toBe(false)
+  })
   it('replays fixed IDs, timestamps, jobs and steps exactly after reset', async () => {
     async function play() {
       demoApi.resetDemoScenario('task-running')

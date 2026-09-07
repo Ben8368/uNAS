@@ -40,7 +40,11 @@ test('New Tab reads owner updates and external cancellation refreshes the downlo
   await expect(summary.locator('li').filter({ hasText: 'example.com' })).toContainText('模拟完成')
   await tab.bringToFront()
   await tab.screenshot({ path: testInfo.outputPath('newtab-owner-summary.png') })
-  await summary.getByRole('button', { name: '在 Workspace 管理任务' }).click()
+  const tabCount = extension.context.pages().length
+  await summary.getByRole('button', { name: '在当前页面管理任务' }).click()
+  await expect(tab.locator('[data-app-id="fetcher"]')).toBeVisible()
+  await expect(tab.locator('.dl-row').filter({ hasText: 'example.com' })).toContainText('100.0%')
+  expect(extension.context.pages()).toHaveLength(tabCount)
   expect(extension.context.pages().filter((page) => page.url().includes('/workspace.html'))).toHaveLength(1)
   expect(extension.errors).toEqual([])
   expect(extension.remoteRequests).toEqual([])

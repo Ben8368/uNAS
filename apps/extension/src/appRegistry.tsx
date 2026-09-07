@@ -2,10 +2,11 @@ import { lazy, type ComponentType, type LazyExoticComponent } from 'react'
 import type { WorkbenchAppId } from '#contracts'
 
 import { APP_ICON_PATHS } from 'unas-src/icon-library'
+import { inlineWorkspace } from 'unas-src/runtime/inlineWorkspace'
 
 const BrowserApp = lazy(() => import('unas-src/apps/BrowserApp').then((module) => ({ default: module.BrowserApp })))
-const DownloaderApp = lazy(() => import('unas-src/apps/DownloaderApp').then((module) => ({ default: module.DownloaderApp })))
-const FileManagerApp = lazy(() => import('unas-src/apps/FileManagerApp').then((module) => ({ default: module.FileManagerApp })))
+const DownloaderApp = lazy(async () => { await inlineWorkspace.connect(); return import('unas-src/apps/DownloaderApp').then((module) => ({ default: module.DownloaderApp })) })
+const FileManagerApp = lazy(async () => { await inlineWorkspace.connect(); return import('unas-src/apps/FileManagerApp').then((module) => ({ default: module.FileManagerApp })) })
 const SettingsApp = lazy(() => import('unas-src/apps/SettingsApp').then((module) => ({ default: module.SettingsApp })))
 const LogViewer = lazy(() => import('unas-src/LogViewer').then((module) => ({ default: module.LogViewer })))
 

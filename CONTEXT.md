@@ -8,7 +8,7 @@
 
 - uNAS 是产品正式名称，是扩展原生的本地优先新标签页工作区；不另做托管 Web 产品或传统桌面程序。
 - 首发浏览器为 Chrome；当前以解包扩展和本地安装验证为准，暂不进入 Chrome Web Store 上架阶段。
-- New Tab 承载轻量 Desktop，Workspace 承载内置工具和长任务；System/Tool App 随包发布，Link App 只做 HTTPS 跳转。
+- New Tab 承载轻量 Desktop，内置 App 按需在当前标签页打开，逻辑 Workspace 管理任务所有权（ADR 0007）；System/Tool App 随包发布，Link App 只做 HTTPS 跳转。
 - 维护者已确认进入 Frontend Demo 阶段；现有 Demo 固定使用浏览器内置 mock adapter 验证桌面、App、文件和任务流程，并提供 WXT Manifest V3 的 New Tab、Workspace 与 Service Worker 壳；真实能力随后逐项替换。
 - 维护者已授权进入前端界面正式打磨：优先收敛桌面层级、App 启动入口、状态抽屉、响应式与无障碍；该授权不改变 mock 与真实能力的边界。
 - 视觉采用原创的 macOS/iPadOS 启发式桌面层级与 Liquid Glass 原则，玻璃限于导航/控制层，并提供无障碍和性能降级。
@@ -27,7 +27,7 @@
 
 ## 最近验证
 
-- 2026-09-07：Windows `pnpm verify` 通过（91 项单测及构建/边界检查），23 项扩展 E2E、3 项 Web E2E 通过；下载 App 底栏已验证随深/浅主题采用窗口表面色。GitHub Actions 已配置治理、完整验证和浏览器回归，但尚无远端运行证据；不代表 G1 批准。
+- 2026-09-07：Windows `pnpm verify` 通过（99 项单测及构建/边界检查），29 项扩展 E2E、6 项 Web E2E 通过；内置 App 同页打开、跨页共享 mock 任务/文件、owner 失联降级及此前关闭保护/冷启动回归已验证。证据保存在 `apps/extension/test-results/`；系统 Chrome/GPU 主观体验仍待确认。GitHub Actions 尚无远端运行证据；不代表 G1 批准。
 
 ## 按需入口
 

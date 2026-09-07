@@ -35,7 +35,7 @@ entrypoints/background
     → real runtime adapters (Phase 3+)
 ```
 
-- New Tab 与 Workspace 共用启动器、错误边界和 demo API；background 处理工具栏点击和 Workspace 路由。工具栏点击只打开固定的 New Tab 页面，不申请额外权限。
+- New Tab 与 Workspace 共用启动器、错误边界和 demo API；内置 App 在当前标签页打开，background 处理工具栏入口并拒绝旧跨标签启动消息。工具栏点击只打开固定的 New Tab 页面，不申请额外权限。
 - content script 与 offscreen 仅保留为架构设计，Phase 1 没有对应 entrypoint 或权限。
 - screen 负责组合，不持有文件系统或 engine 实例。
 - desktop pattern 只实现窗口、Dock、启动和布局语义。
@@ -46,13 +46,15 @@ entrypoints/background
 
 | Surface | 职责 | 禁止 |
 | --- | --- | --- |
-| `newtab` | 快速桌面、搜索、Link App、启动 Tool App | 预加载大型 WASM、成为长任务唯一所有者 |
-| `workspace` | 复用的工具工作区和长任务所有者 | 假设页面关闭后任务仍持续 |
+| `newtab` | 快速桌面、搜索、Link App、按需 Tool App 窗口 | 预加载大型 WASM、直接成为真实长任务唯一所有者 |
+| `workspace` | 兼容工具入口与逻辑 Workspace 接入 | 隐式新建可见页、假设页面关闭后任务仍持续 |
 | `service-worker` | 安装、点击、菜单、消息路由、窗口复用 | DOM、长计算、仅存内存的关键状态 |
 | `content-script` | 用户触发的网页上下文桥 | 广泛注入、任意 URL 抓取、接收未校验命令 |
 | `offscreen` | 经探针证明必要的受限后台 DOM 场景 | 作为默认常驻应用或万能 Worker |
 
 New Tab 必须把 Tool App 代码和 engine chunk 延迟到启动后；不能因增加媒体能力而拖慢每次新标签页打开。
+
+Phase 1 同页启动见 ADR 0007：点击工具才连接逻辑 mock Workspace，首个连接者持锁，其他同源页面作为客户端。`workspace.html` 保留兼容入口，不由桌面自动创建；真实长任务不在轻量 New Tab 中直接执行。
 
 ## 5. Mock Runtime
 

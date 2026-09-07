@@ -14,23 +14,3 @@ export function validateLaunchMessage(value: unknown, sender: { id?: string; url
     return url.protocol === 'chrome-extension:' && url.host === extensionId && ['/newtab.html', '/workspace.html'].includes(url.pathname)
   } catch { return false }
 }
-export interface WorkspaceTabsPort {
-  discover(): Promise<{ tabId: number; windowId: number }[]>
-  create(appId: WorkspaceApp): Promise<void>
-  focus(tabId: number, windowId: number, appId: WorkspaceApp): Promise<void>
-}
-/** Serialize concurrent launch requests. The queue owns no task state. */
-export function createWorkspaceRouter(port: WorkspaceTabsPort) {
-  let queue = Promise.resolve()
-  return (appId: WorkspaceApp) => {
-    const result = queue.then(async () => {
-      const contexts = [...new Map((await port.discover()).map((context) => [context.tabId, context])).values()]
-      if (contexts.length > 1) throw new Error('检测到多个 Workspace。请关闭重复页面，在保留页面重新确认所有权后重试。')
-      const [existing] = contexts
-      if (existing) await port.focus(existing.tabId, existing.windowId, appId)
-      else await port.create(appId)
-    })
-    queue = result.catch(() => {})
-    return result
-  }
-}

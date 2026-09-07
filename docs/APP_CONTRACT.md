@@ -49,6 +49,7 @@ registered → launching → active ↔ background → closed
 ```
 
 - `single` App 再次启动时聚焦已有实例，不创建重复任务所有者。
+- 内置 App 窗口属于当前标签页；Workspace 表示所有权边界，不隐式创建或切换可见标签页。多页 UI 连接同一 owner，不重复执行任务，见 ADR 0007。
 - Window 关闭只关闭 UI；是否取消任务由 Task Contract 和用户确认决定。
 - 新标签页可以有多个 Desktop Client，但同一真实任务只有一个 Workspace Owner。
 - 页面刷新只能恢复可持久化的布局、manifest、任务摘要和可重新取得的文件能力。

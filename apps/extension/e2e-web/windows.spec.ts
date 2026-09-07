@@ -40,7 +40,7 @@ test('cold App launch paints final bounds and an explicit loading surface', asyn
     Object.assign(window, { launchFrames: frames, stopLaunchFrames: false })
     const sample = () => {
       const app = document.querySelector('[data-app-id="browser"]')
-      if (app) {
+      if (app && getComputedStyle(app).visibility !== 'hidden') {
         const rect = app.getBoundingClientRect()
         frames.push({ x: rect.x, y: rect.y, width: rect.width, height: rect.height, empty: !app.querySelector('.mt-window-body')?.textContent?.trim() })
       }
@@ -66,4 +66,52 @@ test('cold App launch paints final bounds and an explicit loading surface', asyn
   writeFileSync(evidencePath, JSON.stringify({ browser: page.context().browser()?.version(), frames }, null, 2))
   await testInfo.attach('launch-frames', { path: evidencePath, contentType: 'application/json' })
   await page.screenshot({ path: testInfo.outputPath('web-app-open.png') })
+})
+
+test('fast lazy load reveals content and chrome together', async ({ page }) => {
+  await page.clock.install()
+  await page.clock.pauseAt(new Date())
+  let release!: () => void
+  const ready = new Promise<void>(resolve => { release = resolve })
+  await page.route('**/src/apps/BrowserApp.tsx', async route => { await ready; await route.continue() })
+  await page.goto('/')
+  // DOM click avoids auto-waiting for animation frames while the test clock is paused.
+  await page.locator('.app-icon--browser').dispatchEvent('click')
+  const app = page.locator('[data-app-id="browser"]')
+  try {
+    await expect(app).toHaveAttribute('data-launch-pending', 'true')
+    await expect(app).toBeHidden()
+  } finally { release() }
+  await expect(page.getByLabel('名称', { exact: true })).toBeVisible()
+  await expect(app).toBeFocused()
+  await expect(app.locator('.mt-app-loading')).toHaveCount(0)
+  await page.clock.resume()
+})
+
+test('closing a slow launch does not reopen it when the module arrives', async ({ page }) => {
+  let release!: () => void
+  const ready = new Promise<void>(resolve => { release = resolve })
+  await page.route('**/src/apps/BrowserApp.tsx', async route => { await ready; await route.continue() })
+  await page.goto('/')
+  await page.locator('.app-icon--browser').click()
+  try {
+    await expect(page.getByRole('status')).toContainText('正在打开添加 App')
+    await page.getByRole('button', { name: '关闭添加 App', exact: true }).click()
+  } finally { release() }
+  await expect(page.locator('[data-app-id="browser"]')).toHaveCount(0)
+  await page.locator('.app-icon--browser').click()
+  await expect(page.getByLabel('名称', { exact: true })).toBeVisible()
+  await expect(page.locator('[data-app-id="browser"]')).toHaveCount(1)
+})
+
+test('a rejected lazy load reveals a readable error instead of a hidden window', async ({ page }) => {
+  // Exercise the error UI rather than the existing one-shot stale-chunk reload.
+  await page.addInitScript(() => { sessionStorage.setItem = () => { throw new Error('storage unavailable') } })
+  await page.route('**/src/apps/BrowserApp.tsx', route => route.abort())
+  await page.goto('/')
+  await page.locator('.app-icon--browser').click()
+  await expect(page.getByRole('alert')).toContainText('应用资源加载失败')
+  await expect(page.getByRole('button', { name: '重新加载桌面' })).toBeVisible()
+  await page.getByRole('button', { name: '关闭添加 App', exact: true }).click()
+  await expect(page.locator('[data-app-id="browser"]')).toHaveCount(0)
 })

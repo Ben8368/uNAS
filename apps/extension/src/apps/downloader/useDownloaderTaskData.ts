@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { getActiveTasks, getWeeklyHistory, subscribeDemo } from 'unas-src/api'
+import { getActiveTasks, getWeeklyHistory, getDemoSnapshot, subscribeDemo } from 'unas-src/api'
 import { mergeTasks } from 'unas-src/apps/downloader/helpers'
 import type { DownloadTask } from 'unas-src/apps/downloader/types'
 import { useVisibilityPolling } from 'unas-src/hooks/useVisibilityPolling'
@@ -62,7 +62,12 @@ function normalizeProgress(value: unknown) {
 }
 
 export function useDownloaderTaskData() {
-  const [{ tasks, historyTasks }, setLists] = useState<{ tasks: DownloadTask[]; historyTasks: DownloadTask[] }>({ tasks: [], historyTasks: [] })
+  const [{ tasks, historyTasks }, setLists] = useState(() => {
+    // The mock port already has a current snapshot; do not paint an invented empty state.
+    const historyTasks = getDemoSnapshot().tasks.map(mapApiTaskToDownloadTask)
+      .sort((a, b) => b.created_at - a.created_at)
+    return { tasks: historyTasks.filter(task => !['completed', 'failed', 'cancelled'].includes(task.status)), historyTasks }
+  })
   const [optimisticTasks, setOptimisticTasks] = useState<DownloadTask[]>([])
   const [pollError, setPollError] = useState('')
   const taskRequestGenerationRef = useRef(0)

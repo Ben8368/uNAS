@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { createFilebrowserDirectory, deleteFilebrowserPath, fetchAssets, uploadFilebrowserFile } from 'unas-src/api'
+import { createFilebrowserDirectory, deleteFilebrowserPath, fetchAssets, uploadFilebrowserFile, subscribeDemo } from 'unas-src/api'
 import type { AssetRecord, MockFileMetadata } from 'unas-src/api/types'
 import { FileManagerEntryTable, FileManagerToolbar } from 'unas-src/apps/file-manager/FileManagerMainPanel'
 import { FileManagerSidebar } from 'unas-src/apps/file-manager/FileManagerSidebar'
@@ -38,7 +38,9 @@ export function FileManagerPane() {
   const [lastLocalPath, setLastLocalPath] = useState('')
   const [assets, setAssets] = useState<AssetRecord[]>([])
   const [notice, setNotice] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusyState] = useState(false)
+  const busyRef = useRef(false)
+  const setBusy = useCallback((value: boolean) => { busyRef.current = value; setBusyState(value) }, [])
   const [retryFixtures, setRetryFixtures] = useState<MockFileMetadata[]>([])
 
   const enterTrashView = useCallback(() => {
@@ -74,6 +76,14 @@ export function FileManagerPane() {
   useEffect(() => {
     void refreshAssets()
   }, [refreshAssets])
+
+  useEffect(() => subscribeDemo(() => {
+    // Local batch handlers own their refresh/checkpoint and partial-failure notice.
+    if (busyRef.current) return
+    void refreshAssets()
+    if (currentPath === TRASH_PATH) void trash.loadTrash()
+    else if (currentPath) void navigate(currentPath, false)
+  }), [currentPath, navigate, refreshAssets, trash.loadTrash])
 
   useEffect(() => {
     if (currentPath && currentPath !== TRASH_PATH) {

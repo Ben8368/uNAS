@@ -26,7 +26,7 @@ export default function App() {
   }, [openWindow, setShowLauncher])
 
   useEffect(() => {
-    if (!workspace || session.state !== 'owner') return
+    if (!workspace || !['owner', 'client'].includes(session.state)) return
     const openRoute = () => { const app = location.hash.slice(1); if (isWorkspaceApp(app)) openWindow(app) }
     const onVisible = () => { if (!document.hidden) openRoute() }
     openRoute()
@@ -40,11 +40,11 @@ export default function App() {
       <LeftNavbar />
       {launchError && <p className="desktop-launch-notice" role="alert">{launchError}</p>}
       <div className="mt-main">
-        {(!workspace || session.state === 'owner') && <DesktopIcons onOpenApp={handleOpenApp} />}
-        {workspace && session.state !== 'owner' && <section className="workspace-status" role="status"><h1>Workspace {session.state === 'pending' ? '正在确认所有权' : session.state === 'conflict' ? '已在另一标签页运行' : '所有权能力不可用'}</h1><p>此页面不会执行模拟任务。关闭其他 Workspace 后可重试；真实任务恢复能力尚未接入。</p><button type="button" onClick={session.retry}>重新确认所有权</button></section>}
+        <DesktopIcons onOpenApp={handleOpenApp} />
+        {['unavailable', 'lost'].includes(session.state) && <section className="workspace-status" role="alert"><h1>Workspace 连接已中断</h1><p>任务所有者已关闭或通信不可用。请刷新页面后重新开始；不会自动重放任务或恢复模拟文件。</p></section>}
       </div>
-      {(!workspace || session.state === 'owner') && <><WindowContainer /><AppLauncher onOpenApp={handleOpenApp} /></>}
-      {(!workspace || session.state === 'owner') && <RightPanel workspace={workspace} />}
+      <WindowContainer /><AppLauncher onOpenApp={handleOpenApp} />
+      <RightPanel workspace={session.state === 'owner'} />
     </div>
   )
 }

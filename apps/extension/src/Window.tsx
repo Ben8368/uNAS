@@ -5,6 +5,7 @@ import { fitWindow } from 'unas-src/windowGeometry'
 interface WindowProps {
   windowId: string; title: string; width?: number; height?: number; x?: number; y?: number
   isMaximized: boolean; isMinimized: boolean; isActive: boolean; zIndex: number; appType?: string
+  isLaunchPending?: boolean
   children: ReactNode
   onClose: (id: string) => void; onMinimize: (id: string) => void; onMaximize: (id: string) => void
   onFocus: (id: string) => void; onDrag: (id: string, x: number, y: number) => void
@@ -12,7 +13,7 @@ interface WindowProps {
 }
 
 export function DesktopWindow({ windowId, title, width = 960, height = 640, x = 0, y = 0,
-  isMaximized, isMinimized, isActive, zIndex, appType, children, onClose, onMinimize, onMaximize, onFocus, onDrag, onResize }: WindowProps) {
+  isMaximized, isMinimized, isActive, zIndex, appType, isLaunchPending = false, children, onClose, onMinimize, onMaximize, onFocus, onDrag, onResize }: WindowProps) {
   const root = useRef<HTMLDivElement>(null)
   const [viewport, setViewport] = useState({ width: 960, height: 640 })
   const drag = useRef<{ x: number; y: number; left: number; top: number; width: number; height: number; resize: boolean } | null>(null)
@@ -48,8 +49,9 @@ export function DesktopWindow({ windowId, title, width = 960, height = 640, x = 
   function finish() { drag.current = null }
   return (
     <div ref={root} role="region" aria-label={title} tabIndex={-1} data-app-id={appType} hidden={isMinimized}
+      data-launch-pending={isLaunchPending || undefined}
       className={`mt-window ${isActive ? 'mt-window--active' : ''} ${isMaximized ? 'mt-window--maximized' : ''}`}
-      style={{ display: isMinimized ? 'none' : undefined, width: isMaximized ? '100%' : bounds.width, height: isMaximized ? '100%' : bounds.height, left: isMaximized ? 0 : bounds.x, top: isMaximized ? 0 : bounds.y, zIndex }}
+      style={{ visibility: isLaunchPending ? 'hidden' : undefined, display: isMinimized ? 'none' : undefined, width: isMaximized ? '100%' : bounds.width, height: isMaximized ? '100%' : bounds.height, left: isMaximized ? 0 : bounds.x, top: isMaximized ? 0 : bounds.y, zIndex }}
       onPointerDown={() => onFocus(windowId)} onFocusCapture={() => { if (!isActive) onFocus(windowId) }}>
       <div className="mt-window-header" onPointerDown={(event) => start(event)} onPointerMove={move} onPointerUp={finish} onPointerCancel={finish} onLostPointerCapture={finish}
         onDoubleClick={(event) => { if (!(event.target as HTMLElement).closest('button')) onMaximize(windowId) }}>

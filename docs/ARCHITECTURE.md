@@ -16,8 +16,8 @@ uNAS 是扩展原生、本地优先、前端先行的 TypeScript monorepo。Mani
 
 | Surface | 主要职责 | 生命周期假设 |
 | --- | --- | --- |
-| New Tab extension page | Desktop、搜索、Link App、启动与任务摘要 | 多实例、短寿命、必须轻量 |
-| Workspace extension page | Files、Tool App、真实任务与结果 | 启动或复用；关闭后不保证任务继续 |
+| New Tab extension page | Desktop、搜索、Link App、按需 App 窗口与任务摘要 | 多实例、短寿命；通过逻辑 Workspace 访问任务 |
+| Workspace extension page | 兼容工具入口；真实任务运行面待探针 | 不由启动器自动创建；关闭后不保证任务继续 |
 | Service Worker | 安装、命令、菜单、窗口/标签复用、消息路由 | 随时可能终止，关键状态必须持久化 |
 | Content Script | 用户触发的网页上下文桥 | 不默认全站注入，不拥有任务状态 |
 | Offscreen Document | 经探针证明必要的受限 DOM 场景 | 可选，不是常驻主程序 |
@@ -114,16 +114,18 @@ CapabilityPort
 
 ```text
 多个 New Tab Client
-  → 查找/打开/聚焦单个 Workspace Owner
+  → 当前页 App 窗口 → 连接单个逻辑 Workspace Owner
     → Task Core
       → Dedicated Worker
 ```
 
-- New Tab 只显示任务 projection，不持有 Worker、File handle 或未提交输出。
-- Tool App 启动时进入或聚焦 Workspace；同一 `single` App 不重复创建实例。
+- New Tab 按需显示 Tool App 与任务 projection，不直接持有引擎、File handle 或未提交输出。
+- 内置 App 在当前标签页打开；同一 `single` App 不重复创建窗口。逻辑 Workspace 不要求新建可见标签页，见 ADR 0007。
+- Phase 1 首次使用工具的页面建立 mock owner；其他同源页面经受限 BroadcastChannel 调用 owner。Web Lock 保证唯一 owner，客户端不各自执行任务或维护可写模拟文件树。
 - Workspace 使用 lease/owner ID 防止刷新或多标签重复执行同一任务。
 - Workspace 关闭前提示运行中任务；关闭、崩溃或扩展更新不能伪装为取消成功。
-- Service Worker 只负责发现上下文和传递版本化消息，不靠全局变量保存任务。
+- owner 关闭或通信超时后禁止继续操作或自动重放；普通客户端关闭不影响 owner。真实 Worker 生命周期仍需探针，mock 不代表真实长任务恢复能力。
+- Service Worker 负责工具栏入口并拒绝旧版跨标签启动消息，不靠全局变量保存任务。
 
 ## 7. App 与桌面运行时
 

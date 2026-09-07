@@ -1,8 +1,9 @@
 import { getRegisteredApp } from 'unas-src/appRegistry'
-import { Suspense, useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 
-import { AppLoadBoundary } from 'unas-src/components/AppLoadBoundary'
-import { DesktopWindow } from 'unas-src/Window'
+import { AppWindow } from 'unas-src/components/AppWindow'
+import { WorkspaceAppContent } from 'unas-src/components/WorkspaceAppContent'
+import { isWorkspaceApp } from 'unas-src/runtime/workspaceRouter'
 import { useWindowStore } from 'unas-src/windowStore'
 import { useSystemStore } from 'unas-src/store'
 
@@ -15,7 +16,7 @@ export function WindowContainer() {
   // Focus once; cleanup must not reactivate the previously focused window.
   useLayoutEffect(() => {
     if (showLauncher) return
-    const active = container.current?.querySelector<HTMLElement>('.mt-window--active:not([hidden])')
+    const active = container.current?.querySelector<HTMLElement>('.mt-window--active:not([hidden]):not([data-launch-pending])')
     if (active) {
       if (!active.contains(document.activeElement)) active.focus({ preventScroll: true })
     } else if (document.activeElement === document.body || container.current?.contains(document.activeElement)) {
@@ -46,7 +47,7 @@ export function WindowContainer() {
         if (!registeredApp) return null
         const C = registeredApp.component
         return (
-          <DesktopWindow
+          <AppWindow
             key={w.id}
             windowId={w.id}
             title={registeredApp.title || w.title}
@@ -66,12 +67,8 @@ export function WindowContainer() {
             onDrag={dragWindow}
             onResize={resizeWindow}
           >
-            <AppLoadBoundary resetKey={w.appType}>
-              <Suspense fallback={<div className="mt-app-loading" role="status">正在打开{registeredApp.title}…</div>}>
-                <C />
-              </Suspense>
-            </AppLoadBoundary>
-          </DesktopWindow>
+            {isWorkspaceApp(w.appType) ? <WorkspaceAppContent><C /></WorkspaceAppContent> : <C />}
+          </AppWindow>
         )
       })}
     </div>

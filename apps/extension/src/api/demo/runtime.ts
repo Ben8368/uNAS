@@ -4,6 +4,7 @@ import { createMockFilesystem } from './filesystem'
 
 const epoch = 1_788_480_000
 const listeners = new Set<() => void>()
+export const userJobIds = new Set<string>()
 let sequence = 0
 export const state = {
   scenarioId: 'initial-state' as DemoScenarioId, step: 0, revision: 0,
@@ -40,6 +41,7 @@ export function transition(id: string, status: JobRecord['status'], errorMessage
   if (!job) throw new Error('演示任务不存在。')
   if (terminal(job.status)) return false
   job.status = status; job.updatedAt = now(); job.errorMessage = errorMessage
+  if (terminal(status)) userJobIds.delete(id)
   if (status === 'succeeded') job.progress = { current: 100, total: 100, unit: 'percent' }
   for (const task of state.tasks.filter(t => t.task_id === id)) {
     task.status = status === 'succeeded' ? 'completed' : status === 'canceled' ? 'cancelled' : status === 'queued' ? 'pending' : status
@@ -52,11 +54,13 @@ export function transition(id: string, status: JobRecord['status'], errorMessage
 export function log(level: string, event: string, message: string) { state.logs.unshift({ level, module: 'demo', time: isoNow(), user: '演示用户', event, message }) }
 export const filesystem = createMockFilesystem(now, demoId, guard)
 export function getDemoSnapshot(): DemoSnapshot {
-  return structuredClone({ executionSource: 'mock', scenarioId: state.scenarioId, step: state.step, revision: state.revision, jobs: state.jobs, tasks: state.tasks, assets: state.assets.filter(asset => filesystem.hasPath(asset.path)) })
+  const hasPendingUserTasks = state.jobs.some(job => userJobIds.has(job.id) && !terminal(job.status))
+  return structuredClone({ executionSource: 'mock', scenarioId: state.scenarioId, step: state.step, revision: state.revision, jobs: state.jobs, tasks: state.tasks, assets: state.assets.filter(asset => filesystem.hasPath(asset.path)), hasPendingUserTasks })
 }
 export function resetDemoScenario(id: DemoScenarioId): DemoSnapshot {
   if (!demoScenarios.some(s => s.id === id)) throw new Error('未知演示场景。')
   sequence = 0; state.scenarioId = id; state.step = 0; state.revision = 0
+  userJobIds.clear()
   state.jobs = [makeJob('media.transcode', '模拟品牌片结果 · 无真实输出', 'succeeded', 100, 'demo-transcode-001'), makeJob('download.video', '模拟产品发布会回放', 'running', 68, 'demo-download-001')]
   state.tasks = [{ executionSource: 'mock', id: 'demo-download-001', task_id: 'demo-download-001', title: '模拟产品发布会回放', source_url: 'https://example.com/product-launch', status: 'running', progress: 68, stage: '模拟下载进度', created_at: now(), updated_at: now(), started_at: now(), completed_at: null, params: { url: 'https://example.com/product-launch', urls: ['https://example.com/product-launch'], mode: 'video' }, output_files: [], error: null }]
   state.assets = [

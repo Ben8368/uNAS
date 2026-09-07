@@ -1,36 +1,42 @@
 import { test, expect, workspace, openApp, closeApp, revealRuntimePanel } from './fixtures'
 
-test('New Tab override launches and reuses one Workspace; invalid messages are rejected', async ({ extension }) => {
+test('New Tab opens every built-in App locally and rejects legacy cross-tab launches', async ({ extension }) => {
   const page = await extension.context.newPage()
   await page.goto('chrome://newtab/')
   await expect(page.getByRole('navigation', { name: '应用快捷方式' })).toBeVisible()
+  const tabCount = extension.context.pages().length
+  await page.locator('.app-icon--browser').click()
+  await page.getByLabel('名称', { exact: true }).fill('保留当前标签页草稿')
   await page.locator('.app-icon--fetcher').click()
-  await expect.poll(() => extension.context.pages().filter((tab) => tab.url().includes('/workspace.html')).length).toBe(1)
-  const owner = extension.context.pages().find((tab) => tab.url().includes('/workspace.html'))!
-  const fetcherWindow = owner.locator('[data-app-id="fetcher"]')
+  const fetcherWindow = page.locator('[data-app-id="fetcher"]')
   await expect(fetcherWindow).toBeVisible()
   await expect(fetcherWindow).toHaveCSS('outline-style', 'none')
-  await expect(owner.locator('.rp-edge-trigger')).toBeEmpty()
+  await expect(page.locator('.rp-edge-trigger')).toBeEmpty()
+  await page.locator('.app-icon--file-manager').click()
+  await expect(page.locator('[data-app-id="file-manager"]')).toBeVisible()
+  await expect(page.getByLabel('名称', { exact: true })).toHaveValue('保留当前标签页草稿')
+  expect(extension.context.pages()).toHaveLength(tabCount)
   const second = await extension.context.newPage()
   await second.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
   await second.locator('.app-icon--file-manager').click()
-  await expect(owner.locator('[data-app-id="file-manager"]')).toBeVisible()
+  await expect(second.locator('[data-app-id="file-manager"]')).toBeVisible()
   await expect(second.locator('.app-icon--ps, .app-icon--transcode, .app-icon--pdf, .app-icon--image, .app-icon--archive, .app-icon--tasks')).toHaveCount(0)
-  expect(extension.context.pages().filter((tab) => tab.url().includes('/workspace.html'))).toHaveLength(1)
+  expect(extension.context.pages().filter((tab) => tab.url().includes('/workspace.html'))).toHaveLength(0)
   const responses = await second.evaluate(async () => {
     const runtime = (globalThis as unknown as { chrome: { runtime: { sendMessage: (message: unknown) => Promise<{ ok: boolean }> } } }).chrome.runtime
     return Promise.all([
+      { schemaVersion: 1, action: 'workspace.launch', appId: 'fetcher' },
       { schemaVersion: 2, action: 'workspace.launch', appId: 'fetcher' },
       { schemaVersion: 1, action: 'workspace.launch', appId: 'javascript:alert(1)' },
       { schemaVersion: 1, action: 'workspace.launch', appId: 'fetcher', url: 'https://example.com' },
     ].map((message) => runtime.sendMessage(message)))
   })
   expect(responses.every((response) => response.ok === false)).toBe(true)
-  expect(extension.context.pages().filter((tab) => tab.url().includes('/workspace.html'))).toHaveLength(1)
+  expect(extension.context.pages().filter((tab) => tab.url().includes('/workspace.html'))).toHaveLength(0)
   const duplicate = await extension.context.newPage()
   await duplicate.goto(`chrome-extension://${extension.extensionId}/workspace.html#fetcher`)
-  await expect(duplicate.getByRole('heading', { name: 'Workspace 已在另一标签页运行' })).toBeVisible()
-  await expect(duplicate.locator('[data-app-id="fetcher"]')).toHaveCount(0)
+  await expect(duplicate.locator('[data-app-id="fetcher"]')).toBeVisible()
+  await expect(duplicate.locator('.dl-row')).toContainText('模拟产品发布会回放')
   await duplicate.close()
   expect(extension.remoteRequests).toEqual([])
   expect(extension.errors).toEqual([])

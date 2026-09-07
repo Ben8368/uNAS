@@ -21,4 +21,5 @@ export type DemoScenarioId = typeof demoScenarios[number]['id']
 export type DemoSnapshot = {
   executionSource: 'mock'; scenarioId: DemoScenarioId; step: number; revision: number
   jobs: JobRecord[]; tasks: FetchTaskRecord[]; assets: AssetRecord[]
+  hasPendingUserTasks: boolean
 }

@@ -1,7 +1,7 @@
 import type { FetchTaskRecord, JobRecord } from '#contracts'
 import type { UnasDemoApi, PathGrantCapabilityResult } from './types'
 import {
-  state, now, makeJob, guard, transition, log, filesystem, publish,
+  state, now, makeJob, guard, transition, log, filesystem, publish, userJobIds,
   getDemoSnapshot, resetDemoScenario, advanceDemoScenario, subscribeDemo, interruptDemoTasks,
 } from './demo/runtime'
 
@@ -9,6 +9,7 @@ function createJob(kind: JobRecord['kind'], title: string) {
   guard()
   const job = makeJob(kind, title)
   state.jobs.unshift(job)
+  userJobIds.add(job.id)
   if (state.scenarioId === 'task-failed') transition(job.id, 'failed', 'MOCK_TASK_FAILED：固定失败场景。')
   return structuredClone(job)
 }

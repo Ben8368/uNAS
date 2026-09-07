@@ -2,8 +2,6 @@
 
 import { getAppMetadata } from 'unas-src/appRegistry'
 import { DEFAULT_WINDOW_PRESET } from 'unas-src/appPresentation'
-import { isWorkspaceApp } from 'unas-src/runtime/workspaceRouter'
-import { isWorkspaceSurface, launchWorkspace } from 'unas-src/runtime/extensionAdapter'
 import { launchStatus } from 'unas-src/runtime/launchStatus'
 
 export interface DesktopWindowState {
@@ -41,11 +39,6 @@ export const useWindowStore = create<WindowStore>()((set, get) => ({
 
   openWindow: (appType, title) => {
     if (!getAppMetadata(appType)) { launchStatus.set('此 App 不在受支持的注册表中。'); return }
-    if (isWorkspaceApp(appType) && !isWorkspaceSurface()) {
-      launchStatus.set('')
-      void launchWorkspace(appType).catch((error: unknown) => launchStatus.set(error instanceof Error ? error.message : 'Workspace 启动失败'))
-      return
-    }
     const existing = get().getWindowByType(appType)
     if (existing) {
       if (existing.isMinimized) {
