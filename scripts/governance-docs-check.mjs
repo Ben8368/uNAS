@@ -1,7 +1,10 @@
+import { execFile } from 'node:child_process'
 import { readdir, readFile, stat } from 'node:fs/promises'
-import { dirname, extname, resolve } from 'node:path'
+import { dirname, extname, relative, resolve } from 'node:path'
+import { promisify } from 'node:util'
 
 const root = resolve(import.meta.dirname, '..')
+const execFileAsync = promisify(execFile)
 const budgets = [
   { file: 'AGENTS.md', lines: 85, characters: 5200 },
   { file: 'CONTEXT.md', lines: 45, characters: 3000 },
@@ -32,6 +35,26 @@ async function listMarkdown(directory) {
     else if (extname(entry.name).toLowerCase() === '.md') files.push(path)
   }
   return files
+}
+
+const { stdout: ignoredOutput } = await execFileAsync(
+  'git',
+  ['ls-files', '--others', '--ignored', '--exclude-standard', '--directory', '-z'],
+  { cwd: root, encoding: 'utf8' }
+)
+const ignoredPaths = ignoredOutput.split('\0').filter(Boolean).map((path) => path.replaceAll('\\', '/'))
+
+function isGitIgnored(path) {
+  const repositoryPath = relative(root, path).replaceAll('\\', '/')
+  if (repositoryPath.startsWith('..')) return false
+
+  return ignoredPaths.some((ignoredPath) => {
+    if (ignoredPath.endsWith('/')) {
+      const directory = ignoredPath.slice(0, -1)
+      return repositoryPath === directory || repositoryPath.startsWith(ignoredPath)
+    }
+    return repositoryPath === ignoredPath
+  })
 }
 
 for (const budget of budgets) {
@@ -123,7 +146,10 @@ for (const file of await listMarkdown(root)) {
     if (/^(https?:|mailto:|#)/i.test(link)) continue
     const target = decodeURIComponent(link.split('#')[0])
     if (!target) continue
-    if (!await exists(resolve(dirname(file), target))) {
+    const resolvedTarget = resolve(dirname(file), target)
+    if (await isGitIgnored(resolvedTarget)) {
+      errors.push(`${file.slice(root.length + 1)}: 相对链接指向 Git 忽略路径 ${rawLink}`)
+    } else if (!await exists(resolvedTarget)) {
       errors.push(`${file.slice(root.length + 1)}: 失效相对链接 ${rawLink}`)
     }
   }
