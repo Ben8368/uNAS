@@ -18,6 +18,7 @@ export function DesktopWindow({ windowId, title, width = 960, height = 640, x = 
   const [viewport, setViewport] = useState({ width: 960, height: 640 })
   const drag = useRef<{ x: number; y: number; left: number; top: number; width: number; height: number; resize: boolean } | null>(null)
   const bounds = fitWindow({ width, height, x, y }, viewport)
+  const fileWorkspace = appType === 'file-manager'
   useLayoutEffect(() => {
     const parent = root.current?.parentElement
     if (!parent) return
@@ -57,7 +58,7 @@ export function DesktopWindow({ windowId, title, width = 960, height = 640, x = 
         onDoubleClick={(event) => { if (!(event.target as HTMLElement).closest('button')) onMaximize(windowId) }}>
         <div className="mt-window-brand"><img src={getAppIcon(appType ?? '')} alt="" /><strong>{title}</strong></div>
         <div className="mt-window-controls">
-          <span className="mt-window-status" title="executionSource: mock；不读取真实文件或执行转换">模拟</span>
+          <span className="mt-window-status" title={fileWorkspace ? '本地授权目录：仅读取已授权目录的直接子项；不读取文件内容或递归扫描。' : 'executionSource: mock；不读取真实文件或执行转换'}>{fileWorkspace ? '本地授权' : '模拟'}</span>
           <button type="button" className="mt-window-btn" aria-label={`最小化${title}`} title="最小化" onClick={() => onMinimize(windowId)}>−</button>
           <button type="button" className="mt-window-btn" aria-label={`${isMaximized ? '还原' : '最大化'}${title}`} title={isMaximized ? '还原' : '最大化'} onClick={() => onMaximize(windowId)}>□</button>
           <button type="button" className="mt-window-btn" aria-label={`关闭${title}`} title="关闭" onClick={() => onClose(windowId)}>×</button>

@@ -19,7 +19,6 @@ import { useDownloaderActions } from 'unas-src/apps/downloader/useDownloaderActi
 import { useDownloaderForm } from 'unas-src/apps/downloader/useDownloaderForm'
 import { useDownloaderSelection } from 'unas-src/apps/downloader/useDownloaderSelection'
 import { useDownloaderTaskData } from 'unas-src/apps/downloader/useDownloaderTaskData'
-import { DirectoryPickerDialog } from 'unas-src/apps/FileManagerApp'
 import type { CookieBrowser } from 'unas-src/apps/downloader/types'
 import type { FetchTaskDraft } from '#contracts'
 
@@ -41,7 +40,7 @@ export function DownloaderApp() {
     async (urls: string[]) => {
       const draft: FetchTaskDraft = {
         urls: urls,
-        output_dir: form.taskOutputDir || '/Workspace/Downloads',
+        output_dir: 'browser-default-downloads',
         compatible_format: form.taskCompatibleFormat,
         max_concurrent: 1,
       }
@@ -64,7 +63,6 @@ export function DownloaderApp() {
     },
     [
       form.taskCookieBrowser,
-      form.taskOutputDir,
       form.taskCompatibleFormat,
       refreshLists,
       setOptimisticTasks,
@@ -164,16 +162,13 @@ export function DownloaderApp() {
           {form.showAddForm && (
             <DownloaderAddForm
               taskUrl={form.taskUrl}
-              taskOutputDir={form.taskOutputDir}
               taskCookieBrowser={form.taskCookieBrowser}
               taskCompatibleFormat={form.taskCompatibleFormat}
               addingTask={form.addingTask}
               submitError={form.submitError}
               onTaskUrlChange={form.setTaskUrl}
-              onTaskOutputDirChange={form.setTaskOutputDir}
               onTaskCookieBrowserChange={confirmCookieBrowserChange}
               onTaskCompatibleFormatChange={form.setTaskCompatibleFormat}
-              onOpenDirectoryPicker={() => form.setDirectoryPickerOpen(true)}
               onSubmit={submitNewTask}
               onClose={() => {
                 form.setShowAddForm(false)
@@ -207,16 +202,6 @@ export function DownloaderApp() {
         detailResult={detailResult}
         actionError={actions.actionError}
         onClose={() => setDetailOpen(false)}
-      />
-
-      <DirectoryPickerDialog
-        open={form.directoryPickerOpen}
-        value={form.taskOutputDir}
-        mode="directory"
-        title="选择模拟结果目录"
-        confirmLabel="使用此目录"
-        onClose={() => form.setDirectoryPickerOpen(false)}
-        onPick={form.setTaskOutputDir}
       />
     </div>
   )

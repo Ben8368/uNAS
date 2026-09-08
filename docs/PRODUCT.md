@@ -65,7 +65,7 @@ Gate G0 后先建设可交互 Demo，范围包括：
 - 空态、权限拒绝、资源超限、处理中、取消、失败和成功状态。
 - Wide/Regular 布局、深浅主题、减少透明度、减少动态和键盘导航。
 
-Demo 不读取真实文件、不执行真实转换、不申请宽权限；所有结果必须标记为模拟。详细规则见 [FRONTEND_GUIDE.md](FRONTEND_GUIDE.md)。
+Demo 流程不读取真实文件、不执行真实转换、不申请宽权限；所有结果必须标记为模拟。Phase 2 的 SP-02 仅例外接入用户手势授权的目录只读 metadata 浏览，不读内容、不递归扫描、不写入或导出，证据与限制见 [SP-02](../benchmarks/sp-02/README.md)。详细规则见 [FRONTEND_GUIDE.md](FRONTEND_GUIDE.md)。
 
 ## 6. V1 真实能力候选
 

@@ -32,8 +32,8 @@ const implementation = {
   async submitFetch(draft) {
     guard()
     if (draft.cookies_from_browser) throw new Error('CAPABILITY_UNAVAILABLE：Demo 不读取浏览器登录态或 Cookie。')
-    const outputDirectory = draft.output_dir || '/Workspace/Downloads'
-    await filesystem.listFilebrowserDirectory({ directory: outputDirectory })
+    const outputDirectory = draft.output_dir || 'browser-default-downloads'
+    if (outputDirectory !== 'browser-default-downloads') throw new Error('Demo 下载仅记录浏览器默认下载位置；不接受或访问本地目录。')
     const urls = draft.urls?.filter(Boolean) ?? (draft.url ? [draft.url] : [])
     if (urls.length === 0 || urls.length > 20) throw new Error('每批模拟任务需要 1–20 个 HTTPS URL。')
     const parsed = urls.map(url => { const next = new URL(url); if (next.protocol !== 'https:') throw new Error('模拟任务仅接受 HTTPS URL。'); return next })

@@ -5,7 +5,7 @@ import { defineConfig } from 'wxt'
 export default defineConfig({
   manifest: {
     name: 'uNAS Demo',
-    description: 'uNAS 的本地 mock 前端演示；不接入文件、任务或后端能力。',
+    description: 'uNAS 本地优先工作区：文件管理仅在用户授权后只读列出目录；下载复用浏览器默认下载位置，其他工具仍为 mock 演示。',
     version: '0.3.0',
     minimum_chrome_version: '148',
     permissions: ['storage'],

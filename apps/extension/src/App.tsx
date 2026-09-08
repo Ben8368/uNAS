@@ -8,6 +8,7 @@ import { useWindowStore } from 'unas-src/windowStore'
 import { useSystemStore } from 'unas-src/store'
 import { useAppearance } from 'unas-src/hooks/useAppearance'
 import { useWorkspaceSession } from 'unas-src/hooks/useWorkspaceSession'
+import { authorizeFileManagerDirectory, getFileWorkspaceSnapshot, restoreFileManagerDirectory } from 'unas-src/api/fileWorkspace'
 import { isWorkspaceSurface } from 'unas-src/runtime/extensionAdapter'
 import { isWorkspaceApp } from 'unas-src/runtime/workspaceRouter'
 import { launchStatus } from 'unas-src/runtime/launchStatus'
@@ -19,8 +20,14 @@ export default function App() {
   const session = useWorkspaceSession(workspace)
   const launchError = useSyncExternalStore(launchStatus.subscribe, launchStatus.getSnapshot)
   useAppearance()
+  useEffect(() => { void restoreFileManagerDirectory() }, [])
 
   const handleOpenApp = useCallback((id: string) => {
+    if (id === 'file-manager') {
+      // The picker is invoked while the launch click is still a trusted user gesture.
+      if (getFileWorkspaceSnapshot().status === 'ready') void restoreFileManagerDirectory()
+      else void authorizeFileManagerDirectory()
+    }
     openWindow(id)
     setShowLauncher(false)
   }, [openWindow, setShowLauncher])

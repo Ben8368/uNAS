@@ -8,16 +8,13 @@ describe('DownloaderAddForm', () => {
     const markup = renderToStaticMarkup(
       <DownloaderAddForm
         taskUrl="https://example.com/video"
-        taskOutputDir=""
         taskCookieBrowser="none"
         taskCompatibleFormat={false}
         addingTask={false}
         submitError=""
         onTaskUrlChange={vi.fn()}
-        onTaskOutputDirChange={vi.fn()}
         onTaskCookieBrowserChange={vi.fn()}
         onTaskCompatibleFormatChange={vi.fn()}
-        onOpenDirectoryPicker={vi.fn()}
         onSubmit={vi.fn()}
         onClose={vi.fn()}
       />,
@@ -36,6 +33,9 @@ describe('DownloaderAddForm', () => {
     expect(markup).toContain('模拟格式参数：H.264 / MP4')
     expect(markup).toContain('aria-describedby="download-compatible-format-help"')
     expect(markup).toContain('id="download-compatible-format-help" class="dl-option-help__tooltip" role="tooltip"')
+    expect(markup).toContain('浏览器默认下载位置')
+    expect(markup).toContain('不请求目录授权，也不会读取、列出或修改浏览器下载目录。')
+    expect(markup).not.toContain('选择模拟目录')
     expect(markup).toContain('添加模拟任务')
     expect(markup).not.toContain('检测到字幕时')
     expect(markup).not.toContain('会转码为')

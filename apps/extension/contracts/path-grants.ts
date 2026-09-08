@@ -1,13 +1,16 @@
 import type { OkResult } from './core.js'
 
-export type PathGrantKind = 'file.read' | 'file.write' | 'dir.read'
-export type PathGrantStatus = 'active' | 'consumed' | 'revoked' | 'expired'
+export type ResourceGrantKind = 'file.read' | 'file.write' | 'dir.read'
+export type ResourceGrantStatus = 'active' | 'consumed' | 'revoked' | 'expired'
 
-export type PathGrantRecord = {
+/**
+ * Cross-context grant metadata. The matching FileSystemHandle is adapter-private
+ * state and is never represented by a physical path in a shared contract.
+ */
+export type ResourceGrant = {
   id: string
-  kind: PathGrantKind
-  status: PathGrantStatus
-  physicalPath: string
+  kind: ResourceGrantKind
+  status: ResourceGrantStatus
   displayName: string
   expiresAt: number
   createdAt: number
@@ -15,6 +18,18 @@ export type PathGrantRecord = {
   jobId?: string
 }
 
-export type PathGrantInfo = Omit<PathGrantRecord, 'physicalPath'>
-export type PathGrantResponse = OkResult & { grant?: PathGrantInfo }
-export type PathGrantListResponse = OkResult & { grants: PathGrantInfo[] }
+export type ResourceGrantResponse = OkResult & { grant?: ResourceGrant }
+export type ResourceGrantListResponse = OkResult & { grants: ResourceGrant[] }
+
+/** @deprecated Use ResourceGrantKind for new contracts. */
+export type PathGrantKind = ResourceGrantKind
+/** @deprecated Use ResourceGrantStatus for new contracts. */
+export type PathGrantStatus = ResourceGrantStatus
+/** @deprecated Use ResourceGrant for new contracts. */
+export type PathGrantInfo = ResourceGrant
+/** @deprecated Use ResourceGrant for new contracts. */
+export type PathGrantRecord = ResourceGrant
+/** @deprecated Use ResourceGrantResponse for new contracts. */
+export type PathGrantResponse = ResourceGrantResponse
+/** @deprecated Use ResourceGrantListResponse for new contracts. */
+export type PathGrantListResponse = ResourceGrantListResponse

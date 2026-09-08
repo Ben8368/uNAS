@@ -14,6 +14,15 @@ export const test = base.extend<{ extension: Extension }>({
       // Allow CDP to trigger the toolbar action in this disposable test profile only.
       args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`, '--enable-unsafe-extension-debugging'],
     })
+    // Native OS directory dialogs cannot be driven by Playwright. Most UI
+    // regressions therefore exercise the explicit cancel path; the dedicated
+    // file-workspace probe installs a controlled directory-handle stub.
+    await context.addInitScript(() => {
+      Object.defineProperty(globalThis, 'showDirectoryPicker', {
+        configurable: true,
+        value: async () => { throw new DOMException('Picker cancelled by isolated E2E profile.', 'AbortError') },
+      })
+    })
     context.setDefaultTimeout(10_000)
     context.setDefaultNavigationTimeout(15_000)
     const errors: string[] = []

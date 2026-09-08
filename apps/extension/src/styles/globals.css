@@ -3,6 +3,7 @@
 @import './app-controls.css';
 @import './shell.css';
 @import './file-manager.css';
+@import './file-manager/local-directory.css';
 @import './log-viewer.css';
 @import './downloader.css';
 @import './browser.css';

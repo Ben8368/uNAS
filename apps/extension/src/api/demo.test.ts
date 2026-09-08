@@ -114,9 +114,10 @@ describe('deterministic mock scenario runtime', () => {
     const before = demoApi.getDemoSnapshot()
     await expect(demoApi.submitFetch({ url: 'https://example.com/a', cookies_from_browser: 'chrome' })).rejects.toThrow('不读取浏览器登录态')
     expect(demoApi.getDemoSnapshot()).toEqual(before)
-    const created = await demoApi.submitFetch({ url: 'https://example.com/a', output_dir: '/Workspace/Exports', compatible_format: true, max_concurrent: 1 })
+    await expect(demoApi.submitFetch({ url: 'https://example.com/a', output_dir: '/Workspace/Exports' })).rejects.toThrow('浏览器默认下载位置')
+    const created = await demoApi.submitFetch({ url: 'https://example.com/a', compatible_format: true, max_concurrent: 1 })
     const task = (await demoApi.getWeeklyHistory()).tasks!.find(t => t.id === created.task_id)!
-    expect(task.params).toEqual({ url: 'https://example.com/a', urls: ['https://example.com/a'], mode: 'video', output_dir: '/Workspace/Exports', compatible_format: true, max_concurrent: 1 })
+    expect(task.params).toEqual({ url: 'https://example.com/a', urls: ['https://example.com/a'], mode: 'video', output_dir: 'browser-default-downloads', compatible_format: true, max_concurrent: 1 })
     expect(task.output_files).toEqual([])
     const strategy = await demoApi.analyzeDownloadStrategy({ url: 'https://example.com/a' })
     expect(strategy.analysis?.ytdlp_scope).toMatchObject({ supports_generic_extractor: false, supports_embeds: false, media: [] })

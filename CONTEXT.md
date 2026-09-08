@@ -1,8 +1,8 @@
 # 当前状态
 
 > **最后确认：** 2026-09-08
-> **阶段：** Phase 2 / SP-01 Extension Runtime
-> **产品代码：** React/Vite/WXT mock Demo；确定性 scenario、Workspace owner、跨标签摘要和 HTTPS Link 已实现，尚未接入真实文件、引擎或后端。
+> **阶段：** Phase 2 / SP-02 File Workspace
+> **产品代码：** React/Vite/WXT mock Desktop；确定性 scenario、Workspace owner、跨标签摘要和 HTTPS Link 已实现。SP-02 已接入受限的本地目录只读授权与 metadata 浏览；真实处理、导出、引擎和后端仍未接入。
 
 ## 当前决策
 
@@ -19,7 +19,7 @@
 
 1. FE-11 已迁移启动器 Dialog 与下载行 Popover；继续审查响应式容器和 UI 分片，打磨桌面、状态抽屉、响应式与键盘路径；不改变 mock/真实边界。
 2. 清理不再被 Demo 入口引用的旧 HTTP/本地服务 adapter，并保持前端基线、依赖与文档一致。
-3. 推进 [SP-01 Extension Runtime](benchmarks/sp-01/README.md)：已验证强制终止、普通 Chrome 自然空闲后的唤醒、页面关闭 fail-closed、同 profile 浏览器重启及 Chromium 解包扩展更新后的 `storage.local` 恢复；剩余 Chrome Stable 人工更新对照及其他真实能力边界。真实文件与引擎仍须逐项验证后才能接入。
+3. 推进 [SP-02 File Workspace](benchmarks/sp-02/README.md)：解包扩展已验证 IndexedDB/OPFS 临时存储和目录授权 API 路径；继续人工验证原生选择器、真实目录撤销、配额压力与导出 fallback。真实处理与引擎仍须逐项验证后才能接入。
 
 ## 当前阻断与风险
 
@@ -28,7 +28,7 @@
 
 ## 最近验证
 
-- 2026-09-08：Link App mutation 已经 Service Worker 串行化；95 项单测、34 项解包扩展 E2E 和 6 项 Web E2E 通过。新增同 profile 重启与解包扩展更新回归，确认 `storage.local` Link App 配置可恢复；增强 owner 关闭时 pending mock task 的 fail-closed 断言。普通 Chrome 自然空闲唤醒已于 2026-09-07 人工验证；Chrome Stable 解包更新的人工对照仍未验证。证据：[SP-01](benchmarks/sp-01/README.md)、`apps/extension/test-results/`。
+- 2026-09-08：SP-02 已在 Chrome for Testing 解包扩展页验证 IndexedDB/OPFS 临时存储、目录授权 API 路径、句柄恢复、取消保留和忘记授权；95 项单测、35 项解包扩展 E2E 和 6 项 Web E2E 通过。证据：[SP-02](benchmarks/sp-02/README.md)、`apps/extension/test-results/`；自动化目录用例使用隔离 OPFS handle 替身，不代表原生选择器、真实目录撤销、配额压力或导出能力。
 - 2026-09-07：维护者确认 G1 已验收。Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工体验走查，以及 `pnpm verify`、30 项扩展 E2E、6 项 Web E2E 已通过；原生 `browser.*`、Promise 拒绝消息、`<dialog>`/Popover Escape 与 mock 生命周期回归已验证。清理旧 HTTP adapter 后，治理/边界/依赖/包体检查、92 项单测、类型检查、Vite/WXT 构建与 31 项扩展、6 项 Web E2E 再次通过；其中 SP-01 强制 Worker 终止/事件唤醒记录于 [SP-01](benchmarks/sp-01/README.md)。证据位于 `apps/extension/test-results/`；不代表真实引擎或完整生命周期探针完成。
 
 ## 按需入口

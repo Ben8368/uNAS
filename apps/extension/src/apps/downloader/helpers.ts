@@ -246,7 +246,7 @@ export function extractTaskDetailRows(task: DownloadTask): DetailRow[] {
     { label: '文件类型', value: (info.ext as string) || '-' },
     { label: '视频标题', value: (info.title as string) || task.name },
     { label: '上传者', value: (info.uploader as string) || '-' },
-    { label: '模拟结果目录', value: (params.output_dir as string) || '/Workspace/Downloads（模拟）' },
+    { label: '下载目的地', value: '浏览器默认下载位置（未授权访问；mock 不生成文件）' },
     { label: '模拟文件记录', value: (info.local_path as string) || '无真实文件' },
     { label: '模拟字幕记录', value: (info.subtitle_path as string) || '无真实字幕' },
     { label: '模拟质量参数', value: (params.quality as string) || (params.compatible_format ? 'H.264 / MP4（模拟）' : '默认模拟参数') },

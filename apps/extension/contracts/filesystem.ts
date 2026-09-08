@@ -42,6 +42,22 @@ export type DirectoryListResponse = OkResult & {
   directories: FileEntry[]
 }
 
+/** Opaque virtual paths only; never a host filesystem path. */
+export type AuthorizedDirectoryListing = DirectoryListResponse & {
+  executionSource: 'real'
+  displayPath: string
+  truncated: boolean
+}
+
+export type FileWorkspaceAccessStatus = 'idle' | 'selecting' | 'ready' | 'requires-user' | 'unavailable' | 'error'
+
+export type FileWorkspaceAccessSnapshot = {
+  status: FileWorkspaceAccessStatus
+  grantId?: string
+  displayName?: string
+  message?: string
+}
+
 export type CreateDirectoryResponse = OkResult & {
   path?: string
 }
