@@ -124,7 +124,7 @@ test('File Manager requires an in-app confirmation before enabling write mode fo
   await expect(reopenedApp).toContainText('已恢复先前的目录授权')
   await reopenedApp.getByRole('button', { name: '忘记此目录', exact: true }).click()
   await expect(reopenedApp.getByRole('heading', { name: '打开本地目录' })).toBeVisible()
-  await expect(reopenedApp).toContainText('未选择本地目录')
+  await expect(reopenedApp).toContainText('已清除保存的目录授权；未删除任何本地文件')
   const emptyScreenshotPath = testInfo.outputPath('directory-empty-layout.png')
   await reopened.screenshot({ path: emptyScreenshotPath, animations: 'disabled' })
   await testInfo.attach('directory-empty-layout', { path: emptyScreenshotPath, contentType: 'image/png' })
