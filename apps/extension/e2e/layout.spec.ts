@@ -56,7 +56,7 @@ for (const appId of ['fetcher', 'file-manager', 'browser']) {
       }
       await page.setViewportSize(viewport)
       const app = page.locator(`[data-app-id="${appId}"]`)
-      if (appId === 'file-manager') await expect(app.getByRole('heading', { name: '选择本地目录' })).toBeVisible()
+      if (appId === 'file-manager') await expect(app.getByRole('heading', { name: '打开本地目录' })).toBeVisible()
       if (appId === 'fetcher') await app.getByRole('button', { name: '添加任务', exact: true }).click()
       const bounds = await app.boundingBox()
       expect(bounds!.x).toBeGreaterThanOrEqual(0)
