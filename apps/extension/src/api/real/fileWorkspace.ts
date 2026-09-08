@@ -3,16 +3,25 @@ import type { ResourceGrant } from '#contracts'
 
 const DATABASE_NAME = 'unas-file-workspace-v1'
 const STORE_NAME = 'directory-grants'
+// Preserve the existing storage key so previously selected directories still restore.
 const RECORD_KEY = 'active-read-directory'
 const ENTRY_LIMIT = 200
 
 type FsaPermission = 'granted' | 'denied' | 'prompt'
 type FsaHandle = { kind: 'file' | 'directory'; name: string }
-type FsaFileHandle = FsaHandle & { kind: 'file'; getFile(): Promise<File> }
+type FsaFileHandle = FsaHandle & {
+  kind: 'file'
+  getFile(): Promise<File>
+  createWritable(): Promise<{ write(data: string | Blob): Promise<void>; close(): Promise<void>; abort?(): Promise<void> }>
+}
 type FsaDirectoryHandle = FsaHandle & {
   kind: 'directory'
   queryPermission(options?: { mode?: 'read' | 'readwrite' }): Promise<FsaPermission>
+  requestPermission?(options?: { mode?: 'read' | 'readwrite' }): Promise<FsaPermission>
   entries(): AsyncIterableIterator<[string, FsaHandle]>
+  getFileHandle(name: string, options?: { create?: boolean }): Promise<FsaFileHandle>
+  getDirectoryHandle(name: string, options?: { create?: boolean }): Promise<FsaDirectoryHandle>
+  removeEntry(name: string, options?: { recursive?: boolean }): Promise<void>
 }
 type DirectoryPicker = (options?: { mode?: 'read' | 'readwrite' }) => Promise<FsaDirectoryHandle>
 type StoredDirectoryGrant = { schemaVersion: 1; id: string; createdAt: number; handle: FsaDirectoryHandle }
@@ -93,7 +102,7 @@ function currentGrant(): ResourceGrant | undefined {
   if (!active) return undefined
   return {
     id: active.id,
-    kind: 'dir.read',
+    kind: snapshot.writeAccess === 'granted' ? 'dir.write' : 'dir.read',
     status: snapshot.status === 'ready' ? 'active' : 'revoked',
     displayName: active.handle.name,
     createdAt: active.createdAt,
@@ -111,12 +120,55 @@ async function hasReadPermission(handle: FsaDirectoryHandle) {
   return await handle.queryPermission({ mode: 'read' }) === 'granted'
 }
 
+async function writeAccessFor(handle: FsaDirectoryHandle) {
+  try {
+    return await handle.queryPermission({ mode: 'readwrite' }) === 'granted' ? 'granted' : 'requires-user'
+  } catch {
+    return 'unavailable'
+  }
+}
+
+function readySnapshot(grant: StoredDirectoryGrant, writeAccess: 'granted' | 'requires-user' | 'unavailable', message: string): FileWorkspaceAccessSnapshot {
+  return { status: 'ready', grantId: grant.id, displayName: grant.handle.name, writeAccess, message }
+}
+
 async function requireReadableDirectory() {
   if (!active) throw new Error('尚未授权本地目录。')
   if (!await hasReadPermission(active.handle)) {
     setSnapshot({ status: 'requires-user', grantId: active.id, displayName: active.handle.name, message: '目录授权已失效。请重新选择目录；uNAS 不会自动请求权限。' })
     throw new Error('目录授权已失效，请重新选择目录。')
   }
+}
+
+async function requireWritableDirectory() {
+  await requireReadableDirectory()
+  if (!active) throw new Error('尚未授权本地目录。')
+  if (await writeAccessFor(active.handle) !== 'granted') {
+    setSnapshot(readySnapshot(active, 'requires-user', '当前目录仅可读取。请先点击“启用编辑”并在浏览器提示中确认写入权限。'))
+    throw new Error('当前目录尚未启用编辑权限。')
+  }
+}
+
+function validEntryName(value: string) {
+  const name = value.trim()
+  if (!name || name === '.' || name === '..' || name.length > 120 || /[\\/\0]/.test(name)) {
+    throw new Error('名称不能为空，且不能包含路径分隔符或控制字符。')
+  }
+  return name
+}
+
+async function ensureEntryAbsent(directory: FsaDirectoryHandle, name: string) {
+  const absentForKind = (error: unknown) => error instanceof DOMException && ['NotFoundError', 'TypeMismatchError'].includes(error.name)
+  const fileExists = await directory.getFileHandle(name).then(() => true, (error) => {
+    if (absentForKind(error)) return false
+    throw error
+  })
+  if (fileExists) throw new Error(`“${name}”已存在，未覆盖现有文件。`)
+  const directoryExists = await directory.getDirectoryHandle(name).then(() => true, (error) => {
+    if (absentForKind(error)) return false
+    throw error
+  })
+  if (directoryExists) throw new Error(`“${name}”已存在，未覆盖现有文件夹。`)
 }
 
 function extensionOf(name: string) {
@@ -159,7 +211,7 @@ export function getActiveDirectoryGrant() {
   return currentGrant()
 }
 
-/** Called only from a user gesture. It opens a read-only native directory picker. */
+/** Called only from a user gesture. It opens a native read/write directory picker. */
 export async function authorizeFileManagerDirectory() {
   const picker = (globalThis as typeof globalThis & { showDirectoryPicker?: DirectoryPicker }).showDirectoryPicker
   if (typeof picker !== 'function') {
@@ -168,16 +220,19 @@ export async function authorizeFileManagerDirectory() {
   }
   setSnapshot({ status: 'selecting', message: '正在等待目录选择。' })
   try {
-    const handle = await picker({ mode: 'read' })
+    const handle = await picker({ mode: 'readwrite' })
     if (!await hasReadPermission(handle)) throw new Error('浏览器未授予所选目录的读取权限。')
     const next: StoredDirectoryGrant = { schemaVersion: 1, id: crypto.randomUUID(), createdAt: Date.now(), handle }
     await writeStoredGrant(next)
     active = next
     resetRoutes(handle)
-    setSnapshot({ status: 'ready', grantId: next.id, displayName: handle.name, message: '已授权只读访问；仅列出当前目录，未递归扫描或读取文件内容。' })
+    const writeAccess = await writeAccessFor(handle)
+    setSnapshot(readySnapshot(next, writeAccess, writeAccess === 'granted'
+      ? '已授权读取与编辑；仅在当前目录内执行你明确触发的文件操作。'
+      : '已授权读取；编辑操作需要在用户手势中单独确认浏览器写入权限。'))
   } catch (error) {
     if (isAbort(error)) {
-      if (active && await hasReadPermission(active.handle)) setSnapshot({ status: 'ready', grantId: active.id, displayName: active.handle.name, message: '未更换目录，继续使用已有只读授权。' })
+      if (active && await hasReadPermission(active.handle)) setSnapshot(readySnapshot(active, await writeAccessFor(active.handle), '未更换目录，继续使用已有目录授权。'))
       else setSnapshot({ status: 'idle', message: '未选择本地目录；演示数据保持不读取本地文件。' })
     } else {
       setSnapshot({ status: 'error', message: error instanceof Error ? error.message : '目录授权失败。' })
@@ -198,7 +253,7 @@ export async function restoreFileManagerDirectory() {
 async function restoreDirectoryGrant(): Promise<FileWorkspaceAccessSnapshot> {
   if (active && await hasReadPermission(active.handle)) {
     resetRoutes(active.handle)
-    setSnapshot({ status: 'ready', grantId: active.id, displayName: active.handle.name, message: '已恢复先前的只读目录授权。' })
+    setSnapshot(readySnapshot(active, await writeAccessFor(active.handle), '已恢复先前的目录授权；不会在后台请求写入权限。'))
     return snapshot
   }
   try {
@@ -208,7 +263,7 @@ async function restoreDirectoryGrant(): Promise<FileWorkspaceAccessSnapshot> {
     active = stored
     if (await hasReadPermission(stored.handle)) {
       resetRoutes(stored.handle)
-      setSnapshot({ status: 'ready', grantId: stored.id, displayName: stored.handle.name, message: '已恢复先前的只读目录授权。' })
+      setSnapshot(readySnapshot(stored, await writeAccessFor(stored.handle), '已恢复先前的目录授权；不会在后台请求写入权限。'))
     } else {
       setSnapshot({ status: 'requires-user', grantId: stored.id, displayName: stored.handle.name, message: '已保存的目录授权需要重新选择；uNAS 不会在后台请求权限。' })
     }
@@ -237,6 +292,59 @@ export async function listAuthorizedDirectory(path = '/'): Promise<AuthorizedDir
   }
   const displayPath = [active!.handle.name, ...route.names].join(' / ')
   return { ok: true, executionSource: 'real', path, displayPath, directories, files, truncated }
+}
+
+/** Requests write permission only from an explicit UI action; never during restore or listing. */
+export async function requestFileManagerDirectoryWriteAccess() {
+  await requireReadableDirectory()
+  if (!active) throw new Error('尚未授权本地目录。')
+  if (await writeAccessFor(active.handle) === 'granted') {
+    setSnapshot(readySnapshot(active, 'granted', '当前目录已启用编辑权限。'))
+    return snapshot
+  }
+  if (typeof active.handle.requestPermission !== 'function') {
+    setSnapshot(readySnapshot(active, 'unavailable', '此浏览器未提供目录写入授权接口；当前目录保持只读。'))
+    throw new Error('此浏览器未提供目录写入授权接口。')
+  }
+  const permission = await active.handle.requestPermission({ mode: 'readwrite' })
+  if (permission !== 'granted') {
+    setSnapshot(readySnapshot(active, 'requires-user', '浏览器未授予写入权限；当前目录保持只读。'))
+    throw new Error('浏览器未授予目录写入权限。')
+  }
+  setSnapshot(readySnapshot(active, 'granted', '当前目录已启用编辑权限。'))
+  return snapshot
+}
+
+export async function createAuthorizedDirectory(path: string, requestedName: string) {
+  await requireWritableDirectory()
+  const name = validEntryName(requestedName)
+  const route = routeFor(path)
+  await ensureEntryAbsent(route.handle, name)
+  await route.handle.getDirectoryHandle(name, { create: true })
+}
+
+export async function createAuthorizedMarkdownFile(path: string, requestedName: string) {
+  await requireWritableDirectory()
+  const baseName = validEntryName(requestedName)
+  const name = baseName.toLowerCase().endsWith('.md') ? baseName : `${baseName}.md`
+  const route = routeFor(path)
+  await ensureEntryAbsent(route.handle, name)
+  const file = await route.handle.getFileHandle(name, { create: true })
+  const writable = await file.createWritable()
+  try {
+    await writable.write('# 新文档\n')
+    await writable.close()
+  } catch (error) {
+    await writable.abort?.()
+    throw error
+  }
+}
+
+/** Deletes only one explicitly named direct child. Directories are never recursively deleted. */
+export async function deleteAuthorizedDirectoryEntry(path: string, requestedName: string) {
+  await requireWritableDirectory()
+  const name = validEntryName(requestedName)
+  await routeFor(path).handle.removeEntry(name, { recursive: false })
 }
 
 export async function forgetFileManagerDirectory() {

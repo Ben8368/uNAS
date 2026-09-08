@@ -50,12 +50,15 @@ export type AuthorizedDirectoryListing = DirectoryListResponse & {
 }
 
 export type FileWorkspaceAccessStatus = 'idle' | 'selecting' | 'ready' | 'requires-user' | 'unavailable' | 'error'
+export type FileWorkspaceWriteAccess = 'granted' | 'requires-user' | 'unavailable'
 
 export type FileWorkspaceAccessSnapshot = {
   status: FileWorkspaceAccessStatus
   grantId?: string
   displayName?: string
   message?: string
+  /** Read access can be restored without silently requesting this separate capability. */
+  writeAccess?: FileWorkspaceWriteAccess
 }
 
 export type CreateDirectoryResponse = OkResult & {

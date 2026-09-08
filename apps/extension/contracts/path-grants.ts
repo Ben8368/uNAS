@@ -1,6 +1,6 @@
 import type { OkResult } from './core.js'
 
-export type ResourceGrantKind = 'file.read' | 'file.write' | 'dir.read'
+export type ResourceGrantKind = 'file.read' | 'file.write' | 'dir.read' | 'dir.write'
 export type ResourceGrantStatus = 'active' | 'consumed' | 'revoked' | 'expired'
 
 /**
