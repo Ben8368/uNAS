@@ -44,10 +44,16 @@ for (const sample of cases) {
   })
 }
 
-for (const appId of ['fetcher', 'file-manager']) {
+for (const appId of ['fetcher', 'file-manager', 'browser']) {
   for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }]) {
     test(`existing App layout: ${appId} ${viewport.width}`, async ({ extension }, testInfo) => {
-      const page = await workspace(extension, appId)
+      const page = appId === 'browser'
+        ? await extension.context.newPage()
+        : await workspace(extension, appId)
+      if (appId === 'browser') {
+        await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
+        await page.locator('.app-icon--browser').click()
+      }
       await page.setViewportSize(viewport)
       const app = page.locator(`[data-app-id="${appId}"]`)
       if (appId === 'file-manager') await expect(app.getByRole('heading', { name: '选择本地目录' })).toBeVisible()

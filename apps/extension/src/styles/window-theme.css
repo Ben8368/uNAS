@@ -3,13 +3,17 @@
  * below, but must not choose a competing top-level background color.
  */
 :root {
-  --window-surface: #182332;
-  --window-surface-sidebar: #142031;
-  --window-surface-raised: #203046;
-  --window-surface-control: #293b50;
-  --window-text: #eff4fa;
-  --window-text-muted: #b8c5d6;
-  --window-border: #667b94;
+  --window-surface: #202225;
+  --window-surface-sidebar: #1b1d20;
+  --window-surface-raised: #282b2f;
+  --window-surface-control: #34383e;
+  --window-text: #f1f3f5;
+  --window-text-muted: #b0b6be;
+  --window-border: #555c65;
+  --window-divider: #373b41;
+  --window-accent: #81bdff;
+  --window-danger: #ff9999;
+  --window-primary: #2467cd;
   --window-focus-ring: #b6dcff;
 
   /* Compatibility aliases for existing app primitives. */
@@ -23,13 +27,16 @@
 }
 
 html[data-theme='light'] {
-  --window-surface: #f4f7fb;
-  --window-surface-sidebar: #eaf0f7;
+  --window-surface: #f8f9fa;
+  --window-surface-sidebar: #eff1f3;
   --window-surface-raised: #ffffff;
-  --window-surface-control: #e2eaf4;
-  --window-text: #182c45;
-  --window-text-muted: #455c78;
-  --window-border: #8093aa;
+  --window-surface-control: #e7eaee;
+  --window-text: #24282e;
+  --window-text-muted: #5b6470;
+  --window-border: #a8afb8;
+  --window-divider: #dce0e5;
+  --window-accent: #185eb3;
+  --window-danger: #b32332;
   --window-focus-ring: #165dab;
   --color-glass: rgba(241, 246, 253, .96);
 }
@@ -42,5 +49,6 @@ html[data-high-contrast='true'] {
   --window-text: #fff;
   --window-text-muted: #fff;
   --window-border: #fff;
+  --window-divider: #fff;
   --window-focus-ring: #ffe66d;
 }

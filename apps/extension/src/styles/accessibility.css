@@ -32,7 +32,7 @@ button:disabled { cursor: not-allowed; }
 .settings-panel, .demo-tool, .psd-panel, .transcode-main { overflow: auto; }
 .fm-actions, .fm-topbar, .psd-form { flex-wrap: wrap; }
 .fm-table { overflow-x: auto; }
-.fm-head, .fm-row { min-width: 650px; }
+.fm-app .fm-head, .fm-app .fm-row { min-width: 650px; }
 .demo-tool p, [role='alert'], [role='status'] { overflow-wrap: anywhere; }
 .mt-window-status { flex-shrink: 0; white-space: nowrap; color: var(--color-text); }
 .mt-window-btn { min-width: 36px; color: var(--color-text); font-size: 20px; }
@@ -46,6 +46,15 @@ html[data-theme='light'] :is(.settings-app, .fm-app, .dl-app, .psd-app, .transco
 html[data-theme='light'] :is(.mt-window-brand, .mt-window-body p, .mt-window-body span, .mt-window-body label, .mt-window-body strong, .mt-window-body small, .mt-window-body h2, .mt-window-body h3, .fm-row, .fm-head) { color: var(--color-text); text-shadow: none; }
 html[data-theme='light'] .mt-window-body :is(input, select, textarea, option, button, aside, .fm-panel, .fm-sidebar, .fm-topbar, .fm-actions, .dl-panel, .psd-panel, .psd-form, .transcode-panel, .settings-card, .dl-form) { background: var(--color-content); color: var(--color-text); border-color: var(--color-line); }
 html[data-theme='light'] .mt-window-body :is(input, textarea)::placeholder { color: var(--color-muted); }
+html[data-theme='light'] .mt-window-body :is(.fm-local-heading p, .fm-local-notice, .fm-local-footer, .fm-local-empty__detail, .settings-toolbar p, .settings-field, .settings-card p) { color: var(--window-text-muted); }
+html[data-theme='light'] .fm-local-browser .fm-name strong { color: var(--window-text); }
+html[data-theme='light'] .fm-local-browser .fm-row > span { color: var(--window-text-muted); }
+html[data-theme='light'] .fm-local-browser .fm-local-search input { border: 0; background: transparent; }
+html[data-theme='light'] .mt-window-body .fm-action-btn--primary { color: #fff; background: var(--window-primary); border-color: var(--window-primary); }
+html[data-theme='light'] .fm-local-error { color: var(--window-danger); }
+html[data-theme='light'] .fm-local-browser .fm-file-icon em { color: var(--window-accent); }
+html[data-theme='light'] .fm-local-browser .fm-file-icon svg { stroke: var(--window-accent); }
+html[data-theme='light'] .fm-local-browser .fm-local-delete { border-color: transparent; background: transparent; }
 html[data-theme='light'] .mt-window-body :is(.fm-row--selected, [aria-selected='true'], [aria-pressed='true']) { background: #d2e3f6; }
 html[data-reduce-transparency='true'] :is(.mt-left-nav, .mt-window, .mt-window-header, .mt-launcher-overlay, .mt-launcher, .mt-right-panel, .rp-panel-content) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background-color: var(--color-content) !important; }
 html[data-high-contrast='true'] :is(.mt-window, .mt-window-body, .mt-window-header, .mt-window-body main, .mt-window-body aside, .rp-panel-content, .demo-tool, .settings-app) { background: #050b14 !important; color: #fff !important; }

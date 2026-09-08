@@ -22,7 +22,7 @@ type SubmitFetchResult = Awaited<ReturnType<typeof submitFetch>>
 
 function createCheckedOptimisticTask(urls: string[], payload: Record<string, unknown>, result: SubmitFetchResult): DownloadTask {
   if (!result || !result.task_id) {
-    throw new Error('服务器未返回任务 ID')
+    throw new Error('任务创建失败：未返回任务 ID。')
   }
   return createOptimisticTask(urls.join(', '), payload, result)
 }

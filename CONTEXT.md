@@ -28,6 +28,8 @@
 
 ## 最近验证
 
+- 2026-09-08：文件管理、网址 App 与共享外观改版已验证；`pnpm verify`（98 项单测）、37 项扩展 E2E、6 项 Web E2E 通过。[证据](apps/extension/test-results/extension-e2e/)。目录测试使用 OPFS 替身，主观确认见 RISK-012，不扩大真实能力结论。
+
 - 2026-09-08：SP-02 已在 Chrome for Testing 解包扩展页验证 IndexedDB/OPFS 临时存储、目录授权 API 路径、受限直接子项编辑、句柄恢复、取消保留和忘记授权；本轮 `pnpm verify`（95 项单测）与目录/布局解包扩展 E2E 通过。证据：[SP-02](benchmarks/sp-02/README.md)、`apps/extension/test-results/`；自动化目录用例使用隔离 OPFS handle 替身，不代表原生选择器、真实目录撤销、配额压力或导出能力。
 - 2026-09-07：维护者确认 G1 已验收。Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工体验走查，以及 `pnpm verify`、30 项扩展 E2E、6 项 Web E2E 已通过；原生 `browser.*`、Promise 拒绝消息、`<dialog>`/Popover Escape 与 mock 生命周期回归已验证。清理旧 HTTP adapter 后，治理/边界/依赖/包体检查、92 项单测、类型检查、Vite/WXT 构建与 31 项扩展、6 项 Web E2E 再次通过；其中 SP-01 强制 Worker 终止/事件唤醒记录于 [SP-01](benchmarks/sp-01/README.md)。证据位于 `apps/extension/test-results/`；不代表真实引擎或完整生命周期探针完成。
 

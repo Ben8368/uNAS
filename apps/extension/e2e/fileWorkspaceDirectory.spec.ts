@@ -30,6 +30,22 @@ test('File Manager persists a user-selected directory handle, writes only from i
   await expect(firstApp.getByRole('status')).toContainText('仅显示当前目录的直接子项')
   await expect(firstApp.getByRole('button', { name: '打开文件夹 nested' })).toBeVisible()
   await expect(firstApp.getByLabel('directory-proof.txt，文件条目')).toBeVisible()
+  await firstApp.getByRole('searchbox', { name: '搜索当前目录' }).fill('PROOF')
+  await expect(firstApp.locator('.fm-row--local')).toHaveCount(1)
+  await firstApp.getByRole('searchbox', { name: '搜索当前目录' }).fill('missing')
+  await expect(firstApp).toContainText('没有匹配的项目')
+  await firstApp.getByRole('button', { name: '清除搜索' }).click()
+  await expect(firstApp.locator('.fm-row--local')).toHaveCount(2)
+  await firstApp.getByRole('combobox', { name: '排序方式' }).selectOption('size')
+  await expect(firstApp.locator('.fm-row--local').first()).toContainText('nested')
+  await firstApp.getByRole('button', { name: '打开文件夹 nested' }).click()
+  await expect(firstApp).toContainText('此目录为空')
+  await firstApp.getByRole('button', { name: '返回上一级' }).click()
+  await expect(firstApp.getByLabel('directory-proof.txt，文件条目')).toBeVisible()
+  await firstApp.getByRole('button', { name: '打开文件夹 nested' }).click()
+  await expect(firstApp).toContainText('此目录为空')
+  await firstApp.getByRole('button', { name: '返回授权目录' }).click()
+  await expect(firstApp.getByLabel('directory-proof.txt，文件条目')).toBeVisible()
   await expect(firstApp).not.toContainText('uNAS SP-02 read-only directory listing proof')
   await expect(firstApp.getByRole('button', { name: '新建文件夹' })).toBeEnabled()
   const buttonIconStyles = await firstApp.locator('.fm-icon-btn > svg, .fm-action-btn > svg').evaluateAll((icons) => icons.map((icon) => {
@@ -62,6 +78,24 @@ test('File Manager persists a user-selected directory handle, writes only from i
   const screenshotPath = testInfo.outputPath('directory-write-layout.png')
   await first.screenshot({ path: screenshotPath, animations: 'disabled' })
   await testInfo.attach('directory-write-layout', { path: screenshotPath, contentType: 'image/png' })
+  const longName = '项目资料与会议记录-用于检查窄窗口长名称显示-2026年09月-文件管理界面'
+  first.once('dialog', (dialog) => dialog.accept(longName))
+  await firstApp.getByRole('button', { name: '新建文件夹' }).click()
+  await expect(firstApp.getByRole('button', { name: `打开文件夹 ${longName}` })).toBeVisible()
+  for (const sample of [
+    { width: 1440, height: 900, theme: 'dark' },
+    { width: 1440, height: 900, theme: 'light' },
+    { width: 390, height: 844, theme: 'light' },
+  ]) {
+    await first.setViewportSize({ width: sample.width, height: sample.height })
+    await first.evaluate((theme) => document.documentElement.setAttribute('data-theme', theme), sample.theme)
+    const pane = firstApp.locator('.fm-local-browser')
+    expect(await pane.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1)
+    const path = testInfo.outputPath(`directory-${sample.width}-${sample.theme}.png`)
+    await first.screenshot({ path, animations: 'disabled' })
+    await testInfo.attach(`directory-${sample.width}-${sample.theme}`, { path, contentType: 'image/png' })
+  }
+  await first.setViewportSize({ width: 1440, height: 900 })
 
   first.once('dialog', (dialog) => dialog.accept())
   await firstApp.getByRole('button', { name: '删除 notes.md' }).click()

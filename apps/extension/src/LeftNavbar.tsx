@@ -31,7 +31,7 @@ export function LeftNavbar() {
         <NavButton icon={<IconGear />} label="设置" onClick={() => openWindow('settings')} />
         <NavButton icon={<IconPower />} label="演示能力说明" active={showInfo} onClick={() => setShowInfo(!showInfo)} />
       </div>
-      {showInfo && <div className="mt-left-nav__power-menu" role="status"><p>这是本地模拟演示，没有关闭电脑或后端服务的能力。</p><button type="button" className="mt-btn" onClick={() => setShowInfo(false)}>知道了</button></div>}
+      {showInfo && <div className="mt-left-nav__power-menu" role="status"><p>当前使用浏览器内置演示数据。文件管理仅访问你主动授权的本地目录；其他工具不会处理或导出真实文件。</p><button type="button" className="mt-btn" onClick={() => setShowInfo(false)}>知道了</button></div>}
     </nav>
   )
 }

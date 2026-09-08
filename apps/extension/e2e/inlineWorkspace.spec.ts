@@ -24,7 +24,7 @@ test('two local desktops share submissions, cancellation and file mutations', as
   await client.locator('.app-icon--file-manager').click()
   const files = client.locator('[data-app-id="file-manager"]')
   await expect(files.getByRole('heading', { name: '选择本地目录' })).toBeVisible()
-  await expect(files).toContainText('不会扫描磁盘')
+  await expect(files).toContainText('仅访问你选择的目录，不上传文件')
   expect(extension.context.pages()).toHaveLength(count)
   await client.screenshot({ path: testInfo.outputPath('same-tab-workspace-client.png') })
   await client.locator('.app-icon--fetcher').click()

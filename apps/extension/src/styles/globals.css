@@ -9,14 +9,14 @@
 @import './browser.css';
 
 .settings-app {
-  --mt-surface: rgba(15, 18, 26, .78);
-  --mt-fill: rgba(255, 255, 255, .07);
-  --mt-fill-2: rgba(255, 255, 255, .11);
-  --mt-border: rgba(255, 255, 255, .14);
-  --mt-divider: rgba(255, 255, 255, .08);
-  --mt-text-0: #f8fafc;
-  --mt-text-1: rgba(241, 245, 249, .84);
-  --mt-text-2: rgba(203, 213, 225, .68);
+  --mt-surface: var(--window-surface);
+  --mt-fill: var(--window-surface-raised);
+  --mt-fill-2: var(--window-surface-control);
+  --mt-border: var(--window-border);
+  --mt-divider: var(--window-divider);
+  --mt-text-0: var(--window-text);
+  --mt-text-1: var(--window-text);
+  --mt-text-2: var(--window-text-muted);
   display: grid;
   grid-template-columns: var(--app-sidebar-width) minmax(0, 1fr);
   height: 100%;
@@ -111,19 +111,18 @@
 
 .settings-content {
   display: grid;
-  gap: 14px;
+  gap: 0;
+  max-width: 760px;
 }
 
 .settings-card {
   display: grid;
   gap: 14px;
-  border: 1px solid var(--mt-divider);
-  border-radius: 12px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025)),
-    var(--mt-surface);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.045);
-  padding: 16px;
+  border: 0;
+  border-top: 1px solid var(--mt-divider);
+  border-radius: 0;
+  background: transparent;
+  padding: 20px 0;
 }
 
 .settings-card h3 {
@@ -151,7 +150,7 @@
   min-height: 34px;
   border: 1px solid var(--mt-border);
   border-radius: 8px;
-  background: rgba(8, 11, 17, .64);
+  background: var(--window-surface-raised);
   color: var(--mt-text-0);
   padding: 0 10px;
   outline: none;

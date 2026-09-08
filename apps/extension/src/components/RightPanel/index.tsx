@@ -112,7 +112,7 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
       <div className="rp-card">
         <div className="rp-card-head rp-runtime-head">
           <div className="rp-card-title">运行状态</div>
-          <span className="rp-card-meta">{sampleTime}</span>
+          <span className="rp-card-meta">模拟数据 · {sampleTime}</span>
         </div>
         <div className="rp-gauges">
           <GaugeSvg value={system.cpu_percent || 0} color="#7CB3FF" label="CPU" />
@@ -138,10 +138,10 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
 
       <div className="rp-card">
         <div className="rp-card-head rp-runtime-head">
-          <div className="rp-card-title">网络</div>
-          <span className="rp-card-meta">项目任务</span>
+          <div className="rp-card-title">模拟流量</div>
+          <span className="rp-card-meta">演示数据</span>
         </div>
-        <div className="rp-net" title="仅统计 uNAS 浏览器下载、浏览器请求与 yt-dlp 任务流量">
+        <div className="rp-net" title="模拟任务数据，不代表设备或浏览器的实际网络流量">
           <div className="rp-net-row">
             <span className="rp-net-up">↑ {network.upload?.text || '0 B/s'}</span>
             <span className="rp-net-down">↓ {network.download?.text || '0 B/s'}</span>
@@ -159,7 +159,7 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
           aria-expanded={servicesExpanded}
           onClick={() => setServicesExpanded((expanded) => !expanded)}
         >
-          <div className="rp-card-title">服务状态</div>
+          <div className="rp-card-title">模拟服务状态</div>
           <span className={`rp-service-chevron ${servicesExpanded ? 'rp-service-chevron--open' : ''}`}>›</span>
         </button>
         {servicesExpanded && (

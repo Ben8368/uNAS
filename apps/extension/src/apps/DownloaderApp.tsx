@@ -47,7 +47,7 @@ export function DownloaderApp() {
 
       const result = await submitFetch(draft)
       if (!result || !result.task_id) {
-        throw new Error('服务器未返回任务 ID')
+        throw new Error('任务创建失败：未返回任务 ID。')
       }
 
       const taskIds = result.task_ids?.length ? result.task_ids : [result.task_id]
