@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode, type PointerEvent } from 'react'
 import { getAppIcon } from 'unas-src/icon-library'
 import { fileWorkspacePort } from 'unas-src/api/fileWorkspace'
+import { getColorGamutLabel, useColorGamut } from 'unas-src/hooks/useColorGamut'
 import { fitWindow } from 'unas-src/windowGeometry'
 
 interface WindowProps {
@@ -59,7 +60,7 @@ export function DesktopWindow({ windowId, title, width = 960, height = 640, x = 
         onDoubleClick={(event) => { if (!(event.target as HTMLElement).closest('button')) onMaximize(windowId) }}>
         <div className="mt-window-brand"><img src={getAppIcon(appType ?? '')} alt="" /><strong>{title}</strong></div>
         <div className="mt-window-controls">
-          {fileWorkspace ? <FileWorkspaceModeControl /> : <span className="mt-window-status" title="executionSource: mock；不读取真实文件或执行转换">模拟</span>}
+          {fileWorkspace ? <FileWorkspaceModeControl /> : appType === 'settings' ? <ColorGamutStatus /> : <span className="mt-window-status" title="executionSource: mock；不读取真实文件或执行转换">模拟</span>}
           <button type="button" className="mt-window-btn" aria-label={`最小化${title}`} title="最小化" onClick={() => onMinimize(windowId)}><WindowControlIcon kind="minimize" /></button>
           <button type="button" className="mt-window-btn" aria-label={`${isMaximized ? '还原' : '最大化'}${title}`} title={isMaximized ? '还原' : '最大化'} onClick={() => onMaximize(windowId)}><WindowControlIcon kind={isMaximized ? 'restore' : 'maximize'} /></button>
           <button type="button" className="mt-window-btn" aria-label={`关闭${title}`} title="关闭" onClick={() => onClose(windowId)}><WindowControlIcon kind="close" /></button>
@@ -69,6 +70,12 @@ export function DesktopWindow({ windowId, title, width = 960, height = 640, x = 
       {!isMaximized && <div className="mt-resize-handle mt-resize-se" title="拖动调整窗口大小；也可使用最大化按钮" onPointerDown={(event) => start(event, true)} onPointerMove={move} onPointerUp={finish} onPointerCancel={finish} onLostPointerCapture={finish} />}
     </div>
   )
+}
+
+function ColorGamutStatus() {
+  const gamut = useColorGamut()
+  const label = getColorGamutLabel(gamut)
+  return <span className="mt-window-status mt-window-color-gamut" title={`当前显示色域：${label}`} aria-label={`当前显示色域：${label}`}>{label}</span>
 }
 
 function WindowControlIcon({ kind }: { kind: 'minimize' | 'maximize' | 'restore' | 'close' }) {
