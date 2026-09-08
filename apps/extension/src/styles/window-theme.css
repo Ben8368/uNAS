@@ -15,6 +15,10 @@
   --window-danger: #ff9999;
   --window-primary: #2467cd;
   --window-focus-ring: #b6dcff;
+  --glass-window: rgba(13, 19, 29, .48);
+  --glass-toolbar: rgba(13, 18, 27, .7);
+  --glass-content: rgba(16, 24, 35, .42);
+  --glass-pane: rgba(16, 23, 33, .28);
 
   /* Compatibility aliases for existing app primitives. */
   --color-content: var(--window-surface);
@@ -38,6 +42,10 @@ html[data-theme='light'] {
   --window-accent: #185eb3;
   --window-danger: #b32332;
   --window-focus-ring: #165dab;
+  --glass-window: rgba(242, 247, 253, .62);
+  --glass-toolbar: rgba(248, 250, 253, .76);
+  --glass-content: rgba(245, 248, 252, .54);
+  --glass-pane: rgba(255, 255, 255, .4);
   --color-glass: rgba(241, 246, 253, .96);
 }
 

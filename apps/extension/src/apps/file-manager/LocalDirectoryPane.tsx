@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Search, X, FolderOpen, Home, ChevronRight } from 'lucide-react'
+import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react'
+import { ArrowRight, FolderOpen, Home, ShieldCheck, Search, X, ChevronRight } from 'lucide-react'
 
 import { fileWorkspacePort } from 'unas-src/api/fileWorkspace'
 import type { AuthorizedDirectoryListing } from '#contracts'
@@ -64,6 +64,12 @@ export function LocalDirectoryPane() {
     await fileWorkspacePort.chooseDirectory()
   }, [])
 
+  const handleEmptyStateKeyDown = useCallback((event: KeyboardEvent<HTMLElement>) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    event.preventDefault()
+    if (access.status !== 'selecting') void chooseDirectory()
+  }, [access.status, chooseDirectory])
+
   const write = useCallback(async (operation: () => Promise<void>) => {
     setWriting(true)
     setError('')
@@ -92,18 +98,26 @@ export function LocalDirectoryPane() {
   }, [currentPath, write])
 
   if (access.status !== 'ready') {
-    return <section className="fm-local-empty" aria-live="polite">
+    return <section
+      className={`fm-local-empty ${access.status === 'selecting' ? 'fm-local-empty--selecting' : ''}`}
+      role="button"
+      tabIndex={access.status === 'selecting' ? -1 : 0}
+      aria-label={access.status === 'selecting' ? '正在打开系统目录选择器' : '选择本地目录并打开系统目录选择器'}
+      aria-disabled={access.status === 'selecting'}
+      aria-live="polite"
+      onClick={() => { if (access.status !== 'selecting') void chooseDirectory() }}
+      onKeyDown={handleEmptyStateKeyDown}
+    >
       <div className="fm-local-empty__content">
         <div className="fm-local-empty__icon-surface"><FolderOpen className="fm-local-empty__icon" aria-hidden="true" /></div>
         <div className="fm-local-empty__copy">
-          <span className="fm-local-empty__eyebrow">本地文件工作区</span>
-          <h2>选择一个本地目录</h2>
-          <p>{access.message || '从一个你常用的文件夹开始。'}</p>
+          <h2>打开本地目录</h2>
+          <p>{access.message || '选择一个文件夹，开始浏览文件。'}</p>
         </div>
-        <button type="button" className="fm-action-btn fm-action-btn--primary fm-local-empty__action" onClick={() => void chooseDirectory()} disabled={access.status === 'selecting'}>
-          <FolderOpen aria-hidden="true" />{access.status === 'selecting' ? '正在打开目录选择器' : access.status === 'requires-user' ? '重新选择目录' : '选择本地目录'}
-        </button>
-        <p className="fm-local-empty__detail"><strong>文件始终留在本地</strong><span>选择目录时只请求读取权限；需要写入时，须在窗口顶部确认后再接受浏览器授权。</span></p>
+        <span className="fm-local-empty__action" aria-hidden="true">
+          <span><strong>{access.status === 'selecting' ? '正在打开选择器' : '选择目录'}</strong><small>点击窗口任意位置</small></span><ArrowRight />
+        </span>
+        <p className="fm-local-empty__detail"><ShieldCheck aria-hidden="true" />仅读取目录；需要写入时再确认。</p>
       </div>
     </section>
   }

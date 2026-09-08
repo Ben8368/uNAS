@@ -23,11 +23,6 @@ export default function App() {
   useEffect(() => { void fileWorkspacePort.restoreDirectory() }, [])
 
   const handleOpenApp = useCallback((id: string) => {
-    if (id === 'file-manager') {
-      // The picker is invoked while the launch click is still a trusted user gesture.
-      if (fileWorkspacePort.getSnapshot().status === 'ready') void fileWorkspacePort.restoreDirectory()
-      else void fileWorkspacePort.chooseDirectory()
-    }
     openWindow(id)
     setShowLauncher(false)
   }, [openWindow, setShowLauncher])

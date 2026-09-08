@@ -16,6 +16,13 @@ button:disabled { cursor: not-allowed; }
 .mt-window { min-width: 0; min-height: 0; backdrop-filter: none; }
 .mt-window-body { container-type: inline-size; }
 .mt-window-header, .mt-window-body { background: var(--color-content); color: var(--color-text); }
+
+/* Shared glass belongs to the window shell; app content remains readable on a lighter pane. */
+.mt-window { background: var(--glass-window); backdrop-filter: blur(26px) saturate(128%); -webkit-backdrop-filter: blur(26px) saturate(128%); }
+.mt-window-header { background: var(--glass-toolbar); backdrop-filter: blur(18px) saturate(122%); -webkit-backdrop-filter: blur(18px) saturate(122%); }
+.mt-window-body { background: var(--glass-content); }
+.mt-window-body > :is(.settings-app, .fm-app, .fm-local-browser, .dl-app, .lv-app, .link-apps, .psd-app, .transcode-app, .demo-tool) { background: transparent; }
+.mt-window-body :is(.settings-sidebar, .fm-sidebar, .dl-sidebar, .fm-panel, .dl-panel, .lv-panel, .psd-panel, .transcode-panel) { background: var(--glass-pane); }
 .mt-right-panel { top: var(--desktop-top); }
 .mt-main:has(.workspace-status) { right: 20px; bottom: 16px; overflow: auto; }
 .workspace-status { margin: 0; }
