@@ -33,9 +33,10 @@ export const IconBell = () => (
 )
 
 export const IconUser = () => (
-  <svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="currentColor" strokeWidth="1.8">
-    <circle cx="12" cy="7" r="4" />
-    <path d="M5.5 21a6.5 6.5 0 0113 0" />
+  <svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="12" cy="9" r="3" />
+    <path d="M6.8 18.1a6.1 6.1 0 0110.4 0" />
   </svg>
 )
 

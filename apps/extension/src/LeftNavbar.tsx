@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { getAppIcon } from 'unas-src/icon-library'
-import { IconBell, IconGear, IconGrid, IconMonitor, IconPower } from 'unas-src/LeftNavbarIcons'
+import { IconBell, IconGear, IconGrid, IconMonitor, IconUser } from 'unas-src/LeftNavbarIcons'
 import { useSystemStore } from 'unas-src/store'
 import { useWindowStore } from 'unas-src/windowStore'
 
 export function LeftNavbar() {
   const { showLauncher, toggleLauncher } = useSystemStore()
   const { windows, openWindow, minimizeWindow, focusWindow } = useWindowStore()
-  const [showInfo, setShowInfo] = useState(false)
+  const [showAccount, setShowAccount] = useState(false)
   const topZ = Math.max(0, ...windows.filter((item) => !item.isMinimized).map((item) => item.zIndex))
   function activate(appType: string) {
     const existing = windows.find((item) => item.appType === appType)
@@ -28,10 +28,10 @@ export function LeftNavbar() {
       </div>
       <div className="mt-left-nav__section mt-left-nav__section--bottom">
         <NavButton icon={<IconBell />} label="演示日志" onClick={() => openWindow('logs')} />
+        <NavButton icon={<IconUser />} label="账号" active={showAccount} onClick={() => setShowAccount(!showAccount)} />
         <NavButton icon={<IconGear />} label="设置" onClick={() => openWindow('settings')} />
-        <NavButton icon={<IconPower />} label="演示能力说明" active={showInfo} onClick={() => setShowInfo(!showInfo)} />
       </div>
-      {showInfo && <div className="mt-left-nav__power-menu" role="status"><p>当前使用浏览器内置演示数据。文件管理仅访问你主动授权的本地目录；其他工具不会处理或导出真实文件。</p><button type="button" className="mt-btn" onClick={() => setShowInfo(false)}>知道了</button></div>}
+      {showAccount && <div className="mt-left-nav__account-menu" role="status"><p>账号服务尚未接入；当前不会读取或上传任何账号信息。</p><button type="button" className="mt-btn" onClick={() => setShowAccount(false)}>知道了</button></div>}
     </nav>
   )
 }
