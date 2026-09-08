@@ -30,6 +30,7 @@ test('File Manager requires an in-app confirmation before enabling write mode fo
   await installAuthorizedDirectoryPicker(first)
   await first.locator('.app-icon--file-manager').click()
   const firstApp = first.locator('[data-app-id="file-manager"]')
+  await first.getByRole('button', { name: '选择本地目录并打开系统目录选择器', exact: true }).click()
   await expect.poll(() => first.evaluate(() => (globalThis as typeof globalThis & { unasDirectoryPickerMode?: string }).unasDirectoryPickerMode)).toBe('read')
   await expect(firstApp.getByRole('status')).toContainText('仅显示当前目录的直接子项')
   await expect(firstApp.getByRole('button', { name: '打开文件夹 nested' })).toBeVisible()
