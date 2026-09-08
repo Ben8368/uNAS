@@ -60,15 +60,24 @@ export function DesktopWindow({ windowId, title, width = 960, height = 640, x = 
         <div className="mt-window-brand"><img src={getAppIcon(appType ?? '')} alt="" /><strong>{title}</strong></div>
         <div className="mt-window-controls">
           {fileWorkspace ? <FileWorkspaceModeControl /> : <span className="mt-window-status" title="executionSource: mock；不读取真实文件或执行转换">模拟</span>}
-          <button type="button" className="mt-window-btn" aria-label={`最小化${title}`} title="最小化" onClick={() => onMinimize(windowId)}>−</button>
-          <button type="button" className="mt-window-btn" aria-label={`${isMaximized ? '还原' : '最大化'}${title}`} title={isMaximized ? '还原' : '最大化'} onClick={() => onMaximize(windowId)}>□</button>
-          <button type="button" className="mt-window-btn" aria-label={`关闭${title}`} title="关闭" onClick={() => onClose(windowId)}>×</button>
+          <button type="button" className="mt-window-btn" aria-label={`最小化${title}`} title="最小化" onClick={() => onMinimize(windowId)}><WindowControlIcon kind="minimize" /></button>
+          <button type="button" className="mt-window-btn" aria-label={`${isMaximized ? '还原' : '最大化'}${title}`} title={isMaximized ? '还原' : '最大化'} onClick={() => onMaximize(windowId)}><WindowControlIcon kind={isMaximized ? 'restore' : 'maximize'} /></button>
+          <button type="button" className="mt-window-btn" aria-label={`关闭${title}`} title="关闭" onClick={() => onClose(windowId)}><WindowControlIcon kind="close" /></button>
         </div>
       </div>
       <div className="mt-window-body">{children}</div>
       {!isMaximized && <div className="mt-resize-handle mt-resize-se" title="拖动调整窗口大小；也可使用最大化按钮" onPointerDown={(event) => start(event, true)} onPointerMove={move} onPointerUp={finish} onPointerCancel={finish} onLostPointerCapture={finish} />}
     </div>
   )
+}
+
+function WindowControlIcon({ kind }: { kind: 'minimize' | 'maximize' | 'restore' | 'close' }) {
+  return <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    {kind === 'minimize' && <path d="M5 12h14" />}
+    {kind === 'maximize' && <rect x="5" y="5" width="14" height="14" rx="1.5" />}
+    {kind === 'restore' && <><rect x="7" y="5" width="12" height="12" rx="1.5" /><path d="M5 8v10a1 1 0 001 1h10" /></>}
+    {kind === 'close' && <><path d="M6 6l12 12" /><path d="M18 6L6 18" /></>}
+  </svg>
 }
 
 function FileWorkspaceModeControl() {

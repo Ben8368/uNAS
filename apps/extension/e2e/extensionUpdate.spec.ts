@@ -3,6 +3,7 @@ import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { extensionBrowserOptions } from './browserLaunch'
 
 type Manifest = { version: string }
 
@@ -53,16 +54,7 @@ test('unpacked extension reload accepts a newer manifest and preserves Link Apps
   try {
     const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as Manifest
     const updatedVersion = nextVersion(manifest.version)
-    context = await chromium.launchPersistentContext(profilePath, {
-      channel: 'chromium',
-      headless: true,
-      viewport: { width: 1440, height: 900 },
-      args: [
-        `--disable-extensions-except=${extensionPath}`,
-        `--load-extension=${extensionPath}`,
-        '--enable-unsafe-extension-debugging',
-      ],
-    })
+    context = await chromium.launchPersistentContext(profilePath, extensionBrowserOptions(extensionPath))
     context.setDefaultTimeout(10_000)
     context.on('page', page => page.on('pageerror', error => pageErrors.push(error.message)))
     const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker')

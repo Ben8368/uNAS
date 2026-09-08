@@ -3,6 +3,7 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { existsSync } from 'node:fs'
+import { extensionBrowserOptions } from './browserLaunch'
 
 test('browser restart preserves extension-local Link App configuration', async ({}, testInfo) => {
   const extensionPath = path.resolve('.output/chrome-mv3')
@@ -13,16 +14,7 @@ test('browser restart preserves extension-local Link App configuration', async (
   const resolvedUserDataDir = path.resolve(userDataDir)
   if (!resolvedUserDataDir.startsWith(`${tempRoot}${path.sep}`)) throw new Error('测试 profile 路径不在临时目录内。')
 
-  const launch = () => chromium.launchPersistentContext(userDataDir, {
-    channel: 'chromium',
-    headless: true,
-    viewport: { width: 1440, height: 900 },
-    args: [
-      `--disable-extensions-except=${extensionPath}`,
-      `--load-extension=${extensionPath}`,
-      '--enable-unsafe-extension-debugging',
-    ],
-  })
+  const launch = () => chromium.launchPersistentContext(userDataDir, extensionBrowserOptions(extensionPath))
 
   let first: Awaited<ReturnType<typeof launch>> | undefined
   let second: Awaited<ReturnType<typeof launch>> | undefined

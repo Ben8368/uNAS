@@ -19,6 +19,7 @@
     "check:package": "node scripts/demo-package-check.mjs",
     "check:dependencies": "node scripts/dependency-inventory.mjs --check",
     "test:e2e": "pnpm build:extension && pnpm --dir apps/extension run test:e2e",
+    "test:e2e:p3": "pnpm build:extension && pnpm --dir apps/extension run test:e2e:p3",
     "verify": "pnpm docs:governance:check && pnpm check:demo && pnpm check:dependencies && pnpm test:demo && pnpm typecheck:demo && pnpm build:demo && pnpm build:extension && pnpm check:package"
   }
 }

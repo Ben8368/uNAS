@@ -64,7 +64,7 @@ pnpm build:extension
 
 构建物位于 `apps/extension/.output/chrome-mv3/`。在 Chrome 扩展管理页面开启开发者模式后，选择“加载已解压的扩展程序”，并选择该目录。
 
-首次准备自动化浏览器，运行 `pnpm --dir apps/extension exec playwright install chromium`；之后运行 `pnpm test:e2e`。它加载独立配置中的 MV3 构建物，检查跨标签与模拟流程，并保存布局截图；不操作已有浏览器配置。报告在 `apps/extension/playwright-report/`，截图与失败 trace 在 `apps/extension/test-results/`。证据解释见 [本轮验收记录](docs/archive/reviews/2026-09-07-links-startup-toolbar.md)，素材与依赖说明见 [ASSETS.md](docs/ASSETS.md)。
+首次准备自动化浏览器，运行 `pnpm --dir apps/extension exec playwright install chromium`；之后运行 `pnpm test:e2e`。它加载独立配置中的 MV3 构建物，检查跨标签与模拟流程，并保存布局截图；不操作已有浏览器配置。普通 E2E 在所有平台默认使用 Playwright Chromium，以保证 MV3 Service Worker 加载一致；报告在 `apps/extension/playwright-report/`，截图与失败 trace 在 `apps/extension/test-results/`。在支持 P3 的 MacBook 上，可运行 `pnpm test:e2e:p3` 以已安装的 Google Chrome headed + `display-p3` 模式进行人工视觉验收；该命令不替代默认 sRGB CI 回归。证据解释见 [本轮验收记录](docs/archive/reviews/2026-09-07-links-startup-toolbar.md)，素材与依赖说明见 [ASSETS.md](docs/ASSETS.md)。
 
 ## 发布边界
 

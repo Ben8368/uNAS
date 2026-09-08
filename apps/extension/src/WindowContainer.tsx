@@ -11,17 +11,23 @@ export function WindowContainer() {
   const { windows, closeWindow, minimizeWindow, maximizeWindow, focusWindow, dragWindow, resizeWindow } = useWindowStore()
   const maxZ = Math.max(0, ...windows.filter((w) => !w.isMinimized).map((w) => w.zIndex))
   const container = useRef<HTMLDivElement>(null)
+  const previousActiveId = useRef<string | undefined>(undefined)
   const showLauncher = useSystemStore((state) => state.showLauncher)
   const activeId = windows.find((w) => !w.isMinimized && w.zIndex === maxZ)?.id
-  // Focus once; cleanup must not reactivate the previously focused window.
+  // Focus active windows, but do not force the launcher button on initial page load.
+  // When a window closes, returning focus to the launcher preserves keyboard flow.
   useLayoutEffect(() => {
-    if (showLauncher) return
     const active = container.current?.querySelector<HTMLElement>('.mt-window--active:not([hidden]):not([data-launch-pending])')
+    if (showLauncher) {
+      previousActiveId.current = activeId
+      return
+    }
     if (active) {
       if (!active.contains(document.activeElement)) active.focus({ preventScroll: true })
-    } else if (document.activeElement === document.body || container.current?.contains(document.activeElement)) {
+    } else if (previousActiveId.current && (document.activeElement === document.body || container.current?.contains(document.activeElement))) {
       document.querySelector<HTMLButtonElement>('[aria-label="所有应用"]')?.focus({ preventScroll: true })
     }
+    previousActiveId.current = activeId
   }, [activeId, showLauncher])
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {

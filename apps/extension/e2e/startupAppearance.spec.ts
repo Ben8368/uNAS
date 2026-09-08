@@ -33,5 +33,6 @@ test('New Tab pre-paints the saved wallpaper before React mounts', async ({ exte
 
   releaseBootstrap()
   await expect(page.getByRole('navigation', { name: '应用快捷方式' })).toBeVisible()
+  await expect(page.getByRole('button', { name: '所有应用' })).not.toBeFocused()
   expect(extension.errors).toEqual([])
 })
