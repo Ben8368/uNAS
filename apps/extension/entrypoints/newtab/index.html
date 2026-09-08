@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>uNAS 演示</title>
     <style>
-      :root { --mt-wp: radial-gradient(ellipse at 20% 100%, #19796f 0%, transparent 62%), radial-gradient(ellipse at 95% 10%, #6173a5 0%, transparent 55%), linear-gradient(120deg, #132038, #182b46); }
+      :root { --mt-wp-srgb: radial-gradient(in oklab ellipse at 20% 100%, rgb(25 121 111 / .72) 0%, rgb(25 121 111 / .48) 30%, rgb(25 121 111 / .18) 57%, rgb(25 121 111 / 0) 80%), radial-gradient(in oklab ellipse at 95% 10%, rgb(97 115 165 / .64) 0%, rgb(97 115 165 / .42) 28%, rgb(97 115 165 / .16) 55%, rgb(97 115 165 / 0) 78%), linear-gradient(in oklab 120deg, rgb(19 32 56) 0%, rgb(21 41 68) 52%, rgb(24 43 70) 100%); --mt-wp-p3: var(--mt-wp-srgb); --mt-wp: var(--mt-wp-srgb); }
+      @supports (color: color(display-p3 1 1 1)) { @media (color-gamut: p3) { :root { --mt-wp: var(--mt-wp-p3); } } }
       html, body, #root { width: 100%; height: 100%; margin: 0; background-color: #132038; background-image: var(--mt-wp); background-position: center; background-repeat: no-repeat; background-size: cover; }
     </style>
     <script src="/startupAppearance.js"></script>

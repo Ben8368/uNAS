@@ -18,7 +18,10 @@ export function useAppearance() {
       root.dataset.reduceMotion = String(reduceMotion || motion.matches)
       root.dataset.reduceTransparency = String(reduceTransparency || transparency.matches)
       root.dataset.highContrast = String(highContrast || contrast.matches)
-      root.style.setProperty('--mt-wp', WALLPAPERS[wallpaper]?.gradient ?? WALLPAPERS[2].gradient)
+      const selectedWallpaper = WALLPAPERS[wallpaper] ?? WALLPAPERS[2]
+      root.style.removeProperty('--mt-wp')
+      root.style.setProperty('--mt-wp-srgb', selectedWallpaper.gradientSrgb)
+      root.style.setProperty('--mt-wp-p3', selectedWallpaper.gradientP3)
     }
     const queries = [theme, motion, transparency, contrast]
     update()

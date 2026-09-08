@@ -91,14 +91,14 @@
     },
     {
       "path": "apps/extension/src/appearance.ts",
-      "bytes": 1386,
-      "sha256": "5c8e283ca1669302e3f21dbdca141f2240ed4e680f2abd430da92e09400b01c0",
+      "bytes": 3651,
+      "sha256": "9492c817d84a2c021478c6a2f1cd111b99d81931d26fa9599edc82609ac92962",
       "kind": "procedural-css-no-bitmap"
     },
     {
       "path": "apps/extension/public/startupAppearance.js",
-      "bytes": 1866,
-      "sha256": "336a3e0e7f5a39f536a827eef24f3e58f92e49cfdcf2d2af04b47d819074106b",
+      "bytes": 2888,
+      "sha256": "e3f4f4165c3f6e6a81fa0dd606c8cf77629f143e58d5b4c6b34e58a9a9cb2c91",
       "kind": "local-startup-prepaint-script"
     }
   ]

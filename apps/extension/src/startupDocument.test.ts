@@ -24,7 +24,12 @@ describe('startup documents', () => {
     }
 
     expect(startupScript).toContain("localStorage.getItem('unas.appearance.v1')")
-    expect(startupScript).toContain("root.style.setProperty('--mt-wp', wallpapers[wallpaper])")
-    for (const wallpaper of WALLPAPERS) expect(startupScript).toContain(wallpaper.gradient)
+    expect(startupScript).toContain("root.style.setProperty('--mt-wp-srgb', wallpapers[wallpaper].srgb)")
+    expect(startupScript).toContain("root.style.setProperty('--mt-wp-p3', wallpapers[wallpaper].p3)")
+    expect(startupScript).toContain('color(display-p3')
+    for (const wallpaper of WALLPAPERS) {
+      expect(wallpaper.gradientSrgb).toContain('in oklab')
+      expect(wallpaper.gradientP3).toContain('color(display-p3')
+    }
   })
 })

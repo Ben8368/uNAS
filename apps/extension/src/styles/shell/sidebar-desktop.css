@@ -10,7 +10,9 @@ html, body, #root {
 }
 
 :root {
-  --mt-wp: linear-gradient(125deg, #071525, #172f53);
+  --mt-wp-srgb: linear-gradient(in oklab 125deg, rgb(7 21 37) 0%, rgb(11 29 51) 52%, rgb(23 47 83) 100%);
+  --mt-wp-p3: var(--mt-wp-srgb);
+  --mt-wp: var(--mt-wp-srgb);
   --mt-brand: #0066ff;
   --mt-brand-light: rgba(0,102,255,.12);
   --mt-surface: rgba(255,255,255,.86);
@@ -22,6 +24,12 @@ html, body, #root {
   --mt-text-1: #334155;
   --mt-text-2: #64748b;
   --mt-danger: #ff453a;
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    :root { --mt-wp: var(--mt-wp-p3); }
+  }
 }
 
 .mt-desktop {

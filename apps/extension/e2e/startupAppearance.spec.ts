@@ -23,8 +23,13 @@ test('New Tab pre-paints the saved wallpaper before React mounts', async ({ exte
   await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`, { waitUntil: 'commit' })
   await expect.poll(() => page.evaluate(() => ({
     desktopMounted: document.querySelector('.mt-desktop') !== null,
-    wallpaper: document.documentElement.style.getPropertyValue('--mt-wp'),
-  }))).toEqual({ desktopMounted: false, wallpaper: expect.stringContaining('#947544') })
+    wallpaperSrgb: document.documentElement.style.getPropertyValue('--mt-wp-srgb'),
+    wallpaperP3: document.documentElement.style.getPropertyValue('--mt-wp-p3'),
+  }))).toEqual({
+    desktopMounted: false,
+    wallpaperSrgb: expect.stringContaining('148 117 68'),
+    wallpaperP3: expect.stringContaining('color(display-p3'),
+  })
 
   releaseBootstrap()
   await expect(page.getByRole('navigation', { name: '应用快捷方式' })).toBeVisible()

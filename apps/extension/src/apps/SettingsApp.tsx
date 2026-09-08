@@ -18,7 +18,7 @@ export function SettingsApp() {
             <div className="settings-wallpapers" role="group" aria-label="原创背景">
               {WALLPAPERS.map((item, index) => <button key={item.name} type="button" aria-label={item.name} aria-pressed={state.wallpaper === index}
                 className={`settings-wallpaper ${state.wallpaper === index ? 'settings-wallpaper--active' : ''}`}
-                style={{ backgroundImage: item.gradient }} onClick={() => state.setWallpaper(index)}><span>{item.name}</span></button>)}
+                style={{ backgroundImage: item.gradientSrgb }} onClick={() => state.setWallpaper(index)}><span>{item.name}</span></button>)}
             </div>
           </section>
           <section className="settings-card">

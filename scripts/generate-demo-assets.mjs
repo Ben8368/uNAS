@@ -31,6 +31,8 @@ await writeFile(resolve(root, 'apps/extension/public/favicon.svg'), favicon)
 records.push({ path: 'apps/extension/public/favicon.svg', bytes: Buffer.byteLength(favicon), sha256: createHash('sha256').update(favicon).digest('hex'), width: 64, height: 64 })
 const appearance = await readFile(resolve(root, 'apps/extension/src/appearance.ts'))
 records.push({ path: 'apps/extension/src/appearance.ts', bytes: appearance.length, sha256: createHash('sha256').update(appearance).digest('hex'), kind: 'procedural-css-no-bitmap' })
+const startupAppearance = await readFile(resolve(root, 'apps/extension/public/startupAppearance.js'))
+records.push({ path: 'apps/extension/public/startupAppearance.js', bytes: startupAppearance.length, sha256: createHash('sha256').update(startupAppearance).digest('hex'), kind: 'local-startup-prepaint-script' })
 await mkdir(resolve(root, 'assets'), { recursive: true })
 await writeFile(resolve(root, 'assets/demo-assets.json'), JSON.stringify({
   schemaVersion: 1, provenance: 'Original geometric SVG and CSS authored in this repository on 2026-09-04; no third-party source images.',
