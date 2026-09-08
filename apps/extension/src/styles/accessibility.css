@@ -46,7 +46,7 @@ html[data-theme='light'] :is(.settings-app, .fm-app, .dl-app, .psd-app, .transco
 html[data-theme='light'] :is(.mt-window-brand, .mt-window-body p, .mt-window-body span, .mt-window-body label, .mt-window-body strong, .mt-window-body small, .mt-window-body h2, .mt-window-body h3, .fm-row, .fm-head) { color: var(--color-text); text-shadow: none; }
 html[data-theme='light'] .mt-window-body :is(input, select, textarea, option, button, aside, .fm-panel, .fm-sidebar, .fm-topbar, .fm-actions, .dl-panel, .psd-panel, .psd-form, .transcode-panel, .settings-card, .dl-form) { background: var(--color-content); color: var(--color-text); border-color: var(--color-line); }
 html[data-theme='light'] .mt-window-body :is(input, textarea)::placeholder { color: var(--color-muted); }
-html[data-theme='light'] .mt-window-body :is(.fm-local-heading p, .fm-local-notice, .fm-local-footer, .fm-local-empty__detail, .settings-toolbar p, .settings-field, .settings-card p) { color: var(--window-text-muted); }
+html[data-theme='light'] .mt-window-body :is(.fm-local-notice, .fm-local-footer, .fm-local-empty__detail, .settings-toolbar p, .settings-field, .settings-card p) { color: var(--window-text-muted); }
 html[data-theme='light'] .fm-local-browser .fm-name strong { color: var(--window-text); }
 html[data-theme='light'] .fm-local-browser .fm-row > span { color: var(--window-text-muted); }
 html[data-theme='light'] .fm-local-browser .fm-local-search input { border: 0; background: transparent; }
@@ -91,7 +91,7 @@ html[data-reduce-motion='true'] *, html[data-reduce-motion='true'] *::before, ht
   .mt-windows { left: 60px; right: 6px; bottom: 6px; }
   .demo-projection { top: auto; bottom: 10px; left: 70px; right: 12px; width: auto; max-height: 160px; }
   .mt-window-header { padding: 0 8px; }
-  .mt-window-brand img, .mt-window-status, .mt-window-btn[title='最大化'], .mt-window-btn[title='还原'] { display: none; }
+  .mt-window-brand img, .mt-window-status:not(.mt-window-mode), .mt-window-btn[title='最大化'], .mt-window-btn[title='还原'] { display: none; }
   .mt-window-controls { gap: 4px; }
   .mt-window-brand { font-size: 13px; }
   .settings-wallpapers { grid-template-columns: repeat(2, minmax(0, 1fr)); }

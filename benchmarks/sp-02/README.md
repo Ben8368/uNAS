@@ -2,7 +2,7 @@
 
 ## 问题 / 阻断 Gate
 
-验证目标 Chrome 解包 MV3 扩展页中的最小文件工作区边界：IndexedDB、OPFS、页面重开后的读取与显式清理，以及 Files UI 在用户手势下选择单个目录、列出当前目录和执行受限的直接子项写操作。该探针收敛 RISK-004（G2-Core），不提供导出或真实任务恢复。
+验证目标 Chrome 解包 MV3 扩展页中的最小文件工作区边界：IndexedDB、OPFS、页面重开后的读取与显式清理，以及 Files UI 在用户手势下选择单个目录、列出当前目录 metadata，并在 App 内二次确认后请求最小的 `readwrite` 授权。该探针收敛 RISK-004（G2-Core），不提供导出或真实任务恢复。
 
 ## 当前环境与方法
 
@@ -13,7 +13,7 @@
 ## 覆盖与结果
 
 - 2026-09-08 已验证：写入固定小 payload 至 IndexedDB 与 OPFS；关闭页面、重开同一扩展页后精确读取两份内容；记录 `navigator.storage.estimate()` 的实际 usage/quota；最后删除 probe IndexedDB 与 OPFS 目录并检查 OPFS 目录不可再取得。
-- 已验证：Files 在启动点击或“更换目录”的用户手势中调用 `showDirectoryPicker({ mode: 'readwrite' })`；持久化目录句柄后可在新扩展页恢复，取消更换保留已有授权，忘记授权仅删除保存句柄。目录浏览仅列出当前目录前 200 项及文件 metadata，不读既有文件内容、不递归扫描、不暴露物理路径。已获写入权限时，Files 可创建直接子文件夹、创建固定初始内容的 Markdown 文件、删除文件或空文件夹；不覆盖同名项、不递归删除、不执行本地程序或脚本。
+- 已验证：Files 在启动点击或“更换目录”的用户手势中调用 `showDirectoryPicker({ mode: 'read' })`；持久化目录句柄后可在新扩展页恢复，取消更换保留已有授权，忘记授权仅删除保存句柄。窗口顶部“只读”先显示 App 内确认，再由确认按钮调用 `requestPermission({ mode: 'readwrite' })`；“可写入”可立即切回 App 内只读但不撤销浏览器授权，恢复和浏览从不请求写入。目录浏览仅列出当前目录前 200 项及文件 metadata，不读既有文件内容、不递归扫描、不暴露物理路径。有效写入模式仅可创建直接子文件夹、创建固定初始内容的 Markdown 文件，或删除文件/空文件夹；不覆盖同名项、不递归删除、不执行本地程序或脚本。
 - Chrome for Testing 151.0.7922.34、Windows win32 10.0.26200 x64、headless、1440×900 的解包 MV3 运行中，2 项 SP-02 E2E 通过；存储结果为 `indexedDb: true`、`opfs: true`、`usage: 9983`、`quota: 10737428223`、`errors: []`。目录用例使用隔离 OPFS handle 替身验证恢复、取消和忘记路径，不等同原生 OS picker 证据。
 - 清理仅删除名为 `unas-sp02-storage-probe` 的临时 probe 数据；目录“忘记”仅删除保存授权；两者均不触及用户数据、Link App 配置或 mock 文件树。
 - 测试命令：
@@ -29,4 +29,4 @@
 - 真实文件拖入、chunking、配额压力阈值、IndexedDB/OPFS 迁移、导出/download fallback、浏览器卸载及 site-data 清除后的后果。
 - 真实 task 的 staged output、取消、owner 丢失、Worker 崩溃与 cleanup。
 
-因此 SP-02 不能关闭 RISK-004。当前 Files 的目录授权、metadata 浏览与受限的直接子项编辑是已实现能力；真实文件处理、导出和任务仍不支持，其他 Files mock 流程不构成真实能力。后续必须以真实夹具、显式用户动作和实际错误路径补齐上述证据，才可扩展 File Workspace adapter。
+因此 SP-02 不能关闭 RISK-004。当前 Files 的目录读取、metadata 浏览和经 App/浏览器双重确认后的受限直接子项编辑是已实现能力；真实文件处理、导出和任务仍不支持，其他 Files mock 流程不构成真实能力。后续必须以真实夹具、显式用户动作和实际错误路径补齐上述证据，才可扩展 File Workspace adapter。

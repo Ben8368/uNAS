@@ -50,6 +50,7 @@ export type AuthorizedDirectoryListing = DirectoryListResponse & {
 }
 
 export type FileWorkspaceAccessStatus = 'idle' | 'selecting' | 'ready' | 'requires-user' | 'unavailable' | 'error'
+/** Write permission is always requested separately from the initial read grant. */
 export type FileWorkspaceWriteAccess = 'granted' | 'requires-user' | 'unavailable'
 
 export type FileWorkspaceAccessSnapshot = {
@@ -57,7 +58,6 @@ export type FileWorkspaceAccessSnapshot = {
   grantId?: string
   displayName?: string
   message?: string
-  /** Read access can be restored without silently requesting this separate capability. */
   writeAccess?: FileWorkspaceWriteAccess
 }
 

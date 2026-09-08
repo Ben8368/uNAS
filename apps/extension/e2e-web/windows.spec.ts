@@ -69,12 +69,13 @@ test('cold App launch paints final bounds and an explicit loading surface', asyn
 })
 
 test('fast lazy load reveals content and chrome together', async ({ page }) => {
-  await page.clock.install()
-  await page.clock.pauseAt(new Date())
   let release!: () => void
   const ready = new Promise<void>(resolve => { release = resolve })
   await page.route('**/src/apps/BrowserApp.tsx', async route => { await ready; await route.continue() })
   await page.goto('/')
+  await expect(page.locator('.app-icon--browser')).toBeVisible()
+  await page.clock.install()
+  await page.clock.pauseAt(new Date())
   // DOM click avoids auto-waiting for animation frames while the test clock is paused.
   await page.locator('.app-icon--browser').dispatchEvent('click')
   const app = page.locator('[data-app-id="browser"]')

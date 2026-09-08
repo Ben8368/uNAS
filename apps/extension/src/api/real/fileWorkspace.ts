@@ -128,7 +128,7 @@ async function writeAccessFor(handle: FsaDirectoryHandle) {
   }
 }
 
-function readySnapshot(grant: StoredDirectoryGrant, writeAccess: 'granted' | 'requires-user' | 'unavailable', message: string): FileWorkspaceAccessSnapshot {
+function readySnapshotWithWriteAccess(grant: StoredDirectoryGrant, writeAccess: 'granted' | 'requires-user' | 'unavailable', message: string): FileWorkspaceAccessSnapshot {
   return { status: 'ready', grantId: grant.id, displayName: grant.handle.name, writeAccess, message }
 }
 
@@ -143,9 +143,9 @@ async function requireReadableDirectory() {
 async function requireWritableDirectory() {
   await requireReadableDirectory()
   if (!active) throw new Error('尚未授权本地目录。')
-  if (await writeAccessFor(active.handle) !== 'granted') {
-    setSnapshot(readySnapshot(active, 'requires-user', '当前目录仅可读取。请先点击“启用编辑”并在浏览器提示中确认写入权限。'))
-    throw new Error('当前目录尚未启用编辑权限。')
+  if (snapshot.writeAccess !== 'granted' || await writeAccessFor(active.handle) !== 'granted') {
+    setSnapshot(readySnapshotWithWriteAccess(active, 'requires-user', '当前目录为只读。请在窗口顶部点击“只读”开启写入模式。'))
+    throw new Error('当前目录尚未启用写入模式。')
   }
 }
 
@@ -211,7 +211,7 @@ export function getActiveDirectoryGrant() {
   return currentGrant()
 }
 
-/** Called only from a user gesture. It opens a native read/write directory picker. */
+/** Called only from a user gesture. It opens a native read-only directory picker. */
 export async function authorizeFileManagerDirectory() {
   const picker = (globalThis as typeof globalThis & { showDirectoryPicker?: DirectoryPicker }).showDirectoryPicker
   if (typeof picker !== 'function') {
@@ -220,19 +220,19 @@ export async function authorizeFileManagerDirectory() {
   }
   setSnapshot({ status: 'selecting', message: '正在等待目录选择。' })
   try {
-    const handle = await picker({ mode: 'readwrite' })
+    const handle = await picker({ mode: 'read' })
     if (!await hasReadPermission(handle)) throw new Error('浏览器未授予所选目录的读取权限。')
     const next: StoredDirectoryGrant = { schemaVersion: 1, id: crypto.randomUUID(), createdAt: Date.now(), handle }
     await writeStoredGrant(next)
     active = next
     resetRoutes(handle)
-    const writeAccess = await writeAccessFor(handle)
-    setSnapshot(readySnapshot(next, writeAccess, writeAccess === 'granted'
-      ? '已授权读取与编辑；仅在当前目录内执行你明确触发的文件操作。'
-      : '已授权读取；编辑操作需要在用户手势中单独确认浏览器写入权限。'))
+    setSnapshot(readySnapshotWithWriteAccess(next, 'requires-user', '已授权读取；需要写入时请在窗口顶部开启写入模式。'))
   } catch (error) {
     if (isAbort(error)) {
-      if (active && await hasReadPermission(active.handle)) setSnapshot(readySnapshot(active, await writeAccessFor(active.handle), '未更换目录，继续使用已有目录授权。'))
+      if (active && await hasReadPermission(active.handle)) {
+        const writeAccess = snapshot.writeAccess === 'granted' && await writeAccessFor(active.handle) === 'granted' ? 'granted' : 'requires-user'
+        setSnapshot(readySnapshotWithWriteAccess(active, writeAccess, '未更换目录，继续使用已有目录授权。'))
+      }
       else setSnapshot({ status: 'idle', message: '未选择本地目录；演示数据保持不读取本地文件。' })
     } else {
       setSnapshot({ status: 'error', message: error instanceof Error ? error.message : '目录授权失败。' })
@@ -253,7 +253,7 @@ export async function restoreFileManagerDirectory() {
 async function restoreDirectoryGrant(): Promise<FileWorkspaceAccessSnapshot> {
   if (active && await hasReadPermission(active.handle)) {
     resetRoutes(active.handle)
-    setSnapshot(readySnapshot(active, await writeAccessFor(active.handle), '已恢复先前的目录授权；不会在后台请求写入权限。'))
+    setSnapshot(readySnapshotWithWriteAccess(active, 'requires-user', '已恢复先前的目录授权；不会在后台请求写入权限。'))
     return snapshot
   }
   try {
@@ -263,7 +263,7 @@ async function restoreDirectoryGrant(): Promise<FileWorkspaceAccessSnapshot> {
     active = stored
     if (await hasReadPermission(stored.handle)) {
       resetRoutes(stored.handle)
-      setSnapshot(readySnapshot(stored, await writeAccessFor(stored.handle), '已恢复先前的目录授权；不会在后台请求写入权限。'))
+      setSnapshot(readySnapshotWithWriteAccess(stored, 'requires-user', '已恢复先前的目录授权；不会在后台请求写入权限。'))
     } else {
       setSnapshot({ status: 'requires-user', grantId: stored.id, displayName: stored.handle.name, message: '已保存的目录授权需要重新选择；uNAS 不会在后台请求权限。' })
     }
@@ -294,24 +294,37 @@ export async function listAuthorizedDirectory(path = '/'): Promise<AuthorizedDir
   return { ok: true, executionSource: 'real', path, displayPath, directories, files, truncated }
 }
 
-/** Requests write permission only from an explicit UI action; never during restore or listing. */
+/** Only call from an explicit confirmation. Restore and directory listing never request write permission. */
 export async function requestFileManagerDirectoryWriteAccess() {
   await requireReadableDirectory()
   if (!active) throw new Error('尚未授权本地目录。')
-  if (await writeAccessFor(active.handle) === 'granted') {
-    setSnapshot(readySnapshot(active, 'granted', '当前目录已启用编辑权限。'))
+  if (snapshot.writeAccess === 'granted' && await writeAccessFor(active.handle) === 'granted') {
+    setSnapshot(readySnapshotWithWriteAccess(active, 'granted', '写入模式已开启。所有写入操作仍需由你明确触发。'))
     return snapshot
   }
   if (typeof active.handle.requestPermission !== 'function') {
-    setSnapshot(readySnapshot(active, 'unavailable', '此浏览器未提供目录写入授权接口；当前目录保持只读。'))
+    setSnapshot(readySnapshotWithWriteAccess(active, 'unavailable', '此浏览器未提供目录写入授权接口；当前目录保持只读。'))
     throw new Error('此浏览器未提供目录写入授权接口。')
   }
-  const permission = await active.handle.requestPermission({ mode: 'readwrite' })
-  if (permission !== 'granted') {
-    setSnapshot(readySnapshot(active, 'requires-user', '浏览器未授予写入权限；当前目录保持只读。'))
-    throw new Error('浏览器未授予目录写入权限。')
+  try {
+    const permission = await active.handle.requestPermission({ mode: 'readwrite' })
+    if (permission !== 'granted') {
+      setSnapshot(readySnapshotWithWriteAccess(active, 'requires-user', '浏览器未授予写入权限；当前目录保持只读。'))
+      throw new Error('浏览器未授予目录写入权限。')
+    }
+    setSnapshot(readySnapshotWithWriteAccess(active, 'granted', '写入模式已开启。所有写入操作仍需由你明确触发。'))
+  } catch (error) {
+    if (snapshot.writeAccess === 'granted') throw error
+    setSnapshot(readySnapshotWithWriteAccess(active, 'requires-user', '未开启写入模式；当前目录保持只读。'))
+    throw error
   }
-  setSnapshot(readySnapshot(active, 'granted', '当前目录已启用编辑权限。'))
+  return snapshot
+}
+
+/** Locks writing in uNAS only. It never revokes the browser's directory grant. */
+export function disableFileManagerDirectoryWriteAccess() {
+  if (!active || snapshot.status !== 'ready') return snapshot
+  setSnapshot(readySnapshotWithWriteAccess(active, 'requires-user', '写入模式已关闭；当前目录恢复为只读。'))
   return snapshot
 }
 
@@ -340,7 +353,7 @@ export async function createAuthorizedMarkdownFile(path: string, requestedName: 
   }
 }
 
-/** Deletes only one explicitly named direct child. Directories are never recursively deleted. */
+/** Deletes a single, explicitly named direct child; directories are never recursively deleted. */
 export async function deleteAuthorizedDirectoryEntry(path: string, requestedName: string) {
   await requireWritableDirectory()
   const name = validEntryName(requestedName)

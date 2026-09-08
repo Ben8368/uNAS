@@ -1,18 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Search, X, FolderOpen, LockKeyhole, ShieldCheck, Home, ChevronRight } from 'lucide-react'
+import { Search, X, FolderOpen, Home, ChevronRight } from 'lucide-react'
 
-import {
-  authorizeFileManagerDirectory,
-  createAuthorizedDirectory,
-  createAuthorizedMarkdownFile,
-  deleteAuthorizedDirectoryEntry,
-  forgetFileManagerDirectory,
-  getFileWorkspaceSnapshot,
-  listAuthorizedDirectory,
-  requestFileManagerDirectoryWriteAccess,
-  restoreFileManagerDirectory,
-  subscribeFileWorkspace,
-} from 'unas-src/api/fileWorkspace'
+import { fileWorkspacePort } from 'unas-src/api/fileWorkspace'
 import type { AuthorizedDirectoryListing } from '#contracts'
 import { BackIcon, DocumentPlusIcon, FileIcon, FolderIcon, FolderPlusIcon, RefreshIcon, TrashIcon } from 'unas-src/apps/file-manager/controls'
 import { formatDate, formatSize } from 'unas-src/apps/file-manager/utils'
@@ -20,7 +9,7 @@ import { getErrorMessage } from 'unas-src/utils'
 import { directoryEntries, type DirectorySort } from './directoryView'
 
 export function LocalDirectoryPane() {
-  const [access, setAccess] = useState(getFileWorkspaceSnapshot)
+  const [access, setAccess] = useState(fileWorkspacePort.getSnapshot)
   const [listing, setListing] = useState<AuthorizedDirectoryListing | null>(null)
   const [loading, setLoading] = useState(false)
   const [writing, setWriting] = useState(false)
@@ -31,8 +20,8 @@ export function LocalDirectoryPane() {
   const request = useRef(0)
   const previousGrant = useRef(access.grantId)
 
-  useEffect(() => subscribeFileWorkspace(() => {
-    const next = getFileWorkspaceSnapshot()
+  useEffect(() => fileWorkspacePort.subscribe(() => {
+    const next = fileWorkspacePort.getSnapshot()
     request.current += 1
     if (next.grantId !== previousGrant.current || next.status !== 'ready') {
       previousGrant.current = next.grantId
@@ -42,16 +31,16 @@ export function LocalDirectoryPane() {
     }
     setAccess(next)
   }), [])
-  useEffect(() => { void restoreFileManagerDirectory() }, [])
+  useEffect(() => { void fileWorkspacePort.restoreDirectory() }, [])
 
   const currentPath = history[history.length - 1] || '/'
   const load = useCallback(async (path = currentPath, push = false) => {
-    if (getFileWorkspaceSnapshot().status !== 'ready') return
+    if (fileWorkspacePort.getSnapshot().status !== 'ready') return
     const id = ++request.current
     setLoading(true)
     setError('')
     try {
-      const next = await listAuthorizedDirectory(path)
+      const next = await fileWorkspacePort.listDirectory(path)
       if (id !== request.current) return
       setListing(next)
       if (push) setHistory((items) => [...items, path])
@@ -72,13 +61,7 @@ export function LocalDirectoryPane() {
 
   const chooseDirectory = useCallback(async () => {
     setError('')
-    await authorizeFileManagerDirectory()
-  }, [])
-
-  const requestEdit = useCallback(async () => {
-    setError('')
-    try { await requestFileManagerDirectoryWriteAccess() }
-    catch (reason) { setError(getErrorMessage(reason)) }
+    await fileWorkspacePort.chooseDirectory()
   }, [])
 
   const write = useCallback(async (operation: () => Promise<void>) => {
@@ -93,30 +76,35 @@ export function LocalDirectoryPane() {
 
   const createFolder = useCallback(() => {
     const name = window.prompt('新建文件夹名称')
-    if (name) void write(() => createAuthorizedDirectory(currentPath, name))
+    if (name) void write(() => fileWorkspacePort.createDirectory(currentPath, name))
   }, [currentPath, write])
 
   const createDocument = useCallback(() => {
     const name = window.prompt('新建 Markdown 文件名称')
-    if (name) void write(() => createAuthorizedMarkdownFile(currentPath, name))
+    if (name) void write(() => fileWorkspacePort.createMarkdownFile(currentPath, name))
   }, [currentPath, write])
 
   const deleteEntry = useCallback((name: string, type: 'file' | 'directory') => {
     const label = type === 'directory' ? '空文件夹' : '文件'
     if (window.confirm(`确定删除${label}“${name}”吗？此操作不会进入回收站。`)) {
-      void write(() => deleteAuthorizedDirectoryEntry(currentPath, name))
+      void write(() => fileWorkspacePort.deleteEntry(currentPath, name))
     }
   }, [currentPath, write])
 
   if (access.status !== 'ready') {
     return <section className="fm-local-empty" aria-live="polite">
-      <FolderOpen className="fm-local-empty__icon" aria-hidden="true" />
-      <h2>选择本地目录</h2>
-      <p>{access.message || '尚未选择文件夹。'}</p>
-      <button type="button" className="fm-action-btn fm-action-btn--primary" onClick={() => void chooseDirectory()} disabled={access.status === 'selecting'}>
-        <FolderOpen aria-hidden="true" />{access.status === 'selecting' ? '正在打开目录选择器' : access.status === 'requires-user' ? '重新选择目录' : '选择本地目录'}
-      </button>
-      <p className="fm-local-empty__detail">仅访问你选择的目录，不上传文件。选择目录时会请求读写权限；恢复目录时不会自动请求编辑权限。</p>
+      <div className="fm-local-empty__content">
+        <div className="fm-local-empty__icon-surface"><FolderOpen className="fm-local-empty__icon" aria-hidden="true" /></div>
+        <div className="fm-local-empty__copy">
+          <span className="fm-local-empty__eyebrow">本地文件工作区</span>
+          <h2>选择一个本地目录</h2>
+          <p>{access.message || '从一个你常用的文件夹开始。'}</p>
+        </div>
+        <button type="button" className="fm-action-btn fm-action-btn--primary fm-local-empty__action" onClick={() => void chooseDirectory()} disabled={access.status === 'selecting'}>
+          <FolderOpen aria-hidden="true" />{access.status === 'selecting' ? '正在打开目录选择器' : access.status === 'requires-user' ? '重新选择目录' : '选择本地目录'}
+        </button>
+        <p className="fm-local-empty__detail"><strong>文件始终留在本地</strong><span>选择目录时只请求读取权限；需要写入时，须在窗口顶部确认后再接受浏览器授权。</span></p>
+      </div>
     </section>
   }
 
@@ -125,10 +113,6 @@ export function LocalDirectoryPane() {
   const editable = access.writeAccess === 'granted'
   const busy = loading || writing
   return <section className="fm-local-browser" aria-label="已授权本地目录">
-    <header className="fm-local-heading">
-      <div><h2>{currentPath === '/' ? access.displayName : decodeURIComponent(currentPath.split('/').at(-1) || '')}</h2><p>本地目录 <span aria-hidden="true">·</span> {loading ? '正在读取' : `${allEntries.length}${listing?.truncated ? '+' : ''} 项`}</p></div>
-      <span className="fm-local-permission">{editable ? <ShieldCheck aria-hidden="true" /> : <LockKeyhole aria-hidden="true" />}{editable ? '可编辑' : '只读'}</span>
-    </header>
     <div className="fm-topbar fm-local-toolbar">
       <div className="fm-nav-buttons">
         <button type="button" className="fm-icon-btn" title="返回上一级" disabled={history.length <= 1 || busy} onClick={() => setHistory((items) => items.slice(0, -1))}><BackIcon /></button>
@@ -139,9 +123,8 @@ export function LocalDirectoryPane() {
         {history.slice(1).map((path, index) => <span key={path}><ChevronRight aria-hidden="true" /><button type="button" title={decodeURIComponent(path.split('/').at(-1) || '')} disabled={busy || path === currentPath} aria-current={path === currentPath ? 'location' : undefined} onClick={() => setHistory((items) => items.slice(0, index + 2))}>{decodeURIComponent(path.split('/').at(-1) || '')}</button></span>)}
       </nav>
       <div className="fm-local-toolbar__actions">
-        {access.writeAccess !== 'granted' && <button type="button" className="fm-action-btn fm-action-btn--primary" onClick={() => void requestEdit()} disabled={writing}>启用编辑</button>}
-        <button type="button" className="fm-action-btn fm-local-toolbar-action" title={editable ? '新建文件夹' : '新建文件夹（需启用编辑）'} aria-label="新建文件夹" onClick={createFolder} disabled={busy || !editable}><FolderPlusIcon /><span>新建文件夹</span></button>
-        <button type="button" className="fm-action-btn fm-local-toolbar-action" title={editable ? '新建 Markdown 文档' : '新建文档（需启用编辑）'} aria-label="新建文档" onClick={createDocument} disabled={busy || !editable}><DocumentPlusIcon /><span>新建文档</span></button>
+        <button type="button" className="fm-action-btn fm-local-toolbar-action" title={editable ? '新建文件夹' : '请先在窗口顶部开启写入模式'} aria-label="新建文件夹" onClick={createFolder} disabled={busy || !editable}><FolderPlusIcon /><span>新建文件夹</span></button>
+        <button type="button" className="fm-action-btn fm-local-toolbar-action" title={editable ? '新建 Markdown 文档' : '请先在窗口顶部开启写入模式'} aria-label="新建文档" onClick={createDocument} disabled={busy || !editable}><DocumentPlusIcon /><span>新建文档</span></button>
         <button type="button" className="fm-local-change" onClick={() => void chooseDirectory()} disabled={busy}>更换目录</button>
       </div>
     </div>
@@ -163,7 +146,7 @@ export function LocalDirectoryPane() {
             <span>{entry.modified ? formatDate(entry.modified) : '-'}</span>
             <span>{entry.type === 'file' ? formatSize(entry.size) : '-'}</span>
             <span>{entry.type === 'directory' ? '文件夹' : entry.extension?.toUpperCase() || '文件'}</span>
-            <button type="button" className="fm-icon-btn fm-local-delete" title={access.writeAccess === 'granted' ? `删除${entry.name}` : '需先启用编辑权限'} aria-label={`删除 ${entry.name}`} onClick={() => deleteEntry(entry.name, entry.type)} disabled={writing || access.writeAccess !== 'granted'}><TrashIcon /></button>
+            <button type="button" className="fm-icon-btn fm-local-delete" title={editable ? `删除 ${entry.name}` : '请先在窗口顶部开启写入模式'} aria-label={`删除 ${entry.name}`} onClick={() => deleteEntry(entry.name, entry.type)} disabled={busy || !editable}><TrashIcon /></button>
           </div>
         ))}
         {!loading && !error && entries.length === 0 && <div className="fm-empty">{query ? '没有匹配的项目' : '此目录为空'}</div>}
@@ -171,7 +154,7 @@ export function LocalDirectoryPane() {
     </div>
     {listing?.truncated && <p className="fm-local-notice" role="status">为限制资源使用，仅显示前 200 项；请在系统中缩小目录范围后重新选择。</p>}
     <div className="fm-local-footer">
-      <button type="button" className="fm-action-btn" title="移除保存的目录授权，不会删除本地文件" disabled={busy} onClick={() => { void forgetFileManagerDirectory().catch((reason: unknown) => setError(getErrorMessage(reason))) }}>忘记此目录</button>
+      <button type="button" className="fm-action-btn" title="移除保存的目录授权，不会删除本地文件" disabled={busy} onClick={() => { void fileWorkspacePort.forgetDirectory().catch((reason: unknown) => setError(getErrorMessage(reason))) }}>忘记此目录</button>
       <span>{query ? `${entries.length} / ${allEntries.length} 项` : `${listing?.directories.length || 0} 个文件夹 · ${listing?.files.length || 0} 个文件`}</span>
     </div>
   </section>

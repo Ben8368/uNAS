@@ -51,7 +51,7 @@ test('Files keeps an explicit directory-authorization boundary and never mounts 
   await expect(app.getByRole('button', { name: '选择本地目录', exact: true })).toBeVisible()
   await expect(page.locator('input[type="file"]')).toHaveCount(0)
   await expect(app).toContainText('仅访问你选择的目录，不上传文件')
-  await expect(app).toContainText('选择目录时会请求读写权限')
+  await expect(app).toContainText('选择目录时仅请求读取权限')
   expect(extension.errors).toEqual([])
 })
 
