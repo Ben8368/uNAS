@@ -24,6 +24,32 @@ test('cross-tab deletion preserves an editing draft and reports a conflict', asy
   expect(extension.errors).toEqual([])
 })
 
+test('concurrent Link App deletions do not restore either removed record', async ({ extension }) => {
+  const first = await extension.context.newPage()
+  const second = await extension.context.newPage()
+  const url = `chrome-extension://${extension.extensionId}/newtab.html`
+  await Promise.all([first.goto(url), second.goto(url)])
+  await first.locator('.app-icon--browser').click()
+  const firstApp = first.locator('[data-app-id="browser"]')
+  await firstApp.getByLabel('名称', { exact: true }).fill('One')
+  await firstApp.getByLabel('选择网址').fill('https://one.example')
+  await firstApp.getByRole('button', { name: '添加 App', exact: true }).click()
+  await firstApp.getByLabel('名称', { exact: true }).fill('Two')
+  await firstApp.getByLabel('选择网址').fill('https://two.example')
+  await firstApp.getByRole('button', { name: '添加 App', exact: true }).click()
+  await second.locator('.app-icon--browser').click()
+  const secondApp = second.locator('[data-app-id="browser"]')
+  await expect(secondApp.getByRole('button', { name: '删除 One', exact: true })).toBeVisible()
+  await Promise.all([
+    firstApp.getByRole('button', { name: '删除 One', exact: true }).click(),
+    secondApp.getByRole('button', { name: '删除 Two', exact: true }).click(),
+  ])
+  await expect(firstApp.locator('li')).toHaveCount(0)
+  await expect(secondApp.locator('li')).toHaveCount(0)
+  expect(await first.evaluate(async () => (await browser.storage.local.get('unas-link-apps-v1'))['unas-link-apps-v1'])).toEqual([])
+  expect(extension.errors).toEqual([])
+})
+
 test('添加 App validates HTTPS, registers a desktop App, and persists edits', async ({ extension }) => {
   const page = await extension.context.newPage()
   await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)

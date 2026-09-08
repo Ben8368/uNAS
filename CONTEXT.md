@@ -1,7 +1,7 @@
 # 当前状态
 
-> **最后确认：** 2026-09-07
-> **阶段：** Phase 1 / G1 已验收，Frontend UI refinement
+> **最后确认：** 2026-09-08
+> **阶段：** Phase 2 / SP-01 Extension Runtime
 > **产品代码：** React/Vite/WXT mock Demo；确定性 scenario、Workspace owner、跨标签摘要和 HTTPS Link 已实现，尚未接入真实文件、引擎或后端。
 
 ## 当前决策
@@ -19,7 +19,7 @@
 
 1. FE-11 已迁移启动器 Dialog 与下载行 Popover；继续审查响应式容器和 UI 分片，打磨桌面、状态抽屉、响应式与键盘路径；不改变 mock/真实边界。
 2. 清理不再被 Demo 入口引用的旧 HTTP/本地服务 adapter，并保持前端基线、依赖与文档一致。
-3. 以已验收的 G1 证据推进 SP-01 Extension Runtime：已覆盖强制 Worker 终止与自然空闲后的事件唤醒；随后验证扩展更新与浏览器重启。真实文件与引擎仍须逐项验证后才能接入。
+3. 推进 [SP-01 Extension Runtime](benchmarks/sp-01/README.md)：已验证强制终止和普通 Chrome 自然空闲后的唤醒；剩余浏览器重启、扩展更新与页面关闭终态。真实文件与引擎仍须逐项验证后才能接入。
 
 ## 当前阻断与风险
 
@@ -28,6 +28,7 @@
 
 ## 最近验证
 
+- 2026-09-08：Link App mutation 已经 Service Worker 串行化；95 项单测、32 项解包扩展 E2E 和 6 项 Web E2E 通过。普通 Chrome 自然空闲唤醒已于 2026-09-07 人工验证；浏览器重启与扩展更新仍未验证。证据：[SP-01](benchmarks/sp-01/README.md)、`apps/extension/test-results/`。
 - 2026-09-07：维护者确认 G1 已验收。Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工体验走查，以及 `pnpm verify`、30 项扩展 E2E、6 项 Web E2E 已通过；原生 `browser.*`、Promise 拒绝消息、`<dialog>`/Popover Escape 与 mock 生命周期回归已验证。清理旧 HTTP adapter 后，治理/边界/依赖/包体检查、92 项单测、类型检查、Vite/WXT 构建与 31 项扩展、6 项 Web E2E 再次通过；其中 SP-01 强制 Worker 终止/事件唤醒记录于 [SP-01](benchmarks/sp-01/README.md)。证据位于 `apps/extension/test-results/`；不代表真实引擎或完整生命周期探针完成。
 
 ## 按需入口

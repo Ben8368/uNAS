@@ -20,4 +20,26 @@ describe('legacy Workspace routing boundary', () => {
       expect(create).not.toHaveBeenCalled(); expect(update).not.toHaveBeenCalled()
     } finally { vi.unstubAllGlobals() }
   })
+  it('serializes only exact Link App mutations from extension top-level pages', async () => {
+    let listener: (...args: any[]) => unknown = () => {}
+    const storage = new Map<string, unknown>()
+    vi.stubGlobal('browser', {
+      runtime: { id: 'unas', onMessage: { addListener: (fn: typeof listener) => { listener = fn } } },
+      storage: {
+        local: {
+          get: async (key: string) => ({ [key]: storage.get(key) }),
+          set: async (values: Record<string, unknown>) => { Object.entries(values).forEach(([key, value]) => storage.set(key, value)) },
+        },
+        onChanged: { addListener: vi.fn(), removeListener: vi.fn() },
+      },
+    })
+    const link = { schemaVersion: 1, id: 'link-a', name: 'Example', url: 'https://example.com/', icon: 'globe' }
+    try {
+      installWorkspaceRouter()
+      await expect(listener({ schemaVersion: 1, action: 'link-apps.mutate', kind: 'upsert', link }, sender)).resolves.toEqual({ ok: true, links: [link] })
+      await expect(listener({ schemaVersion: 1, action: 'link-apps.mutate', kind: 'remove', original: link }, { ...sender, id: 'other' })).resolves.toEqual({ ok: false, error: expect.stringContaining('无效') })
+      await expect(listener({ schemaVersion: 1, action: 'link-apps.mutate', kind: 'migrate', links: [] }, sender)).resolves.toEqual({ ok: true, links: [link] })
+      expect(storage.get('unas-link-apps-v1')).toEqual([link])
+    } finally { vi.unstubAllGlobals() }
+  })
 })

@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { openLink, persistLink, readLinks, saveLinks, subscribeLinks, validateLink, type LinkApp } from 'unas-src/runtime/linkApps'
+import { openLink, persistLink, readLinks, removeLink, subscribeLinks, validateLink, type LinkApp } from 'unas-src/runtime/linkApps'
 
 export function BrowserApp() {
   const [links, setLinks] = useState<LinkApp[]>([])
@@ -27,10 +27,6 @@ export function BrowserApp() {
     return () => { active = false; unsubscribe() }
   }, [])
   function reset() { setEditing(undefined); setOriginal(undefined); setName(''); setUrl('https://'); setIcon('globe') }
-  async function persist(next: LinkApp[]) {
-    try { await saveLinks(next); setLinks(next); setError(''); return true }
-    catch (error) { setError(error instanceof Error ? error.message : '本地保存失败'); return false }
-  }
   async function submit(event: FormEvent) {
     event.preventDefault()
     setNotice('')
@@ -43,10 +39,12 @@ export function BrowserApp() {
     } catch (error) { setError(error instanceof Error ? error.message : '本地保存失败') }
   }
   async function remove(link: LinkApp) {
-    if (await persist(links.filter((candidate) => candidate.id !== link.id))) {
+    try {
+      setLinks(await removeLink(link))
+      setError('')
       if (editing === link.id) reset()
       setNotice(`已删除 ${link.name}`)
-    }
+    } catch (error) { setError(error instanceof Error ? error.message : '本地保存失败') }
   }
   return <section className="demo-tool link-apps">
     <h2>添加 App</h2>

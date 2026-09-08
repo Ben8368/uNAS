@@ -13,8 +13,9 @@
 
 ## 初始结果
 
+- 2026-09-08：Chrome for Testing 151.0.7922.34、win32 10.0.26200 x64、headless、1440×900 的解包 MV3 运行中，32 项扩展 E2E 通过。
 - 2026-09-07：Chrome for Testing 151.0.7922.34、macOS darwin 25.6.0 arm64、headless、1440×900 的解包 MV3 运行中，31 项扩展 E2E 通过。
-- 已覆盖：New Tab 多页 owner、BroadcastChannel 消息限额/白名单、owner 关闭后的 fail-closed、强制 Worker 终止后的消息唤醒与拒绝。该回归在停止前后均收到相同的结构化 `workspace.launch` 拒绝，证明当前拒绝边界不依赖 Worker 内存状态。
+- 已覆盖：New Tab 多页 owner、BroadcastChannel 消息限额/白名单、owner 关闭后的 fail-closed、强制 Worker 终止后的消息唤醒与拒绝；以及经 Service Worker 串行化的 Link App 跨标签并发删除。该回归在停止前后均收到相同的结构化 `workspace.launch` 拒绝，证明当前拒绝边界不依赖 Worker 内存状态；并发删除不会恢复任一已删除配置。
 - 2026-09-07：维护者在普通 Chrome 的解包扩展中保持超过 40 秒空闲后，重新点击工具栏或刷新 New Tab，均未发现问题；作为无调试器自然休眠后唤醒的人工证据。该结论不声明 Worker 的精确终止时刻，也不覆盖真实任务。
 - 未覆盖：浏览器重启、扩展更新、optional permission 拒绝、静态 WASM、Dedicated Worker、offscreen。通用 fixture 和不发现 Worker/不启用 tracing 的独立 Playwright profile 都在 46 秒后仍观察到 BACKGROUND context；headless 远程调试会话无法证明自然休眠，故采用上述普通 Chrome 人工对照。它们保持为 SP-01 未完成项，不能据此关闭 RISK-003。
 

@@ -62,6 +62,14 @@ for (const file of ['README.md', 'SECURITY.md']) {
 const prioritySection = context.match(/## 近期优先级\s+([\s\S]*?)(?=\n## |$)/)?.[1] ?? ''
 const priorities = [...prioritySection.matchAll(/^\d+\. /gm)].length
 if (priorities > 3) errors.push(`CONTEXT.md: 近期优先级不得超过 3 项，当前为 ${priorities} 项`)
+if (/\bSP-\d{2}\b/.test(prioritySection) && !/\[[^\]]*SP-\d{2}[^\]]*\]\([^)]*benchmarks\/sp-\d{2}\/README\.md\)/i.test(prioritySection)) {
+  errors.push('CONTEXT.md: 提到 SP-xx 的优先级必须链接对应 benchmarks/<probe>/README.md')
+}
+
+const verificationSection = context.match(/## 最近验证\s+([\s\S]*?)(?=\n## |$)/)?.[1] ?? ''
+for (const item of verificationSection.split(/\r?\n/).filter((line) => line.startsWith('- '))) {
+  if (!/\[[^\]]+\]\([^)]+\)/.test(item)) errors.push('CONTEXT.md: 每条最近验证必须包含指向证据的 Markdown 链接')
+}
 
 for (const forbidden of ['当前分支', '## 常用命令', '## 常用文档', '完整变更历史']) {
   if (context.includes(forbidden)) errors.push(`CONTEXT.md: 不应包含“${forbidden}”`)
