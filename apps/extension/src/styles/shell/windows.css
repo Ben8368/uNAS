@@ -100,10 +100,11 @@
 
 .mt-window-mode {
   justify-content: center;
-  min-width: 84px;
-  height: 24px;
+  min-width: 76px;
+  min-height: 30px;
+  height: 30px;
   margin-right: 6px;
-  padding: 0 14px;
+  padding: 0 10px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: .045em;

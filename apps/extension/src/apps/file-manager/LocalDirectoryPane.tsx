@@ -137,9 +137,10 @@ export function LocalDirectoryPane() {
         {history.slice(1).map((path, index) => <span key={path}><ChevronRight aria-hidden="true" /><button type="button" title={decodeURIComponent(path.split('/').at(-1) || '')} disabled={busy || path === currentPath} aria-current={path === currentPath ? 'location' : undefined} onClick={() => setHistory((items) => items.slice(0, index + 2))}>{decodeURIComponent(path.split('/').at(-1) || '')}</button></span>)}
       </nav>
       <div className="fm-local-toolbar__actions">
+        <button type="button" className="fm-action-btn fm-local-forget" title="移除保存的目录授权，不会删除本地文件" disabled={busy} onClick={() => { void fileWorkspacePort.forgetDirectory().catch((reason: unknown) => setError(getErrorMessage(reason))) }}>忘记此目录</button>
+        <button type="button" className="fm-local-change" onClick={() => void chooseDirectory()} disabled={busy}>更换目录</button>
         <button type="button" className="fm-action-btn fm-local-toolbar-action" title={editable ? '新建文件夹' : '请先在窗口顶部开启写入模式'} aria-label="新建文件夹" onClick={createFolder} disabled={busy || !editable}><FolderPlusIcon /><span>新建文件夹</span></button>
         <button type="button" className="fm-action-btn fm-local-toolbar-action" title={editable ? '新建 Markdown 文档' : '请先在窗口顶部开启写入模式'} aria-label="新建文档" onClick={createDocument} disabled={busy || !editable}><DocumentPlusIcon /><span>新建文档</span></button>
-        <button type="button" className="fm-local-change" onClick={() => void chooseDirectory()} disabled={busy}>更换目录</button>
       </div>
     </div>
     <div className="fm-local-commandbar">
@@ -168,7 +169,6 @@ export function LocalDirectoryPane() {
     </div>
     {listing?.truncated && <p className="fm-local-notice" role="status">为限制资源使用，仅显示前 200 项；请在系统中缩小目录范围后重新选择。</p>}
     <div className="fm-local-footer">
-      <button type="button" className="fm-action-btn" title="移除保存的目录授权，不会删除本地文件" disabled={busy} onClick={() => { void fileWorkspacePort.forgetDirectory().catch((reason: unknown) => setError(getErrorMessage(reason))) }}>忘记此目录</button>
       <span>{query ? `${entries.length} / ${allEntries.length} 项` : `${listing?.directories.length || 0} 个文件夹 · ${listing?.files.length || 0} 个文件`}</span>
     </div>
   </section>

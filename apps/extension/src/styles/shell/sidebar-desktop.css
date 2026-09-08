@@ -334,7 +334,12 @@ html, body, #root {
 
 .app-icon:hover .app-icon-img,
 .app-icon:focus-visible .app-icon-img {
-  box-shadow: 0 3px 8px rgba(0,0,0,.4), 0 0 0 2px rgba(102, 178, 255, .9);
+  box-shadow: 0 3px 8px rgba(0,0,0,.4);
+}
+
+.app-icon:hover .app-icon-img::after,
+.app-icon:focus-visible .app-icon-img::after {
+  opacity: 1;
 }
 
 .app-icon:active .app-icon-img {
@@ -342,16 +347,28 @@ html, body, #root {
 }
 
 .app-icon-img {
+  position: relative;
   width: 56px;
   height: 56px;
   margin-bottom: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 22%;
+  border-radius: 26.5625%;
   overflow: hidden;
   box-shadow: 0 3px 8px rgba(0,0,0,.4);
   transition: box-shadow .1s ease, transform .1s ease;
+}
+
+.app-icon-img::after {
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(102, 178, 255, .9);
+  border-radius: inherit;
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .1s ease;
 }
 
 .app-icon-img img {
