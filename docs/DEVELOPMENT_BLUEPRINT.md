@@ -31,9 +31,11 @@
 
 ### FE-02 Design System
 
-- token、主题、材料、排版、图标、间距、圆角、阴影和 motion。
-- Button、Field、Menu、Dialog、Sheet、Toast、Progress、Empty/Error 等 primitive/system components。
-- Liquid Glass 的常规、减少透明度和不支持 `backdrop-filter` 回退。
+- 按 [DESIGN_SYSTEM](DESIGN_SYSTEM.md) 的当前基线对齐共享 token → primitive/system components → Desktop/Tool App 骨架，按受影响范围分批执行。
+- 存量迁移先检查最终样式级联中的正文透明与嵌套玻璃，再处理页面私有值、状态和布局差异；不在此复制规范参数。
+- 先留存当前 LocalDirectoryPane 的未授权/目录列表参照 → 保持结构提取 AppLayout 与公共控件、解耦窗口业务状态 → 逐个迁移下载、添加 App、设置与日志；未来 Tool App 直接复用，不新增可启动功能。
+- 每次迁移移除被替代的私有布局样式，并验证窗口几何、槽位收起、长内容/窄窗口与原业务行为；不只通过统一外框颜色宣称复用完成。
+- 每批按 [QUALITY](QUALITY.md) 第 5 节保留证据与例外；规范发布不代表这些实现项已验收。
 
 ### FE-03 Desktop Shell
 

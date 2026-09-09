@@ -1,124 +1,67 @@
-# 前端 Demo 与实现指南
+# 前端实现指南
 
-本文规定前端先行阶段的技术框架、代码边界、mock 策略、响应式与验收方式。产品范围见 [PRODUCT.md](PRODUCT.md)，视觉规则见 [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)，App 语义见 [APP_CONTRACT.md](APP_CONTRACT.md)。
+本文只规定 UI 的工程接入、mock 与真实 adapter 边界；当前实现状态见 [CONTEXT](../CONTEXT.md)，固定视觉和交互规则见 [DESIGN_SYSTEM](DESIGN_SYSTEM.md)，验证门禁见 [QUALITY](QUALITY.md)。
 
-## 1. 前端先行的含义
+## 1. 开工路径
 
-Phase 1 先完成可交互的扩展前端 Demo，用于确认产品结构、桌面交互、视觉语言和完整状态，而不是证明文件能力。
+1. 从 Design System 选定页面骨架、UI 编号、公共组件和 token；列出本次涉及的状态及例外，不另建 App 私有规范。
+2. 涉及 App 注册、Intent、启动、权限或生命周期时读 [APP_CONTRACT](APP_CONTRACT.md)；涉及任务语义再读 [ENGINE_CONTRACT](ENGINE_CONTRACT.md)，纯样式调整不预读全部契约。
+3. 源码改动遵循 [AI_RULES](AI_RULES.md) 与 [ARCHITECTURE](ARCHITECTURE.md)；实际调用浏览器/文件能力时按 AGENTS 路由读取安全规则。
+4. 完成后按 Quality 第 5 节给出受影响范围内的视觉、行为及降级证据；改共享 token/组件需检查消费方，不只看当前页面。
 
-- Demo 可以模拟文件、任务、进度、权限拒绝和输出，但必须显式标记 mock。
-- UI 使用稳定 port/contract；真实文件、Worker、WASM 和 Chrome 权限在后续阶段通过 adapter 接入。
-- 不为了做 Demo 在 React 组件中直接调用浏览器 API 或引擎库。
-- Demo 的“成功”只代表交互验收通过，不代表任何格式、性能或浏览器能力已验证。
+## 2. 技术与样式归属
 
-## 2. 当前 Phase 1 技术基线
+- React + TypeScript strict；Vite 用于本地 Demo，WXT 承载 MV3。精确版本以 [package.json](../apps/extension/package.json) 和锁文件为准，不在本文复制版本或权限清单。
+- CSS Custom Properties 承载语义 token，现有共享窗口主题入口是 [window-theme.css](../apps/extension/src/styles/window-theme.css)；[globals.css](../apps/extension/src/styles/globals.css) 组织样式，src/styles/ 按职责拆分，不使用 CSS Modules。
+- Zustand 管理本地 UI 状态，Lucide React 提供统一图标。布局/样式/状态优先复用现有公开组件，不引入另一套设计库或私有主题。
+- token 值按 Design System 映射；兼容别名只能引用同一语义源。App 私有样式只处理领域布局，不覆盖主题、玻璃材料、窗口壳与基础控件状态。
+- 原生 Dialog/Popover、容器查询与动效迁移遵循 [ADR 0008](ADR/0008-private-preview-modern-chrome.md)；平台 API 不自动提供完整的键盘、焦点、定位或可访问性验收。
 
-- TypeScript strict 与 React 18 作为界面和组件模型。
-- Vite 用于本地 Demo；WXT 管理 Chrome MV3 的 New Tab、Workspace 与 Service Worker entrypoint。
-- CSS Custom Properties 承载 token；组件样式按 `src/styles/` 的职责拆分，不使用 CSS Modules。
-- Zustand 承载本地 UI 状态，Lucide React 提供图标；动效当前以 CSS 和原生平台能力实现，未锁定动画库。
-- Vitest 覆盖单元测试，Playwright 覆盖本地 MV3 的扩展 E2E。
+### 共享窗口与内容布局
 
-精确版本和完整依赖清单以 [apps/extension/package.json](../apps/extension/package.json) 与锁文件为准。当前没有引擎、WASM 或真实文件能力；Manifest 仅声明 `storage`，用于经 extension adapter 持久化 Link App，且不含 host、下载、剪贴板或文件权限。未来引擎依赖仍须在对应探针完成后评估并锁定。Liquid Glass 需要原创材料层和严格降级，禁止直接套用通用“毛玻璃后台模板”。
+以下是实现目标，不是已存在的组件 API；复用现有入口，禁止并行建设另一套 Window。
 
-## 3. 前端分层
+| 归属 | 复用边界 |
+| --- | --- |
+| AppWindow / DesktopWindow | 共用加载/错误边界、标题栏、窗口控制、拖动缩放和焦点；只接收通用元数据、内容和可选 headerStatus |
+| appPresentation / windowStore / windowGeometry | 单一尺寸预设、实例状态与可视区约束；不按 App 复制默认值，CSS 与几何计算必须对齐 |
+| AppLayout（待抽取） | 组合 sidebar、navigation、actions、filters、notice、content、inspector、footer 槽位；拥有网格、间距、收缩及滚动规则 |
+| 公共控件 | 复用 Toolbar、SearchField、FilterBar、EmptyState、StatusBar、Button 等；侧栏优先复用 ResizableAppSidebar |
+| App 业务层 | 提供槽位内容和回调；文件授权、任务订阅、字段校验留在各自 controller/port，不进入通用布局 |
 
-```text
-当前：entrypoints/newtab | workspace
-  → extensionPageBootstrap → App / app views → demo API
-entrypoints/background
-  → 工具栏点击入口、Workspace 路由与消息校验
+Files 的接入参照为 [LocalDirectoryPane](../apps/extension/src/apps/file-manager/LocalDirectoryPane.tsx)，不是旧 MockFileManagerPane。先在原页面提取公共布局，再由其他 App 消费；不得让其他 App import 文件管理私有组件或复制 fm-* CSS。
 
-后续真实能力：screens
-  → application ports
-    → mock runtime (Phase 1)
-    → real runtime adapters (Phase 3+)
-```
+[Window.tsx](../apps/extension/src/Window.tsx) 中按 appType 选择的写入模式/色域状态应由 App 集成层通过 headerStatus 注入；公共壳不直接订阅文件 port，不因新增 App 增加业务分支。槽位使用组合而非大量布尔开关；搜索、筛选或 footer 缺省时由布局统一收起。视觉参数只查 Design System UI-03。
 
-- New Tab 与 Workspace 共用启动器、错误边界和 demo API；内置 App 在当前标签页打开，background 处理工具栏入口并拒绝旧跨标签启动消息。工具栏点击只打开固定的 New Tab 页面，不申请额外权限。
-- content script 与 offscreen 仅保留为架构设计，Phase 1 没有对应 entrypoint 或权限。
-- screen 负责组合，不持有文件系统或 engine 实例。
-- desktop pattern 只实现窗口、Dock、启动和布局语义。
-- application port 暴露 App、Files、Tasks、Settings 等用例。
-- adapter 负责 `chrome.*`、File System Access、IndexedDB/OPFS、Worker 和引擎库。
+## 3. 层次与 Surface
 
-## 4. 页面与运行时
+| 层 | 职责 |
+| --- | --- |
+| entrypoints | newtab/workspace 共用 bootstrap；background 处理受限入口与消息校验 |
+| Desktop / App Host | 启动、窗口、焦点和布局；内置 App 在当前标签页打开 |
+| App View | 组合公开组件、展示 projection、提交用户意图 |
+| application port | App、Files、Tasks、Settings 的稳定用例 |
+| adapter / Worker | mock 或真实能力、浏览器授权、存储与计算隔离 |
 
-| Surface | 职责 | 禁止 |
-| --- | --- | --- |
-| `newtab` | 快速桌面、搜索、Link App、按需 Tool App 窗口 | 预加载大型 WASM、直接成为真实长任务唯一所有者 |
-| `workspace` | 兼容工具入口与逻辑 Workspace 接入 | 隐式新建可见页、假设页面关闭后任务仍持续 |
-| `service-worker` | 安装、点击、菜单、消息路由、窗口复用 | DOM、长计算、仅存内存的关键状态 |
-| `content-script` | 用户触发的网页上下文桥 | 广泛注入、任意 URL 抓取、接收未校验命令 |
-| `offscreen` | 经探针证明必要的受限后台 DOM 场景 | 作为默认常驻应用或万能 Worker |
+New Tab 保持轻量，App 与 engine chunk 按需加载；逻辑 Workspace 的任务所有权和多页连接按 [ADR 0007](ADR/0007-inline-app-workspace.md) 执行。service-worker 不承担 DOM 或长计算；content-script/offscreen 的适用边界由 Architecture 定义，不从 UI 需求推导新权限。
 
-New Tab 必须把 Tool App 代码和 engine chunk 延迟到启动后；不能因增加媒体能力而拖慢每次新标签页打开。
+## 4. Mock 与真实能力
 
-Phase 1 同页启动见 ADR 0007：点击工具才连接逻辑 mock Workspace，首个连接者持锁，其他同源页面作为客户端。`workspace.html` 保留兼容入口，不由桌面自动创建；真实长任务不在轻量 New Tab 中直接执行。
+- 每项能力明确来源，不能用“所有功能都是 mock”覆盖已接入的真实路径，也不能用一个真实 adapter 推断整款 App 已具备真实处理能力；已验证范围只查 Context 与对应 benchmark。
+- mock scenario 使用固定 ID、fixture metadata 与测试时钟，不读取用户文件，不用随机延时，不生成可误认的真实输出。真实目录/文件交互必须经对应 adapter 和授权路径。
+- UI 展示来源、能力可用性、原因及限制；不得硬编码浏览器/格式支持表。演示标记的位置与文案遵循 Design System。
+- 确定性场景覆盖空数据、首次引导、成功、权限拒绝、损坏、资源超限、已知/未知进度、取消、失败、恢复和 owner 冲突；实际只加载本次相关场景。
+- mock 与真实 adapter 使用同一 port/contract，mock 长期保留用于状态、视觉与失败路径回归；真实替换仍需夹具及目标扩展证据。
 
-## 5. Mock Runtime
+## 5. 状态与资源
 
-Mock 场景必须确定、可复现并覆盖：
+- Desktop state 只保存布局、焦点和主题；Registry 保存内置 manifest 与 Link 配置；File/Task projection 只保留 UI 必要摘要，不持有引擎对象或大型 Blob。
+- 能力、授权、任务终态由对应服务提供；关闭窗口与取消任务分别发出意图，不能由组件自行推断运行时结果。
+- New Tab 首屏不依赖网络，不包含大型 engine/WASM；图标、壁纸、预览有资源预算，大面积效果的性能结论须实测。
+- 存储、句柄恢复、授权、清理与上传边界由架构/安全契约维护；App View 不直接触碰特权 API 或文件系统。
 
-- 空状态、首次引导、已有数据。
-- 选择文件成功、权限拒绝、文件损坏、资源超限。
-- 任务排队、可确定进度、不确定进度、取消、失败、成功。
-- Link App URL 非法、图标失败和重复名称。
-- Workspace 已存在、重复打开、刷新与恢复摘要。
+## 6. 变更交付
 
-Mock 规则：
+交付说明只列：适用 UI 编号、受影响组件/页面、mock 或真实来源、验证命令与证据、未覆盖项/例外。响应式阈值和验收矩阵只链接 Design System / Quality，不在工作包或页面文档重复。
 
-- scenario 使用固定 ID 和静态 fixture metadata，不读取用户真实文件。
-- 延时由测试时钟控制，不用随机数制造偶发状态。
-- mock 结果不能下载成看似真实的媒体/PDF/ZIP。
-- 构建信息、About 或 Demo Banner 显示 `executionSource: mock`。
-- 真实 adapter 接入后，mock 仍用于组件、视觉回归和失败路径测试。
-
-可启动 App 以源码注册表为准，不从遗留组件或 mock API 推断可用入口。下载等模拟流程不构成真实下载、浏览器登录态或本机文件能力，也不扩大 [PRODUCT.md](PRODUCT.md) 的 V1 真实能力候选。
-
-## 6. 状态边界
-
-- Desktop state：布局、Dock、窗口、焦点和主题。
-- App Registry state：内置 manifest 与用户 Link App。
-- File projection：UI 可见的文件摘要，不保存大型 Blob。
-- Task projection：公共状态、进度和错误，不保存引擎私有对象。
-- Capability state：可用性、原因、限制和证据，不能硬编码为浏览器名单。
-
-Phase 1 已使用 Zustand 管理本地 UI 状态；仍须以接口、事件和持久化边界约束，避免形成单个无边界的全局 store。
-
-## 7. 性能约束
-
-- New Tab 首屏不得依赖网络请求完成渲染。
-- 媒体、PDF、Archive engine 和 WASM 不进入 New Tab 初始 chunk。
-- 壁纸、图标和预览有尺寸、解码像素和缓存预算；不提交超大演示资产。
-- 大面积 blur、实时反射和阴影动画必须在目标设备实测；无法稳定时自动降级。
-- 性能数字只有在参考设备、浏览器版本和测量方法确定后才能成为 Gate 阈值。
-
-## 8. 响应式与输入
-
-- Wide 采用桌面画布与窗口；Regular 采用单主窗口和触控友好导航；Compact 只保证基本可用。
-- 同一功能同时支持鼠标、键盘和触控；拖放必须有文件选择替代路径。
-- 使用逻辑方向和可本地化布局，不把左右位置写死为业务语义。
-- 组件在 200% 缩放、长文本和空/错误状态下不能溢出关键操作。
-
-## 9. 前端验证
-
-按 [ADR 0008](ADR/0008-private-preview-modern-chrome.md) 优先以原生 API 替换等价旧实现，具体顺序见开发蓝图 FE-11；已锁定依赖不是不可替换的约束，替换后删除冗余代码与依赖。平台版本缺失可以通过提高基线解决，但键盘/焦点、低性能、减少动态/透明度、资源与权限失败的降级仍需保留。迁移证据通过前不更新第 2 节的实际技术基线。
-
-Phase 1 最低证据：
-
-1. token 与 primitive 的组件状态矩阵。
-2. Desktop、Files、Task Center 和各 Tool App 的 mock 主流程。
-3. Wide/Regular、浅色/深色、减少透明度/动态。
-4. 键盘导航、焦点、Dialog/Sheet 和错误提示。
-5. 解包扩展中的 New Tab、Workspace 复用和刷新路径。
-6. 初始 chunk 中不包含 engine/WASM 的构建证据。
-7. 维护者对视觉、文案和任务流的主观确认。
-
-## 10. 禁止事项
-
-- 组件直接 import `chrome.*`、ffmpeg、PDF、ZIP、codec 或 OPFS 实现。
-- 为追求“像系统”复制 Apple 图标、壁纸、字体或逐像素界面。
-- 用 blur 掩盖层级问题，或在内容列表上叠加多层透明表面。
-- Mock 成功路径写入真实能力文案、格式支持表或商店截图而不披露。
-- 为 Demo 提前请求 `host_permissions`、downloads、clipboard 或其他宽权限。
+既有界面不因规范发布自动达标；实现时检查相关样式的最终级联，包括 [accessibility.css](../apps/extension/src/styles/accessibility.css) 对材料和布局的覆盖。受影响部分按本规范修正，无关实现差异不在本指南维护清单。

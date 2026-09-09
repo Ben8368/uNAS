@@ -4,15 +4,16 @@
 
 ## 开局与按需读取
 
-所有任务先读 [CONTEXT.md](CONTEXT.md) 和 [LESSONS.md](LESSONS.md)，再仅加载命中项：
+所有任务先读 [CONTEXT.md](CONTEXT.md) 和 [LESSONS.md](LESSONS.md)，再按本轮实际改动/审查对象加载命中项；文中提及某关键词不触发整条依赖链，不递归读取所有链接：
 
 | 任务 | 必读文档 |
 | --- | --- |
 | 产品范围、优先级、规划 | [docs/PRODUCT.md](docs/PRODUCT.md)、[docs/ROADMAP.md](docs/ROADMAP.md)、[docs/DEVELOPMENT_BLUEPRINT.md](docs/DEVELOPMENT_BLUEPRINT.md) |
-| 前端、New Tab、App 或 Liquid Glass | [docs/FRONTEND_GUIDE.md](docs/FRONTEND_GUIDE.md)、[docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)、[docs/APP_CONTRACT.md](docs/APP_CONTRACT.md) |
+| UI 方案、视觉、交互 | [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)；验收读 [docs/QUALITY.md](docs/QUALITY.md) 第 5 节 |
+| 前端、New Tab、App 实现 | [docs/FRONTEND_GUIDE.md](docs/FRONTEND_GUIDE.md)、[docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)；涉及注册/启动/Intent/权限/生命周期再读 [docs/APP_CONTRACT.md](docs/APP_CONTRACT.md) |
 | 任意产品源码改动 | [docs/AI_RULES.md](docs/AI_RULES.md)、[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)、[docs/QUALITY.md](docs/QUALITY.md) |
 | 任务、Worker 或引擎适配 | [docs/ENGINE_CONTRACT.md](docs/ENGINE_CONTRACT.md)、[docs/RISK_REGISTER.md](docs/RISK_REGISTER.md) |
-| 文件、浏览器、扩展或权限 | [SECURITY.md](SECURITY.md)、相关 ADR；扩展另读架构中的权限边界 |
+| 文件/浏览器 API、扩展运行时或权限变更 | [SECURITY.md](SECURITY.md)、相关 ADR；扩展另读架构中的权限边界 |
 | 技术债、风险或阶段推进 | [docs/TECH_DEBT.md](docs/TECH_DEBT.md)、[docs/RISK_REGISTER.md](docs/RISK_REGISTER.md)、[docs/ROADMAP.md](docs/ROADMAP.md) |
 | 治理文档改动 | [docs/GOVERNANCE.md](docs/GOVERNANCE.md) |
 | 维护职责或长期决策 | [docs/MAINTAINERS.md](docs/MAINTAINERS.md)、[docs/ADR/README.md](docs/ADR/README.md) |
