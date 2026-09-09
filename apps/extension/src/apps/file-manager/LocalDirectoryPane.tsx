@@ -34,6 +34,7 @@ export function LocalDirectoryPane() {
   useEffect(() => { void fileWorkspacePort.restoreDirectory() }, [])
 
   const currentPath = history[history.length - 1] || '/'
+  const canManage = fileWorkspacePort.canManageDirectory()
   const load = useCallback(async (path = currentPath, push = false) => {
     if (fileWorkspacePort.getSnapshot().status !== 'ready') return
     const id = ++request.current
@@ -61,7 +62,8 @@ export function LocalDirectoryPane() {
 
   const chooseDirectory = useCallback(async () => {
     setError('')
-    await fileWorkspacePort.chooseDirectory()
+    try { await fileWorkspacePort.chooseDirectory() }
+    catch (reason) { setError(getErrorMessage(reason)) }
   }, [])
 
   const handleEmptyStateKeyDown = useCallback((event: KeyboardEvent<HTMLElement>) => {
@@ -101,18 +103,18 @@ export function LocalDirectoryPane() {
     return <section
       className={`fm-local-empty ${access.status === 'selecting' ? 'fm-local-empty--selecting' : ''}`}
       role="button"
-      tabIndex={access.status === 'selecting' ? -1 : 0}
-      aria-label={access.status === 'selecting' ? '正在打开系统目录选择器' : '选择本地目录并打开系统目录选择器'}
-      aria-disabled={access.status === 'selecting'}
+      tabIndex={access.status === 'selecting' || !canManage ? -1 : 0}
+      aria-label={access.status === 'selecting' ? '正在打开系统目录选择器' : canManage ? '选择本地目录并打开系统目录选择器' : '当前页面只显示目录投影'}
+      aria-disabled={access.status === 'selecting' || !canManage}
       aria-live="polite"
-      onClick={() => { if (access.status !== 'selecting') void chooseDirectory() }}
+      onClick={() => { if (access.status !== 'selecting' && canManage) void chooseDirectory() }}
       onKeyDown={handleEmptyStateKeyDown}
     >
       <div className="fm-local-empty__content">
         <div className="fm-local-empty__icon-surface"><FolderOpen className="fm-local-empty__icon" aria-hidden="true" /></div>
         <div className="fm-local-empty__copy">
           <h2>打开本地目录</h2>
-          <p>{access.message || '选择一个文件夹，开始浏览文件。'}</p>
+          <p>{error || access.message || '选择一个文件夹，开始浏览文件。'}</p>
         </div>
         <span className="fm-local-empty__action" aria-hidden="true">
           <span><strong>{access.status === 'selecting' ? '正在打开选择器' : '选择目录'}</strong><small>点击窗口任意位置</small></span><ArrowRight />
@@ -124,7 +126,7 @@ export function LocalDirectoryPane() {
 
   const allEntries = listing ? [...listing.directories, ...listing.files] : []
   const entries = directoryEntries(allEntries, query, sort)
-  const editable = access.writeAccess === 'granted'
+  const editable = canManage && access.writeAccess === 'granted'
   const busy = loading || writing
   return <section className="fm-local-browser" aria-label="已授权本地目录">
     <div className="fm-topbar fm-local-toolbar">
@@ -137,8 +139,8 @@ export function LocalDirectoryPane() {
         {history.slice(1).map((path, index) => <span key={path}><ChevronRight aria-hidden="true" /><button type="button" title={decodeURIComponent(path.split('/').at(-1) || '')} disabled={busy || path === currentPath} aria-current={path === currentPath ? 'location' : undefined} onClick={() => setHistory((items) => items.slice(0, index + 2))}>{decodeURIComponent(path.split('/').at(-1) || '')}</button></span>)}
       </nav>
       <div className="fm-local-toolbar__actions">
-        <button type="button" className="fm-action-btn fm-local-forget" title="移除保存的目录授权，不会删除本地文件" disabled={busy} onClick={() => { void fileWorkspacePort.forgetDirectory().catch((reason: unknown) => setError(getErrorMessage(reason))) }}>忘记此目录</button>
-        <button type="button" className="fm-local-change" onClick={() => void chooseDirectory()} disabled={busy}>更换目录</button>
+        <button type="button" className="fm-action-btn fm-local-forget" title={canManage ? '移除保存的目录授权，不会删除本地文件' : '当前页面只显示目录投影'} disabled={busy || !canManage} onClick={() => { void fileWorkspacePort.forgetDirectory().catch((reason: unknown) => setError(getErrorMessage(reason))) }}>忘记此目录</button>
+        <button type="button" className="fm-local-change" onClick={() => void chooseDirectory()} disabled={busy || !canManage}>更换目录</button>
         <button type="button" className="fm-action-btn fm-local-toolbar-action" title={editable ? '新建文件夹' : '请先在窗口顶部开启写入模式'} aria-label="新建文件夹" onClick={createFolder} disabled={busy || !editable}><FolderPlusIcon /><span>新建文件夹</span></button>
         <button type="button" className="fm-action-btn fm-local-toolbar-action" title={editable ? '新建 Markdown 文档' : '请先在窗口顶部开启写入模式'} aria-label="新建文档" onClick={createDocument} disabled={busy || !editable}><DocumentPlusIcon /><span>新建文档</span></button>
       </div>

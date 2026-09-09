@@ -92,7 +92,8 @@ function FileWorkspaceModeControl() {
   const [confirming, setConfirming] = useState(false)
   const [requesting, setRequesting] = useState(false)
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const writable = access.writeAccess === 'granted'
+  const canManage = fileWorkspacePort.canManageDirectory()
+  const writable = canManage && access.writeAccess === 'granted'
   const ready = access.status === 'ready'
 
   useLayoutEffect(() => {
@@ -116,10 +117,10 @@ function FileWorkspaceModeControl() {
     <button
       type="button"
       className={`mt-window-status mt-window-mode ${writable ? 'mt-window-mode--writable' : ''}`}
-      title={writable ? '点击后恢复只读模式；不会撤销浏览器已授予的目录权限。' : ready ? '点击后确认并请求浏览器写入授权。' : '请选择本地目录后再开启写入模式。'}
+      title={!canManage ? '当前页面只显示目录投影；请回到 Workspace owner 页面管理写入模式。' : writable ? '点击后恢复只读模式；不会撤销浏览器已授予的目录权限。' : ready ? '点击后确认并请求浏览器写入授权。' : '请选择本地目录后再开启写入模式。'}
       aria-label={writable ? '写入模式已开启，点击恢复只读模式' : '只读模式，点击开启写入模式'}
       aria-pressed={writable}
-      disabled={!ready || requesting}
+      disabled={!ready || !canManage || requesting}
       onClick={() => { if (writable) fileWorkspacePort.disableWriteAccess(); else setConfirming(true) }}
     >{writable ? '可写入' : '只读'}</button>
     <dialog ref={dialogRef} className="mt-write-confirm" aria-labelledby="write-confirm-title" onClose={() => setConfirming(false)} onClick={(event) => { if (event.target === event.currentTarget) setConfirming(false) }}>

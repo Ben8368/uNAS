@@ -85,6 +85,21 @@ test('File Manager requires an in-app confirmation before enabling write mode fo
     const directory = await root.getDirectoryHandle(probeDirectory)
     return (await (await directory.getFileHandle('notes.md')).getFile()).text()
   }, { probeDirectory })).toBe('# 新文档\n')
+  // A second New Tab is a projection-only client: it can read through the
+  // owner, but cannot acquire a second handle or mutate the directory.
+  const client = await extension.context.newPage()
+  await client.goto(url)
+  await client.locator('.app-icon--file-manager').click()
+  const clientApp = client.locator('[data-app-id="file-manager"]')
+  await expect(clientApp.getByLabel('directory-proof.txt，文件条目')).toBeVisible()
+  await expect(clientApp.getByLabel('notes.md，文件条目')).toBeVisible()
+  await expect(client.getByRole('button', { name: '只读模式，点击开启写入模式' })).toBeDisabled()
+  await expect(clientApp.getByRole('button', { name: '新建文件夹' })).toBeDisabled()
+  await expect(clientApp.getByRole('button', { name: '新建文档' })).toBeDisabled()
+  await expect(clientApp.getByRole('button', { name: '更换目录', exact: true })).toBeDisabled()
+  await expect(clientApp.getByRole('button', { name: '忘记此目录', exact: true })).toBeDisabled()
+  await clientApp.getByRole('button', { name: '刷新' }).click()
+  await expect(clientApp.getByLabel('notes.md，文件条目')).toBeVisible()
   const screenshotPath = testInfo.outputPath('directory-write-layout.png')
   await first.screenshot({ path: screenshotPath, animations: 'disabled' })
   await testInfo.attach('directory-write-layout', { path: screenshotPath, contentType: 'image/png' })
@@ -116,6 +131,9 @@ test('File Manager requires an in-app confirmation before enabling write mode fo
   await expect(firstApp.getByRole('status')).toContainText('继续使用已有目录授权')
   await expect(firstApp.getByLabel('directory-proof.txt，文件条目')).toBeVisible()
 
+  // Release the owner before checking persisted-handle restoration in a new owner.
+  await client.close()
+  await first.close()
   const reopened = await extension.context.newPage()
   await reopened.goto(url)
   await reopened.locator('.app-icon--file-manager').click()
