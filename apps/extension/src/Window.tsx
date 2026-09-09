@@ -75,7 +75,7 @@ export function DesktopWindow({ windowId, title, width = 960, height = 640, x = 
 function ColorGamutStatus() {
   const gamut = useColorGamut()
   const label = getColorGamutLabel(gamut)
-  return <span className="mt-window-status mt-window-color-gamut" title={`当前显示色域：${label}`} aria-label={`当前显示色域：${label}`}>{label}</span>
+  return <span className="mt-window-status mt-window-color-gamut" title={`当前渲染色域：${label}`} aria-label={`当前渲染色域：${label}`}>{label}</span>
 }
 
 function WindowControlIcon({ kind }: { kind: 'minimize' | 'maximize' | 'restore' | 'close' }) {

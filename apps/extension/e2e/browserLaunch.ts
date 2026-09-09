@@ -9,7 +9,7 @@ export function extensionBrowserOptions(extensionPath: string): BrowserContextOp
   // service-worker loading; system Chrome is opt-in for target-browser checks.
   const browserChannel: 'chrome' | 'chromium' = requestedBrowser === 'chrome' ? 'chrome' : 'chromium'
   const requestedProfile = process.env.UNAS_E2E_COLOR_PROFILE
-  const colorProfile = requestedProfile && colorProfiles.has(requestedProfile) ? requestedProfile : undefined
+  const colorProfile = requestedProfile && colorProfiles.has(requestedProfile) ? requestedProfile : 'srgb'
 
   return {
     channel: browserChannel,
@@ -19,7 +19,7 @@ export function extensionBrowserOptions(extensionPath: string): BrowserContextOp
       `--disable-extensions-except=${extensionPath}`,
       `--load-extension=${extensionPath}`,
       '--enable-unsafe-extension-debugging',
-      ...(colorProfile ? [`--force-color-profile=${colorProfile}`] : []),
+      `--force-color-profile=${colorProfile}`,
     ],
   }
 }

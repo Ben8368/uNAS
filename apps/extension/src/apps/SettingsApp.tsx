@@ -19,13 +19,7 @@ export function SettingsApp() {
               {WALLPAPERS.map((item, index) => <button key={item.name} type="button" aria-label={item.name} aria-pressed={state.wallpaper === index}
                 className={`settings-wallpaper ${state.wallpaper === index ? 'settings-wallpaper--active' : ''}`}
                 style={{ backgroundImage: item.gradientSrgb }} onClick={() => state.setWallpaper(index)}><span>{item.name}</span></button>)}
-            </div>
-          </section>
-          <section className="settings-card">
-            <h3>可读性与动态效果</h3>
-            {([
-              ['reduceMotion', '减少动态效果'], ['reduceTransparency', '减少透明度'], ['highContrast', '提高对比度'],
-            ] as const).map(([key, label]) => <label className="settings-toggle" key={key}><input type="checkbox" checked={state[key]} onChange={(event) => state.setAccessibility(key, event.target.checked)} />{label}</label>)}
+              </div>
           </section>
           <p role="status">{state.preferenceNotice}</p>
         </div>

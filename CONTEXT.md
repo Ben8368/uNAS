@@ -1,7 +1,7 @@
 # 当前状态
 
 > **最后确认：** 2026-09-09
-> **阶段：** Phase 2 / SP-02 File Workspace
+> **阶段：** Phase 2 / Image capability probe preparation
 > **产品代码：** React/Vite/WXT mock Desktop；确定性 scenario、Workspace owner、跨标签摘要和 HTTPS Link 已实现。SP-02 已接入受限的本地目录读取授权与显式写入模式：写入须经 App 二次确认和浏览器授权，可切只读，仅允许直接子项创建/删除；真实处理、导出、引擎和后端仍未接入。
 
 ## 当前决策
@@ -19,19 +19,19 @@
 
 1. FE-11 已迁移启动器 Dialog 与下载行 Popover；继续审查响应式容器和 UI 分片，打磨桌面、状态抽屉、响应式与键盘路径；不改变 mock/真实边界。
 2. 清理不再被 Demo 入口引用的旧 HTTP/本地服务 adapter，并保持前端基线、依赖与文档一致。
-3. 推进 [SP-02 File Workspace](benchmarks/sp-02/README.md)：解包扩展已验证 IndexedDB/OPFS 临时存储和目录授权 API 路径；继续人工验证原生选择器、真实目录撤销、配额压力与导出 fallback。真实处理与引擎仍须逐项验证后才能接入。
+3. 推进 Image 首个真实闭环探针：当前 G2-Core 主要阻断是 Image 首个真实闭环与保真边界；真实任务运行期间暂不验收，待首个可执行真实任务接入后再建立对应验收对象。
 
 ## 当前阻断与风险
 
-- G1 已由维护者确认验收：Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工走查与自动化证据已接受；关闭记录见 [2026-09 风险归档](docs/archive/risks/2026-09.md)。这不代表真实引擎、文件权限或 MV3 长生命周期已验证。
-- 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；G2-Core 仍受 RISK-003、RISK-004、RISK-005 阻断。
+- G1 已由维护者确认验收：Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工走查与自动化证据已接受；关闭记录见 [2026-09 风险归档](docs/archive/risks/2026-09.md)。当前本地解包 MV3 壳层和 File Workspace 授权/存储边界也已分别由 SP-01、SP-02 验收；这不代表真实引擎、真实文件处理、导出或真实任务生命周期已接入。
+- 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；G2-Core 当前主要受 RISK-005 阻断。Chrome Web Store 更新属于未来 Store Gate，不阻断当前本地插件。
 
 ## 最近验证
 
-- 2026-09-08：目录经受控 File Workspace port；初始只读 metadata，顶部“只读”经 App 确认才请求 `readwrite`，可点击“可写入”切回只读。仅可新建直接子文件夹/固定 Markdown、非递归删除；不覆盖同名项。见 [SP-02](benchmarks/sp-02/README.md)。测试用 OPFS 替身，原生选择器、撤销与配额由 RISK-004 跟踪。
+- 2026-09-09：维护者确认 [SP-02](benchmarks/sp-02/README.md) 文件人工验收通过：原生选择器、取消/拒绝、更换目录、权限撤销、刷新/重启恢复、写入二次确认、同名冲突、非递归删除、IndexedDB/OPFS 与清理均无问题。真实文件处理、导出和真实任务仍不在当前范围。
 
-- 2026-09-08：SP-02 已在 Chrome for Testing 解包扩展页验证 IndexedDB/OPFS 临时存储、目录读取授权、App 内写入确认与 `readwrite` 授权路径、句柄恢复、取消保留和忘记授权。证据：[SP-02](benchmarks/sp-02/README.md)；自动化目录用例使用隔离 OPFS handle 替身，不代表原生选择器、真实目录撤销、配额压力或导出能力。
-- 2026-09-09：审查黄灯已修复：`pnpm verify` 纳入 ESLint，依赖清单覆盖根与扩展 manifest；新增跨平台系统 Chrome E2E 入口并记录实际 channel。`pnpm verify`、串行 `pnpm test:e2e`（38/38）和 Web E2E（6/6）通过，方法见 [QUALITY](docs/QUALITY.md)。当前会话未完成系统 Chrome 启动，真实目录权限、撤销、配额和导出仍见 [SP-02](benchmarks/sp-02/README.md)。
+- 2026-09-09：SP-01 已由维护者确认 Chrome Stable 解包扩展自然休眠、唤醒、浏览器重启与 Reload/update 路径通过；详见 [SP-01](benchmarks/sp-01/README.md)。真实任务运行期间暂不验收，Chrome Web Store 更新暂不考虑。
+- 2026-09-09：审查黄灯已修复：`pnpm verify` 纳入 ESLint，依赖清单覆盖根与扩展 manifest；新增跨平台系统 Chrome E2E 入口并记录实际 channel。`pnpm verify`、串行 `pnpm test:e2e`（38/38）和 Web E2E（6/6）通过，方法见 [QUALITY](docs/QUALITY.md)。
 
 ## 按需入口
 
