@@ -158,6 +158,8 @@ export function DirectoryPickerDialog({
       setError('无效的文件夹名称')
       return
     }
+    // Windows directory names reject these characters, including C0 controls.
+    // eslint-disable-next-line no-control-regex
     if (/[<>:"/\\|?*\x00-\x1f]/.test(trimmed)) {
       setError('名称不能包含 \\ / : * ? " < > | 等字符')
       return

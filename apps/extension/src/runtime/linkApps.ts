@@ -18,6 +18,8 @@ export type LinkMutation =
   | { schemaVersion: 1; action: 'link-apps.mutate'; kind: 'remove'; original: LinkApp }
   | { schemaVersion: 1; action: 'link-apps.mutate'; kind: 'migrate'; links: LinkApp[] }
 export function validateLinkUrl(input: string): { url: string } | { error: string } {
+  // Reject whitespace and C0/DEL controls before URL parsing.
+  // eslint-disable-next-line no-control-regex
   if (input.length > 2048 || /[\u0000-\u0020\u007f]/.test(input)) return { error: '网址不能包含空格、控制字符或超过 2048 个字符。' }
   try {
     const url = new URL(input)

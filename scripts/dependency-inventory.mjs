@@ -3,9 +3,8 @@ import { readFile, readdir, writeFile, mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { createHash } from 'node:crypto'
 const root = resolve(import.meta.dirname, '..')
-const packageFile = resolve(root, 'apps/extension/package.json')
+const packageFiles = [resolve(root, 'package.json'), resolve(root, 'apps/extension/package.json')]
 const target = resolve(root, 'assets/dependency-inventory.json')
-const pkg = JSON.parse(await readFile(packageFile, 'utf8'))
 const records = new Map()
 async function visit(name, parent, scope) {
   const request = createRequire(parent)
@@ -17,7 +16,9 @@ async function visit(name, parent, scope) {
       try {
         const candidate = resolve(directory, 'package.json')
         if (JSON.parse(await readFile(candidate, 'utf8')).name === name) { manifest = candidate; break }
-      } catch {}
+      } catch {
+        // Keep walking parent directories when a candidate is absent or invalid.
+      }
       const next = dirname(directory)
       if (next === directory) throw new Error(`Cannot resolve package metadata for ${name}`)
       directory = next
@@ -34,8 +35,11 @@ async function visit(name, parent, scope) {
   records.set(key, { name: data.name, version: data.version, scope, declaredLicense: data.license ?? 'not-declared', licenseFiles, repository: typeof data.repository === 'object' ? data.repository.url : data.repository ?? null })
   if (scope === 'runtime-declared') for (const dependency of Object.keys(data.dependencies ?? {}).sort()) await visit(dependency, manifest, scope)
 }
-for (const name of Object.keys(pkg.dependencies).sort()) await visit(name, packageFile, 'runtime-declared')
-for (const name of Object.keys(pkg.devDependencies).sort()) await visit(name, packageFile, 'direct-build-test-tool')
+for (const packageFile of packageFiles) {
+  const pkg = JSON.parse(await readFile(packageFile, 'utf8'))
+  for (const name of Object.keys(pkg.dependencies ?? {}).sort()) await visit(name, packageFile, 'runtime-declared')
+  for (const name of Object.keys(pkg.devDependencies ?? {}).sort()) await visit(name, packageFile, 'direct-build-test-tool')
+}
 const result = JSON.stringify({
   schemaVersion: 1,
   scope: 'Installed declared runtime dependency graph plus direct build/test tools. Dev transitive dependencies and public distribution approval are not certified.',

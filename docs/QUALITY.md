@@ -124,6 +124,6 @@ docs governance → boundary/dependency → unit/contract → typecheck → buil
 
 视觉、真机、性能和商店材料可分命令，但对应 Gate 必须显式调用；未运行项写明原因，不能由构建通过代替。
 
-现有 Demo 的跨平台入口是 `pnpm verify`；它当前依次执行治理、Demo 边界、依赖清单、Vitest、TypeScript、Vite/WXT 构建和包体检查，尚未配置 lint 工具。MV3 独立浏览器回归是 `pnpm test:e2e`（先构建扩展），Web 回归是 `pnpm --dir apps/extension run test:e2e:web`。首次运行需要安装 Playwright Chromium。
+现有 Demo 的跨平台入口是 `pnpm verify`；它当前依次执行治理、ESLint、Demo 边界、依赖清单、Vitest、TypeScript、Vite/WXT 构建和包体检查。MV3 独立浏览器回归是 `pnpm test:e2e`（先构建扩展，默认使用 Playwright bundled Chromium），Web 回归是 `pnpm --dir apps/extension run test:e2e:web`。需要验证已安装的 Chrome Stable 时运行 `pnpm --dir apps/extension run test:e2e:chrome`；该命令使用 headless 系统 Chrome，P3 视觉验收使用 `pnpm test:e2e:p3`，后者要求 headed 系统 Chrome 和可用桌面会话。两者均在报告中记录实际 channel，不替代默认 Chromium 回归。首次运行默认 E2E 需要安装 Playwright Chromium；系统 Chrome 入口不自动安装或升级浏览器。E2E 报告附件记录实际 channel、版本、OS、色域、视口和证据类型；视口模拟不等于实际浏览器 200% 缩放或目标设备性能。
 
 GitHub Actions 在 `main` 的 push、PR 和手动触发中运行：治理检查；使用 Node 22、根 `packageManager` 声明的 pnpm 和 `pnpm install --frozen-lockfile` 的 `pnpm verify`；以及在完整验证通过后执行的 MV3/Web E2E。E2E 报告、截图和失败 trace 以 CI artifact 保留 14 天。E2E 的浏览器版本、环境、截图和失败 trace 必须与结果一起记录；视口模拟不等于实际浏览器 200% 缩放或目标设备性能。

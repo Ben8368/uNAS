@@ -5,7 +5,7 @@ import path from 'node:path'
 import { existsSync } from 'node:fs'
 import { extensionBrowserOptions } from './browserLaunch'
 
-test('browser restart preserves extension-local Link App configuration', async ({}, testInfo) => {
+test('browser restart preserves extension-local Link App configuration', async ({ browserName: _browserName }, testInfo) => {
   const extensionPath = path.resolve('.output/chrome-mv3')
   if (!existsSync(path.join(extensionPath, 'manifest.json'))) throw new Error('先运行 pnpm build:extension；E2E 必须加载真实 MV3 构建物。')
 

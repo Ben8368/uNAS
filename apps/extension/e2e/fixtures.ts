@@ -7,7 +7,7 @@ import { extensionBrowserEnvironment, extensionBrowserOptions } from './browserL
 
 type Extension = { context: BrowserContext; extensionId: string; errors: string[]; remoteRequests: string[] }
 export const test = base.extend<{ extension: Extension }>({
-  extension: async ({}, use, testInfo) => {
+  extension: async ({ browserName: _browserName }, use, testInfo) => {
     const extensionPath = path.resolve('.output/chrome-mv3')
     if (!existsSync(path.join(extensionPath, 'manifest.json'))) throw new Error('先运行 pnpm build:extension；E2E 必须加载真实 MV3 构建物。')
     const context = await chromium.launchPersistentContext('', extensionBrowserOptions(extensionPath))
@@ -32,7 +32,8 @@ export const test = base.extend<{ extension: Extension }>({
     const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker')
     const extensionId = new URL(worker.url()).hostname
     const environmentPath = testInfo.outputPath('environment.json')
-    writeFileSync(environmentPath, JSON.stringify({ browser: context.browser()?.version(), os: `${os.platform()} ${os.release()} ${os.arch()}`, extensionPath, extensionId, ...extensionBrowserEnvironment(), viewport: { width: 1440, height: 900 }, evidence: 'Unpacked MV3 in bundled Chromium; not installed system Chrome certification.' }, null, 2))
+    const environment = extensionBrowserEnvironment()
+    writeFileSync(environmentPath, JSON.stringify({ browser: context.browser()?.version(), os: `${os.platform()} ${os.release()} ${os.arch()}`, extensionPath, extensionId, ...environment, viewport: { width: 1440, height: 900 }, evidence: environment.channel === 'chrome' ? 'Unpacked MV3 in installed system Chrome; this is target-browser evidence, not a Chrome Web Store certification.' : 'Unpacked MV3 in Playwright bundled Chromium; not installed system Chrome certification.' }, null, 2))
     await testInfo.attach('environment', { path: environmentPath, contentType: 'application/json' })
     try { await use({ context, extensionId, errors, remoteRequests }) }
     finally {

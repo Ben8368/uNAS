@@ -18,8 +18,15 @@
     "check:demo": "node scripts/demo-boundary-check.mjs",
     "check:package": "node scripts/demo-package-check.mjs",
     "check:dependencies": "node scripts/dependency-inventory.mjs --check",
+    "lint": "eslint . --max-warnings 0",
     "test:e2e": "pnpm build:extension && pnpm --dir apps/extension run test:e2e",
     "test:e2e:p3": "pnpm build:extension && pnpm --dir apps/extension run test:e2e:p3",
-    "verify": "pnpm docs:governance:check && pnpm check:demo && pnpm check:dependencies && pnpm test:demo && pnpm typecheck:demo && pnpm build:demo && pnpm build:extension && pnpm check:package"
+    "verify": "pnpm docs:governance:check && pnpm lint && pnpm check:demo && pnpm check:dependencies && pnpm test:demo && pnpm typecheck:demo && pnpm build:demo && pnpm build:extension && pnpm check:package"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0",
+    "typescript-eslint": "^8.70.0"
   }
 }

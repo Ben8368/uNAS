@@ -1,6 +1,6 @@
 # 当前状态
 
-> **最后确认：** 2026-09-08
+> **最后确认：** 2026-09-09
 > **阶段：** Phase 2 / SP-02 File Workspace
 > **产品代码：** React/Vite/WXT mock Desktop；确定性 scenario、Workspace owner、跨标签摘要和 HTTPS Link 已实现。SP-02 已接入受限的本地目录读取授权与显式写入模式：写入须经 App 二次确认和浏览器授权，可切只读，仅允许直接子项创建/删除；真实处理、导出、引擎和后端仍未接入。
 
@@ -31,7 +31,7 @@
 - 2026-09-08：目录经受控 File Workspace port；初始只读 metadata，顶部“只读”经 App 确认才请求 `readwrite`，可点击“可写入”切回只读。仅可新建直接子文件夹/固定 Markdown、非递归删除；不覆盖同名项。见 [SP-02](benchmarks/sp-02/README.md)。测试用 OPFS 替身，原生选择器、撤销与配额由 RISK-004 跟踪。
 
 - 2026-09-08：SP-02 已在 Chrome for Testing 解包扩展页验证 IndexedDB/OPFS 临时存储、目录读取授权、App 内写入确认与 `readwrite` 授权路径、句柄恢复、取消保留和忘记授权。证据：[SP-02](benchmarks/sp-02/README.md)；自动化目录用例使用隔离 OPFS handle 替身，不代表原生选择器、真实目录撤销、配额压力或导出能力。
-- 2026-09-07：维护者确认 G1 已验收。Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工体验走查，以及 `pnpm verify`、30 项扩展 E2E、6 项 Web E2E 已通过；原生 `browser.*`、Promise 拒绝消息、`<dialog>`/Popover Escape 与 mock 生命周期回归已验证。清理旧 HTTP adapter 后，治理/边界/依赖/包体检查、92 项单测、类型检查、Vite/WXT 构建与 31 项扩展、6 项 Web E2E 再次通过；其中 SP-01 强制 Worker 终止/事件唤醒记录于 [SP-01](benchmarks/sp-01/README.md)。证据位于 `apps/extension/test-results/`；不代表真实引擎或完整生命周期探针完成。
+- 2026-09-09：审查黄灯已修复：`pnpm verify` 纳入 ESLint，依赖清单覆盖根与扩展 manifest；新增跨平台系统 Chrome E2E 入口并记录实际 channel。`pnpm verify`、串行 `pnpm test:e2e`（38/38）和 Web E2E（6/6）通过，方法见 [QUALITY](docs/QUALITY.md)。当前会话未完成系统 Chrome 启动，真实目录权限、撤销、配额和导出仍见 [SP-02](benchmarks/sp-02/README.md)。
 
 ## 按需入口
 

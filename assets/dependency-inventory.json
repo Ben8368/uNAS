@@ -3,6 +3,19 @@
   "scope": "Installed declared runtime dependency graph plus direct build/test tools. Dev transitive dependencies and public distribution approval are not certified.",
   "records": [
     {
+      "name": "@eslint/js",
+      "version": "10.0.1",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "3b6be04f862a077a4b97929dbf247299360824d9365f8603c263769303ace18c"
+        }
+      ],
+      "repository": "https://github.com/eslint/eslint.git"
+    },
+    {
       "name": "@playwright/test",
       "version": "1.62.1",
       "scope": "direct-build-test-tool",
@@ -70,6 +83,32 @@
         }
       ],
       "repository": "git+https://github.com/vitejs/vite-plugin-react.git"
+    },
+    {
+      "name": "eslint",
+      "version": "10.10.0",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "3b6be04f862a077a4b97929dbf247299360824d9365f8603c263769303ace18c"
+        }
+      ],
+      "repository": "eslint/eslint"
+    },
+    {
+      "name": "globals",
+      "version": "17.12.0",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "license",
+          "sha256": "5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3"
+        }
+      ],
+      "repository": "sindresorhus/globals"
     },
     {
       "name": "js-tokens",
@@ -161,6 +200,19 @@
         }
       ],
       "repository": "https://github.com/microsoft/TypeScript.git"
+    },
+    {
+      "name": "typescript-eslint",
+      "version": "8.70.0",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "2eb5c7a0bba9deb77a98c81bf6b9d3fb1c67118eebf968b6b1a787b3f8928ee0"
+        }
+      ],
+      "repository": "https://github.com/typescript-eslint/typescript-eslint.git"
     },
     {
       "name": "vite",

@@ -38,7 +38,7 @@ async function clickExtensionsControl(page: import('@playwright/test').Page, sel
   }, selector)
 }
 
-test('unpacked extension reload accepts a newer manifest and preserves Link Apps', async ({}, testInfo) => {
+test('unpacked extension reload accepts a newer manifest and preserves Link Apps', async ({ browserName: _browserName }, testInfo) => {
   const sourcePath = path.resolve('.output/chrome-mv3')
   if (!existsSync(path.join(sourcePath, 'manifest.json'))) throw new Error('先运行 pnpm build:extension；E2E 必须加载真实 MV3 构建物。')
 
