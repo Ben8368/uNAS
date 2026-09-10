@@ -1,5 +1,7 @@
 import type { AuthorizedDirectoryListing, FileEntry, FileWorkspaceAccessSnapshot } from '#contracts'
 import type { ResourceGrant } from '#contracts'
+import { ZIP_EXTRACTION_LIMITS } from 'unas-src/archive/zipSafety'
+import { prepareZipExtraction, type PreparedArchiveEntry } from './zipExtraction'
 
 const DATABASE_NAME = 'unas-file-workspace-v1'
 const STORE_NAME = 'directory-grants'
@@ -31,6 +33,7 @@ let active: StoredDirectoryGrant | undefined
 let routes = new Map<string, Route>()
 let snapshot: FileWorkspaceAccessSnapshot = { status: 'idle' }
 let restoring: Promise<FileWorkspaceAccessSnapshot> | undefined
+let activeExtraction: { cancel: () => void } | undefined
 const listeners = new Set<() => void>()
 
 function notify() {
@@ -157,15 +160,18 @@ function validEntryName(value: string) {
   return name
 }
 
+function entryMissing(error: unknown) {
+  return error instanceof DOMException && ['NotFoundError', 'TypeMismatchError'].includes(error.name)
+}
+
 async function ensureEntryAbsent(directory: FsaDirectoryHandle, name: string) {
-  const absentForKind = (error: unknown) => error instanceof DOMException && ['NotFoundError', 'TypeMismatchError'].includes(error.name)
   const fileExists = await directory.getFileHandle(name).then(() => true, (error) => {
-    if (absentForKind(error)) return false
+    if (entryMissing(error)) return false
     throw error
   })
   if (fileExists) throw new Error(`“${name}”已存在，未覆盖现有文件。`)
   const directoryExists = await directory.getDirectoryHandle(name).then(() => true, (error) => {
-    if (absentForKind(error)) return false
+    if (entryMissing(error)) return false
     throw error
   })
   if (directoryExists) throw new Error(`“${name}”已存在，未覆盖现有文件夹。`)
@@ -174,6 +180,77 @@ async function ensureEntryAbsent(directory: FsaDirectoryHandle, name: string) {
 function extensionOf(name: string) {
   const index = name.lastIndexOf('.')
   return index > 0 ? name.slice(index + 1).toLowerCase() : undefined
+}
+
+async function readDirectFile(directory: FsaDirectoryHandle, requestedName: string) {
+  const name = validEntryName(requestedName)
+  const handle = await directory.getFileHandle(name)
+  return { name, file: await handle.getFile() }
+}
+
+async function hasDirectEntry(directory: FsaDirectoryHandle, name: string) {
+  const fileExists = await directory.getFileHandle(name).then(() => true, (error) => {
+    if (entryMissing(error)) return false
+    throw error
+  })
+  if (fileExists) return true
+  return await directory.getDirectoryHandle(name).then(() => true, (error) => {
+    if (entryMissing(error)) return false
+    throw error
+  })
+}
+
+async function nextExtractionDirectoryName(directory: FsaDirectoryHandle, sourceName: string) {
+  const base = sourceName.slice(0, -4).trim() || 'archive'
+  for (let index = 0; index < 100; index += 1) {
+    const suffix = index === 0 ? '（解压）' : `（解压 ${index + 1}）`
+    const candidate = validEntryName(`${base}${suffix}`)
+    if (!await hasDirectEntry(directory, candidate)) return candidate
+  }
+  throw new Error('无法创建解压目录：同名目录过多。')
+}
+
+async function outputDirectoryFor(root: FsaDirectoryHandle, segments: string[]) {
+  let current = root
+  for (const segment of segments) current = await current.getDirectoryHandle(segment, { create: true })
+  return current
+}
+
+async function commitPreparedArchive(directory: FsaDirectoryHandle, outputName: string, prepared: readonly PreparedArchiveEntry[]) {
+  const output = await directory.getDirectoryHandle(outputName, { create: true })
+  let filesWritten = 0
+  try {
+    for (const entry of prepared) {
+      const parts = entry.path.split('/')
+      if (entry.type === 'directory') {
+        await outputDirectoryFor(output, parts)
+        continue
+      }
+      const parent = await outputDirectoryFor(output, parts.slice(0, -1))
+      const name = parts.at(-1)
+      if (!name) throw new Error('ZIP 输出路径为空。')
+      await ensureEntryAbsent(parent, name)
+      const handle = await parent.getFileHandle(name, { create: true })
+      const writable = await handle.createWritable()
+      try {
+        await writable.write(entry.data)
+        await writable.close()
+        filesWritten += 1
+      } catch (error) {
+        await writable.abort?.()
+        throw error
+      }
+    }
+  } catch {
+    throw new Error(`解压结果写入失败；“${outputName}”可能包含 ${filesWritten} 个已写入文件，未将任务标记为成功。`)
+  }
+  return { directoryName: outputName, filesWritten }
+}
+
+async function looksLikeZip(file: File) {
+  if (file.size < 4 || file.size > ZIP_EXTRACTION_LIMITS.maxInputBytes) return false
+  const bytes = new Uint8Array(await file.slice(0, 4).arrayBuffer())
+  return bytes[0] === 0x50 && bytes[1] === 0x4b && (bytes[2] === 0x03 || bytes[2] === 0x05 || bytes[2] === 0x07) && (bytes[3] === 0x04 || bytes[3] === 0x06 || bytes[3] === 0x08)
 }
 
 async function entryFor(name: string, handle: FsaHandle, route: Route): Promise<FileEntry> {
@@ -351,6 +428,33 @@ export async function createAuthorizedMarkdownFile(path: string, requestedName: 
     await writable.abort?.()
     throw error
   }
+}
+
+/** Extracts one verified ZIP into a new sibling directory; prepared data is never committed before CRC validation completes. */
+export async function extractAuthorizedZip(path: string, requestedName: string) {
+  await requireWritableDirectory()
+  if (activeExtraction) throw new Error('已有 ZIP 解压正在进行，请先完成或取消。')
+  const route = routeFor(path)
+  const { name, file } = await readDirectFile(route.handle, requestedName)
+  if (!name.toLowerCase().endsWith('.zip')) throw new Error('当前仅支持 ZIP 文件。')
+  if (file.size > ZIP_EXTRACTION_LIMITS.maxInputBytes) throw new Error('ZIP 输入超过当前 50 MiB 上限。')
+  if (!await looksLikeZip(file)) throw new Error('所选文件不是可识别的 ZIP；不会只依据扩展名解压。')
+
+  const run = prepareZipExtraction(file)
+  activeExtraction = run
+  try {
+    const prepared = await run.result
+    activeExtraction = undefined
+    const outputName = await nextExtractionDirectoryName(route.handle, name)
+    return await commitPreparedArchive(route.handle, outputName, prepared)
+  } finally {
+    if (activeExtraction === run) activeExtraction = undefined
+  }
+}
+
+/** Cancellation is available only before commit, so it cannot leave a half-written output marked as cancelled. */
+export function cancelAuthorizedZipExtraction() {
+  activeExtraction?.cancel()
 }
 
 /** Deletes a single, explicitly named direct child; directories are never recursively deleted. */

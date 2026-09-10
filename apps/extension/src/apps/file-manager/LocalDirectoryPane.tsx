@@ -3,7 +3,7 @@ import { ArrowRight, FolderOpen, Home, ShieldCheck, Search, X, ChevronRight } fr
 
 import { fileWorkspacePort } from 'unas-src/api/fileWorkspace'
 import type { AuthorizedDirectoryListing } from '#contracts'
-import { BackIcon, DocumentPlusIcon, FileIcon, FolderIcon, FolderPlusIcon, RefreshIcon, TrashIcon } from 'unas-src/apps/file-manager/controls'
+import { BackIcon, DocumentPlusIcon, ExtractIcon, FileIcon, FolderIcon, FolderPlusIcon, RefreshIcon, TrashIcon } from 'unas-src/apps/file-manager/controls'
 import { formatDate, formatSize } from 'unas-src/apps/file-manager/utils'
 import { getErrorMessage } from 'unas-src/utils'
 import { directoryEntries, type DirectorySort } from './directoryView'
@@ -13,7 +13,9 @@ export function LocalDirectoryPane() {
   const [listing, setListing] = useState<AuthorizedDirectoryListing | null>(null)
   const [loading, setLoading] = useState(false)
   const [writing, setWriting] = useState(false)
+  const [extracting, setExtracting] = useState(false)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const [history, setHistory] = useState<string[]>(['/'])
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<DirectorySort>('name')
@@ -99,6 +101,27 @@ export function LocalDirectoryPane() {
     }
   }, [currentPath, write])
 
+  const extractZip = useCallback((name: string) => {
+    if (!window.confirm(`将“${name}”解压到当前目录中新建的文件夹。仅处理受限 ZIP，且不会覆盖已有项目。是否继续？`)) return
+    setWriting(true)
+    setExtracting(true)
+    setError('')
+    setNotice('正在在隔离 Worker 中验证并解压 ZIP；完成校验前不会写入目录。')
+    void (async () => {
+      try {
+        const result = await fileWorkspacePort.extractZip(currentPath, name)
+        setNotice(`已解压 ${result.filesWritten} 个文件到“${result.directoryName}”。`)
+        await load()
+      } catch (reason) {
+        setNotice('')
+        setError(getErrorMessage(reason))
+      } finally {
+        setExtracting(false)
+        setWriting(false)
+      }
+    })()
+  }, [currentPath, load])
+
   if (access.status !== 'ready') {
     return <section
       className={`fm-local-empty ${access.status === 'selecting' ? 'fm-local-empty--selecting' : ''}`}
@@ -143,13 +166,14 @@ export function LocalDirectoryPane() {
         <button type="button" className="fm-local-change" onClick={() => void chooseDirectory()} disabled={busy || !canManage}>更换目录</button>
         <button type="button" className="fm-action-btn fm-local-toolbar-action" title={editable ? '新建文件夹' : '请先在窗口顶部开启写入模式'} aria-label="新建文件夹" onClick={createFolder} disabled={busy || !editable}><FolderPlusIcon /><span>新建文件夹</span></button>
         <button type="button" className="fm-action-btn fm-local-toolbar-action" title={editable ? '新建 Markdown 文档' : '请先在窗口顶部开启写入模式'} aria-label="新建文档" onClick={createDocument} disabled={busy || !editable}><DocumentPlusIcon /><span>新建文档</span></button>
+        {extracting && <button type="button" className="fm-action-btn fm-local-toolbar-action" onClick={() => fileWorkspacePort.cancelZipExtraction()}><span>取消解压</span></button>}
       </div>
     </div>
     <div className="fm-local-commandbar">
       <label className="fm-local-search"><Search aria-hidden="true" /><input type="search" aria-label="搜索当前目录" placeholder="搜索当前目录" value={query} onChange={(event) => setQuery(event.target.value)} />{query && <button type="button" title="清除搜索" aria-label="清除搜索" onClick={() => setQuery('')}><X /></button>}</label>
       <select className="fm-local-sort" aria-label="排序方式" value={sort} onChange={(event) => setSort(event.target.value as DirectorySort)}><option value="name">名称 A–Z</option><option value="modified">最近修改</option><option value="size">大小由大到小</option></select>
     </div>
-    <p className="fm-local-notice" role="status">{access.message && `${access.message} `}仅显示当前目录的直接子项，不读取文件内容。</p>
+    <p className="fm-local-notice" role="status">{notice || `${access.message ? `${access.message} ` : ''}仅显示当前目录的直接子项；解压仅处理你明确选择的 ZIP。`}</p>
     {error && <p className="fm-local-error" role="alert">{error}</p>}
     <div className="fm-table" aria-busy={busy}>
       <div className="fm-head"><span>文件名</span><span>修改时间</span><span>大小</span><span>类型</span><span /></div>
@@ -163,7 +187,10 @@ export function LocalDirectoryPane() {
             <span>{entry.modified ? formatDate(entry.modified) : '-'}</span>
             <span>{entry.type === 'file' ? formatSize(entry.size) : '-'}</span>
             <span>{entry.type === 'directory' ? '文件夹' : entry.extension?.toUpperCase() || '文件'}</span>
-            <button type="button" className="fm-icon-btn fm-local-delete" title={editable ? `删除 ${entry.name}` : '请先在窗口顶部开启写入模式'} aria-label={`删除 ${entry.name}`} onClick={() => deleteEntry(entry.name, entry.type)} disabled={busy || !editable}><TrashIcon /></button>
+            <span className="fm-local-row-actions">
+              {entry.type === 'file' && entry.name.toLowerCase().endsWith('.zip') && <button type="button" className="fm-icon-btn fm-local-extract" title={editable ? `解压 ${entry.name}` : '请先在窗口顶部开启写入模式'} aria-label={`解压 ${entry.name}`} onClick={() => extractZip(entry.name)} disabled={busy || !editable}><ExtractIcon /></button>}
+              <button type="button" className="fm-icon-btn fm-local-delete" title={editable ? `删除 ${entry.name}` : '请先在窗口顶部开启写入模式'} aria-label={`删除 ${entry.name}`} onClick={() => deleteEntry(entry.name, entry.type)} disabled={busy || !editable}><TrashIcon /></button>
+            </span>
           </div>
         ))}
         {!loading && !error && entries.length === 0 && <div className="fm-empty">{query ? '没有匹配的项目' : '此目录为空'}</div>}

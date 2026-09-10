@@ -22,6 +22,7 @@ export const UploadIcon = () => <svg viewBox="0 0 24 24"><path d="M12 16V4" /><p
 export const FolderPlusIcon = () => <svg viewBox="0 0 24 24"><path d="M3 6h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><path d="M12 12v5M9.5 14.5h5" /></svg>
 export const DocumentPlusIcon = () => <svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v13a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z" /><path d="M14 3v5h4M12 12v5M9.5 14.5h5" /></svg>
 export const DownloadIcon = () => <svg viewBox="0 0 24 24"><path d="M12 4v12" /><path d="M7 11l5 5 5-5" /><path d="M4 19h16" /></svg>
+export const ExtractIcon = () => <svg viewBox="0 0 24 24"><path d="M6 4h12v6H6z" /><path d="M12 10v7" /><path d="M8.5 13.5 12 17l3.5-3.5" /><path d="M5 20h14" /></svg>
 export const TrashIcon = () => <svg viewBox="0 0 24 24"><path d="M4 6h16" /><path d="M9 6V4h6v2" /><path d="M7 6l1 14h8l1-14" /></svg>
 export const MoreIcon = () => <svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="18" cy="12" r="1.5" /></svg>
 export const CloseIcon = () => <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg>

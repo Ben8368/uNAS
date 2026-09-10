@@ -15,3 +15,11 @@
 测试使用独立、临时配置目录以及工具自带 Chromium，关闭后清理浏览器上下文。不会向第三方上传文件、Cookie 或测试轨迹；截图和失败 trace 留在被 Git 忽略的 `test-results` / `playwright-report`。
 
 按照 [Playwright 扩展测试说明](https://playwright.dev/docs/chrome-extensions) 使用随工具提供的 Chromium 加载扩展；该证据与用户安装的 Chrome 稳定版人工确认分开记录。
+
+## Archive runtime dependency
+
+`@zip.js/zip.js` 固定为 `2.8.60`，用于文件管理的受限 ZIP 解压 Worker。其 npm 元数据声明 BSD-3-Clause 许可证，上游仓库为 [gildas-lormeau/zip.js](https://github.com/gildas-lormeau/zip.js)，依赖身份、许可证文件哈希与锁定完整性由 `assets/dependency-inventory.json` 记录。
+
+- 用途：读取本地、已授权目录中的单个 ZIP，并在校验成功后写入新的同级目录；不上传文件或加载远程模块。
+- 边界：Worker 关闭 zip.js 的内部 Worker；当前构建的 `archive-worker.js` 为约 112 KiB，扩展总包约 582 KiB，且不含 WASM。它不是性能或通用 ZIP 支持承诺。
+- 替代：`fflate` 是可选的较小 JS 库，但没有在本轮引入，避免形成未验证的引擎 fallback 与第二套格式行为。

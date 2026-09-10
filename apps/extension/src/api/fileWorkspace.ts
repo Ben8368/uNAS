@@ -158,6 +158,8 @@ export const fileWorkspacePort = Object.freeze({
   subscribe: (listener: () => void) => { ensureChannel(); listeners.add(listener); return () => { listeners.delete(listener) } },
   createDirectory: async (path: string, name: string) => { if (!isOwner()) throw requiresOwner(); return await directoryAdapter.createAuthorizedDirectory(path, name) },
   createMarkdownFile: async (path: string, name: string) => { if (!isOwner()) throw requiresOwner(); return await directoryAdapter.createAuthorizedMarkdownFile(path, name) },
+  extractZip: async (path: string, name: string) => { if (!isOwner()) throw requiresOwner(); return await directoryAdapter.extractAuthorizedZip(path, name) },
+  cancelZipExtraction: () => { if (!isOwner()) throw requiresOwner(); return directoryAdapter.cancelAuthorizedZipExtraction() },
   deleteEntry: async (path: string, name: string) => { if (!isOwner()) throw requiresOwner(); return await directoryAdapter.deleteAuthorizedDirectoryEntry(path, name) },
   disableWriteAccess: () => { if (!isOwner()) throw requiresOwner(); return directoryAdapter.disableFileManagerDirectoryWriteAccess() },
 })

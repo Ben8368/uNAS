@@ -1,8 +1,8 @@
 # uNAS 前端 Demo
 
-这是 uNAS 的独立 React/Vite 前端演示。它保留桌面、应用窗口、文件管理、下载、转码和 PSD 等界面与静态素材，但所有交互数据都来自浏览器内置的 demo adapter。
+这是 uNAS 的独立 React/Vite 前端演示。桌面、下载、转码、PSD 与工具任务仍使用浏览器内置的 demo adapter；解包扩展中的文件管理另有一条受用户目录授权保护的真实 ZIP 解压路径。
 
-它不会连接、启动或调用任何后端 API、Worker、Electron 能力、yt-dlp、ffmpeg、Photoshop 或本机文件系统。界面中的任务、文件、下载、转码与系统指标均是 mock，不代表真实能力。
+它不会连接、启动或调用任何后端 API、Electron 能力、yt-dlp、ffmpeg 或 Photoshop。除已授权目录的受限 ZIP 解压外，界面中的任务、文件、下载、转码与系统指标均是 mock，不代表真实能力。Vite 页面成功也不代表 MV3 运行面已验收。
 
 ## 运行
 

@@ -32,6 +32,12 @@ for (const file of await filesIn(resolve(root, 'apps/extension/public'))) {
 }
 if (assetBytes > budgets.allPublicAssetsBytes) errors.push('public 素材总量超预算')
 const manifest = JSON.parse(await readFile(resolve(output, 'manifest.json'), 'utf8'))
+const archiveWorker = resolve(output, 'archive-worker.js')
+try {
+  await stat(archiveWorker)
+} catch {
+  errors.push('Archive ZIP Worker 未进入扩展包；文件管理不能引用未打包的 Worker。')
+}
 const allowedPermissions = new Set(['storage', 'downloads'])
 for (const field of ['host_permissions', 'optional_host_permissions', 'web_accessible_resources', 'content_scripts']) {
   if (manifest[field]?.length) errors.push(`Phase 1 不允许未经审查的 ${field}`)

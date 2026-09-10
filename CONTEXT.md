@@ -1,8 +1,8 @@
 # 当前状态
 
-> **最后确认：** 2026-09-09
-> **阶段：** Phase 2 / Image capability probe preparation
-> **产品代码：** React/Vite/WXT mock Desktop；确定性 scenario、Workspace owner、跨标签摘要和 HTTPS Link 已实现。SP-02 已接入受限的本地目录读取授权与显式写入模式：写入须经 App 二次确认和浏览器授权，可切只读，仅允许直接子项创建/删除；真实处理、导出、引擎和后端仍未接入。
+> **最后确认：** 2026-09-10
+> **阶段：** Phase 2 / Archive ZIP probe implementation and Image probe preparation
+> **产品代码：** React/Vite/WXT mock Desktop；scenario、Workspace owner、跨标签摘要和 HTTPS Link 已实现。SP-02 是受限目录授权；[SP-04](benchmarks/sp-04/README.md) 已实现 ZIP 解压切片，完整验收仍未完成。
 
 ## 当前决策
 
@@ -17,16 +17,18 @@
 
 ## 近期优先级
 
-1. FE-11 已迁移启动器 Dialog 与下载行 Popover；继续审查响应式容器和 UI 分片，打磨桌面、状态抽屉、响应式与键盘路径；不改变 mock/真实边界。
-2. 清理不再被 Demo 入口引用的旧 HTTP/本地服务 adapter，并保持前端基线、依赖与文档一致。
+1. 完成 [SP-04 Archive ZIP](benchmarks/sp-04/README.md) 真实验收：补齐负向夹具、目标 Chrome、取消/页面关闭与资源测量；在 RISK-007 关闭前不扩大承诺。
+2. FE-11 已迁移启动器 Dialog 与下载行 Popover；继续审查响应式容器和 UI 分片，打磨桌面、状态抽屉、响应式与键盘路径；不改变其余 mock/真实边界。
 3. 推进 Image 首个真实闭环探针：当前 G2-Core 主要阻断是 Image 首个真实闭环与保真边界；真实任务运行期间暂不验收，待首个可执行真实任务接入后再建立对应验收对象。
 
 ## 当前阻断与风险
 
-- G1 已由维护者确认验收：Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工走查与自动化证据已接受；关闭记录见 [2026-09 风险归档](docs/archive/risks/2026-09.md)。当前本地解包 MV3 壳层和 File Workspace 授权/存储边界也已分别由 SP-01、SP-02 验收；这不代表真实引擎、真实文件处理、导出或真实任务生命周期已接入。
+- G1 已由维护者确认验收：Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工走查与自动化证据已接受；关闭记录见 [2026-09 风险归档](docs/archive/risks/2026-09.md)。MV3 壳层和 File Workspace 边界已由 SP-01、SP-02 验收；[SP-04](benchmarks/sp-04/README.md) 的自动化正向路径不关闭 RISK-007。
 - 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；G2-Core 当前主要受 RISK-005 阻断。Chrome Web Store 更新属于未来 Store Gate，不阻断当前本地插件。
 
 ## 最近验证
+
+- 2026-09-10：[SP-04](benchmarks/sp-04/README.md) 受限 ZIP 解压的单元和解包 MV3 Playwright 正向 fixture 通过；目标 Chrome、负向夹具、取消/页面关闭和资源测量未运行，RISK-007 保持开放。
 
 - 2026-09-09：维护者确认 [SP-02](benchmarks/sp-02/README.md) 文件人工验收通过：原生选择器、取消/拒绝、更换目录、权限撤销、刷新/重启恢复、写入二次确认、同名冲突、非递归删除、IndexedDB/OPFS 与清理均无问题。真实文件处理、导出和真实任务仍不在当前范围。
 

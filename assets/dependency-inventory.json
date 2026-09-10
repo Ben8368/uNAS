@@ -85,6 +85,19 @@
       "repository": "git+https://github.com/vitejs/vite-plugin-react.git"
     },
     {
+      "name": "@zip.js/zip.js",
+      "version": "2.8.60",
+      "scope": "runtime-declared",
+      "declaredLicense": "BSD-3-Clause",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "1b7ebc8d7889ed25491484ab2b102370742ca6c0b26650a0c62cc2269b579b84"
+        }
+      ],
+      "repository": "git+https://github.com/gildas-lormeau/zip.js.git"
+    },
+    {
       "name": "eslint",
       "version": "10.10.0",
       "scope": "direct-build-test-tool",
