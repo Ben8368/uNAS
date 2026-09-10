@@ -42,8 +42,9 @@ User file / archive / media    不可信输入
 ## 权限
 
 - required permissions 只包含首发核心功能当下需要的最小集合。
-- 当前 required permission 仅为 `storage`：经 extension adapter 保存 Link App 的声明式配置；不保存文件、任务内容或浏览历史。
+- 当前 required permissions 为 `storage` 与 `downloads`：`storage` 保存 Link App 配置及 uNAS 自己发起的 download ID/URL 小型索引；`downloads` 仅用于提交、查询和取消用户在下载 App 中明确发起的直链下载。
 - optional permissions 也不得为未来预留；只在用户触发功能时解释并请求。
+- `downloads` 随下载 App 核心能力声明；扩展只在用户提交 HTTPS 直链文件后使用，不读取本机下载目录或文件内容。m3u8/mpd 播放清单和网页链接不走该路径；可执行文件仍由 Chrome 的安全检查和用户确认控制。
 - host permissions 默认不全域开放；网页资源导入优先使用 `activeTab` 或更窄的用户触发能力。
 - downloads、clipboard、contextMenus、offscreen、content script 等逐项记录用途、触发点、拒绝行为和商店披露。
 - 不绕过 DRM、付费墙、登录、CORS、浏览器警告或站点条款。
@@ -52,7 +53,7 @@ User file / archive / media    不可信输入
 
 - Service Worker 随时可能终止，不保存只存在内存的关键状态，不运行长计算。
 - New Tab 可以多实例；真实任务由单一 Workspace owner 管理，消息需验证 owner/lease。
-- Phase 1 同页 App 通过逻辑 mock Workspace 共享状态：仅同源 BroadcastChannel、版本与方法/参数白名单、会话/请求匹配、消息大小与并发上限。owner 失联后客户端停止操作，不自动重放写请求；除 Link App 配置所需的 `storage` 外，不新增 host、文件或后台常驻权限，见 ADR 0007。
+- 同页 App 通过逻辑 mock Workspace 共享任务状态：仅同源 BroadcastChannel、版本与方法/参数白名单、会话/请求匹配、消息大小与并发上限。Chrome 下载由扩展 adapter 调用浏览器本体管理；owner 失联后客户端停止操作，不自动重放写请求。
 - Workspace 关闭、崩溃、浏览器退出或扩展更新不能标记假成功；恢复能力必须由实测决定。
 - Offscreen Document 只用于官方允许且经探针证明必要的场景，不作为常驻应用逃生舱。
 

@@ -61,8 +61,8 @@ export function resetDemoScenario(id: DemoScenarioId): DemoSnapshot {
   if (!demoScenarios.some(s => s.id === id)) throw new Error('未知演示场景。')
   sequence = 0; state.scenarioId = id; state.step = 0; state.revision = 0
   userJobIds.clear()
-  state.jobs = [makeJob('media.transcode', '模拟品牌片结果 · 无真实输出', 'succeeded', 100, 'demo-transcode-001'), makeJob('download.video', '模拟产品发布会回放', 'running', 68, 'demo-download-001')]
-  state.tasks = [{ executionSource: 'mock', id: 'demo-download-001', task_id: 'demo-download-001', title: '模拟产品发布会回放', source_url: 'https://example.com/product-launch', status: 'running', progress: 68, stage: '模拟下载进度', created_at: now(), updated_at: now(), started_at: now(), completed_at: null, params: { url: 'https://example.com/product-launch', urls: ['https://example.com/product-launch'], mode: 'video' }, output_files: [], error: null }]
+  state.jobs = [makeJob('media.transcode', '模拟品牌片结果 · 无真实输出', 'succeeded', 100, 'demo-transcode-001')]
+  state.tasks = []
   state.assets = [
     { id: 'demo-asset-001', executionSource: 'mock', kind: 'video', name: 'brand-film-h265.mp4（模拟）', path: '/Workspace/Exports/brand-film-h265.mp4', size: 84_200_000, mimeType: 'video/mp4', createdAt: isoNow(), updatedAt: isoNow() },
     { id: 'demo-asset-002', executionSource: 'mock', kind: 'audio', name: 'brand-track.mp3（模拟）', path: '/Workspace/Downloads/brand-track.mp3', size: 7_600_000, mimeType: 'audio/mpeg', createdAt: isoNow(), updatedAt: isoNow() },
@@ -71,6 +71,11 @@ export function resetDemoScenario(id: DemoScenarioId): DemoSnapshot {
   state.workOrder = createWorkOrder(); state.logs = []; filesystem.reset(id === 'empty-state')
   if (id === 'empty-state') { state.jobs = []; state.tasks = []; state.assets = [] }
   log('NOTICE', '已重置演示场景', `${id}：静态模拟数据，不读取或处理用户文件。`)
+  if (['task-running', 'task-failed', 'task-cancelled', 'owner-lost'].includes(id)) {
+    const download = makeJob('download.video', '模拟产品发布会回放', 'running', 68, 'demo-download-001')
+    state.jobs.push(download)
+    state.tasks = [{ executionSource: 'mock', id: download.id, task_id: download.id, title: download.title, source_url: 'https://example.com/product-launch', status: 'running', progress: 68, stage: '模拟下载进度', created_at: now(), updated_at: now(), started_at: now(), completed_at: null, params: { url: 'https://example.com/product-launch', urls: ['https://example.com/product-launch'], mode: 'video' }, output_files: [], error: null }]
+  }
   if (id === 'task-failed') transition('demo-download-001', 'failed', 'MOCK_TASK_FAILED：固定失败场景，可重置重放。')
   if (id === 'task-cancelled') transition('demo-download-001', 'canceled')
   if (id === 'owner-lost') transition('demo-download-001', 'failed', 'OWNER_LOST：演示工作区已关闭，任务中断，未生成真实输出。')

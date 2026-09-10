@@ -7,6 +7,11 @@ type ExtensionApi = {
     onMessage: { addListener(listener: (message: unknown, sender: ExtensionMessageSender) => Promise<unknown>): void }
   }
   tabs?: { create(options: { url: string; active?: boolean }): Promise<unknown> }
+  downloads?: {
+    download(options: { url: string; conflictAction?: 'uniquify' | 'overwrite' | 'prompt'; saveAs?: boolean }): Promise<number>
+    search(query: { id: number }): Promise<Array<{ id: number; state: 'in_progress' | 'complete' | 'interrupted'; bytesReceived: number; totalBytes: number; filename?: string; error?: string }>>
+    cancel(downloadId: number): Promise<void>
+  }
   storage?: {
     local: {
       get(key: string): Promise<Record<string, unknown>>

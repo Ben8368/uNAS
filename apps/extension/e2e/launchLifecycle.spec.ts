@@ -3,7 +3,7 @@ import { test, expect, workspace, revealRuntimePanel } from './fixtures'
 
 test('browsing default fixtures does not block closing a Workspace', async ({ extension }) => {
   const page = await workspace(extension, 'fetcher')
-  await page.locator('.dl-row').first().click()
+  await expect(page.locator('.dl-row')).toHaveCount(0)
   const dialogs: string[] = []
   page.on('dialog', async dialog => { dialogs.push(dialog.type()); await dialog.dismiss() })
   await page.close({ runBeforeUnload: true })
@@ -15,8 +15,8 @@ test('user tasks protect the page until canceled, without canceling on dismissed
   const page = await workspace(extension, 'fetcher')
   const app = page.locator('[data-app-id="fetcher"]')
   await app.getByRole('button', { name: '添加任务', exact: true }).click()
-  await app.getByLabel('模拟来源链接').fill('https://example.com/close-protection')
-  await app.getByRole('button', { name: '添加模拟任务', exact: true }).click()
+  await app.getByLabel('下载链接').fill('https://example.com/close-protection')
+  await app.getByRole('button', { name: '提交下载任务', exact: true }).click()
   const row = app.locator('.dl-row').filter({ hasText: 'example.com' })
   await expect(row).toContainText('12.0%')
   const dialogs: string[] = []
@@ -34,7 +34,7 @@ test('user tasks protect the page until canceled, without canceling on dismissed
   expect(extension.errors).toEqual([])
 })
 
-test('cold download launch never paints a false empty list or changing bounds', async ({ extension }, testInfo) => {
+test('cold download launch paints the genuine empty list without changing bounds', async ({ extension }, testInfo) => {
   const page = await extension.context.newPage()
   await page.goto(`chrome-extension://${extension.extensionId}/workspace.html`)
   await expect(page.locator('.app-icon--fetcher')).toBeVisible()
@@ -52,7 +52,7 @@ test('cold download launch never paints a false empty list or changing bounds', 
     requestAnimationFrame(sample)
   })
   await page.locator('.app-icon--fetcher').click()
-  await expect(page.locator('.dl-row')).toContainText('模拟产品发布会回放')
+  await expect(page.locator('.dl-empty')).toBeVisible()
   const frames = await page.evaluate(async () => {
     await new Promise(requestAnimationFrame)
     const state = window as unknown as { stopLaunchFrames: boolean; launchFrames: { loading: boolean; empty: boolean; bounds: number[] }[] }
@@ -60,7 +60,7 @@ test('cold download launch never paints a false empty list or changing bounds', 
     return state.launchFrames
   })
   expect(frames.length).toBeGreaterThan(0)
-  expect(frames.every(frame => !frame.empty)).toBe(true)
+  expect(frames.some(frame => frame.empty)).toBe(true)
   expect(new Set(frames.map(frame => JSON.stringify(frame.bounds))).size).toBe(1)
   writeFileSync(testInfo.outputPath('launch-frames.json'), JSON.stringify(frames, null, 2))
   await page.screenshot({ path: testInfo.outputPath('download-first-render.png') })
@@ -71,8 +71,8 @@ test('completed user work removes the leave guard', async ({ extension }) => {
   const page = await workspace(extension, 'fetcher')
   const app = page.locator('[data-app-id="fetcher"]')
   await app.getByRole('button', { name: '添加任务', exact: true }).click()
-  await app.getByLabel('模拟来源链接').fill('https://example.com/completion')
-  await app.getByRole('button', { name: '添加模拟任务', exact: true }).click()
+  await app.getByLabel('下载链接').fill('https://example.com/completion')
+  await app.getByRole('button', { name: '提交下载任务', exact: true }).click()
   const row = app.locator('.dl-row').filter({ hasText: 'example.com' })
   await expect(row).toContainText('12.0%')
   await revealRuntimePanel(page)

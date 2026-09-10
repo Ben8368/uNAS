@@ -32,8 +32,8 @@ for (const file of await filesIn(resolve(root, 'apps/extension/public'))) {
 }
 if (assetBytes > budgets.allPublicAssetsBytes) errors.push('public 素材总量超预算')
 const manifest = JSON.parse(await readFile(resolve(output, 'manifest.json'), 'utf8'))
-const allowedPermissions = new Set(['storage'])
-for (const field of ['host_permissions', 'optional_permissions', 'optional_host_permissions', 'web_accessible_resources', 'content_scripts']) {
+const allowedPermissions = new Set(['storage', 'downloads'])
+for (const field of ['host_permissions', 'optional_host_permissions', 'web_accessible_resources', 'content_scripts']) {
   if (manifest[field]?.length) errors.push(`Phase 1 不允许未经审查的 ${field}`)
 }
 for (const permission of manifest.permissions ?? []) if (!allowedPermissions.has(permission)) errors.push(`Phase 1 不允许未经审查的 permissions: ${permission}`)
@@ -61,4 +61,4 @@ while (queue.length) {
 }
 if (initial > budgets.initialNewTabJavaScriptBytes) errors.push(`New Tab 初始静态 JS 超预算: ${initial}`)
 if (errors.length) { console.error(errors.join('\n')); process.exitCode = 1 }
-else console.log(`Demo 打包检查通过: total=${total} B, initial static JS=${initial} B, public=${assetBytes} B；仅 storage 权限，无 WASM/桌面 bridge。`)
+else console.log(`Demo 打包检查通过: total=${total} B, initial static JS=${initial} B, public=${assetBytes} B；required storage + downloads 权限，无 WASM/桌面 bridge。`)

@@ -60,7 +60,7 @@ export function DesktopWindow({ windowId, title, width = 960, height = 640, x = 
         onDoubleClick={(event) => { if (!(event.target as HTMLElement).closest('button')) onMaximize(windowId) }}>
         <div className="mt-window-brand"><img src={getAppIcon(appType ?? '')} alt="" /><strong>{title}</strong></div>
         <div className="mt-window-controls">
-          {fileWorkspace ? <FileWorkspaceModeControl /> : appType === 'settings' ? <ColorGamutStatus /> : <span className="mt-window-status" title="executionSource: mock；不读取真实文件或执行转换">模拟</span>}
+          {fileWorkspace ? <FileWorkspaceModeControl /> : appType === 'settings' ? <ColorGamutStatus /> : <BrowserNameStatus />}
           <button type="button" className="mt-window-btn" aria-label={`最小化${title}`} title="最小化" onClick={() => onMinimize(windowId)}><WindowControlIcon kind="minimize" /></button>
           <button type="button" className="mt-window-btn" aria-label={`${isMaximized ? '还原' : '最大化'}${title}`} title={isMaximized ? '还原' : '最大化'} onClick={() => onMaximize(windowId)}><WindowControlIcon kind={isMaximized ? 'restore' : 'maximize'} /></button>
           <button type="button" className="mt-window-btn" aria-label={`关闭${title}`} title="关闭" onClick={() => onClose(windowId)}><WindowControlIcon kind="close" /></button>
@@ -76,6 +76,22 @@ function ColorGamutStatus() {
   const gamut = useColorGamut()
   const label = getColorGamutLabel(gamut)
   return <span className="mt-window-status mt-window-color-gamut" title={`当前渲染色域：${label}`} aria-label={`当前渲染色域：${label}`}>{label}</span>
+}
+
+function BrowserNameStatus() {
+  const browserName = getBrowserName()
+  return <span className="mt-window-status" title={`当前运行浏览器：${browserName}`} aria-label={`当前运行浏览器：${browserName}`}>{browserName}</span>
+}
+
+function getBrowserName() {
+  if (typeof navigator === 'undefined') return '浏览器'
+  const userAgent = navigator.userAgent
+  if (/Edg\//.test(userAgent)) return 'Edge'
+  if (/OPR\//.test(userAgent)) return 'Opera'
+  if (/Firefox\//.test(userAgent)) return 'Firefox'
+  if (/Chrome\//.test(userAgent)) return 'Chrome'
+  if (/Safari\//.test(userAgent)) return 'Safari'
+  return '浏览器'
 }
 
 function WindowControlIcon({ kind }: { kind: 'minimize' | 'maximize' | 'restore' | 'close' }) {

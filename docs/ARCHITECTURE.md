@@ -168,6 +168,7 @@ OpenIntent
 
 - Image/ZIP/PDF/Media 各自有独立 adapter 和能力 Gate。
 - WebCodecs 只提供编解码原语，demux/mux、时间戳、profile 和音视频同步需单独验证。
+- 浏览器下载 adapter 只负责把可直接下载的 HTTPS 文件交给 Chrome downloads API；HLS/DASH 分片抓取、合并和音视频 mux 属于 Media 模块，不由浏览器下载 API 完成。
 - ffmpeg.wasm 是兼容路径，不等同原生 FFmpeg；只随扩展固定打包，不从 CDN 执行。
 - 多线程、SharedArrayBuffer、cross-origin isolation、扩展 CSP 和内存上限由真机探针决定。
 - 长视频、高分辨率、特殊 codec 和复杂滤镜在无证据时为计划外或实验性。

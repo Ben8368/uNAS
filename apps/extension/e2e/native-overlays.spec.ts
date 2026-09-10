@@ -13,7 +13,10 @@ test('native dialog and Popover preserve launcher and task-menu semantics', asyn
 
   await page.locator('.app-icon--fetcher').click()
   const downloader = page.locator('[data-app-id="fetcher"]')
-  const row = downloader.locator('.dl-row').filter({ hasText: '模拟产品发布会回放' })
+  await downloader.getByRole('button', { name: '添加任务', exact: true }).click()
+  await downloader.getByLabel('下载链接').fill('https://example.com/menu-test')
+  await downloader.getByRole('button', { name: '提交下载任务', exact: true }).click()
+  const row = downloader.locator('.dl-row').filter({ hasText: 'example.com' })
   const trigger = row.getByRole('button', { name: '更多操作' })
   await trigger.click()
 

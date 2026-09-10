@@ -1,4 +1,5 @@
 import { test, expect, workspace, openApp, closeApp, revealRuntimePanel } from './fixtures'
+import { createServer } from 'node:http'
 
 test('New Tab opens every built-in App locally and rejects legacy cross-tab launches', async ({ extension }) => {
   const page = await extension.context.newPage()
@@ -38,7 +39,7 @@ test('New Tab opens every built-in App locally and rejects legacy cross-tab laun
   const duplicate = await extension.context.newPage()
   await duplicate.goto(`chrome-extension://${extension.extensionId}/workspace.html#fetcher`)
   await expect(duplicate.locator('[data-app-id="fetcher"]')).toBeVisible()
-  await expect(duplicate.locator('.dl-row')).toContainText('模拟产品发布会回放')
+  await expect(duplicate.locator('.dl-row')).toHaveCount(0)
   await duplicate.close()
   expect(extension.remoteRequests).toEqual([])
   expect(extension.errors).toEqual([])
@@ -59,17 +60,18 @@ test('download cancellation persists after reopening the App', async ({ extensio
   const downloader = page.locator('[data-app-id="fetcher"]')
   const status = downloader.locator('.dl-status')
   const tableHeader = downloader.locator('.dl-head')
-  await expect(status).toHaveCSS('background-color', 'rgb(32, 34, 37)')
-  await expect(tableHeader).toHaveCSS('background-color', 'rgb(32, 34, 37)')
+  await expect(status).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  await expect(tableHeader).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
   await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'))
-  await expect(status).toHaveCSS('background-color', 'rgb(248, 249, 250)')
-  await expect(tableHeader).toHaveCSS('background-color', 'rgb(248, 249, 250)')
+  await expect(status).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  await expect(tableHeader).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
   await page.evaluate(() => document.documentElement.removeAttribute('data-theme'))
   await downloader.getByRole('button', { name: '添加任务', exact: true }).click()
-  await expect(downloader).toContainText('浏览器默认下载位置')
-  await expect(downloader).not.toContainText('选择模拟目录')
-  await downloader.getByLabel(/^(模拟来源链接|下载链接)$/).fill('https://example.com/mock-video\nhttps://example.org/mock-video')
-  await downloader.getByRole('button', { name: /^(添加模拟任务|确认添加)$/ }).click()
+  await expect(downloader.getByLabel('下载链接', { exact: true })).toBeVisible()
+  await expect(downloader).not.toContainText('下载目的地')
+  await expect(downloader).not.toContainText('Cookie')
+  await downloader.getByLabel('下载链接', { exact: true }).fill('https://example.com/mock-video\nhttps://example.org/mock-video')
+  await downloader.getByRole('button', { name: /^(提交下载任务|确认提交)$/ }).click()
   const row = downloader.locator('.dl-row').filter({ hasText: 'example.com' })
   await expect(row).toBeVisible()
   await row.click()
@@ -84,4 +86,31 @@ test('download cancellation persists after reopening the App', async ({ extensio
   await expect(reopened.locator('.dl-row').filter({ hasText: 'example.org' })).toContainText(/取消/)
   expect(extension.remoteRequests).toEqual([])
   expect(extension.errors).toEqual([])
+})
+
+test('direct media URL is downloaded by Chrome and restored after reopening the App', async ({ extension }) => {
+  const body = Buffer.alloc(32 * 1024, 7)
+  const server = createServer((_request, response) => {
+    response.writeHead(200, { 'Content-Type': 'video/mp4', 'Content-Length': body.length, 'Content-Disposition': 'attachment; filename="sample.mp4"' })
+    response.end(body)
+  })
+  await new Promise<void>((resolve, reject) => server.listen(0, '127.0.0.1', resolve).once('error', reject))
+  try {
+    const address = server.address()
+    if (!address || typeof address === 'string') throw new Error('Local download fixture did not bind a TCP port.')
+    const mediaUrl = `http://127.0.0.1:${address.port}/sample.mp4`
+    const page = await workspace(extension, 'fetcher')
+    const app = page.locator('[data-app-id="fetcher"]')
+    await app.getByRole('button', { name: '添加任务', exact: true }).click()
+    await app.getByLabel('下载链接').fill(mediaUrl)
+    await app.getByRole('button', { name: '提交下载任务', exact: true }).click()
+    const row = app.locator('.dl-row').filter({ hasText: 'sample.mp4' })
+    await expect(row).toContainText('100.0%', { timeout: 15_000 })
+    await closeApp(page, 'fetcher')
+    const reopened = await openApp(page, 'fetcher')
+    await expect(reopened.locator('.dl-row').filter({ hasText: 'sample.mp4' })).toContainText('100.0%')
+    expect(extension.errors).toEqual([])
+  } finally {
+    await new Promise<void>(resolve => server.close(() => resolve()))
+  }
 })

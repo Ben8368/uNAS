@@ -11,7 +11,7 @@ describe('deterministic mock scenario runtime', () => {
     expect(demoApi.getDemoSnapshot().hasPendingUserTasks).toBe(true)
     await demoApi.cancelJob(job.id)
     expect(demoApi.getDemoSnapshot().hasPendingUserTasks).toBe(false)
-    expect(demoApi.getDemoSnapshot().jobs.some(job => job.status === 'running')).toBe(true)
+    expect(demoApi.getDemoSnapshot().jobs.some(job => job.status === 'running')).toBe(false)
   })
   it('clears close protection on completion, failure, owner loss and reset', async () => {
     await demoApi.submitFetch({ url: 'https://example.com/a' })
@@ -88,12 +88,14 @@ describe('deterministic mock scenario runtime', () => {
     expect((await demoApi.getJob('demo-transcode-001')).job?.status).toBe('succeeded')
   })
   it('prevents deletion of active records and clears both projections after cancellation', async () => {
+    demoApi.resetDemoScenario('task-running')
     await expect(demoApi.deleteTaskRecord('demo-download-001')).rejects.toThrow('先取消')
     await demoApi.cancelTask('demo-download-001'); await demoApi.deleteTaskRecord('demo-download-001')
     expect((await demoApi.getJob('demo-download-001')).ok).toBe(false)
     expect((await demoApi.getWeeklyHistory()).tasks).toEqual([])
   })
   it('distinguishes workspace interruption from cancellation and keeps both projections consistent', () => {
+    demoApi.resetDemoScenario('task-running')
     const snapshot = demoApi.interruptDemoTasks()
     expect(snapshot.jobs.find(j => j.id === 'demo-download-001')).toMatchObject({ status: 'failed', errorMessage: expect.stringContaining('OWNER_LOST') })
     expect(snapshot.tasks[0]).toMatchObject({ status: 'failed', error: expect.stringContaining('OWNER_LOST') })

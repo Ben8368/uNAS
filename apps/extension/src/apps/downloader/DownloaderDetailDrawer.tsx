@@ -58,7 +58,7 @@ export function DownloaderDetailDrawer({
 
               <div className="dl-detail-card dl-detail-card--snapshots">
                 <div className="dl-detail-block">
-                  <label>模拟请求快照（executionSource: mock）</label>
+                  <label>{selectedTask.executionSource === 'real' ? '浏览器下载快照（executionSource: real）' : '模拟请求快照（executionSource: mock）'}</label>
                   <pre>{detailRequest || '-'}</pre>
                 </div>
 

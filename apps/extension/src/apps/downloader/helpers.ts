@@ -25,9 +25,10 @@ export function isTaskCancellable(task: Pick<DownloadTask, 'status'>): boolean {
   return task.status === 'pending' || task.status === 'running'
 }
 
-export function isTaskRetryable(task: Pick<DownloadTask, 'status' | 'params'>): boolean {
+export function isTaskRetryable(task: Pick<DownloadTask, 'status' | 'params' | 'executionSource'>): boolean {
   const urls = task.params?.urls
   return (
+    task.executionSource !== 'real' &&
     ['failed', 'cancelled', 'completed', 'partial'].includes(task.status) &&
     (typeof task.params?.url === 'string' || (Array.isArray(urls) && urls.some((value) => typeof value === 'string' && value.trim())))
   )
@@ -129,6 +130,13 @@ export function canWorkbenchAiSlice(task: DownloadTask): boolean {
 
 /** 列表主行展示用：优先模拟解析出的标题，未就绪时退回任务名（多为链接）。 */
 export function getTaskDisplayTitle(task: DownloadTask): string {
+  if (task.executionSource === 'real') {
+    try {
+      const url = new URL((task.params?.url as string) || task.source_url || task.name)
+      const fileName = url.pathname.split('/').filter(Boolean).pop()
+      return fileName ? decodeURIComponent(fileName) : url.hostname
+    } catch { /* Fall through to the stored task name. */ }
+  }
   const info = extractTaskInfo(task)
   const title = typeof info.title === 'string' ? info.title.trim() : ''
   if (title) return title
@@ -190,6 +198,7 @@ export function toMultilineString(value: unknown): string {
 
 export function createOptimisticTask(url: string, payload: Record<string, unknown>, result: Record<string, unknown>): DownloadTask {
   return {
+    executionSource: result.executionSource === 'real' ? 'real' : 'mock',
     id: String(result.task_id),
     type: 'download',
     name: url,
@@ -231,6 +240,19 @@ export function extractTaskDetailRows(task: DownloadTask): DetailRow[] {
   const requestMethod = directMediaUrl !== '-' ? 'GET' : '-'
   const taskSubmitEndpoint = getApiRuntimePresentation().taskSubmitEndpoint
 
+  if (task.executionSource === 'real') return [
+    { label: '执行来源', value: 'Chrome 浏览器下载' },
+    { label: '任务 ID', value: task.id },
+    { label: '当前状态', value: task.status },
+    { label: '当前阶段', value: stage },
+    { label: '来源链接', value: (params.url as string) || task.source_url || task.name },
+    { label: '下载目的地', value: 'Chrome 默认下载位置' },
+    { label: '浏览器下载 ID', value: params.browser_download_id ?? '-' },
+    { label: '创建时间', value: formatAbsoluteTime(task.created_at) },
+    { label: '完成时间', value: formatAbsoluteTime(task.completed_at) },
+    { label: '错误信息', value: task.error || '-' },
+  ]
+
   return [
     { label: '执行来源', value: 'mock（无真实网络请求或输出）' },
     { label: '任务 ID', value: task.id },
@@ -268,6 +290,14 @@ export function extractTaskRequestSnapshot(task: DownloadTask): Record<string, u
     info.http_headers && typeof info.http_headers === 'object' && !Array.isArray(info.http_headers)
       ? (info.http_headers as Record<string, unknown>)
       : {}
+
+  if (task.executionSource === 'real') return {
+    executionSource: 'real',
+    adapter: 'chrome.downloads',
+    source_url: (params.url as string) || task.source_url || task.name,
+    browser_download_id: params.browser_download_id ?? '-',
+    destination: 'Chrome default downloads directory',
+  }
 
   return {
     executionSource: 'mock',

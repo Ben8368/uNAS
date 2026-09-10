@@ -94,7 +94,7 @@ export function DownloaderTaskTable({
       <div className="dl-table-scroll">
         <div className="dl-head">
           <span className="dl-col-status" aria-hidden="true" />
-          <span className="dl-col-name">视频标题</span>
+          <span className="dl-col-name">文件名</span>
           <span className="dl-col-progress">进度</span>
           <span className="dl-col-time">时间</span>
           <span className="dl-col-menu" aria-hidden="true" />
@@ -191,21 +191,21 @@ export function DownloaderTaskTable({
                       type="button"
                       role="menuitem"
                       className="dl-row-menu-item"
-                      disabled={!getTaskDownloadFilePath(task)}
-                      title={getTaskDownloadFilePath(task) ? '查看固定模拟结果，不包含文件下载' : '任务尚未记录模拟结果'}
+                      disabled={task.executionSource !== 'real' && !getTaskDownloadFilePath(task)}
+                      title={task.executionSource === 'real' ? '此任务由 Chrome 下载管理器接管' : getTaskDownloadFilePath(task) ? '查看固定模拟结果，不包含文件下载' : '任务尚未记录模拟结果'}
                       onClick={() => runAction('download_file', task, menuId)}
                     >
-                      查看模拟结果
+                      {task.executionSource === 'real' ? '查看浏览器下载' : '查看模拟结果'}
                     </button>
                     <button
                       type="button"
                       role="menuitem"
                       className="dl-row-menu-item"
                       disabled={!isTaskRetryable(task)}
-                      title={isTaskRetryable(task) ? '使用原始参数重新提交模拟任务' : '当前状态不支持重新模拟'}
+                      title={isTaskRetryable(task) ? '使用原始链接重新提交任务' : '当前状态不支持重试'}
                       onClick={() => runAction('retry', task, menuId)}
                     >
-                      重新模拟
+                      重试
                     </button>
                   </div>
                 </span>

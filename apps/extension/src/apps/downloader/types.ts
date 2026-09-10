@@ -8,6 +8,7 @@ export type DownloadTaskStatus =
   | 'partial'
 
 export type DownloadTask = {
+  executionSource?: 'mock' | 'real'
   id: string
   type: string
   name: string

@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { getActiveTasks, getWeeklyHistory, getDemoSnapshot, subscribeDemo } from 'unas-src/api'
+import { getBrowserDownload, listBrowserDownloads } from 'unas-src/runtime/browserDownloads'
 import { mergeTasks } from 'unas-src/apps/downloader/helpers'
 import type { DownloadTask } from 'unas-src/apps/downloader/types'
 import { useVisibilityPolling } from 'unas-src/hooks/useVisibilityPolling'
 import { getErrorMessage } from 'unas-src/utils'
 
 type ApiTask = {
+  executionSource?: 'mock' | 'real'
   id?: string
   task_id?: string
   title?: string
@@ -29,6 +31,7 @@ function mapApiTaskToDownloadTask(task: ApiTask): DownloadTask {
   const title = task.title || task.source_url || 'Untitled'
   const outputFiles = Array.isArray(task.output_files) ? task.output_files : []
   return {
+    executionSource: task.executionSource === 'real' ? 'real' : 'mock',
     id,
     name: title,
     title: task.title || '',
@@ -90,7 +93,61 @@ export function useDownloaderTaskData() {
     }
   }, [])
 
+  useEffect(() => {
+    let stopped = false
+    void listBrowserDownloads().then(async records => {
+      const tasks = await Promise.all(records.map(async record => {
+        const info = await getBrowserDownload(record.downloadId).catch(() => null)
+        if (!info) return null
+        const status = info.state === 'complete' ? 'completed' : info.error === 'USER_CANCELED' ? 'cancelled' : info.state === 'interrupted' ? 'failed' : 'running'
+        return {
+          executionSource: 'real' as const,
+          id: `browser-download-${record.downloadId}`,
+          type: 'download',
+          name: record.url,
+          source_url: record.url,
+          status,
+          progress: info.totalBytes > 0 ? Math.min(100, info.bytesReceived / info.totalBytes * 100) : status === 'completed' ? 100 : 0,
+          stage: status === 'completed' ? '浏览器下载完成' : status === 'cancelled' ? '浏览器下载已取消' : status === 'failed' ? '浏览器下载中断' : '浏览器下载中',
+          created_at: Math.floor(record.createdAt / 1000),
+          params: { url: record.url, urls: [record.url], route: 'browser', browser_download_id: record.downloadId },
+          error: info.error,
+        } satisfies DownloadTask
+      }))
+      const restored = tasks.filter((task): task is NonNullable<typeof task> => task !== null)
+      if (!stopped) setOptimisticTasks(prev => mergeTasks(restored, prev))
+    }).catch(() => {})
+    return () => { stopped = true }
+  }, [])
+
   useVisibilityPolling(refreshLists, 2000)
+
+  // Chrome owns the actual transfer for real browser-download tasks. Poll only
+  // the small status record here; bytes never enter the extension workspace.
+  const browserDownloadIds = useMemo(() => optimisticTasks
+    .map(task => task.executionSource === 'real' && typeof task.params?.browser_download_id === 'number' ? task.params.browser_download_id : null)
+    .filter((id): id is number => id !== null)
+    .sort((a, b) => a - b), [optimisticTasks])
+  useEffect(() => {
+    if (browserDownloadIds.length === 0) return
+    let stopped = false
+    const sync = async () => {
+      const statuses = await Promise.all(browserDownloadIds.map(async id => [id, await getBrowserDownload(id).catch(() => null)] as const))
+      if (stopped) return
+      setOptimisticTasks(prev => prev.map(task => {
+        const id = task.params?.browser_download_id
+        if (typeof id !== 'number') return task
+        const info = statuses.find(([downloadId]) => downloadId === id)?.[1]
+        if (!info) return task
+        const progress = info.totalBytes > 0 ? Math.min(100, info.bytesReceived / info.totalBytes * 100) : task.progress
+        const status = info.state === 'complete' ? 'completed' : info.error === 'USER_CANCELED' ? 'cancelled' : info.state === 'interrupted' ? 'failed' : 'running'
+        return { ...task, status, progress, stage: status === 'completed' ? '浏览器下载完成' : status === 'cancelled' ? '浏览器下载已取消' : status === 'failed' ? '浏览器下载中断' : '浏览器下载中', error: info.error }
+      }))
+    }
+    void sync()
+    const timer = window.setInterval(() => { void sync() }, 2000)
+    return () => { stopped = true; window.clearInterval(timer) }
+  }, [browserDownloadIds, setOptimisticTasks])
   useEffect(() => {
     const unsubscribe = subscribeDemo(() => { void refreshLists().catch(() => {}) })
     return () => { unsubscribe(); taskRequestGenerationRef.current++ }
@@ -99,7 +156,7 @@ export function useDownloaderTaskData() {
   useEffect(() => {
     setOptimisticTasks((prev) =>
       prev.filter(
-        (task) => !tasks.some((activeTask) => activeTask.id === task.id) && !historyTasks.some((historyTask) => historyTask.id === task.id),
+        (task) => task.executionSource === 'real' || (!tasks.some((activeTask) => activeTask.id === task.id) && !historyTasks.some((historyTask) => historyTask.id === task.id)),
       ),
     )
   }, [historyTasks, tasks])

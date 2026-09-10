@@ -26,7 +26,7 @@ for (const sample of cases) {
     const submitButton = app.getByRole('button', { name: '添加任务', exact: true })
     await submitButton.focus()
     await page.keyboard.press('Enter')
-    await expect(app.getByRole('button', { name: /^(添加模拟任务|确认添加)$/ })).toBeVisible()
+    await expect(app.getByRole('button', { name: /^(提交下载任务|确认提交)$/ })).toBeVisible()
     const bounds = await app.boundingBox()
     expect(bounds).not.toBeNull()
     expect(bounds!.x).toBeGreaterThanOrEqual(0)

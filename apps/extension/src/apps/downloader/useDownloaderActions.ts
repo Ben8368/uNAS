@@ -9,6 +9,7 @@ import {
 } from 'unas-src/apps/downloader/helpers'
 import { describeBatch, runBatch } from 'unas-src/application/batch'
 import type { DownloadTask, DownloaderRowMenuAction } from 'unas-src/apps/downloader/types'
+import { cancelBrowserDownload, forgetBrowserDownload, openBrowserDownloads } from 'unas-src/runtime/browserDownloads'
 
 interface UseDownloaderActionsOpts {
   selectedTasks: DownloadTask[]
@@ -39,7 +40,14 @@ export function useDownloaderActions({
   const clearRecords = useCallback(async () => {
     if (!selectedClearableTasks.length) return
     setActionError('')
-    const result = await runBatch(selectedClearableTasks, (task) => deleteTaskRecord(task.id))
+    const result = await runBatch(selectedClearableTasks, async task => {
+      if (task.executionSource === 'real' && typeof task.params?.browser_download_id === 'number') {
+        await forgetBrowserDownload(task.params.browser_download_id)
+        setOptimisticTasks(prev => prev.filter(item => item.id !== task.id))
+        return
+      }
+      await deleteTaskRecord(task.id)
+    })
     try { await refreshLists() } catch (error) {
       setActionError(`${describeBatch('清除模拟记录', result, (task) => task.id)} 刷新失败，请刷新列表。`)
       return result
@@ -51,7 +59,13 @@ export function useDownloaderActions({
   const stopSelected = useCallback(async () => {
     if (!selectedTasks.length) return
     setActionError('')
-    const result = await runBatch(selectedTasks, (task) => cancelTask(task.id))
+    const result = await runBatch(selectedTasks, async (task) => {
+      if (task.executionSource === 'real' && typeof task.params?.browser_download_id === 'number') {
+        await cancelBrowserDownload(task.params.browser_download_id)
+        return
+      }
+      await cancelTask(task.id)
+    })
     try { await refreshLists() } catch {
       setActionError(`${describeBatch('发送取消请求', result, (task) => task.id)} 刷新失败；终态尚未确认。`)
       return
@@ -67,6 +81,7 @@ export function useDownloaderActions({
       if (!payload) throw new Error('缺少可重试的 URL')
       const urls = Array.isArray(payload.urls) ? payload.urls.filter((url): url is string => typeof url === 'string') : []
       if (!urls.length) throw new Error('缺少可重试的 URL')
+      if (task.executionSource === 'real') throw new Error('请从上方链接输入重新提交浏览器下载。')
       const created = await submitFetch(payload)
       const optimisticTask = createCheckedOptimisticTask(urls, payload, created)
       setOptimisticTasks((prev) => mergeTasks([optimisticTask], prev))
@@ -92,7 +107,10 @@ export function useDownloaderActions({
         try { await navigator.clipboard.writeText(url) } catch { setActionError('无法复制链接，请手动选择并复制来源 URL。') }
       }
       if (action === 'download_file') {
-        setActionError(`模拟结果 ${task.id}（executionSource: mock）：不包含可下载文件。`)
+        if (task.executionSource === 'real') {
+          try { await openBrowserDownloads() }
+          catch (error) { setActionError(error instanceof Error ? error.message : '无法打开 Chrome 下载列表。') }
+        } else setActionError(`模拟结果 ${task.id}（executionSource: mock）：不包含可下载文件。`)
       }
       if (action === 'retry') {
         const payload = buildRetryPayload(task)
@@ -101,6 +119,10 @@ export function useDownloaderActions({
           return
         }
         try {
+          if (task.executionSource === 'real') {
+            setActionError('请从上方链接输入重新提交浏览器下载。')
+            return
+          }
           const result = await submitFetch(payload)
           const urls = Array.isArray(payload.urls) ? payload.urls.filter((url): url is string => typeof url === 'string') : []
           const optimisticTask = createCheckedOptimisticTask(urls, payload, result)
