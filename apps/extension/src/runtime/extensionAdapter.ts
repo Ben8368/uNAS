@@ -1,12 +1,35 @@
 import { validateLaunchMessage } from './workspaceRouter'
 import { applyLinkMutation, isLinkMutation, parseLinks } from './linkApps'
 import { extensionApi, getExtensionLocalValue, type ExtensionMessageSender, setExtensionLocalValue } from './extensionPlatform'
-import { isAllowedBrowserDownloadUrl } from './browserDownloads'
+import { isDirectDownloadUrl } from './browserDownloads'
 
 const LINK_STORAGE_KEY = 'unas-link-apps-v1'
 type RuntimeResponse = { ok: false; error: string } | { ok: true; links?: unknown; downloadId?: number; download?: unknown; downloads?: unknown[] }
 let linkMutationTail = Promise.resolve()
 const BROWSER_DOWNLOAD_STORAGE_KEY = 'unas-browser-downloads-v1'
+const MAX_BROWSER_DOWNLOAD_RECORDS = 200
+
+type BrowserDownloadRecord = { downloadId: number; url: string; createdAt: number }
+
+let browserDownloadMutationTail = Promise.resolve()
+
+function enqueueBrowserDownloadMutation<T>(operation: () => Promise<T>) {
+  const result = browserDownloadMutationTail.then(operation, operation)
+  browserDownloadMutationTail = result.then(() => undefined, () => undefined)
+  return result
+}
+
+function isBrowserDownloadRecord(value: unknown): value is BrowserDownloadRecord {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  const record = value as Record<string, unknown>
+  return typeof record.downloadId === 'number' && Number.isSafeInteger(record.downloadId) && record.downloadId >= 0 &&
+    typeof record.url === 'string' && record.url.length <= 4096 && typeof record.createdAt === 'number' && Number.isFinite(record.createdAt)
+}
+
+async function readBrowserDownloadRecords(): Promise<BrowserDownloadRecord[]> {
+  const stored = await getExtensionLocalValue(BROWSER_DOWNLOAD_STORAGE_KEY)
+  return Array.isArray(stored) ? stored.filter(isBrowserDownloadRecord).slice(-MAX_BROWSER_DOWNLOAD_RECORDS) : []
+}
 
 function isExtensionPage(sender: ExtensionMessageSender, extensionId: string) {
   if (sender.id !== extensionId || (sender.frameId !== undefined && sender.frameId !== 0)) return false
@@ -21,7 +44,7 @@ function isBrowserDownloadMessage(message: unknown): message is { kind: 'browser
   const value = message as Record<string, unknown>
   if (value.kind === 'browser.download') {
     if (typeof value.url !== 'string' || value.url.length > 4096) return false
-    return isAllowedBrowserDownloadUrl(value.url)
+    return isDirectDownloadUrl(value.url)
   }
   if (value.kind === 'browser.download.list' || value.kind === 'browser.download.show') return true
   return (value.kind === 'browser.download.get' || value.kind === 'browser.download.cancel' || value.kind === 'browser.download.forget') && Number.isInteger(value.downloadId) && Number(value.downloadId) >= 0
@@ -32,34 +55,43 @@ async function handleBrowserDownload(message: { kind: 'browser.download'; url: s
   if (!downloads) return { ok: false, error: 'Chrome downloads API 不可用；请确认扩展已重新加载并启用下载功能。' }
   try {
     if (message.kind === 'browser.download') {
-      const downloadId = await downloads.download({ url: message.url, conflictAction: 'uniquify', saveAs: false })
-      const stored = await getExtensionLocalValue(BROWSER_DOWNLOAD_STORAGE_KEY)
-      const records = Array.isArray(stored) ? stored.filter((item): item is { downloadId: number; url: string; createdAt: number } => Boolean(item && typeof item === 'object' && Number.isInteger((item as Record<string, unknown>).downloadId) && typeof (item as Record<string, unknown>).url === 'string' && typeof (item as Record<string, unknown>).createdAt === 'number')) : []
-      await setExtensionLocalValue(BROWSER_DOWNLOAD_STORAGE_KEY, [...records, { downloadId, url: message.url, createdAt: Date.now() }].slice(-200))
-      return { ok: true, downloadId }
-    }
-    if (message.kind === 'browser.download.cancel') {
-      await downloads.cancel(message.downloadId)
-      return { ok: true }
-    }
-    if (message.kind === 'browser.download.forget') {
-      const stored = await getExtensionLocalValue(BROWSER_DOWNLOAD_STORAGE_KEY)
-      const records = Array.isArray(stored) ? stored.filter(item => !(item && typeof item === 'object' && (item as Record<string, unknown>).downloadId === message.downloadId)) : []
-      await setExtensionLocalValue(BROWSER_DOWNLOAD_STORAGE_KEY, records)
-      return { ok: true }
+      return await enqueueBrowserDownloadMutation(async () => {
+        const url = message.url.trim()
+        const downloadId = await downloads.download({ url, conflictAction: 'uniquify', saveAs: false })
+        const records = await readBrowserDownloadRecords()
+        await setExtensionLocalValue(BROWSER_DOWNLOAD_STORAGE_KEY, [...records, { downloadId, url, createdAt: Date.now() }].slice(-MAX_BROWSER_DOWNLOAD_RECORDS))
+        return { ok: true, downloadId }
+      })
     }
     if (message.kind === 'browser.download.list') {
-      const stored = await getExtensionLocalValue(BROWSER_DOWNLOAD_STORAGE_KEY)
-      const downloads = Array.isArray(stored) ? stored.filter((item): item is { downloadId: number; url: string; createdAt: number } => Boolean(item && typeof item === 'object' && Number.isInteger((item as Record<string, unknown>).downloadId) && typeof (item as Record<string, unknown>).url === 'string' && typeof (item as Record<string, unknown>).createdAt === 'number')) : []
-      return { ok: true, downloads }
+      return await enqueueBrowserDownloadMutation(async () => ({ ok: true, downloads: await readBrowserDownloadRecords() }))
     }
     if (message.kind === 'browser.download.show') {
-      await extensionApi()?.tabs?.create({ url: 'chrome://downloads/', active: true })
+      const tabs = extensionApi()?.tabs
+      if (!tabs) throw new Error('Chrome 标签页 API 不可用；无法打开下载列表。')
+      await tabs.create({ url: 'chrome://downloads/', active: true })
       return { ok: true }
     }
-    const [download] = await downloads.search({ id: message.downloadId })
-    if (!download) return { ok: true, download: undefined }
-    return { ok: true, download: { id: download.id, state: download.state, bytesReceived: download.bytesReceived, totalBytes: download.totalBytes, error: download.error } }
+    return await enqueueBrowserDownloadMutation(async () => {
+      const records = await readBrowserDownloadRecords()
+      const owned = records.some((record) => record.downloadId === message.downloadId)
+      if (!owned) {
+        if (message.kind === 'browser.download.get') return { ok: true, download: undefined }
+        if (message.kind === 'browser.download.forget') return { ok: true }
+        return { ok: false, error: '此下载不属于 uNAS，未执行操作。' }
+      }
+      if (message.kind === 'browser.download.cancel') {
+        await downloads.cancel(message.downloadId)
+        return { ok: true }
+      }
+      if (message.kind === 'browser.download.forget') {
+        await setExtensionLocalValue(BROWSER_DOWNLOAD_STORAGE_KEY, records.filter((record) => record.downloadId !== message.downloadId))
+        return { ok: true }
+      }
+      const [download] = await downloads.search({ id: message.downloadId })
+      if (!download) return { ok: true, download: undefined }
+      return { ok: true, download: { id: download.id, state: download.state, bytesReceived: download.bytesReceived, totalBytes: download.totalBytes, error: download.error } }
+    })
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : 'Chrome 下载操作失败。' }
   }

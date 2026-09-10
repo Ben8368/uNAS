@@ -42,4 +42,41 @@ describe('legacy Workspace routing boundary', () => {
       expect(storage.get('unas-link-apps-v1')).toEqual([link])
     } finally { vi.unstubAllGlobals() }
   })
+  it('serializes browser download records and never cancels an unrelated download', async () => {
+    let listener: (...args: any[]) => unknown = () => {}
+    const storage = new Map<string, unknown>()
+    let nextDownloadId = 1
+    const cancelled: number[] = []
+    vi.stubGlobal('browser', {
+      runtime: { id: 'unas', onMessage: { addListener: (fn: typeof listener) => { listener = fn } } },
+      downloads: {
+        download: async () => nextDownloadId++,
+        search: async (query: { id: number }) => [{ id: query.id, state: 'in_progress', bytesReceived: 0, totalBytes: 1 }],
+        cancel: async (id: number) => { cancelled.push(id) },
+      },
+      storage: {
+        local: {
+          get: async (key: string) => { await new Promise((resolve) => setTimeout(resolve, 0)); return { [key]: storage.get(key) } },
+          set: async (values: Record<string, unknown>) => { await new Promise((resolve) => setTimeout(resolve, 0)); Object.entries(values).forEach(([key, value]) => storage.set(key, value)) },
+        },
+        onChanged: { addListener: vi.fn(), removeListener: vi.fn() },
+      },
+    })
+    try {
+      installWorkspaceRouter()
+      const [first, second] = await Promise.all([
+        listener({ kind: 'browser.download', url: 'https://example.test/one.mp4' }, sender),
+        listener({ kind: 'browser.download', url: 'https://example.test/two.mp4' }, sender),
+      ])
+      expect(first).toMatchObject({ ok: true, downloadId: 1 })
+      expect(second).toMatchObject({ ok: true, downloadId: 2 })
+      expect(storage.get('unas-browser-downloads-v1')).toEqual([
+        { downloadId: 1, url: 'https://example.test/one.mp4', createdAt: expect.any(Number) },
+        { downloadId: 2, url: 'https://example.test/two.mp4', createdAt: expect.any(Number) },
+      ])
+      await expect(listener({ kind: 'browser.download.cancel', downloadId: 999 }, sender)).resolves.toEqual({ ok: false, error: '此下载不属于 uNAS，未执行操作。' })
+      expect(cancelled).toEqual([])
+      await expect(listener({ kind: 'browser.download', url: 'https://example.test/page' }, sender)).resolves.toEqual({ ok: false, error: '消息来源、版本或动作无效。' })
+    } finally { vi.unstubAllGlobals() }
+  })
 })
