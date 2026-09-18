@@ -23,7 +23,7 @@ type ExtensionApi = {
   }
 }
 
-export type ExtensionMessageSender = { id?: string; url?: string; frameId?: number }
+export type ExtensionMessageSender = { id?: string; url?: string; frameId?: number; tab?: { id?: number } }
 
 export function extensionApi(): ExtensionApi | undefined {
   return (globalThis as typeof globalThis & { browser?: ExtensionApi }).browser

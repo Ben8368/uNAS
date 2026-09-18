@@ -1,6 +1,6 @@
 # uNAS 前端 Demo
 
-这是 uNAS 的独立 React/Vite 前端演示。桌面、下载、转码、PSD 与工具任务仍使用浏览器内置的 demo adapter；解包扩展中的文件管理另有一条受用户目录授权保护的真实 ZIP 解压路径。
+这是 uNAS 的 React/Vite 前端与 WXT 扩展入口。桌面、下载、转码、PSD 与部分工具任务仍使用浏览器内置的 demo adapter；解包扩展另外包含 UniPass AdBlock、WebDAV Vault、Legacy compatibility 和原版页面浮层能力。
 
 它不会连接、启动或调用任何后端 API、Electron 能力、yt-dlp、ffmpeg 或 Photoshop。除已授权目录的受限 ZIP 解压外，界面中的任务、文件、下载、转码与系统指标均是 mock，不代表真实能力。Vite 页面成功也不代表 MV3 运行面已验收。
 

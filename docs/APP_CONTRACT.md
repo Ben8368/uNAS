@@ -6,7 +6,7 @@
 
 | 类型 | 来源 | 能力 |
 | --- | --- | --- |
-| `system` | 随扩展打包 | Desktop、Files、Task Center、Settings 等系统能力 |
+| `system` | 随扩展打包 | Desktop、Files、Task Center、Settings、Password Manager 等系统能力 |
 | `tool` | 随扩展打包 | Image、Media、PDF、Archive 等受控文件处理界面 |
 | `link` | 用户声明式注册 | 只保存名称、图标和 HTTPS URL，点击后跳转网页 |
 
@@ -98,3 +98,5 @@ Token 必须绑定 App、用户动作、资源和有效期。App 不直接持有
 - 未知字段不静默执行；未知 App 或失效 Link App 显示可恢复错误。
 - 删除内置 App 前提供布局和文件关联迁移；用户 Link App 支持导出/导入时需独立安全设计。
 - App Contract 的破坏性变化需要 contract tests、迁移说明和 ADR 评审。
+
+Password Manager 的 Desktop App 是管理入口投影，启动时通过受控 `vault.open-manager` service message 打开扩展内 allowlisted 的 `passwords.html`。它不能接收网页提供的 URL，也不能替代工具栏 action 在当前 HTTPS 页面注入原版密码浮层；浮层与 Desktop CSS 处于不同文档/Shadow DOM 边界。

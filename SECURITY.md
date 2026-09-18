@@ -4,7 +4,7 @@ uNAS 是承载新标签页、本地文件、媒体/PDF/ZIP 处理和浏览器权
 
 ## 当前支持状态
 
-当前阶段与已验证范围以 [CONTEXT.md](CONTEXT.md) 为准。Frontend Demo 只验证模拟交互；库名、格式列表和视觉方案均不代表真实文件或引擎能力。
+当前阶段与已验证范围以 [CONTEXT.md](CONTEXT.md) 为准。uNAS 的 UniPass AdBlock/Vault/浮层属于真实扩展能力；其他仍为 mock 的工具不因此获得真实格式、性能或浏览器支持承诺。
 
 ## 信任边界
 
@@ -42,12 +42,20 @@ User file / archive / media    不可信输入
 ## 权限
 
 - required permissions 只包含首发核心功能当下需要的最小集合。
-- 当前 required permissions 为 `storage` 与 `downloads`：`storage` 保存 Link App 配置及 uNAS 自己发起的 download ID/URL 小型索引；`downloads` 仅用于提交、查询和取消用户在下载 App 中明确发起的直链下载。
+- 当前 required permissions 为 `activeTab`, `scripting`, `clipboardWrite`, `storage`, `alarms`, `tabs`, `declarativeNetRequest`, `downloads`。其中 `activeTab`/`scripting` 只在用户点击 action 后注入页面浮层或用户点击填充时注入一次性填充脚本；`storage` 保存设置、Link App、Vault profile/加密材料和规则状态；`alarms` 驱动规则/Vault/Jupiter 恢复；`tabs` 用于当前页复核和用户触发的页面操作；`clipboardWrite` 仅用于用户点击复制；`declarativeNetRequest` 执行 baseline/dynamic block 与站点暂停规则；`downloads` 仍仅用于用户明确发起的直链下载。
+- 固定 host permissions 仅包含 UniPass Portal、Feishu OAuth、Jupiter 和 EasyList 下载域名；`https://*/*` 是 optional host permission，只在用户连接 WebDAV 时请求对应单一 origin。页面 cosmetic content script 只处理规则 CSS/受限 `remove-attr`，不能读取凭据。
 - optional permissions 也不得为未来预留；只在用户触发功能时解释并请求。
 - `downloads` 随下载 App 核心能力声明；扩展只在用户提交 HTTPS 直链文件后使用，不读取本机下载目录或文件内容。m3u8/mpd 播放清单和网页链接不走该路径；可执行文件仍由 Chrome 的安全检查和用户确认控制。
 - host permissions 默认不全域开放；网页资源导入优先使用 `activeTab` 或更窄的用户触发能力。
 - downloads、clipboard、contextMenus、offscreen、content script 等逐项记录用途、触发点、拒绝行为和商店披露。
 - 不绕过 DRM、付费墙、登录、CORS、浏览器警告或站点条款。
+
+### UniPass Vault 与浮层边界
+
+- Vault 使用 UniPass 现有 AES-256-GCM envelope、Vault Key、PBKDF2 本地解锁、加密 IndexedDB cache、dirty queue、ETag 冲突和 tombstone；明文密码只在后台短暂获取，并在填充/复制路径清理，不进入 uNAS Desktop store、BroadcastChannel、日志或持久化普通 JSON。
+- `CredentialSource` 将 WebDAV Vault 与 `legacy-unipass` 分开；Legacy API/Jupiter/旧 AES 解密/WASM 只在 adapter 中注册。禁用 Legacy 不改变 WebDAV Vault、AdBlock、New Tab、Workspace 或浮层的核心构建路径。
+- 工具栏 action 没有 `default_popup`；它只针对当前用户点击的 HTTPS tab 注入原 UniPass DOM/CSS 浮层，保持 closed Shadow DOM、外部点击/Escape 关闭和页面主题采样。`passwords.html` 是管理入口，不替代浮层。
+- 两个扩展 ID 不共享本地 storage、IndexedDB 或设备密钥。迁移必须通过用户提供的 WebDAV 连接材料和 Vault Key；uNAS 验证前不删除旧扩展、旧本地数据或远端对象。当前 uNAS 尚未提交维护者签名 key，最终固定扩展 ID 是发布前阻断项。
 
 ## MV3 生命周期
 

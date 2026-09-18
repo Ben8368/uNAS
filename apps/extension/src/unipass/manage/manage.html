@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UniPass 密码库管理</title>
+    <link rel="stylesheet" href="manage.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="page-header">
+        <div class="header-copy">
+          <span class="eyebrow">UNIPASS · 密码库</span>
+          <h1>管理密码库</h1>
+          <p>连接保存位置、添加网站，再保存登录账号。每一步都可以稍后继续。</p>
+        </div>
+        <button id="refresh" class="secondary" type="button">刷新</button>
+      </header>
+      <nav class="steps" aria-label="设置步骤">
+        <div class="step"><span class="step-number">1</span><span><strong>连接 WebDAV</strong><small>设置保存位置</small></span></div>
+        <div class="step"><span class="step-number">2</span><span><strong>添加网站</strong><small>指定登录页面</small></span></div>
+        <div class="step"><span class="step-number">3</span><span><strong>保存账号</strong><small>填写登录信息</small></span></div>
+      </nav>
+      <section class="card">
+        <div class="section-heading"><span class="step-label">第 1 步</span><h2>连接 WebDAV</h2><p>WebDAV 是保存密码库的远程文件夹。先完成连接，下面的功能才会开放。</p></div>
+        <details class="help-details">
+          <summary>不知道这些信息在哪里找？</summary>
+          <div>
+            <p>打开 NAS 或云盘的 WebDAV 设置页，复制它提供的 HTTPS 地址。</p>
+            <ul><li>WebDAV 地址：通常类似 <code>https://nas.example.com/dav/</code></li><li>用户名：WebDAV 服务使用的账号</li><li>应用密码：优先新建一个只用于 WebDAV 的密码，不要填写 NAS 管理员登录密码</li></ul>
+          </div>
+        </details>
+        <div id="profiles" class="profiles"></div>
+        <div id="profilesEmpty" class="empty-state">还没有配置密码库。填写下面的信息后，先点“测试连接”，确认无误再保存。</div>
+        <form id="vaultForm" class="form-grid">
+          <label>密码库名称<input id="vaultName" required autocomplete="off" placeholder="例如：我的 NAS 密码库" /><span class="field-help">给这个保存位置起一个容易识别的名字。</span></label>
+          <label>WebDAV 地址<input id="endpoint" required type="text" inputmode="url" placeholder="https://nas.example.com/dav/" autocomplete="off" /><span class="field-help">必须以 https:// 开头，可包含文件夹路径。</span></label>
+          <label>WebDAV 用户名<input id="username" autocomplete="username" /><span class="field-help">新建时必填；已有密码库可留空，使用本机长期保存的连接材料。</span></label>
+          <label>应用密码（App Password）<input id="appPassword" type="password" autocomplete="new-password" /><span class="field-help">新建时必填；已有密码库可留空，使用本机长期保存的连接材料。</span></label>
+          <label>Vault Key（首次接入已有库时填写）<input id="vaultKey" type="password" autocomplete="off" /><span class="field-help">扩展会长期记住 Vault Key；只有迁移设备或恢复本地数据时才需要再次填写。</span></label>
+          <div id="recoveryKeyNotice" class="security-note" hidden><strong>立即保存 Vault Key</strong><span>关闭此页后不会再显示。<input id="recoveryKey" readonly aria-label="Vault Key" /></span></div>
+          <div class="security-note"><strong>安全提示</strong><span>WebDAV 用户名、App Password 和 Vault Key 会以扩展设备密钥加密并长期保存在本机；配置完成后，可在“全部应用”页点击应用图标 5 次查看账号密码。</span></div>
+          <div class="actions"><button id="testVault" class="secondary" type="button">测试连接</button><button class="primary" type="submit">保存并继续</button><button id="removeVault" class="danger" type="button" disabled>删除密码库</button><p id="status" class="status" role="status" aria-live="polite" hidden></p></div>
+        </form>
+      </section>
+      <section class="card">
+        <div class="section-heading"><span class="step-label">第 2 步</span><h2>添加网站</h2><p>告诉 UniPass 账号属于哪个网站。只填写登录网站的域名和可选路径。</p></div>
+        <form id="appForm">
+          <fieldset id="appFields" class="form-grid site-form" disabled>
+            <legend class="sr-only">网站信息</legend>
+            <input id="appId" type="hidden" />
+            <label class="site-name-field">网站名称<input id="appName" required autocomplete="off" placeholder="例如：公司邮箱" /><span class="field-help">用于在 UniPass 中识别这个网站，之后可以随时修改。</span></label>
+            <div class="site-target-fields" role="group" aria-labelledby="siteTargetLabel">
+              <div class="site-target-heading"><strong id="siteTargetLabel">登录地址</strong><span>用于判断在哪些页面显示和填入账号。</span></div>
+              <div class="site-target-inputs">
+                <label>HTTPS 主机<input id="appHost" required placeholder="example.com" autocomplete="off" aria-describedby="appHostHelp" /><span id="appHostHelp" class="field-help">只填写域名，不要加 https://。</span></label>
+                <label>路径前缀（可选）<input id="appPath" placeholder="/login" autocomplete="off" aria-describedby="appPathHelp" /><span id="appPathHelp" class="field-help">只有同一网站的登录路径不同才填写。</span></label>
+              </div>
+            </div>
+            <div class="actions"><button class="primary" type="submit">保存网站</button><button id="deleteApp" class="danger" type="button" disabled>删除网站</button></div>
+          </fieldset>
+        </form>
+        <div id="appsEmpty" class="empty-state">保存第 1 步的密码库后，就可以在这里添加第一个网站。</div>
+        <div id="apps" class="list"></div>
+      </section>
+      <section class="card">
+        <div class="section-heading"><span class="step-label">第 3 步</span><h2>保存账号</h2><p>一个网站可以保存多个账号。填入后，UniPass 才能在对应登录页帮你填写。</p></div>
+        <form id="accountForm">
+          <fieldset id="accountFields" class="form-grid" disabled>
+            <legend class="sr-only">账号信息</legend>
+            <input id="accountId" type="hidden" />
+            <label>选择网站<select id="accountApp" required></select></label>
+            <label>登录账号<input id="accountUsername" required autocomplete="username" placeholder="例如：name@example.com" /></label>
+            <label>备注（可选）<input id="accountRemark" autocomplete="off" placeholder="例如：工作账号" /></label>
+            <label>登录密码<input id="accountPassword" type="password" autocomplete="new-password" placeholder="新增或修改时填写" /><span class="field-help">修改已有账号时留空，即可保留原密码。</span></label>
+            <div class="actions"><button class="primary" type="submit">保存账号</button><button id="deleteAccount" class="danger" type="button" disabled>删除账号</button></div>
+          </fieldset>
+        </form>
+        <div id="accountsEmpty" class="empty-state">先添加一个网站，再在这里保存账号。</div>
+        <div id="accounts" class="list"></div>
+      </section>
+    </main>
+    <script type="module" src="manage.js"></script>
+  </body>
+</html>

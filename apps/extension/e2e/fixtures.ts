@@ -27,7 +27,14 @@ export const test = base.extend<{ extension: Extension }>({
     const watch = (page: Page) => page.on('pageerror', (error) => errors.push(error.message))
     context.pages().forEach(watch)
     context.on('page', watch)
-    context.on('request', (request) => { if (/^https?:/.test(request.url())) remoteRequests.push(request.url()) })
+    context.on('request', (request) => {
+      if (!/^https?:/.test(request.url())) return
+      // UniPass's migrated filter updater is expected to contact only these
+      // fixed public lists during SW startup. Keep legacy Demo assertions
+      // focused on unexpected application/network traffic.
+      if (/^https:\/\/easylist-downloads\.adblockplus\.org\/(?:easylist|easyprivacy|easylistchina|abp-filters-anti-cv)\.txt$/.test(request.url())) return
+      remoteRequests.push(request.url())
+    })
     await context.tracing.start({ screenshots: true, snapshots: true, sources: true })
     const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker')
     const extensionId = new URL(worker.url()).hostname

@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "scope": "Engineering packaging caps for the Phase 1 mock; not runtime performance claims",
+  "scope": "Engineering packaging caps for the uNAS extension integration; not runtime performance claims",
   "totalExtensionBytes": 2097152,
   "initialNewTabJavaScriptBytes": 358400,
-  "singleAssetBytes": 16384,
-  "allPublicAssetsBytes": 65536,
+  "singleAssetBytes": 131072,
+  "allPublicAssetsBytes": 262144,
   "svgWidth": 64,
   "svgHeight": 64
 }

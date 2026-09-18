@@ -2,6 +2,7 @@ import { validateLaunchMessage } from './workspaceRouter'
 import { applyLinkMutation, isLinkMutation, parseLinks } from './linkApps'
 import { extensionApi, getExtensionLocalValue, type ExtensionMessageSender, setExtensionLocalValue } from './extensionPlatform'
 import { isDirectDownloadUrl } from './browserDownloads'
+import { handleUniPassMessage, isUniPassMessage } from 'unas-src/unipass/background/service-worker'
 
 const LINK_STORAGE_KEY = 'unas-link-apps-v1'
 type RuntimeResponse = { ok: false; error: string } | { ok: true; links?: unknown; downloadId?: number; download?: unknown; downloads?: unknown[] }
@@ -39,6 +40,16 @@ function isExtensionPage(sender: ExtensionMessageSender, extensionId: string) {
   } catch { return false }
 }
 
+function isUniPassSender(sender: ExtensionMessageSender, extensionId: string): boolean {
+  if (sender.id !== extensionId || (sender.frameId !== undefined && sender.frameId !== 0)) return false
+  try {
+    const url = new URL(sender.url || '')
+    if (url.protocol === 'http:' || url.protocol === 'https:') return sender.tab?.id !== undefined
+    return url.protocol === 'chrome-extension:' && url.host === extensionId
+      && ['/newtab.html', '/workspace.html', '/passwords.html', '/popup.html', '/manage.html'].includes(url.pathname)
+  } catch { return false }
+}
+
 function isBrowserDownloadMessage(message: unknown): message is { kind: 'browser.download'; url: string } | { kind: 'browser.download.get'; downloadId: number } | { kind: 'browser.download.cancel'; downloadId: number } | { kind: 'browser.download.forget'; downloadId: number } | { kind: 'browser.download.list' } | { kind: 'browser.download.show' } {
   if (!message || typeof message !== 'object' || Array.isArray(message)) return false
   const value = message as Record<string, unknown>
@@ -48,6 +59,20 @@ function isBrowserDownloadMessage(message: unknown): message is { kind: 'browser
   }
   if (value.kind === 'browser.download.list' || value.kind === 'browser.download.show') return true
   return (value.kind === 'browser.download.get' || value.kind === 'browser.download.cancel' || value.kind === 'browser.download.forget') && Number.isInteger(value.downloadId) && Number(value.downloadId) >= 0
+}
+
+function isPasswordManagerMessage(message: unknown): message is { schemaVersion: 1; kind: 'vault.open-manager' } {
+  if (!message || typeof message !== 'object' || Array.isArray(message)) return false
+  const value = message as Record<string, unknown>
+  return Object.keys(value).sort().join(',') === 'kind,schemaVersion' && value.kind === 'vault.open-manager' && value.schemaVersion === 1
+}
+
+async function openPasswordManager(): Promise<RuntimeResponse> {
+  const tabs = extensionApi()?.tabs
+  const runtime = extensionApi()?.runtime
+  if (!tabs || !runtime) return { ok: false, error: '密码管理器运行时不可用。' }
+  await tabs.create({ url: runtime.getURL('passwords.html'), active: true })
+  return { ok: true }
 }
 
 async function handleBrowserDownload(message: { kind: 'browser.download'; url: string } | { kind: 'browser.download.get'; downloadId: number } | { kind: 'browser.download.cancel'; downloadId: number } | { kind: 'browser.download.forget'; downloadId: number } | { kind: 'browser.download.list' } | { kind: 'browser.download.show' }): Promise<RuntimeResponse> {
@@ -120,6 +145,11 @@ export function installWorkspaceRouter() {
   const runtime = browser?.runtime
   if (!runtime?.id) return
   runtime.onMessage.addListener(async (message, sender) => {
+    if (isPasswordManagerMessage(message) && isExtensionPage(sender, runtime.id)) return await openPasswordManager()
+    if (isUniPassMessage(message)) {
+      if (!isUniPassSender(sender, runtime.id)) return { ok: false, error: 'UniPass 消息来源无效。' }
+      return await handleUniPassMessage(message, sender as chrome.runtime.MessageSender)
+    }
     if (isLinkMutation(message) && isExtensionPage(sender, runtime.id)) return await mutateLinks(message)
     if (isBrowserDownloadMessage(message) && isExtensionPage(sender, runtime.id)) return await handleBrowserDownload(message)
     return { ok: false, error: validateLaunchMessage(message, sender, runtime.id)

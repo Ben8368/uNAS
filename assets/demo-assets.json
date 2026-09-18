@@ -100,6 +100,42 @@
       "bytes": 2888,
       "sha256": "e3f4f4165c3f6e6a81fa0dd606c8cf77629f143e58d5b4c6b34e58a9a9cb2c91",
       "kind": "local-startup-prepaint-script"
+    },
+    {
+      "path": "apps/extension/public/icons/icon16.png",
+      "bytes": 627,
+      "sha256": "22a8dac626f364ac1447fbbc5e1b70ca0f87c01fd47abed01a0af7f6991ca284",
+      "kind": "UniPass source icon; license and distribution approval remain pending"
+    },
+    {
+      "path": "apps/extension/public/icons/icon48.png",
+      "bytes": 2040,
+      "sha256": "d7c784f91039ea764d26cc0998efb35994040cbf9934380a4f84bf002d6e5b0f",
+      "kind": "UniPass source icon; license and distribution approval remain pending"
+    },
+    {
+      "path": "apps/extension/public/icons/icon128.png",
+      "bytes": 5634,
+      "sha256": "66c37c324d96e8ca9457e7a4f28fd4a062f3d470fb77876b34d2b643d4d9bb28",
+      "kind": "UniPass source icon; license and distribution approval remain pending"
+    },
+    {
+      "path": "apps/extension/public/rules/baseline.json",
+      "bytes": 11777,
+      "sha256": "3d711b0715d0732b8a729db3fad2b4f4df83b3b020bb2678d723b2df47fa1bad",
+      "kind": "UniPass audited static DNR baseline"
+    },
+    {
+      "path": "apps/extension/public/runtime-config.json",
+      "bytes": 46,
+      "sha256": "16efe1da8105c4a6105ada982dc173bc7f91f9774a1d06abee0d7db6a2777335",
+      "kind": "uNAS build-time UniPass network version configuration"
+    },
+    {
+      "path": "apps/extension/public/credential-core.wasm",
+      "bytes": 51885,
+      "sha256": "db6c133fddf6c59c66ccfeb73328dc5a78acc761a45b27a3bb3b4f45e5b0903c",
+      "kind": "UniPass Legacy credential-core WASM compatibility artifact"
     }
   ]
 }

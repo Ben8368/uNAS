@@ -33,6 +33,19 @@
       "repository": "git+https://github.com/microsoft/playwright.git"
     },
     {
+      "name": "@types/chrome",
+      "version": "0.2.9",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ],
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped.git"
+    },
+    {
       "name": "@types/node",
       "version": "22.20.1",
       "scope": "direct-build-test-tool",
