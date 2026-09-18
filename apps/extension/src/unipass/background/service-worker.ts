@@ -63,7 +63,7 @@ import { FILTER_GENERATION, FILTER_UPDATE_ALARM } from "./blocking/subscriptions
 import { BLOCKING_RECONCILE_ALARM } from "../shared/blocking";
 import { isExtensionPageSender, isWebPageSender } from "./sender-guard";
 
-const VAULT_MANAGER_PATHS = ["/passwords.html", "/popup.html", "/manage.html"] as const;
+const TRUSTED_EXTENSION_UI_PATHS = ["/newtab.html", "/workspace.html", "/popup.html", "/manage.html"] as const;
 
 function refreshBlockingSubscriptions(): void {
   void updateFilterSubscriptions().catch(() => console.warn("规则订阅状态无法保存，将在下次启动或定时检查时重试"));
@@ -115,7 +115,7 @@ export function installUniPassBackground(): void {
 }
 
 const UNIPASS_MESSAGE_TYPES = new Set<string>([
-  "session", "openCredentialPage", "pageContext", "pageTheme", "openApp", "fillFromOverlay", "fillFromPopup",
+  "session", "pageContext", "pageTheme", "openApp", "fillFromOverlay", "fillFromPopup",
   "startUniPassLogin", "completeUniPassLogin", "getPluginVersionSettings", "setPluginVersionOverride",
   "getBlockingStatus", "getBlockingSiteState", "pauseBlockingForSite", "resumeBlockingForSite", "getCosmeticRules",
   "currentPageCatalog", "accountCatalog", "listApps", "accountsForApp", "appUrl", "credentialAvailability",
@@ -145,8 +145,6 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
   switch (message.type) {
     case "session":
       return currentUser().then(popupSessionUserFor);
-    case "openCredentialPage":
-      return requireExtensionOrOverlay(sender, message.overlayToken, () => chrome.tabs.create({ url: chrome.runtime.getURL("passwords.html") }));
     case "pageContext":
       return pageContextFor(sender);
     case "pageTheme":
@@ -239,21 +237,21 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
     case "setJupiterKeepalive":
       return withUserScope(message.userScope, () => setJupiterKeepalive(message.userScope, message.enabled, message.appId, message.accountId, message.username));
     case "listVaultProfiles":
-      return requireVaultManager(sender, listVaultProfiles);
+      return requireVaultManager(sender, message.overlayToken, listVaultProfiles);
     case "listVaultConnectionStates":
-      return requireVaultManager(sender, listVaultConnectionStates);
+      return requireVaultManager(sender, message.overlayToken, listVaultConnectionStates);
     case "listVaultSyncStatuses":
-      return requireVaultManager(sender, listVaultSyncStatuses);
+      return requireVaultManager(sender, message.overlayToken, listVaultSyncStatuses);
     case "enableLocalUnlock":
-      return requireVaultManager(sender, () => enableLocalUnlock(message.vaultId, message.password));
+      return requireVaultManager(sender, message.overlayToken, () => enableLocalUnlock(message.vaultId, message.password));
     case "unlockVaultLocally":
-      return requireVaultManager(sender, () => unlockVaultLocally(message.vaultId, message.password));
+      return requireVaultManager(sender, message.overlayToken, () => unlockVaultLocally(message.vaultId, message.password));
     case "disableLocalUnlock":
-      return requireVaultManager(sender, () => disableLocalUnlock(message.vaultId));
+      return requireVaultManager(sender, message.overlayToken, () => disableLocalUnlock(message.vaultId));
     case "lockVault":
-      return requireVaultManager(sender, () => lockVault(message.vaultId));
+      return requireVaultManager(sender, message.overlayToken, () => lockVault(message.vaultId));
     case "testWebDavConnection":
-      return requireVaultManager(sender, async () => {
+      return requireVaultManager(sender, message.overlayToken, async () => {
         await requestWebDavPermission(message.endpoint);
         try {
           return await testWebDavConnection(message);
@@ -262,7 +260,7 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
         }
       });
     case "saveWebDavVault":
-      return requireVaultManager(sender, async () => {
+      return requireVaultManager(sender, message.overlayToken, async () => {
         await requestWebDavPermission(message.endpoint);
         try {
           return await saveWebDavVault(message);
@@ -272,48 +270,42 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
         }
       });
     case "removeVault":
-      return requireVaultManager(sender, () => removeVault(message.vaultId));
+      return requireVaultManager(sender, message.overlayToken, () => removeVault(message.vaultId));
     case "vaultCatalog":
-      return requireVaultManager(sender, vaultCatalog);
+      return requireVaultManager(sender, message.overlayToken, vaultCatalog);
     case "createVaultApp":
-      return requireVaultManager(sender, () => createVaultApp(message.vaultId, message.app));
+      return requireVaultManager(sender, message.overlayToken, () => createVaultApp(message.vaultId, message.app));
     case "updateVaultApp":
-      return requireVaultManager(sender, () => updateVaultApp(message.vaultId, message.app));
+      return requireVaultManager(sender, message.overlayToken, () => updateVaultApp(message.vaultId, message.app));
     case "deleteVaultApp":
-      return requireVaultManager(sender, () => deleteVaultApp(message.vaultId, message.appId));
+      return requireVaultManager(sender, message.overlayToken, () => deleteVaultApp(message.vaultId, message.appId));
     case "createVaultAccount":
-      return requireVaultManager(sender, () => createVaultAccount(message.vaultId, message.account));
+      return requireVaultManager(sender, message.overlayToken, () => createVaultAccount(message.vaultId, message.account));
     case "updateVaultAccount":
-      return requireVaultManager(sender, () => updateVaultAccount(message.vaultId, message.account));
+      return requireVaultManager(sender, message.overlayToken, () => updateVaultAccount(message.vaultId, message.account));
     case "deleteVaultAccount":
-      return requireVaultManager(sender, () => deleteVaultAccount(message.vaultId, message.accountId));
+      return requireVaultManager(sender, message.overlayToken, () => deleteVaultAccount(message.vaultId, message.accountId));
     case "updateVaultCredential":
-      return requireVaultManager(sender, () => updateVaultCredential(message.vaultId, message.accountId, message.credential));
+      return requireVaultManager(sender, message.overlayToken, () => updateVaultCredential(message.vaultId, message.accountId, message.credential));
     case "importBrowserPasswords":
-      return requireVaultManager(sender, () => importBrowserPasswords(message.vaultId, message.records, message.strategy));
+      return requireVaultManager(sender, message.overlayToken, () => importBrowserPasswords(message.vaultId, message.records, message.strategy));
     case "previewBrowserPasswords":
-      return requireVaultManager(sender, () => previewBrowserPasswords(message.vaultId, message.records));
+      return requireVaultManager(sender, message.overlayToken, () => previewBrowserPasswords(message.vaultId, message.records));
     default:
       return Promise.reject(new Error("不支持的扩展请求"));
   }
 }
 
-function requireVaultManager<T>(sender: chrome.runtime.MessageSender, operation: () => Promise<T>): Promise<T> {
-  if (!isExtensionPageSender(sender, chrome.runtime.id, VAULT_MANAGER_PATHS)) return Promise.reject(new Error("Vault 管理请求来源无效"));
-  return operation();
+function requireVaultManager<T>(sender: chrome.runtime.MessageSender, overlayToken: string | undefined, operation: () => Promise<T>): Promise<T> {
+  if (isExtensionPageSender(sender, chrome.runtime.id, TRUSTED_EXTENSION_UI_PATHS)) return operation();
+  return isAuthorizedOverlayRequest(sender, overlayToken).then((authorized) => authorized
+    ? operation()
+    : Promise.reject(new Error("Vault 管理请求来源无效")));
 }
 
 function requireVaultUiPage<T>(sender: chrome.runtime.MessageSender, operation: () => Promise<T>): Promise<T> {
-  if (!isExtensionPageSender(sender, chrome.runtime.id, ["/passwords.html", "/popup.html"])) return Promise.reject(new Error("填充请求来源无效"));
+  if (!isExtensionPageSender(sender, chrome.runtime.id, ["/popup.html", "/manage.html"])) return Promise.reject(new Error("填充请求来源无效"));
   return operation();
-}
-
-function requireExtensionOrOverlay<T>(sender: chrome.runtime.MessageSender, overlayToken: string | undefined, operation: () => Promise<T>): Promise<T> {
-  const trustedExtensionPage = isExtensionPageSender(sender, chrome.runtime.id, ["/newtab.html", "/workspace.html", ...VAULT_MANAGER_PATHS]);
-  if (trustedExtensionPage) return operation();
-  return isAuthorizedOverlayRequest(sender, overlayToken).then((authorized) => authorized
-    ? operation()
-    : Promise.reject(new Error("凭据页面请求来源无效")));
 }
 
 async function refreshWebDavCatalog(): Promise<Awaited<ReturnType<typeof accountCatalog>>> {

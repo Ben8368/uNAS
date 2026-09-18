@@ -253,7 +253,7 @@ main {
   stroke-linejoin: round;
 }
 .tab svg { width: 15px; height: 15px; }
-.tab:hover { background: rgba(255, 255, 255, .045); color: var(--text-1); }
+.tab:hover { background: rgba(255, 255, 255, .025); color: var(--text-1); }
 .tab.active {
   border-color: rgba(65, 211, 155, .16);
   background: var(--green-soft);

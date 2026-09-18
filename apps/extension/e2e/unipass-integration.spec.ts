@@ -1,19 +1,5 @@
 import { test, expect } from './fixtures'
 
-test('uNAS exposes the WebDAV password manager as a packaged extension page', async ({ extension }) => {
-  const page = await extension.context.newPage()
-  await page.goto(`chrome-extension://${extension.extensionId}/passwords.html`)
-  await expect(page.locator('.app-window')).toBeVisible()
-  await expect(page.getByRole('heading', { name: '当前页面账号' })).toBeVisible()
-  const blocking = await page.evaluate(async () => {
-    const response = await (globalThis as unknown as { browser: { runtime: { sendMessage: (message: unknown) => Promise<unknown> } } }).browser.runtime.sendMessage({ type: 'getBlockingStatus' }) as { ok: boolean; data?: { enabled?: boolean } }
-    return response
-  })
-  expect(blocking.ok).toBe(true)
-  expect(blocking.data?.enabled).toBe(true)
-  expect(extension.errors).toEqual([])
-})
-
 test('the migrated UniPass overlay opens, fills, closes, and dies with an HTTPS page', async ({ extension }, testInfo) => {
   // Use an already-declared UniPass HTTPS host permission while intercepting
   // the response locally; this stays synthetic and never reaches the portal.
@@ -35,11 +21,27 @@ test('the migrated UniPass overlay opens, fills, closes, and dies with an HTTPS 
       return tab.id
     }, `${loginUrl}*`)
 
-    await worker.evaluate(async (id) => {
+    const openOverlay = async () => worker.evaluate(async ({ id, token }) => {
+      const [marker] = await chrome.scripting.executeScript({
+        target: { tabId: id },
+        func: (key: string, value: string) => { (globalThis as Record<string, unknown>)[key] = value },
+        args: ['__unas_unipass_overlay_token__', token],
+      })
+      if (!marker?.documentId) throw new Error('Overlay fixture document was not found.')
+      await chrome.storage.session.set({ 'unipass-overlay-tokens-v1': { [String(id)]: { token, documentId: marker.documentId } } })
       await chrome.scripting.executeScript({ target: { tabId: id }, files: ['page-overlay.js'] })
-    }, tabId)
+    }, { id: tabId, token: `e2e-overlay-${Date.now()}-${Math.random()}` })
+
+    await openOverlay()
     await expect(page.locator('#unipass-page-overlay')).toHaveCount(1)
     await page.locator('#unipass-page-overlay').screenshot({ path: testInfo.outputPath('unipass-original-overlay.png') })
+    const overlayBox = await page.locator('#unipass-page-overlay').boundingBox()
+    if (!overlayBox) throw new Error('Overlay fixture bounds were not found.')
+    // The overlay intentionally uses a closed Shadow DOM. Click the visible
+    // tab by its rendered geometry and retain a visual artifact instead of
+    // weakening that isolation with page-level DOM selectors.
+    await page.mouse.click(overlayBox.x + overlayBox.width * 0.75, overlayBox.y + 78)
+    await page.locator('#unipass-page-overlay').screenshot({ path: testInfo.outputPath('unipass-apps-overlay.png') })
 
     await worker.evaluate(async (id) => {
       await chrome.scripting.executeScript({ target: { tabId: id }, files: ['content-script.js'] })
@@ -56,21 +58,14 @@ test('the migrated UniPass overlay opens, fills, closes, and dies with an HTTPS 
 
     await page.keyboard.press('Escape')
     await expect(page.locator('#unipass-page-overlay')).toHaveCount(0)
-    await worker.evaluate(async (id) => {
-      await chrome.scripting.executeScript({ target: { tabId: id }, files: ['page-overlay.js'] })
-    }, tabId)
+    await openOverlay()
     await expect(page.locator('#unipass-page-overlay')).toHaveCount(1)
     await page.mouse.click(5, 5)
     await expect(page.locator('#unipass-page-overlay')).toHaveCount(0)
 
-    const unas = await extension.context.newPage()
-    await unas.goto(`chrome-extension://${extension.extensionId}/passwords.html`)
-    await expect(unas.locator('.app-window')).toBeVisible()
-    await unas.screenshot({ path: testInfo.outputPath('unas-passwords-page.png'), fullPage: true })
     await page.reload()
     await expect(page.locator('#unipass-page-overlay')).toHaveCount(0)
     await expect.poll(() => page.url()).toBe(loginUrl)
-    await expect(unas.locator('.app-window')).toBeVisible()
     expect(extension.errors).toEqual([])
   } finally {
     await extension.context.unroute(loginUrl)

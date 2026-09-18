@@ -134,7 +134,7 @@
   background: rgba(30, 55, 78, .08);
 }
 :root[data-theme="light"] .tab:hover {
-  background: rgba(30, 55, 78, .06);
+  background: rgba(30, 55, 78, .035);
   color: #334b62;
 }
 :root[data-theme="light"] .content-area::-webkit-scrollbar-thumb {

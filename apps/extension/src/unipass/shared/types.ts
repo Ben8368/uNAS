@@ -55,10 +55,11 @@ export interface CurrentUser {
 
 export type PopupSessionUser = Omit<CurrentUser, "nickname">;
 
-export type BackgroundRequest =
+type OverlayCapability = { overlayToken?: string };
+
+export type BackgroundRequest = OverlayCapability & (
   | { type: "session" }
   | { type: "pageContext" }
-  | { type: "openCredentialPage"; overlayToken?: string }
   | { type: "pageTheme" }
   | { type: "openApp"; appId: string | number; vaultId?: string; userScope: string }
   | { type: "fillFromOverlay"; accountId: string | number; accountRef?: AccountRef; expectedAppUrl: string; userScope?: string }
@@ -100,7 +101,7 @@ export type BackgroundRequest =
   | { type: "deleteVaultAccount"; vaultId: string; accountId: string }
   | { type: "updateVaultCredential"; vaultId: string; accountId: string; credential: { password: string } }
   | { type: "previewBrowserPasswords"; vaultId: string; records: BrowserPasswordImportRecord[] }
-  | { type: "importBrowserPasswords"; vaultId: string; records: BrowserPasswordImportRecord[]; strategy: BrowserImportDuplicateStrategy };
+  | { type: "importBrowserPasswords"; vaultId: string; records: BrowserPasswordImportRecord[]; strategy: BrowserImportDuplicateStrategy });
 
 export type BackgroundResponse<T = unknown> =
   | { ok: true; data: T }

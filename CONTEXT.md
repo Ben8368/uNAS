@@ -2,7 +2,7 @@
 
 > **最后确认：** 2026-09-18
 > **阶段：** Phase 2 / UniPass capability integration
-> **产品代码：** uNAS 唯一 WXT MV3 包已接入 UniPass AdBlock、WebDAV Vault、Legacy adapter、原版 closed Shadow DOM 页面浮层和 `passwords.html`；原有 New Tab/Workspace 保持。
+> **产品代码：** uNAS 唯一 WXT MV3 包已接入 UniPass AdBlock、WebDAV Vault、Legacy adapter 和原版 closed Shadow DOM 页面浮层；密码库管理不再另开独立 `passwords.html`，原有 New Tab/Workspace 保持。
 
 ## 当前决策
 
@@ -29,7 +29,7 @@
 
 ## 最近验证
 
-- 2026-09-18：[融合验证记录](docs/QUALITY.md)：`pnpm verify` 通过（27 个测试文件、119 个测试）；`pnpm test:e2e` 通过（41/41，0 skipped）。E2E 使用 HTTPS 合成登录页验证浮层打开、合成填充、Escape/外部点击关闭、重开和页面 reload 生命周期，并保留原版浮层与 uNAS `passwords.html` 的截图证据。构建包含单一 `background.js`、AdBlock content script、`page-overlay.js`、`passwords.html` 和 `credential-core.wasm`。
+- 2026-09-18：[融合验证记录](docs/QUALITY.md)：本轮 `pnpm verify` 通过（27 个测试文件、119 个测试），`pnpm test:e2e` 通过（40/40，0 skipped）。E2E 使用 HTTPS 合成登录页验证浮层打开、tab 切换、合成填充、Escape/外部点击关闭、重开和页面 reload 生命周期，并保存 `unipass-original-overlay.png` 与 `unipass-apps-overlay.png`；构建包含单一 `background.js`、AdBlock content script、`page-overlay.js` 和 `credential-core.wasm`，且不再包含 `passwords.html`。
 
 ## 按需入口
 

@@ -9,7 +9,6 @@ const DownloaderApp = lazy(async () => { await inlineWorkspace.connect(); return
 const FileManagerApp = lazy(async () => { await inlineWorkspace.connect(); return import('unas-src/apps/FileManagerApp').then((module) => ({ default: module.FileManagerApp })) })
 const SettingsApp = lazy(() => import('unas-src/apps/SettingsApp').then((module) => ({ default: module.SettingsApp })))
 const LogViewer = lazy(() => import('unas-src/LogViewer').then((module) => ({ default: module.LogViewer })))
-const PasswordsApp = lazy(() => import('unas-src/apps/PasswordsApp').then((module) => ({ default: module.PasswordsApp })))
 
 export type RegisteredApp = {
   id: WorkbenchAppId
@@ -26,7 +25,6 @@ export const appRegistry: RegisteredApp[] = [
   { id: 'file-manager', label: '文件管理', title: '文件管理', icon: APP_ICON_PATHS.fileManager, component: FileManagerApp, status: 'stable' },
   { id: 'fetcher', label: '下载', title: '下载', icon: APP_ICON_PATHS.fetcher, component: DownloaderApp, status: 'stable' },
   { id: 'settings', label: '设置', title: '设置', icon: APP_ICON_PATHS.settings, component: SettingsApp, status: 'beta', launcherVisible: false },
-  { id: 'passwords', label: '密码管理', title: '密码管理', icon: APP_ICON_PATHS.ps, component: PasswordsApp, status: 'stable' },
   { id: 'logs', label: '日志', title: '日志', icon: APP_ICON_PATHS.logs, component: LogViewer, status: 'hidden', launcherVisible: false },
 ]
 

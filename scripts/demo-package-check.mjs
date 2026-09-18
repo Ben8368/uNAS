@@ -69,7 +69,7 @@ while (queue.length) {
   for (const match of code.matchAll(/(?:\bfrom\s*|\bimport\s*)["']([^"']+\.js)["']/g)) queue.push(resolve(dirname(file), match[1]))
 }
 if (initial > budgets.initialNewTabJavaScriptBytes) errors.push(`New Tab 初始静态 JS 超预算: ${initial}`)
-if (!await stat(resolve(output, 'passwords.html')).catch(() => null)) errors.push('密码管理器页面未进入扩展包。')
+if (await stat(resolve(output, 'passwords.html')).catch(() => null)) errors.push('已移除的 passwords.html 不应进入扩展包。')
 for (const file of ['background.js', 'page-overlay.js', 'content-script.js', 'credential-core.wasm']) if (!await stat(resolve(output, file)).catch(() => null)) errors.push(`关键 UniPass 产物缺失: ${file}`)
 if (errors.length) { console.error(errors.join('\n')); process.exitCode = 1 }
 else console.log(`uNAS 集成包检查通过: total=${total} B, initial static JS=${initial} B, public=${assetBytes} B；单一 MV3 background + AdBlock/Vault/浮层产物已登记。`)

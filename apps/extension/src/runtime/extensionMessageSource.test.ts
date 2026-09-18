@@ -13,7 +13,7 @@ describe("UniPass message source boundary", () => {
   });
 
   it("keeps Vault-capable requests on top-level extension pages", () => {
-    expect(isUniPassSender({ id: extensionId, url: "chrome-extension://unas-test/passwords.html", frameId: 0 }, extensionId, { type: "removeVault", vaultId: "vault" })).toBe(true);
+    expect(isUniPassSender({ id: extensionId, url: "chrome-extension://unas-test/workspace.html", frameId: 0 }, extensionId, { type: "removeVault", vaultId: "vault" })).toBe(true);
     expect(isUniPassSender({ ...page, frameId: 0 }, extensionId, { type: "removeVault", vaultId: "vault" })).toBe(true);
     expect(isUniPassSender({ ...page, frameId: 0 }, extensionId, { type: "fillFromPopup", tabId: 7, accountId: "a", expectedAppUrl: "https://example.test" })).toBe(true);
   });

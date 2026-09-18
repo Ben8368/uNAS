@@ -20,7 +20,7 @@ export async function fillTargetForAccount(ref: AccountRef, pageUrl: string): Pr
 }
 
 export function assertRevealSource(sender: chrome.runtime.MessageSender, ref?: AccountRef): asserts ref is AccountRef {
-  if (!isExtensionPageSender(sender, chrome.runtime.id, ["/passwords.html", "/popup.html"])) {
+  if (!isExtensionPageSender(sender, chrome.runtime.id, ["/popup.html", "/manage.html"])) {
     throw new Error("仅允许在扩展账号详情页查看密码");
   }
   if (!ref || ref.vaultId === "legacy-unipass") throw new Error("仅支持查看 WebDAV 账号密码");

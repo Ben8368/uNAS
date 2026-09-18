@@ -197,7 +197,7 @@ OpenIntent
 uNAS 的唯一 WXT Background Entry 同时初始化 uNAS Workspace 与 UniPass capability services：
 
 ```text
-New Tab / Workspace / passwords.html / page overlay
+New Tab / Workspace / page overlay
                  ↓
       unified extension message router
           ┌──────┴─────────┐
@@ -211,4 +211,4 @@ New Tab / Workspace / passwords.html / page overlay
 - `entrypoints/adblock.content.ts` 只处理 cosmetic rules；`content-script.js` 和 `page-overlay.js` 是用户触发的 unlisted scripts，分别用于一次性填充和页面浮层。
 - `installUniPassBackground()` 不注册第二个 `runtime.onMessage` listener；消息由 `installWorkspaceRouter()` 做来源/页面/动作分流。密码消息不能由普通网页触发，AdBlock content script 不能调用 Vault 操作。
 - `apps/extension/src/unipass/background/vault/vault-core.ts`、WebDAV backend、encrypted cache 和 sync engine 不依赖 Legacy；`legacy-credential-source.ts` 只作为可删除的兼容 adapter。
-- `passwords.html` 是新增的管理页，uNAS Desktop 的 `passwords` System App 只负责打开它；工具栏 action 永远保留原 UniPass closed Shadow DOM 浮层入口。
+- 不再新增独立 `passwords.html` 管理页或 `passwords` System App；WebDAV Vault 管理只通过用户主动打开的原 UniPass closed Shadow DOM 浮层完成。

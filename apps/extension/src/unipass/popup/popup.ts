@@ -1,8 +1,8 @@
 import type { PageContext, PageTheme, PopupSessionUser, UniPassLoginStartResult } from "../shared/types";
-import { send } from "./bridge";
+import { send, setOverlayToken } from "./bridge";
 import { CatalogController } from "./catalog";
 import { CredentialController } from "./credentials";
-import { button, DomStorage, errorText, get, queryAll, setDomRoot } from "./dom";
+import { DomStorage, errorText, get, queryAll, setDomRoot } from "./dom";
 import { SettingsController } from "./settings";
 
 const PORTAL_URL = "https://portal.unipass.top/application";
@@ -24,6 +24,7 @@ export interface PopupHandle {
 
 export function initializePopup(environment: PopupEnvironment = {}): PopupHandle {
   setDomRoot(environment.root ?? document);
+  setOverlayToken(environment.overlay ? environment.overlayToken : undefined);
   const identity = get("identity");
   const sessionBadge = get<HTMLButtonElement>("sessionBadge");
   const status = get("status");
@@ -111,13 +112,6 @@ export function initializePopup(environment: PopupEnvironment = {}): PopupHandle
   }
 
   function bindControls(): void {
-    if (environment.overlay) {
-      const openCredentials = button("打开扩展密码页");
-        openCredentials.addEventListener("click", () => {
-          void send<void>({ type: "openCredentialPage", overlayToken: environment.overlayToken }).catch((error) => setStatus(errorText(error), true));
-      });
-      get("appsListHeading").append(openCredentials);
-    }
     sessionBadge.addEventListener("click", () => {
       if (sessionBadge.classList.contains("online")) {
         window.open(PORTAL_URL, "_blank");

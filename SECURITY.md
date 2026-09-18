@@ -54,9 +54,9 @@ User file / archive / media    不可信输入
 
 - Vault 使用 UniPass 现有 AES-256-GCM envelope、Vault Key、PBKDF2 本地解锁、加密 IndexedDB cache、dirty queue、ETag 冲突和 tombstone；明文密码只在后台短暂获取，并在填充/复制路径清理，不进入 uNAS Desktop store、BroadcastChannel、日志或持久化普通 JSON。
 - `CredentialSource` 将 WebDAV Vault 与 `legacy-unipass` 分开；Legacy API/Jupiter/旧 AES 解密/WASM 只在 adapter 中注册。禁用 Legacy 不改变 WebDAV Vault、AdBlock、New Tab、Workspace 或浮层的核心构建路径。
-- 工具栏 action 没有 `default_popup`；它只针对当前用户点击的 HTTPS tab 注入原 UniPass DOM/CSS 浮层，保持 closed Shadow DOM、外部点击/Escape 关闭和页面主题采样。`passwords.html` 是管理入口，不替代浮层。
-- 消息路由只为经过严格校验的 `getCosmeticRules` 请求开放非顶层 frame；其他 UniPass 消息仍要求顶层来源。`removeVault`、`saveWebDavVault`、`updateVaultCredential` 和 `fillFromPopup` 只接受扩展管理页，广告 Content Script 不能调用 Vault 管理或 popup 填充接口。
-- 原版浮层打开管理页时携带 action 注入生成的 session capability token，并绑定 sender `tabId`、`documentId`；普通网页/广告 Content Script 没有该 token。浮层填充仍只走用户触发的原版 overlay 路径，不把 Vault 管理权限扩给页面脚本。
+- 工具栏 action 没有 `default_popup`；它只针对当前用户点击的 HTTPS tab 注入原 UniPass DOM/CSS 浮层，保持 closed Shadow DOM、外部点击/Escape 关闭和页面主题采样。密码库管理也只在这个用户主动打开的浮层中完成，不再维护独立 `passwords.html` 页面。
+- 消息路由只为经过严格校验的 `getCosmeticRules` 请求开放非顶层 frame；其他 UniPass 消息仍要求顶层来源。`removeVault`、`saveWebDavVault`、`updateVaultCredential` 和 `fillFromPopup` 不能由广告 Content Script 调用。
+- 原版浮层由 action 注入绑定 `sender.tabId`、`sender.documentId` 的 session capability token；只有持有该 token 的用户浮层可以完成 WebDAV Vault 管理读写，普通网页/广告 Content Script 没有该 token。`fillFromPopup` 仍只接受受信任扩展 UI，浮层填充继续走单独的用户触发路径。
 - 两个扩展 ID 不共享本地 storage、IndexedDB 或设备密钥。迁移必须通过用户提供的 WebDAV 连接材料和 Vault Key；uNAS 验证前不删除旧扩展、旧本地数据或远端对象。当前 uNAS 尚未提交维护者签名 key，最终固定扩展 ID 是发布前阻断项。
 
 ## MV3 生命周期
