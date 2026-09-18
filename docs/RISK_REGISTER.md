@@ -29,9 +29,9 @@
 ### RISK-014（P0）：UniPass 融合的真实凭据路径与发布身份尚未全部验收
 
 - **阻断 Gate：** UniPass/uNAS 公开发布 Gate；不阻断当前本地解包构建。
-- **问题：** 单一 MV3 构建、AdBlock/Vault 代码和 headless E2E 已通过，但工具栏 `action.onClicked` 的真实用户手势、原版浮层视觉对比、合成账号填充、真实 WebDAV 冲突恢复、UniPass 资源再分发许可和 uNAS 维护者签名 key/固定扩展 ID 尚未完成。
+- **问题：** 单一 MV3 构建、AdBlock/Vault 代码和默认 MV3 E2E（41/41，0 skipped）已通过；但工具栏 `action.onClicked` 的真实系统手势、独立原版 UniPass 扩展与 uNAS 的人工视觉对照、真实 WebDAV 冲突恢复、UniPass 资源再分发许可和 uNAS 维护者签名 key/固定扩展 ID尚未完成。
 - **控制：** 保留原 UniPass WebDAV 恢复路径和旧扩展回滚来源；不复制 storage/IndexedDB、不自动卸载旧扩展、不使用真实凭据；Playwright 测试明确跳过无法模拟 action 手势的场景。
-- **关闭证据：** 隔离 Chrome Profile 的浅/深主题截图对比、工具栏打开/关闭/外部点击/Escape/SPA 测试、合成账号填充、合成 WebDAV 服务冲突夹具、许可批准记录和维护者保管的签名 key 对应 manifest。
+- **关闭证据：** 隔离 Chrome Profile 的浅/深主题截图对比、工具栏真实点击打开/关闭/外部点击/Escape/SPA 测试、独立原版 UniPass 对照、合成账号填充、合成 WebDAV 服务冲突夹具、许可批准记录和维护者保管的签名 key 对应 manifest。当前 E2E 已提供 HTTPS 合成页、原版浮层/ uNAS 管理页截图，但不关闭独立扩展和真实 action 手势缺口。
 
 ### RISK-006（P0）：ffmpeg.wasm、WebCodecs 与媒体范围未知
 

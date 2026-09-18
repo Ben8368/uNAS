@@ -14,6 +14,7 @@ export interface PopupEnvironment {
   pageContext?: () => Promise<PageContext>;
   openApp?: (appId: string | number, userScope: string, vaultId?: string) => Promise<void>;
   overlay?: boolean;
+  overlayToken?: string;
   themeTarget?: HTMLElement;
 }
 
@@ -112,8 +113,8 @@ export function initializePopup(environment: PopupEnvironment = {}): PopupHandle
   function bindControls(): void {
     if (environment.overlay) {
       const openCredentials = button("打开扩展密码页");
-      openCredentials.addEventListener("click", () => {
-        void send<void>({ type: "openCredentialPage" }).catch((error) => setStatus(errorText(error), true));
+        openCredentials.addEventListener("click", () => {
+          void send<void>({ type: "openCredentialPage", overlayToken: environment.overlayToken }).catch((error) => setStatus(errorText(error), true));
       });
       get("appsListHeading").append(openCredentials);
     }

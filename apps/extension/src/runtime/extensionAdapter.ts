@@ -3,6 +3,7 @@ import { applyLinkMutation, isLinkMutation, parseLinks } from './linkApps'
 import { extensionApi, getExtensionLocalValue, type ExtensionMessageSender, setExtensionLocalValue } from './extensionPlatform'
 import { isDirectDownloadUrl } from './browserDownloads'
 import { handleUniPassMessage, isUniPassMessage } from 'unas-src/unipass/background/service-worker'
+import { isExtensionPageSender, isWebPageSender } from 'unas-src/unipass/background/sender-guard'
 
 const LINK_STORAGE_KEY = 'unas-link-apps-v1'
 type RuntimeResponse = { ok: false; error: string } | { ok: true; links?: unknown; downloadId?: number; download?: unknown; downloads?: unknown[] }
@@ -40,14 +41,12 @@ function isExtensionPage(sender: ExtensionMessageSender, extensionId: string) {
   } catch { return false }
 }
 
-function isUniPassSender(sender: ExtensionMessageSender, extensionId: string): boolean {
-  if (sender.id !== extensionId || (sender.frameId !== undefined && sender.frameId !== 0)) return false
-  try {
-    const url = new URL(sender.url || '')
-    if (url.protocol === 'http:' || url.protocol === 'https:') return sender.tab?.id !== undefined
-    return url.protocol === 'chrome-extension:' && url.host === extensionId
-      && ['/newtab.html', '/workspace.html', '/passwords.html', '/popup.html', '/manage.html'].includes(url.pathname)
-  } catch { return false }
+export function isUniPassSender(sender: ExtensionMessageSender, extensionId: string, message?: unknown): boolean {
+  const isCosmeticRulesRequest = Boolean(message && typeof message === 'object' && !Array.isArray(message)
+    && Object.keys(message).sort().join(',') === 'type'
+    && (message as { type?: unknown }).type === 'getCosmeticRules')
+  if (isWebPageSender(sender, extensionId, isCosmeticRulesRequest)) return true
+  return isExtensionPageSender(sender, extensionId, ['/newtab.html', '/workspace.html', '/passwords.html', '/popup.html', '/manage.html'])
 }
 
 function isBrowserDownloadMessage(message: unknown): message is { kind: 'browser.download'; url: string } | { kind: 'browser.download.get'; downloadId: number } | { kind: 'browser.download.cancel'; downloadId: number } | { kind: 'browser.download.forget'; downloadId: number } | { kind: 'browser.download.list' } | { kind: 'browser.download.show' } {
@@ -147,7 +146,7 @@ export function installWorkspaceRouter() {
   runtime.onMessage.addListener(async (message, sender) => {
     if (isPasswordManagerMessage(message) && isExtensionPage(sender, runtime.id)) return await openPasswordManager()
     if (isUniPassMessage(message)) {
-      if (!isUniPassSender(sender, runtime.id)) return { ok: false, error: 'UniPass 消息来源无效。' }
+      if (!isUniPassSender(sender, runtime.id, message)) return { ok: false, error: 'UniPass 消息来源无效。' }
       return await handleUniPassMessage(message, sender as chrome.runtime.MessageSender)
     }
     if (isLinkMutation(message) && isExtensionPage(sender, runtime.id)) return await mutateLinks(message)

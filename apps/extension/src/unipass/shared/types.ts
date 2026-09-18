@@ -58,7 +58,7 @@ export type PopupSessionUser = Omit<CurrentUser, "nickname">;
 export type BackgroundRequest =
   | { type: "session" }
   | { type: "pageContext" }
-  | { type: "openCredentialPage" }
+  | { type: "openCredentialPage"; overlayToken?: string }
   | { type: "pageTheme" }
   | { type: "openApp"; appId: string | number; vaultId?: string; userScope: string }
   | { type: "fillFromOverlay"; accountId: string | number; accountRef?: AccountRef; expectedAppUrl: string; userScope?: string }

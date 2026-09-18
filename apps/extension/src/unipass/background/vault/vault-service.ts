@@ -10,7 +10,7 @@ import { EncryptedVaultCache } from "./local-cache";
 import { VaultSyncEngine, type VaultSyncStatus } from "./sync-engine";
 import { clearVaultSyncReady, isVaultSyncReady, markVaultSyncReady } from "./sync-readiness";
 import { importDisplayName, normalizeBrowserPasswordRecord, type BrowserPasswordImportRecord } from "../../shared/import/normalize";
-import { legacyCredentialAvailability, legacyCredentialSource } from "../legacy-credential-source";
+import { credentialSourceAvailabilityFor, credentialSourceFor } from "../credential-source-registry";
 
 const PROFILES_KEY = "unipass-vault-profiles";
 const SESSION_SECRETS_KEY = "unipass-vault-session-secrets";
@@ -190,11 +190,11 @@ export async function vaultAccounts(vaultId: string, appId: string): Promise<Acc
 export async function vaultAppUrl(vaultId: string, appId: string): Promise<string> { const catalog = await coreFor(await profileFor(vaultId)).then((core) => core.catalog()); const app = catalog.apps.find((candidate) => candidate.id === appId); if (!app?.targets[0]) throw new Error("该应用没有可用的登录地址"); return targetToUrl(app.targets[0]); }
 export async function targetsForAccountRef(ref: AccountRef): Promise<VaultApp["targets"]> { return coreFor(await profileFor(ref.vaultId)).then((core) => core.targetsForAccount(ref)); }
 export async function credentialForRef(ref: AccountRef): Promise<{ username: string; password: string }> {
-  if (ref.vaultId === LEGACY_VAULT_ID) return legacyCredentialSource.getCredential(ref.accountId);
+  if (ref.vaultId === LEGACY_VAULT_ID) return credentialSourceFor(LEGACY_VAULT_ID).getCredential(ref.accountId);
   return coreFor(await profileFor(ref.vaultId)).then((core) => core.credential(ref));
 }
 export async function credentialAvailabilityForRef(ref: AccountRef): Promise<"available" | "empty"> {
-  if (ref.vaultId === LEGACY_VAULT_ID) return legacyCredentialAvailability(ref.accountId);
+  if (ref.vaultId === LEGACY_VAULT_ID) return credentialSourceAvailabilityFor(LEGACY_VAULT_ID)(ref.accountId);
   return coreFor(await profileFor(ref.vaultId)).then((core) => core.credentialAvailability(ref));
 }
 export async function createVaultApp(vaultId: string, input: Omit<VaultApp, "id" | "vaultId">): Promise<VaultApp> { return localWrite(vaultId, (core) => core.createApp(input)); }

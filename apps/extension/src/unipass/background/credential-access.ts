@@ -2,6 +2,7 @@ import { accountCatalog } from "../shared/api";
 import type { AccountRef, VaultTarget } from "../shared/vault";
 import { appUrlMatches, vaultTargetMatches } from "../shared/url";
 import { targetsForAccountRef } from "./vault/vault-service";
+import { isExtensionPageSender } from "./sender-guard";
 
 /** Resolve ownership from the backend, never from caller-supplied directory metadata. */
 export async function fillTargetForAccount(ref: AccountRef, pageUrl: string): Promise<{ expectedAppUrl: string; targets?: VaultTarget[] }> {
@@ -19,8 +20,7 @@ export async function fillTargetForAccount(ref: AccountRef, pageUrl: string): Pr
 }
 
 export function assertRevealSource(sender: chrome.runtime.MessageSender, ref?: AccountRef): asserts ref is AccountRef {
-  const allowedPage = sender.url === chrome.runtime.getURL("passwords.html") || sender.url === chrome.runtime.getURL("popup.html");
-  if (sender.id !== chrome.runtime.id || !allowedPage) {
+  if (!isExtensionPageSender(sender, chrome.runtime.id, ["/passwords.html", "/popup.html"])) {
     throw new Error("仅允许在扩展账号详情页查看密码");
   }
   if (!ref || ref.vaultId === "legacy-unipass") throw new Error("仅支持查看 WebDAV 账号密码");

@@ -29,7 +29,7 @@
 
 ## 最近验证
 
-- 2026-09-18：[融合验证记录](docs/QUALITY.md)：`pnpm verify` 通过；UniPass `npm test` 基线 179/179 通过；uNAS MV3 E2E 40/40 通过，2 项工具栏浮层手势测试因 headless 限制跳过。构建包含单一 `background.js`、AdBlock content script、`page-overlay.js`、`passwords.html` 和 `credential-core.wasm`。
+- 2026-09-18：[融合验证记录](docs/QUALITY.md)：`pnpm verify` 通过（27 个测试文件、119 个测试）；`pnpm test:e2e` 通过（41/41，0 skipped）。E2E 使用 HTTPS 合成登录页验证浮层打开、合成填充、Escape/外部点击关闭、重开和页面 reload 生命周期，并保留原版浮层与 uNAS `passwords.html` 的截图证据。构建包含单一 `background.js`、AdBlock content script、`page-overlay.js`、`passwords.html` 和 `credential-core.wasm`。
 
 ## 按需入口
 

@@ -6,6 +6,9 @@ import { detectPageTheme } from "../shared/page-theme";
 import { assertCurrentUserScope } from "./user-scope-guard";
 import { fillTargetForAccount } from "./credential-access";
 
+const OVERLAY_TOKEN_KEY = "unipass-overlay-tokens-v1";
+const OVERLAY_TOKEN_GLOBAL = "__unas_unipass_overlay_token__";
+
 export async function pageContextFor(sender: chrome.runtime.MessageSender): Promise<PageContext> {
   const tab = sender.tab;
   if (tab?.id == null || !tab.url) throw new Error("无法识别当前页面");
@@ -30,7 +33,29 @@ export async function openApp(appId: string | number): Promise<void> {
 export async function togglePageOverlay(tabId: number): Promise<void> {
   const tab = await chrome.tabs.get(tabId);
   if (!tab.url || !isHttpsUrl(tab.url)) return;
+  const token = crypto.randomUUID();
+  const [marker] = await chrome.scripting.executeScript({
+    target: { tabId },
+    func: (key: string, value: string) => { (globalThis as Record<string, unknown>)[key] = value; },
+    args: [OVERLAY_TOKEN_GLOBAL, token],
+  });
+  if (!marker?.documentId) throw new Error("无法确认浮层页面");
+  const tokens = await readOverlayTokens();
+  tokens[String(tabId)] = { token, documentId: marker.documentId };
+  await chrome.storage.session.set({ [OVERLAY_TOKEN_KEY]: tokens });
   await chrome.scripting.executeScript({ target: { tabId }, files: ["page-overlay.js"] });
+}
+
+export async function isAuthorizedOverlayRequest(sender: chrome.runtime.MessageSender, token: string | undefined): Promise<boolean> {
+  if (!token || sender.tab?.id == null || !sender.documentId) return false;
+  const record = (await readOverlayTokens())[String(sender.tab.id)];
+  return record?.token === token && record.documentId === sender.documentId;
+}
+
+async function readOverlayTokens(): Promise<Record<string, { token: string; documentId: string }>> {
+  const stored = (await chrome.storage.session.get(OVERLAY_TOKEN_KEY))[OVERLAY_TOKEN_KEY];
+  if (!stored || typeof stored !== "object" || Array.isArray(stored)) return {};
+  return stored as Record<string, { token: string; documentId: string }>;
 }
 
 export async function fillFromOverlay(

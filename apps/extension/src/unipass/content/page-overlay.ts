@@ -8,6 +8,9 @@ import { initializePopup, type PopupHandle } from "../popup/popup";
 import type { PageContext } from "../shared/types";
 
 const OVERLAY_ID = "unipass-page-overlay";
+const OVERLAY_TOKEN_KEY = "__unas_unipass_overlay_token__";
+const overlayToken = (globalThis as typeof globalThis & { [OVERLAY_TOKEN_KEY]?: unknown })[OVERLAY_TOKEN_KEY];
+if (OVERLAY_TOKEN_KEY in globalThis) delete (globalThis as typeof globalThis & { [OVERLAY_TOKEN_KEY]?: unknown })[OVERLAY_TOKEN_KEY];
 
 const existing = document.getElementById(OVERLAY_ID);
 if (existing) {
@@ -77,6 +80,7 @@ async function mount(): Promise<void> {
     storage: createMemoryStorage(),
     overlay: true,
     themeTarget: overlayRoot,
+    overlayToken: typeof overlayToken === "string" ? overlayToken : undefined,
     pageContext: () => send<PageContext>({ type: "pageContext" }),
     openApp: (appId, userScope, vaultId) => send<void>({ type: "openApp", appId, vaultId, userScope }),
   });

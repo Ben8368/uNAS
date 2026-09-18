@@ -48,9 +48,10 @@ import {
   syncStoredJupiterSessionToTab,
 } from "./jupiter-keepalive";
 import { clearUniPassLoginForTab, completeUniPassLogin, processUniPassLoginTab, startUniPassLogin } from "./unipass-login";
-import { fillFromOverlay, fillFromPopup, openApp, pageContextFor, pageThemeFor, togglePageOverlay } from "./page-overlay";
+import { fillFromOverlay, fillFromPopup, isAuthorizedOverlayRequest, openApp, pageContextFor, pageThemeFor, togglePageOverlay } from "./page-overlay";
 import { assertRevealSource } from "./credential-access";
 import { legacyAccountCatalog } from "./legacy-catalog";
+import { installLegacyCredentialSource } from "./credential-source-composition";
 import { assertCurrentUserScope, withUserScope } from "./user-scope-guard";
 import { getBlockingStatus, initializeBlocking } from "./blocking/blocker";
 import { currentSiteState, isSitePaused, pauseCurrentSite, resumeCurrentSite } from "./blocking/site-pauses";
@@ -60,6 +61,9 @@ import type { BackgroundRequest, BackgroundResponse } from "../shared/types";
 import { updateFilterSubscriptions } from "./blocking/filter-updater";
 import { FILTER_GENERATION, FILTER_UPDATE_ALARM } from "./blocking/subscriptions";
 import { BLOCKING_RECONCILE_ALARM } from "../shared/blocking";
+import { isExtensionPageSender, isWebPageSender } from "./sender-guard";
+
+const VAULT_MANAGER_PATHS = ["/passwords.html", "/popup.html", "/manage.html"] as const;
 
 function refreshBlockingSubscriptions(): void {
   void updateFilterSubscriptions().catch(() => console.warn("规则订阅状态无法保存，将在下次启动或定时检查时重试"));
@@ -72,6 +76,7 @@ let installed = false;
 export function installUniPassBackground(): void {
   if (installed) return;
   installed = true;
+  installLegacyCredentialSource();
   refreshBlockingSubscriptions();
   void initializeBlocking().catch((error: unknown) => console.warn("广告拦截状态恢复失败", error));
   void chrome.alarms.create(VAULT_SYNC_ALARM, { periodInMinutes: 5 });
@@ -141,7 +146,7 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
     case "session":
       return currentUser().then(popupSessionUserFor);
     case "openCredentialPage":
-      return requireVaultManager(sender, () => chrome.tabs.create({ url: chrome.runtime.getURL("passwords.html") }));
+      return requireExtensionOrOverlay(sender, message.overlayToken, () => chrome.tabs.create({ url: chrome.runtime.getURL("passwords.html") }));
     case "pageContext":
       return pageContextFor(sender);
     case "pageTheme":
@@ -151,7 +156,9 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
     case "fillFromOverlay":
       return requiresUniPassScope(message) ? withUserScope(message.userScope ?? "", () => fillFromOverlay(sender, message)) : fillFromOverlay(sender, message);
     case "fillFromPopup":
-      return requiresUniPassScope(message) ? withUserScope(message.userScope ?? "", () => fillFromPopup(message)) : fillFromPopup(message);
+      return requireVaultUiPage(sender, () => requiresUniPassScope(message)
+        ? withUserScope(message.userScope ?? "", () => fillFromPopup(message))
+        : fillFromPopup(message));
     case "startUniPassLogin":
       return startUniPassLogin();
     case "completeUniPassLogin":
@@ -170,7 +177,7 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
       return resumeCurrentSite(sender, message.tabId);
     case "getCosmeticRules":
       return (async () => {
-        if (sender.id !== chrome.runtime.id) return { generation: 0, selectors: [], scriptlets: [] };
+        if (!isWebPageSender(sender, chrome.runtime.id, true)) return { generation: 0, selectors: [], scriptlets: [] };
         const url = sender.url;
         if (!url) return { generation: 0, selectors: [], scriptlets: [] };
         const parsed = new URL(url);
@@ -292,8 +299,21 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
 }
 
 function requireVaultManager<T>(sender: chrome.runtime.MessageSender, operation: () => Promise<T>): Promise<T> {
-  if (sender.id !== chrome.runtime.id) return Promise.reject(new Error("Vault 管理请求来源无效"));
+  if (!isExtensionPageSender(sender, chrome.runtime.id, VAULT_MANAGER_PATHS)) return Promise.reject(new Error("Vault 管理请求来源无效"));
   return operation();
+}
+
+function requireVaultUiPage<T>(sender: chrome.runtime.MessageSender, operation: () => Promise<T>): Promise<T> {
+  if (!isExtensionPageSender(sender, chrome.runtime.id, ["/passwords.html", "/popup.html"])) return Promise.reject(new Error("填充请求来源无效"));
+  return operation();
+}
+
+function requireExtensionOrOverlay<T>(sender: chrome.runtime.MessageSender, overlayToken: string | undefined, operation: () => Promise<T>): Promise<T> {
+  const trustedExtensionPage = isExtensionPageSender(sender, chrome.runtime.id, ["/newtab.html", "/workspace.html", ...VAULT_MANAGER_PATHS]);
+  if (trustedExtensionPage) return operation();
+  return isAuthorizedOverlayRequest(sender, overlayToken).then((authorized) => authorized
+    ? operation()
+    : Promise.reject(new Error("凭据页面请求来源无效")));
 }
 
 async function refreshWebDavCatalog(): Promise<Awaited<ReturnType<typeof accountCatalog>>> {

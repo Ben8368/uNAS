@@ -8,6 +8,7 @@ import type { CredentialSource } from './credential-source'
  */
 export const legacyCredentialSource: CredentialSource = {
   id: 'legacy-unipass',
+  availability: legacyCredentialAvailability,
   async listAccounts(): Promise<readonly UniPassAccount[]> {
     const catalog = await accountCatalog()
     return catalog.entries.flatMap((entry) => entry.accounts)
