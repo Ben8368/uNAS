@@ -9,7 +9,6 @@ export default defineConfig({
     version: '0.3.0',
     minimum_chrome_version: '148',
     permissions: ['storage', 'downloads'],
-    action: { default_title: '打开 uNAS' },
   },
   vite: () => ({
     plugins: [react()],

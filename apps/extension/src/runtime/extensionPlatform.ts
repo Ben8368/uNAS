@@ -1,5 +1,4 @@
 type ExtensionApi = {
-  action?: { onClicked: { addListener(listener: () => Promise<void>): void } }
   runtime?: {
     id: string
     getURL(path: string): string

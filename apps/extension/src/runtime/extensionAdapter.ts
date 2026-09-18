@@ -114,17 +114,6 @@ async function mutateLinks(message: unknown): Promise<RuntimeResponse> {
   return await result
 }
 
-export function installToolbarAction() {
-  const browser = extensionApi()
-  const runtime = browser?.runtime
-  const tabs = browser?.tabs
-  if (!runtime?.id || !browser?.action?.onClicked || !tabs) return
-  browser.action.onClicked.addListener(async () => {
-    try { await tabs.create({ url: runtime.getURL('/newtab.html'), active: true }) }
-    catch (error) { console.error('无法打开 uNAS 标签页', error) }
-  })
-}
-
 /** Reject old page bundles instead of allowing them to create a second desktop. */
 export function installWorkspaceRouter() {
   const browser = extensionApi()
