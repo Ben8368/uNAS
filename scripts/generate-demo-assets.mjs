@@ -5,6 +5,8 @@ import { resolve } from 'node:path'
 // Original geometric artwork for this repository. Re-running yields identical bytes.
 const root = resolve(import.meta.dirname, '..')
 const base = 'apps/extension/public/static/app/icons/default'
+const assetManifestPath = resolve(root, 'assets/demo-assets.json')
+const existingManifest = JSON.parse(await readFile(assetManifestPath, 'utf8'))
 const shapes = {
   browser: ['#3975a8', '<circle cx="32" cy="32" r="17"/><path d="M15 32h34M32 15c-12 10-12 24 0 34 12-10 12-24 0-34Z"/>'],
   download: ['#437a66', '<path d="M32 14v25m-10-9 10 10 10-10M16 42v7h32v-7"/>'],
@@ -26,17 +28,16 @@ for (const [name, [color, shape]] of Object.entries(shapes)) {
   await writeFile(resolve(root, file), svg)
   records.push({ path: file, bytes: Buffer.byteLength(svg), sha256: createHash('sha256').update(svg).digest('hex'), width: 64, height: 64 })
 }
-const favicon = '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#246885"/><path d="M18 18v20a14 14 0 0 0 28 0V18" fill="none" stroke="white" stroke-width="7" stroke-linecap="round"/></svg>\n'
-await writeFile(resolve(root, 'apps/extension/public/favicon.svg'), favicon)
-records.push({ path: 'apps/extension/public/favicon.svg', bytes: Buffer.byteLength(favicon), sha256: createHash('sha256').update(favicon).digest('hex'), width: 64, height: 64 })
 const appearance = await readFile(resolve(root, 'apps/extension/src/appearance.ts'))
 records.push({ path: 'apps/extension/src/appearance.ts', bytes: appearance.length, sha256: createHash('sha256').update(appearance).digest('hex'), kind: 'procedural-css-no-bitmap' })
 const startupAppearance = await readFile(resolve(root, 'apps/extension/public/startupAppearance.js'))
 records.push({ path: 'apps/extension/public/startupAppearance.js', bytes: startupAppearance.length, sha256: createHash('sha256').update(startupAppearance).digest('hex'), kind: 'local-startup-prepaint-script' })
 await mkdir(resolve(root, 'assets'), { recursive: true })
+const generatedPaths = new Set(records.map(({ path }) => path))
+const preservedRecords = existingManifest.assets.filter(({ path }) => !generatedPaths.has(path) && path !== 'apps/extension/public/favicon.svg')
 await writeFile(resolve(root, 'assets/demo-assets.json'), JSON.stringify({
-  schemaVersion: 1, provenance: 'Original geometric SVG and CSS authored in this repository on 2026-09-04; no third-party source images.',
+  schemaVersion: 1, provenance: 'Original geometric SVG and CSS authored in this repository on 2026-09-04; extension and favicon icon PNGs are separately recorded with their source.',
   generator: 'scripts/generate-demo-assets.mjs', license: 'Repository license not yet selected by maintainer; local development only. No third-party license is claimed.',
-  publicDistributionApproved: false, assets: records,
+  publicDistributionApproved: false, assets: [...records, ...preservedRecords],
 }, null, 2) + '\n')
 console.log(`Generated ${records.length} original asset records.`)

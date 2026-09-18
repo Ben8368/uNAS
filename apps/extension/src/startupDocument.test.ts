@@ -32,4 +32,10 @@ describe('startup documents', () => {
       expect(wallpaper.gradientP3).toContain('color(display-p3')
     }
   })
+
+  it('uses the packaged uNAS PNG as the New Tab favicon', async () => {
+    const newTabDocument = await readFile(new URL('../entrypoints/newtab/index.html', import.meta.url), 'utf8')
+
+    expect(newTabDocument).toContain('<link rel="icon" type="image/png" href="/icons/icon128.png" />')
+  })
 })

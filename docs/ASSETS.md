@@ -2,7 +2,7 @@
 
 当前自有视觉素材的唯一清单为 [demo-assets.json](../assets/demo-assets.json)，依赖身份清单为 [dependency-inventory.json](../assets/dependency-inventory.json)。构建上限以 [demo-budgets.json](../scripts/demo-budgets.json) 为准。
 
-- 图标与 favicon 是仓库内原创几何 SVG，可用 `node scripts/generate-demo-assets.mjs` 重建；背景是 `appearance.ts` 中的 CSS 渐变，无外部图像输入或字体文件。
+- 桌面 App 图标是仓库内原创几何 SVG，可用 `node scripts/generate-demo-assets.mjs` 重建；背景是 `appearance.ts` 中的 CSS 渐变。New Tab favicon 与扩展 action 图标使用维护者于 2026-09-18 提供的同一张 PNG 生成的 16、48、128 像素版本，来源、尺寸与哈希登记在 `assets/demo-assets.json`；该用户提供素材不由脚本重建。
 - 每项素材登记源文件、字节数、SHA-256 与尺寸；没有把来源未知的旧 PNG/WebP 改写成“已授权”。旧资产已从工作树和构建输入移除，Git 历史仍保留其原始记录，不应重新打包。
 - 仓库许可证仍需维护者决定。素材原创性与来源可追踪，不等于公开分发已批准；RISK-009 仍按其限定 Gate 处理。
 - `node scripts/dependency-inventory.mjs` 读取当前安装的生产声明依赖图及直接构建/测试依赖的版本、声明许可证、许可证文件哈希与上游仓库。锁文件记录具体解析与完整性；该清单不声称已完成所有开发工具传递依赖的法务审查。

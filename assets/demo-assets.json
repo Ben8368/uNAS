@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "provenance": "Original geometric SVG and CSS authored in this repository on 2026-09-04; no third-party source images.",
+  "provenance": "Original geometric SVG and CSS authored in this repository on 2026-09-04; extension and favicon icon PNGs are separately recorded with their source.",
   "generator": "scripts/generate-demo-assets.mjs",
   "license": "Repository license not yet selected by maintainer; local development only. No third-party license is claimed.",
   "publicDistributionApproved": false,
@@ -83,13 +83,6 @@
       "height": 64
     },
     {
-      "path": "apps/extension/public/favicon.svg",
-      "bytes": 251,
-      "sha256": "3b5d87e653c6c5a6e55a45ee4e43c34404328cbaf71eef389938290b36588472",
-      "width": 64,
-      "height": 64
-    },
-    {
       "path": "apps/extension/src/appearance.ts",
       "bytes": 3651,
       "sha256": "9492c817d84a2c021478c6a2f1cd111b99d81931d26fa9599edc82609ac92962",
@@ -103,21 +96,27 @@
     },
     {
       "path": "apps/extension/public/icons/icon16.png",
-      "bytes": 627,
-      "sha256": "22a8dac626f364ac1447fbbc5e1b70ca0f87c01fd47abed01a0af7f6991ca284",
-      "kind": "UniPass source icon; license and distribution approval remain pending"
+      "bytes": 912,
+      "sha256": "c9148d78f806786d2a5fdee0377dc0f6f88020b7e54c9c2f9f1fb335cc68ce0b",
+      "width": 16,
+      "height": 16,
+      "kind": "Derived from the maintainer-provided ChatGPT Image 2026-09-18 PNG (SHA-256 5edd45a94dbd1d4948c4d389c4e4fcc4994011bc26eb38f6843978978995a011); local development only, public distribution approval remains pending"
     },
     {
       "path": "apps/extension/public/icons/icon48.png",
-      "bytes": 2040,
-      "sha256": "d7c784f91039ea764d26cc0998efb35994040cbf9934380a4f84bf002d6e5b0f",
-      "kind": "UniPass source icon; license and distribution approval remain pending"
+      "bytes": 5121,
+      "sha256": "bc0caaf14c80eb209620ad09ff6252dd5351e8f6592158d7606c98f5132b5ab0",
+      "width": 48,
+      "height": 48,
+      "kind": "Derived from the maintainer-provided ChatGPT Image 2026-09-18 PNG (SHA-256 5edd45a94dbd1d4948c4d389c4e4fcc4994011bc26eb38f6843978978995a011); local development only, public distribution approval remains pending"
     },
     {
       "path": "apps/extension/public/icons/icon128.png",
-      "bytes": 5634,
-      "sha256": "66c37c324d96e8ca9457e7a4f28fd4a062f3d470fb77876b34d2b643d4d9bb28",
-      "kind": "UniPass source icon; license and distribution approval remain pending"
+      "bytes": 24136,
+      "sha256": "ae0610a717b317d8edd5a96bd0b29e2e696417bada413d2455c622f82c07e111",
+      "width": 128,
+      "height": 128,
+      "kind": "Derived from the maintainer-provided ChatGPT Image 2026-09-18 PNG (SHA-256 5edd45a94dbd1d4948c4d389c4e4fcc4994011bc26eb38f6843978978995a011); local development only, public distribution approval remains pending"
     },
     {
       "path": "apps/extension/public/rules/baseline.json",

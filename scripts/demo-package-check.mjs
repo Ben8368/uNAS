@@ -21,8 +21,8 @@ for (const record of provenance.assets) {
   if (record.path.includes('/public/')) {
     knownAssets.add(resolve(root, record.path))
     if (data.length > budgets.singleAssetBytes) errors.push(`单素材超预算: ${record.path}`)
-    if (record.width > budgets.svgWidth || record.height > budgets.svgHeight) errors.push(`SVG 尺寸超预算: ${record.path}`)
-    if (/<(?:script|foreignObject|image)\b/i.test(data.toString())) errors.push(`SVG 包含主动或外部内容: ${record.path}`)
+    if (record.path.endsWith('.svg') && (record.width > budgets.svgWidth || record.height > budgets.svgHeight)) errors.push(`SVG 尺寸超预算: ${record.path}`)
+    if (record.path.endsWith('.svg') && /<(?:script|foreignObject|image)\b/i.test(data.toString())) errors.push(`SVG 包含主动或外部内容: ${record.path}`)
   }
 }
 let assetBytes = 0
@@ -42,6 +42,9 @@ const allowedPermissions = new Set(['activeTab', 'scripting', 'clipboardWrite', 
 for (const permission of manifest.permissions ?? []) if (!allowedPermissions.has(permission)) errors.push(`uNAS 未登记的 permission: ${permission}`)
 const requiredPermissions = [...allowedPermissions]
 for (const permission of requiredPermissions) if (!manifest.permissions?.includes(permission)) errors.push(`uNAS 缺少已审查 permission: ${permission}`)
+const brandIcons = { 16: 'icons/icon16.png', 48: 'icons/icon48.png', 128: 'icons/icon128.png' }
+if (JSON.stringify(manifest.icons) !== JSON.stringify(brandIcons)) errors.push('扩展管理页图标未使用已登记的 uNAS 品牌 PNG。')
+if (JSON.stringify(manifest.action?.default_icon) !== JSON.stringify(brandIcons)) errors.push('工具栏 action 图标未使用已登记的 uNAS 品牌 PNG。')
 if (JSON.stringify(manifest.optional_host_permissions) !== JSON.stringify(['https://*/*'])) errors.push('WebDAV optional_host_permissions 必须保持 HTTPS 全域、仅在用户触发时申请。')
 if (!manifest.declarative_net_request?.rule_resources?.some((resource) => resource.id === 'baseline' && resource.path === 'rules/baseline.json')) errors.push('DNR baseline 未进入最终 manifest。')
 if (!manifest.content_scripts?.some((script) => script.js?.some((file) => file.includes('adblock')) && script.matches?.includes('https://*/*'))) errors.push('AdBlock cosmetic content script 未进入最终 manifest。')

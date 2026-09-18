@@ -25,6 +25,11 @@ export default defineConfig({
       'https://easylist-downloads.adblockplus.org/*',
     ],
     optional_host_permissions: ['https://*/*'],
+    icons: {
+      16: 'icons/icon16.png',
+      48: 'icons/icon48.png',
+      128: 'icons/icon128.png',
+    },
     declarative_net_request: {
       rule_resources: [{ id: 'baseline', enabled: true, path: 'rules/baseline.json' }],
     },
