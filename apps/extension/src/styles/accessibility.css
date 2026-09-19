@@ -21,7 +21,7 @@ button:disabled { cursor: not-allowed; }
 .demo-projection { top: var(--desktop-top); }
 .mt-left-nav__section--apps { overflow-y: auto; min-height: 0; width: 100%; align-items: center; }
 .mt-left-nav__power-menu { width: 250px; color: #eff4fa; line-height: 1.6; }
-.icon-grid { display: grid; width: 92px; height: auto; grid-template-columns: 92px; grid-auto-flow: row; gap: 14px; align-content: start; }
+.icon-grid { display: grid; width: 92px; height: auto; grid-template-columns: 92px; grid-auto-flow: row; gap: var(--window-space-4); align-content: start; }
 .app-icon { width: 92px; }
 .settings-app--single { display: block; height: 100%; min-height: 0; overflow: hidden; }
 .settings-wallpapers { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -87,8 +87,15 @@ html[data-reduce-motion='true'] *, html[data-reduce-motion='true'] *::before, ht
 }
 @media (max-width: 600px) {
   :root { --desktop-top: 12px; }
-  .mt-main { right: 12px; bottom: 190px; left: 60px; }
-  .mt-windows { left: 60px; right: 6px; bottom: 6px; }
+  .mt-left-nav { top: auto; right: 12px; bottom: 8px; left: 12px; width: auto; height: 56px; flex-direction: row; padding: 0 var(--window-space-2); }
+  .mt-left-nav__section { flex-direction: row; flex: 0 0 auto; gap: var(--window-space-1); }
+  .mt-left-nav__section--top, .mt-left-nav__section--bottom { margin: 0; }
+  .mt-left-nav__section--apps { width: auto; flex: 1 1 auto; flex-direction: row; justify-content: flex-start; overflow-x: auto; overflow-y: hidden; }
+  .mt-left-nav__sep { width: 1px; height: 22px; margin: 0 var(--window-space-2); }
+  .mt-left-nav__sep--bottom { margin: 0; }
+  .mt-left-nav__account-menu { bottom: 64px; left: auto; right: 0; width: min(250px, calc(100vw - 24px)); }
+  .mt-main { right: 12px; bottom: 76px; left: 12px; }
+  .mt-windows { left: 6px; right: 6px; bottom: 72px; }
   .demo-projection { top: auto; bottom: 10px; left: 70px; right: 12px; width: auto; max-height: 160px; }
   .mt-window-header { padding: 0 8px; }
   .mt-window-brand img, .mt-window-status:not(.mt-window-mode), .mt-window-btn[title='最大化'], .mt-window-btn[title='还原'] { display: none; }

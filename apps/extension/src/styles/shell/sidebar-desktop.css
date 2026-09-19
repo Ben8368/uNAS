@@ -10,7 +10,10 @@ html, body, #root {
 }
 
 :root {
-  --mt-wp-srgb: linear-gradient(in oklab 125deg, rgb(7 21 37) 0%, rgb(11 29 51) 52%, rgb(23 47 83) 100%);
+  --mt-wp-srgb:
+    radial-gradient(100% 90% at 2% 0%, rgb(62 122 164 / .46), transparent 64%),
+    radial-gradient(90% 85% at 100% 100%, rgb(31 145 133 / .34), transparent 68%),
+    linear-gradient(in oklab 130deg, #102237 0%, #173b51 50%, #176264 100%);
   --mt-wp-p3: var(--mt-wp-srgb);
   --mt-wp: var(--mt-wp-srgb);
 }
@@ -72,24 +75,30 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border: none;
   background: transparent;
-  color: rgba(255,255,255,.55);
+  color: var(--window-text-muted);
   cursor: pointer;
-  border-radius: 8px;
-  transition: all .12s ease;
+  border-radius: var(--window-radius-control);
+  transition: background-color var(--window-motion-fast) var(--window-motion-ease), color var(--window-motion-fast) var(--window-motion-ease);
 }
 
 .sb-btn:hover {
-  background: rgba(255,255,255,.1);
-  color: rgba(255,255,255,.9);
+  background: color-mix(in srgb, var(--window-text) 10%, transparent);
+  color: var(--window-text);
 }
 
 .sb-btn--active {
-  background: rgba(255,255,255,.12);
-  color: white;
+  background: color-mix(in srgb, var(--window-accent) 22%, transparent);
+  color: var(--window-text);
+}
+
+.sb-btn:focus-visible,
+.mt-left-nav__app-btn:focus-visible {
+  outline: 3px solid var(--window-focus-ring);
+  outline-offset: 2px;
 }
 
 .sb-btn svg {
@@ -103,17 +112,18 @@ html, body, #root {
   left: 8px;
   top: 8px;
   bottom: 8px;
-  width: 44px;
-  z-index: 100;
+  width: 56px;
+  z-index: 200;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px 0 18px;
-  background: rgba(10, 12, 16, .6);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, .04);
+  padding: var(--window-space-2) 0 var(--window-space-4);
+  background: var(--window-glass-navigation);
+  backdrop-filter: var(--window-glass-filter);
+  -webkit-backdrop-filter: var(--window-glass-filter);
+  border-radius: var(--window-radius-panel);
+  border: 1px solid color-mix(in srgb, var(--window-border) 58%, transparent);
+  box-shadow: var(--window-shadow-floating), inset 0 1px 0 var(--window-glass-highlight);
 }
 
 .mt-left-nav__section {
@@ -140,7 +150,7 @@ html, body, #root {
 .mt-left-nav__sep {
   width: 22px;
   height: 1px;
-  background: rgba(255, 255, 255, .06);
+  background: var(--window-divider);
   margin-bottom: 12px;
 }
 
@@ -150,25 +160,25 @@ html, body, #root {
 }
 
 .mt-left-nav__app-btn {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   background: transparent;
   cursor: pointer;
-  border-radius: 6px;
-  transition: all .1s;
+  border-radius: var(--window-radius-control);
+  transition: background-color var(--window-motion-fast) var(--window-motion-ease), transform var(--window-motion-fast) var(--window-motion-ease);
   flex-shrink: 0;
 }
 
 .mt-left-nav__app-btn:hover {
-  background: rgba(255, 255, 255, .08);
+  background: color-mix(in srgb, var(--window-text) 10%, transparent);
 }
 
 .mt-left-nav__app-btn--active {
-  background: rgba(255, 255, 255, .12);
+  background: color-mix(in srgb, var(--window-accent) 22%, transparent);
 }
 
 .mt-left-nav__app-btn img {
@@ -307,7 +317,7 @@ html, body, #root {
 .mt-main {
   position: absolute;
   top: 20px;
-  left: 60px;
+  left: 72px;
   right: 370px;
   bottom: 20px;
   z-index: 1;
@@ -322,9 +332,9 @@ html, body, #root {
   display: grid;
   height: 100%;
   grid-template-rows: repeat(var(--desktop-icon-rows, 6), auto);
-  grid-auto-columns: 84px;
+  grid-auto-columns: 92px;
   grid-auto-flow: column;
-  gap: 28px 36px;
+  gap: var(--window-space-4) var(--window-space-5);
   align-content: start;
   justify-content: start;
 }
@@ -333,10 +343,10 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 84px;
-  padding: 4px;
+  width: 92px;
+  padding: var(--window-space-1);
   border: 0;
-  border-radius: 14px;
+  border-radius: var(--window-radius-panel);
   background: transparent;
   color: inherit;
   font: inherit;
@@ -347,7 +357,7 @@ html, body, #root {
 
 .app-icon:hover .app-icon-img,
 .app-icon:focus-visible .app-icon-img {
-  box-shadow: 0 3px 8px rgba(0,0,0,.4);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .32);
 }
 
 .app-icon:hover .app-icon-img::after,
@@ -361,22 +371,22 @@ html, body, #root {
 
 .app-icon-img {
   position: relative;
-  width: 56px;
-  height: 56px;
-  margin-bottom: 6px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--window-space-2);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 26.5625%;
   overflow: hidden;
-  box-shadow: 0 3px 8px rgba(0,0,0,.4);
-  transition: box-shadow .1s ease, transform .1s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .28);
+  transition: box-shadow var(--window-motion-fast) var(--window-motion-ease), transform var(--window-motion-fast) var(--window-motion-ease);
 }
 
 .app-icon-img::after {
   position: absolute;
   inset: 0;
-  border: 2px solid rgba(102, 178, 255, .9);
+  border: 2px solid var(--window-focus-ring);
   border-radius: inherit;
   content: '';
   opacity: 0;
@@ -396,10 +406,14 @@ html, body, #root {
 }
 
 .app-icon-label {
-  font-size: 11px;
-  color: white;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 12px;
+  color: var(--window-text);
   text-align: center;
-  line-height: 1.35;
-  text-shadow: 0 1px 4px rgba(0,0,0,.7), 0 0 2px rgba(0,0,0,.6);
+  line-height: 18px;
+  text-shadow: 0 1px 3px rgba(0,0,0,.65);
   word-break: break-word;
 }

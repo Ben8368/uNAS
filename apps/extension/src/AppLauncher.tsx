@@ -32,7 +32,7 @@ export function AppLauncher({ onOpenApp }: { onOpenApp: (id: string) => void }) 
       onClick={(event) => { if (event.target === event.currentTarget) closeLauncher() }}
     >
         <div className="mt-launcher-search">
-          <input ref={inputRef} type="text" aria-label="搜索应用" placeholder="搜索..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          <input ref={inputRef} type="search" aria-label="搜索应用" placeholder="搜索应用或功能" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <div className="mt-launcher-grid">
           <div className="mt-launcher-apps">
@@ -40,6 +40,7 @@ export function AppLauncher({ onOpenApp }: { onOpenApp: (id: string) => void }) 
               <button type="button"
                 key={app.id}
                 className="launcher-app"
+                title={app.label}
                 onClick={() => { onOpenApp(app.id); closeLauncher() }}
               >
                 <AppIconImage src={app.icon} alt={app.label} variant="launcher" />
@@ -47,6 +48,7 @@ export function AppLauncher({ onOpenApp }: { onOpenApp: (id: string) => void }) 
               </button>
             ))}
           </div>
+          {filtered.length === 0 && <p className="mt-launcher-empty" role="status">没有匹配的应用。请尝试其他关键词。</p>}
         </div>
     </dialog>
   )

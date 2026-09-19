@@ -31,6 +31,7 @@ export function DesktopIcons({ onOpenApp }: { onOpenApp: (id: string) => void })
         <button type="button"
           key={app.id}
           className={`app-icon app-icon--${app.id}`}
+          title={app.label}
           onClick={() => onOpenApp(app.id)}
         >
           <AppIconImage src={app.icon} alt={app.label} variant="desktop" />
@@ -41,6 +42,7 @@ export function DesktopIcons({ onOpenApp }: { onOpenApp: (id: string) => void })
         <button type="button"
           key={link.id}
           className={`app-icon app-icon--${link.id}`}
+          title={link.name}
           onClick={() => openLink(link.url)}
         >
           <AppIconImage src={APP_ICON_PATHS.browser} alt={link.name} variant="desktop" />

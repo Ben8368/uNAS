@@ -14,10 +14,10 @@ TD-001 的拆分、验证范围与关闭记录见 [2026-09 归档](archive/tech-
 
 ### TD-002：全局兼容样式的局部化迁移
 
-- **优先级 / 位置 / 来源 / 目标阶段：** P1；`apps/extension/src/styles/accessibility.css`、各 App 私有样式；uNAS Glass 工作包 A；UI-Glass-B 至 UI-Glass-D。
-- **当前妥协与原因：** 工作包 A 已统一 Token 和窗口材质，但为避免一次改动改变所有既有 App 的浅色可读性，仍保留少量全局 light-theme 兼容选择器与 App 私有 `--mt-*` 覆盖。
+- **优先级 / 位置 / 来源 / 目标阶段：** P1；`apps/extension/src/styles/accessibility.css`、各 App 私有样式；uNAS Glass 工作包 A；UI-Glass-D。
+- **当前妥协与原因：** 工作包 A–C 已统一 Token、窗口材质、Desktop 和文件管理器，但为避免一次改动改变其余既有 App 的浅色可读性，仍保留少量全局 light-theme 兼容选择器与 App 私有 `--mt-*` 覆盖。
 - **影响与最坏结果：** 新组件可能意外继承旧选择器；主题值再度分叉时，局部修复会依赖选择器优先级，增加视觉回归与维护成本。
-- **偿还方案：** 在 B–D 中将每个 App 的表面/状态样式移回所属 CSS，并仅引用 `window-theme.css` 语义 Token；删除已无消费者的全局选择器和 App 私有主题值。
+- **偿还方案：** 在 D 中将剩余 App/UniPass 的表面与状态样式移回所属 CSS，并仅引用 `window-theme.css` 语义 Token；删除已无消费者的全局选择器和 App 私有主题值。
 - **验证方式：** 每次迁移运行 `pnpm verify`、`pnpm test:e2e`，并按 Quality 第 5 节对深浅主题、减少透明度、高对比、键盘焦点和窄容器截图/真实扩展走查。
 
 不得用空的“以后优化”占位；产生真实妥协时按下列字段登记：

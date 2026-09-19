@@ -13,15 +13,15 @@
 - 维护者已确认进入 Frontend Demo 阶段；现有 Demo 固定使用浏览器内置 mock adapter 验证桌面、App、文件和任务流程，并提供 WXT Manifest V3 的 New Tab、Workspace 与 Service Worker 壳；真实能力随后逐项替换。
 - 维护者已授权进入前端界面正式打磨：优先收敛桌面层级、App 启动入口、状态抽屉、响应式与无障碍；该授权不改变 mock 与真实能力的边界。
 - 视觉采用原创的 macOS/iPadOS 启发式桌面层级与 Liquid Glass 原则，玻璃限于导航/控制层，并提供无障碍和性能降级。
-- uNAS Glass 工作包 A 已实现：`window-theme.css` 是窗口主题、材质与兼容别名的唯一值来源；窗口根承担唯一 blur，正文为实色内容面。后续 B–E 的顺序与验收见 [Development Blueprint](docs/DEVELOPMENT_BLUEPRINT.md#uNAS-glass-后续迁移顺序)。
+- uNAS Glass 工作包 A–C 已实现：`window-theme.css` 是窗口主题、材质与兼容别名的唯一值来源；窗口根承担唯一 blur，正文为实色内容面；Desktop/Dock/启动器与文件管理器已消费共享语义 Token。后续 D–E 的顺序与验收见 [Development Blueprint](docs/DEVELOPMENT_BLUEPRINT.md#uNAS-glass-后续迁移顺序)。
 - TypeScript、React/Vite、WXT、统一 App/Task contract、Worker 与 adapter 隔离是当前工程方向；Demo 依赖已通过 pnpm 锁定。
 - UniPass 功能来源基线为 `ee749982cc31efbcf912866b854afbf5f1b36c1c`；uNAS 融合分支为 `codex/unipass-integration`，uNAS 起点为 `fef41ae0ba49ad5a043de22b18feafb495d3deab`。
 
 ## 近期优先级
 
-1. 实施 uNAS Glass B：桌面、Dock 与启动器复用共享导航玻璃，验收键盘路径、长名称和三种响应式宽度。
-2. 实施 uNAS Glass C：将文件管理器作为完整 App 试点，迁移侧栏、搜索、操作与列表状态，且不改变文件授权或写入行为。
-3. 实施 uNAS Glass D/E：为 UniPass Popup 增加仅展示层的共享 Token 适配，并完成浅深主题、减少透明度、真实 Chrome 人工走查与证据归档。
+1. 实施 uNAS Glass D：为 UniPass Popup 增加仅展示层的共享 Token 适配，保留薄荷绿强调，且不改凭据、认证、WASM、网络或权限代码。
+2. 实施 uNAS Glass E：补齐浅深主题、减少透明度、真实 Chrome 人工走查与可复现证据归档。
+3. 继续偿还 [TD-002](docs/TECH_DEBT.md#td-002全局兼容样式的局部化迁移)：将剩余 App 的全局 light-theme 兼容覆盖移回所属样式。
 
 ## 当前阻断与风险
 
@@ -30,7 +30,7 @@
 
 ## 最近验证
 
-- 2026-09-19：[uNAS Glass 工作包 A 验收记录](docs/archive/reviews/2026-09-19-unas-glass-a.md)：`pnpm verify` 通过（27 个测试文件、120 个测试），`pnpm test:e2e` 通过（40/40，0 skipped）；Playwright 扩展截图覆盖深浅主题、文件管理器、高对比和紧凑布局。该证据不替代 B–E 的目标 Chrome 人工验收。
+- 2026-09-19：[uNAS Glass 工作包 B/C 验收记录](docs/archive/reviews/2026-09-19-unas-glass-bc.md)：`pnpm verify` 通过（27 个测试文件、120 个测试），`pnpm test:e2e` 通过（40/40，0 skipped）；已人工查看 Playwright bundled Chromium 的桌面深色/紧凑、文件管理器浅色截图。该证据不替代 D/E 的目标 Chrome 人工验收。
 
 ## 按需入口
 
