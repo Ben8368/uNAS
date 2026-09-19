@@ -22,15 +22,24 @@
   --window-danger: #ff9999;
   --window-focus-ring: #b6dcff;
 
-  /* Layer 1 and 3: one optical surface per component, never per content row. */
-  --window-glass-navigation: rgba(27, 29, 32, .88);
-  --window-glass-overlay: rgba(40, 43, 47, .96);
-  --window-glass-rim: linear-gradient(180deg, rgba(255, 255, 255, .28), rgba(255, 255, 255, .08) 32%, rgba(255, 255, 255, 0) 64%, rgba(255, 255, 255, .16));
-  --window-glass-highlight: rgba(255, 255, 255, .12);
-  --window-glass-filter: blur(16px) saturate(110%);
-  --window-overlay-filter: blur(12px) saturate(110%);
-  --window-shadow: 0 16px 48px rgba(0, 0, 0, .40);
-  --window-shadow-floating: 0 8px 24px rgba(0, 0, 0, .32);
+  /*
+   * Optical surfaces have intentionally separate semantic roles. The desktop
+   * samples its environment at the outer shell only; readable content stays
+   * calm without adding a second blur layer.
+   */
+  --window-glass-navigation: rgb(17 28 39 / .48);
+  --window-glass-floating: rgb(18 30 41 / .50);
+  --window-glass-window: rgb(18 30 41 / .44);
+  --window-glass-dialog: rgb(22 35 47 / .58);
+  --window-surface-readable: rgb(32 34 37 / .94);
+  --window-glass-rim: linear-gradient(154deg, rgb(255 255 255 / .44) 0%, rgb(255 255 255 / .13) 19%, rgb(177 224 255 / .03) 47%, rgb(255 255 255 / .10) 74%, rgb(255 255 255 / .34) 100%);
+  --window-glass-reflection: radial-gradient(118% 76% at 4% -27%, rgb(255 255 255 / .29) 0%, rgb(215 240 255 / .12) 27%, transparent 58%), linear-gradient(112deg, rgb(255 255 255 / .10) 0%, transparent 30% 70%, rgb(102 205 207 / .08) 100%);
+  --window-glass-highlight: rgb(255 255 255 / .16);
+  --window-glass-filter: blur(18px) saturate(138%) contrast(104%);
+  --window-floating-filter: blur(20px) saturate(142%) contrast(103%);
+  --window-dialog-filter: blur(22px) saturate(138%) contrast(104%);
+  --window-shadow: 0 22px 62px rgb(0 10 20 / .38), 0 3px 12px rgb(0 8 16 / .24);
+  --window-shadow-floating: 0 12px 32px rgb(0 10 20 / .30), 0 2px 8px rgb(0 8 16 / .18);
 
   --window-radius-control: 8px;
   --window-radius-panel: 12px;
@@ -51,7 +60,7 @@
   --window-motion-ease: ease-out;
 
   /* Compatibility aliases for pre-existing app primitives. */
-  --glass-window: var(--window-glass-navigation);
+  --glass-window: var(--window-glass-window);
   --glass-toolbar: var(--window-glass-navigation);
   --glass-content: var(--window-surface);
   --glass-pane: var(--window-surface-raised);
@@ -60,7 +69,7 @@
   --color-text: var(--window-text);
   --color-muted: var(--window-text-muted);
   --color-line: var(--window-border);
-  --color-glass: var(--window-glass-overlay);
+  --color-glass: var(--window-glass-dialog);
   --focus-ring: var(--window-focus-ring);
   --mt-brand: var(--window-primary);
   --mt-brand-light: color-mix(in srgb, var(--window-primary) 12%, transparent);
@@ -89,22 +98,31 @@ html[data-theme='light'] {
   --window-warning: #835500;
   --window-danger: #b32332;
   --window-focus-ring: #165dab;
-  --window-glass-navigation: rgba(248, 250, 253, .88);
-  --window-glass-overlay: rgba(255, 255, 255, .96);
-  --window-glass-rim: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .34) 36%, rgba(69, 92, 116, .06) 66%, rgba(255, 255, 255, .72));
-  --window-glass-highlight: rgba(255, 255, 255, .68);
-  --window-shadow: 0 16px 48px rgba(0, 0, 0, .20);
-  --window-shadow-floating: 0 8px 24px rgba(0, 0, 0, .16);
+  --window-glass-navigation: rgb(235 244 249 / .60);
+  --window-glass-floating: rgb(238 247 250 / .58);
+  --window-glass-window: rgb(239 247 250 / .56);
+  --window-glass-dialog: rgb(247 251 252 / .68);
+  --window-surface-readable: rgb(248 249 250 / .94);
+  --window-glass-rim: linear-gradient(154deg, rgb(255 255 255 / .94) 0%, rgb(255 255 255 / .47) 22%, rgb(82 136 161 / .08) 49%, rgb(255 255 255 / .32) 73%, rgb(255 255 255 / .88) 100%);
+  --window-glass-reflection: radial-gradient(118% 76% at 4% -27%, rgb(255 255 255 / .82) 0%, rgb(255 255 255 / .35) 29%, transparent 60%), linear-gradient(112deg, rgb(255 255 255 / .38) 0%, transparent 32% 69%, rgb(110 192 194 / .12) 100%);
+  --window-glass-highlight: rgb(255 255 255 / .70);
+  --window-shadow: 0 22px 62px rgb(36 60 74 / .19), 0 3px 12px rgb(36 60 74 / .12);
+  --window-shadow-floating: 0 12px 32px rgb(36 60 74 / .15), 0 2px 8px rgb(36 60 74 / .10);
 }
 
 /* Glass has a complete opaque fallback, including user-requested reduction. */
 html[data-reduce-transparency='true'] {
   --window-glass-navigation: var(--window-surface-raised);
-  --window-glass-overlay: var(--window-surface-raised);
+  --window-glass-floating: var(--window-surface-raised);
+  --window-glass-window: var(--window-surface-raised);
+  --window-glass-dialog: var(--window-surface-raised);
+  --window-surface-readable: var(--window-surface);
   --window-glass-rim: transparent;
+  --window-glass-reflection: transparent;
   --window-glass-highlight: transparent;
   --window-glass-filter: none;
-  --window-overlay-filter: none;
+  --window-floating-filter: none;
+  --window-dialog-filter: none;
 }
 
 html[data-high-contrast='true'] {
@@ -118,11 +136,16 @@ html[data-high-contrast='true'] {
   --window-divider: #ffffff;
   --window-focus-ring: #ffe66d;
   --window-glass-navigation: var(--window-surface);
-  --window-glass-overlay: var(--window-surface-raised);
+  --window-glass-floating: var(--window-surface-raised);
+  --window-glass-window: var(--window-surface);
+  --window-glass-dialog: var(--window-surface-raised);
+  --window-surface-readable: var(--window-surface);
   --window-glass-rim: transparent;
+  --window-glass-reflection: transparent;
   --window-glass-highlight: transparent;
   --window-glass-filter: none;
-  --window-overlay-filter: none;
+  --window-floating-filter: none;
+  --window-dialog-filter: none;
   --window-shadow: none;
   --window-shadow-floating: none;
 }

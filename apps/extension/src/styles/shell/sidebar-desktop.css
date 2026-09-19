@@ -124,6 +124,18 @@ html, body, #root {
   border-radius: var(--window-radius-panel);
   border: 1px solid color-mix(in srgb, var(--window-border) 58%, transparent);
   box-shadow: var(--window-shadow-floating), inset 0 1px 0 var(--window-glass-highlight);
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.mt-left-nav::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--window-glass-reflection);
+  content: '';
+  opacity: .52;
+  pointer-events: none;
 }
 
 .mt-left-nav__section {

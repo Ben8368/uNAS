@@ -15,9 +15,10 @@
   flex-direction: column;
   contain: layout paint;
   isolation: isolate;
-  background: var(--window-glass-navigation);
+  background: var(--window-glass-window);
   backdrop-filter: var(--window-glass-filter);
   -webkit-backdrop-filter: var(--window-glass-filter);
+  border: 1px solid color-mix(in srgb, var(--window-text) 8%, transparent);
   border-radius: var(--app-window-radius);
   box-shadow: var(--window-shadow);
   overflow: hidden;
@@ -33,7 +34,7 @@
 
 .mt-window--maximized { border-radius: var(--app-window-radius); box-shadow: 0 0 0 1px var(--window-divider); }
 
-/* A border-only rim and shallow reflection make the shell legible without a second blur layer. */
+/* The rim and off-axis reflection live on the one blurred outer shell. */
 .mt-window::before {
   position: absolute;
   inset: 0;
@@ -55,8 +56,8 @@
   right: 0;
   left: 0;
   z-index: 0;
-  height: 56px;
-  background: linear-gradient(180deg, var(--window-glass-highlight), transparent);
+  height: 132px;
+  background: var(--window-glass-reflection);
   content: '';
   pointer-events: none;
 }
@@ -73,7 +74,7 @@
   cursor: default;
   user-select: none;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--window-divider);
+  border-bottom: 1px solid color-mix(in srgb, var(--window-text) 13%, transparent);
 }
 
 .mt-window-brand {
@@ -159,11 +160,11 @@
   margin: auto;
   border: 1px solid var(--window-border);
   border-radius: var(--window-radius-dialog);
-  background: var(--window-glass-overlay);
+  background: var(--window-glass-dialog);
   color: var(--window-text);
   box-shadow: var(--window-shadow);
-  backdrop-filter: var(--window-overlay-filter);
-  -webkit-backdrop-filter: var(--window-overlay-filter);
+  backdrop-filter: var(--window-dialog-filter);
+  -webkit-backdrop-filter: var(--window-dialog-filter);
   padding: 0;
 }
 
@@ -265,7 +266,11 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  background: var(--window-surface);
+  margin: 0 8px 8px;
+  border: 1px solid color-mix(in srgb, var(--window-text) 7%, transparent);
+  border-radius: 0 0 calc(var(--app-window-radius) - 8px) calc(var(--app-window-radius) - 8px);
+  background: var(--window-surface-readable);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--window-glass-highlight) 62%, transparent);
   color: var(--window-text);
 }
 

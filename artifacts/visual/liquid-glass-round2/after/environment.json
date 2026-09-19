@@ -1,0 +1,14 @@
+{
+  "browser": "151.0.7922.34",
+  "os": "win32 10.0.26200 x64",
+  "extensionPath": "C:\\uNAS\\apps\\extension\\.output\\chrome-mv3",
+  "extensionId": "leeikmidmidcdnpibpdpjnocmmobiikg",
+  "channel": "chromium",
+  "headless": true,
+  "colorProfile": "srgb",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "evidence": "Unpacked MV3 in Playwright bundled Chromium; not installed system Chrome certification."
+}

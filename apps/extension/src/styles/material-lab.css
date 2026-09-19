@@ -1,0 +1,35 @@
+/* Development-only optical comparison surface. It is scoped and never mounted in production. */
+.mt-material-lab {
+  min-height: 100%;
+  overflow: auto;
+  padding: 36px;
+  color: #f4f8fb;
+  background:
+    conic-gradient(from 210deg at 18% 28%, rgb(112 218 226 / .48), transparent 18%, rgb(94 127 255 / .40) 34%, transparent 48%),
+    repeating-linear-gradient(118deg, rgb(255 255 255 / .09) 0 2px, transparent 2px 18px),
+    radial-gradient(circle at 84% 76%, rgb(66 225 165 / .62), transparent 25%),
+    linear-gradient(135deg, #071e31 0%, #17455c 46%, #261a58 100%);
+}
+
+.mt-material-lab__header { max-width: 980px; margin: 0 auto 28px; }
+.mt-material-lab__header p { margin: 0 0 8px; color: rgb(220 255 249 / .80); font-size: 12px; letter-spacing: .08em; }
+.mt-material-lab__header h1 { margin: 0; font-size: 30px; }
+.mt-material-lab__header span { display: block; margin-top: 8px; color: rgb(240 248 255 / .78); }
+.mt-material-lab__scenes { display: grid; gap: 20px; max-width: 980px; margin: 0 auto; }
+.mt-material-lab__scene { padding: 18px; border: 1px solid rgb(255 255 255 / .16); border-radius: 22px; background: rgb(5 19 31 / .24); }
+.mt-material-lab__scene h2 { margin: 0 0 14px; font-size: 15px; }
+.mt-material-lab__scene--light { color: #183044; background: rgb(235 251 255 / .34); }
+.mt-material-lab__scene--detail { background: repeating-conic-gradient(from 0deg, rgb(255 237 167 / .20) 0 10deg, transparent 10deg 20deg), rgb(12 33 54 / .40); }
+.mt-material-lab__samples { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.mt-material-lab__glass { position: relative; min-height: 164px; overflow: hidden; border: 1px solid rgb(255 255 255 / .22); border-radius: 20px; box-shadow: 0 16px 36px rgb(0 10 24 / .25), inset 0 1px 0 rgb(255 255 255 / .20); }
+.mt-material-lab__glass--unipass { background: rgb(19 28 37 / .42); backdrop-filter: blur(18px) saturate(155%) contrast(104%); }
+.mt-material-lab__glass--current { background: rgb(27 29 32 / .88); backdrop-filter: blur(16px) saturate(110%); }
+.mt-material-lab__glass--candidate { background: var(--window-glass-window); backdrop-filter: var(--window-glass-filter); }
+.mt-material-lab__reflection { position: absolute; inset: 0; height: 80px; background: var(--window-glass-reflection); opacity: .88; pointer-events: none; }
+.mt-material-lab__card-copy { position: relative; z-index: 1; display: grid; gap: 5px; padding: 16px; }
+.mt-material-lab__card-copy strong { font-size: 14px; }
+.mt-material-lab__card-copy span { color: inherit; font-size: 11px; opacity: .78; }
+.mt-material-lab__readable { position: absolute; right: 10px; bottom: 10px; left: 10px; z-index: 1; padding: 9px; border: 1px solid rgb(255 255 255 / .10); border-radius: 11px; background: rgb(32 34 37 / .94); color: #f1f3f5; font-size: 12px; line-height: 1.45; }
+.mt-material-lab__scene--light .mt-material-lab__readable { background: rgb(248 249 250 / .94); color: #24282e; }
+
+@media (max-width: 760px) { .mt-material-lab { padding: 20px; }.mt-material-lab__samples { grid-template-columns: 1fr; } }

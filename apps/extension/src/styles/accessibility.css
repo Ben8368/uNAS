@@ -53,12 +53,12 @@ html[data-theme='light'] .fm-local-browser .fm-file-icon em { color: var(--windo
 html[data-theme='light'] .fm-local-browser .fm-file-icon svg { stroke: var(--window-accent); }
 html[data-theme='light'] .fm-local-browser .fm-local-delete { border-color: transparent; background: transparent; }
 html[data-theme='light'] .mt-window-body :is(.fm-row--selected, [aria-selected='true'], [aria-pressed='true']) { background: color-mix(in srgb, var(--window-accent) 18%, var(--window-surface)); }
-html[data-reduce-transparency='true'] :is(.mt-left-nav, .mt-launcher-overlay, .mt-launcher, .mt-right-panel, .rp-panel-content) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background-color: var(--window-surface-raised) !important; }
+html[data-reduce-transparency='true'] :is(.mt-window, .mt-left-nav, .mt-launcher-overlay, .mt-launcher, .mt-right-panel, .rp-panel-content) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background-color: var(--window-surface-raised) !important; }
 html[data-high-contrast='true'] :is(.mt-window, .mt-window-body, .mt-window-header, .mt-window-body main, .mt-window-body aside, .rp-panel-content, .demo-tool, .settings-app) { background: #050b14 !important; color: #fff !important; }
 html[data-high-contrast='true'] .mt-window-body :is(p, span, label, small, strong, button, input, select, textarea, h2, h3) { color: #fff !important; background-color: #050b14 !important; border-color: #fff !important; }
 html[data-reduce-motion='true'] *, html[data-reduce-motion='true'] *::before, html[data-reduce-motion='true'] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 @supports not (backdrop-filter: blur(1px)) {
-  :root { --window-glass-filter: none; --window-overlay-filter: none; --window-glass-navigation: var(--window-surface-raised); --window-glass-overlay: var(--window-surface-raised); }
+  :root { --window-glass-filter: none; --window-floating-filter: none; --window-dialog-filter: none; --window-glass-navigation: var(--window-surface-raised); --window-glass-floating: var(--window-surface-raised); --window-glass-window: var(--window-surface-raised); --window-glass-dialog: var(--window-surface-raised); }
   .mt-left-nav, .rp-panel-content { background-color: var(--window-surface-raised); }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

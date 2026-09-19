@@ -2,7 +2,7 @@
 
 本文是 uNAS UI 的唯一规范：视觉值、页面骨架、组件状态和输入行为以本文为准。适用于 Desktop、System/Tool App 与 Link App 管理界面。实现方式见 [FRONTEND_GUIDE](FRONTEND_GUIDE.md)，验收见 [QUALITY](QUALITY.md)。
 
-**基线 UI v1.1 · 2026-09-09**：本轮固定的设计目标；新增和改动 UI 必须遵循，存量界面按受影响范围对齐。这不是已实现或已验证声明，不追认旧截图达标，也不要求无关页面同步重做。
+**基线 UI v1.2 · 2026-09-19**：本轮固定的设计目标；新增和改动 UI 必须遵循，存量界面按受影响范围对齐。这不是已实现或已验证声明，不追认旧截图达标，也不要求无关页面同步重做。
 
 ## UI-01 视觉方向与材料
 
@@ -12,8 +12,8 @@
 | --- | --- | --- |
 | 背景 | 壁纸与环境色 | 不承载正文；无持续漂浮、视差或自动轮播 |
 | 内容 | 文件、参数、表格、预览、正文 | 使用不透明 content/raised 表面，不随壁纸改变文字色 |
-| 控制 | Dock、窗口标题栏、导航 | 一层 navigation glass；窗口根与内部工具栏不得叠加 blur |
-| 临时层 | 菜单、Popover、Dialog、Sheet、Toast | overlay 表面；长表单及正文仍用实色 |
+| 控制 | Dock、窗口标题栏、导航 | navigation glass；窗口根是唯一采样/blur 层，内部工具栏不得叠加 blur |
+| 临时层 | 菜单、Popover、Dialog、Sheet、Toast | floating/dialog glass；长表单及正文仍用实色 |
 
 仅透明度、边缘高光和静态阴影表现材料，不做实时折射或鼠标追光。不在内容卡片嵌套玻璃。壁纸不可读时改用实色表面，不靠加重文字阴影补救。
 
@@ -48,9 +48,12 @@
 | size | 常规控件高 36；紧凑列表行最小 40；表格行最小 44；coarse pointer 命中区至少 44×44；不得重叠 |
 | radius | control 8、panel/menu 12、window 20、dialog 16；胶囊仅用于状态标记，不作为通用卡片 |
 | border / focus | 边框 1；焦点环 3、外偏移 2；禁止只用阴影表示焦点 |
-| material.navigation | Light rgba(248,250,253,.88)，Dark rgba(27,29,32,.88)；blur 16、saturate 110% |
-| material.overlay | Light rgba(255,255,255,.96)，Dark rgba(40,43,47,.96)；blur 12 |
-| shadow | window：0 16px 48px rgba(0,0,0,.20/.40)；floating：0 8px 24px rgba(0,0,0,.16/.32)（Light/Dark） |
+| material.navigation | Light rgb(235 244 249 / .60)，Dark rgb(17 28 39 / .48)；blur 18、saturate 138%、contrast 104% |
+| material.floating | Light rgb(238 247 250 / .58)，Dark rgb(18 30 41 / .50)；blur 20、saturate 142%、contrast 103% |
+| material.window | Light rgb(239 247 250 / .56)，Dark rgb(18 30 41 / .44)；唯一 backdrop-filter 外壳，带非对称反射和渐变 rim |
+| material.readable | Light rgb(248 249 250 / .94)，Dark rgb(32 34 37 / .94)；无 blur，作为窗口正文内层，四周保留外壳可见边缘 |
+| material.dialog | Light rgb(247 251 252 / .68)，Dark rgb(22 35 47 / .58)；blur 22、saturate 138%、contrast 104% |
+| shadow | window：0 22px 62px + 0 3px 12px；floating：0 12px 32px + 0 2px 8px（分别按主题调色） |
 | motion | fast 120ms、normal 180ms、slow 240ms；ease-out；仅 transform/opacity，不动画 blur |
 | layer | desktop 0、window 100–199（聚焦排序）、shell 200、drawer 300、popover 400、modal 500、toast 600；原生 top layer 按打开顺序管理 |
 
