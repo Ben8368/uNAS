@@ -20,6 +20,16 @@ const LOCAL_UNLOCK_FAILURES_KEY = "unipass-vault-local-unlock-failures";
 const LOCAL_UNLOCK_MAX_FAILURES = 5;
 const LEGACY_VAULT_ID = "legacy-unipass";
 const syncInFlight = new Map<string, Promise<VaultSyncStatus>>();
+// All configuration maps share storage keys across Vaults. Serialize their entire
+// read-modify-write operations in the single background runtime, including failures.
+// This is not a durable transaction: interrupted requests are never replayed.
+let configurationTail: Promise<void> = Promise.resolve();
+function mutateConfiguration<T>(operation: () => Promise<T>): Promise<T> {
+  const result = configurationTail.then(operation);
+  configurationTail = result.then(() => undefined, () => undefined);
+  return result;
+}
+
 
 interface SessionSecret { username: string; appPassword: string; vaultKey: string; }
 export interface WebDavVaultInput {
@@ -64,7 +74,10 @@ export async function releaseUnusedWebDavPermission(endpoint: string): Promise<v
 }
 
 /** Explicit create/open/reconnect state machine; neither unsuccessful open nor a wrong key changes local state. */
-export async function saveWebDavVault(input: WebDavVaultInput): Promise<VaultConnection> {
+export function saveWebDavVault(input: WebDavVaultInput): Promise<VaultConnection> {
+  return mutateConfiguration(() => saveWebDavVaultExclusive(input));
+}
+async function saveWebDavVaultExclusive(input: WebDavVaultInput): Promise<VaultConnection> {
   const endpoint = normalizeWebDavUrl(input.endpoint);
   const name = input.name.trim(); const username = input.username.trim();
   const secrets = await readSecrets();
@@ -124,12 +137,18 @@ export async function saveWebDavVault(input: WebDavVaultInput): Promise<VaultCon
 }
 
 /** Legacy local-unlock messages remain supported for profiles created by older builds. */
-export async function enableLocalUnlock(vaultId: string, password: string): Promise<void> {
+export function enableLocalUnlock(vaultId: string, password: string): Promise<void> {
+  return mutateConfiguration(() => enableLocalUnlockExclusive(vaultId, password));
+}
+async function enableLocalUnlockExclusive(vaultId: string, password: string): Promise<void> {
   const secret = (await readSecrets())[vaultId]; if (!secret) throw new Error("请先连接 Vault 后再启用本地解锁");
   const unlocks = await readUnlocks();
   await chrome.storage.local.set({ [LOCAL_UNLOCKS_KEY]: { ...unlocks, [vaultId]: await sealLocalUnlockMaterial(password, secret) } });
 }
-export async function unlockVaultLocally(vaultId: string, password: string): Promise<void> {
+export function unlockVaultLocally(vaultId: string, password: string): Promise<void> {
+  return mutateConfiguration(() => unlockVaultLocallyExclusive(vaultId, password));
+}
+async function unlockVaultLocallyExclusive(vaultId: string, password: string): Promise<void> {
   const failures = await readFailures(); if ((failures[vaultId] ?? 0) >= LOCAL_UNLOCK_MAX_FAILURES) throw new Error("本地解锁已锁定，请重新连接该 Vault");
   const envelope = (await readUnlocks())[vaultId]; if (!envelope) throw new Error("该 Vault 未启用本地解锁");
   try {
@@ -160,10 +179,19 @@ export async function unlockVaultLocally(vaultId: string, password: string): Pro
     throw error;
   }
 }
-export async function disableLocalUnlock(vaultId: string): Promise<void> { const unlocks = await readUnlocks(); delete unlocks[vaultId]; await chrome.storage.local.set({ [LOCAL_UNLOCKS_KEY]: unlocks }); }
-export async function lockVault(vaultId: string): Promise<void> { const secrets = await readSecrets(); delete secrets[vaultId]; await chrome.storage.session.set({ [SESSION_SECRETS_KEY]: secrets }); }
+export function disableLocalUnlock(vaultId: string): Promise<void> {
+  return mutateConfiguration(() => disableLocalUnlockExclusive(vaultId));
+}
+async function disableLocalUnlockExclusive(vaultId: string): Promise<void> { const unlocks = await readUnlocks(); delete unlocks[vaultId]; await chrome.storage.local.set({ [LOCAL_UNLOCKS_KEY]: unlocks }); }
+export function lockVault(vaultId: string): Promise<void> {
+  return mutateConfiguration(() => lockVaultExclusive(vaultId));
+}
+async function lockVaultExclusive(vaultId: string): Promise<void> { const secrets = await readSecrets(); delete secrets[vaultId]; await chrome.storage.session.set({ [SESSION_SECRETS_KEY]: secrets }); }
 
-export async function removeVault(vaultId: string): Promise<void> {
+export function removeVault(vaultId: string): Promise<void> {
+  return mutateConfiguration(() => removeVaultExclusive(vaultId));
+}
+async function removeVaultExclusive(vaultId: string): Promise<void> {
   const profiles = await listVaultProfiles(); const target = profiles.find((profile) => profile.id === vaultId); if (!target) return;
   const remaining = profiles.filter((profile) => profile.id !== vaultId);
   const unlocks = await readUnlocks(); delete unlocks[vaultId];

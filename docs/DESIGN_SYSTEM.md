@@ -1,8 +1,8 @@
 # 视觉与交互设计系统
 
-本文是 uNAS UI 的唯一规范：视觉值、页面骨架、组件状态和输入行为以本文为准。适用于 Desktop、System/Tool App 与 Link App 管理界面。实现方式见 [FRONTEND_GUIDE](FRONTEND_GUIDE.md)，验收见 [QUALITY](QUALITY.md)。
+本文统一规范 Desktop、System/Tool App 与 Link App 管理界面的视觉值、骨架、状态及输入行为。实现方式见 [FRONTEND_GUIDE](FRONTEND_GUIDE.md)，验收见 [QUALITY](QUALITY.md)。
 
-**基线 UI v1.2 · 2026-09-19**：本轮固定的设计目标；新增和改动 UI 必须遵循，存量界面按受影响范围对齐。这不是已实现或已验证声明，不追认旧截图达标，也不要求无关页面同步重做。
+**基线 UI v1.3 · 2026-09-20**：新增和改动 UI 必须遵循，存量按受影响范围对齐；非实现或验证声明，不追认旧截图，不要求重做无关页面。
 
 ## UI-01 视觉方向与材料
 
@@ -17,9 +17,11 @@
 
 仅透明度、边缘高光和静态阴影表现材料，不做实时折射或鼠标追光。不在内容卡片嵌套玻璃。壁纸不可读时改用实色表面，不靠加重文字阴影补救。
 
+UniPass 薄荷绿映射 `window-theme.css` 的 `--window-vault-accent{,-strong,-text}`；其余复用窗口 Token，不重复定义主题值。
+
 ## UI-02 语义 Token
 
-以下是设计名和目标值，长度单位为 CSS px；不是已存在的 CSS API。实现沿用共享变量入口并统一映射；已有 window-* 语义变量可复用，不为同一语义新建第二套变量。App 不得私设主题值。
+以下为设计名与目标值（CSS px），非现存 CSS API；实现统一映射共享 window-* 变量，不重复定义同义变量。App 不得私设主题值。
 
 | 颜色 Token | Light | Dark | 用途 |
 | --- | --- | --- | --- |

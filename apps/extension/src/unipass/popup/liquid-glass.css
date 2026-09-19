@@ -5,63 +5,17 @@
  */
 :root {
   --glass-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='.12'/%3E%3C/svg%3E") 0 0 / 128px 128px repeat;
-  --glass-window: rgba(19, 28, 37, .42);
-  --glass-window-solid: #1b2731;
-  --glass-panel: rgba(8, 16, 23, .26);
-  --glass-control: rgba(255, 255, 255, .085);
-  --glass-control-hover: rgba(255, 255, 255, .15);
-  --glass-selected: rgba(217, 255, 243, .16);
-  --glass-line: rgba(255, 255, 255, .19);
-  --glass-line-soft: rgba(255, 255, 255, .12);
-  --glass-highlight: rgba(255, 255, 255, .25);
+
   --glass-shadow: rgba(0, 8, 20, .34);
   --dialog-scrim: rgba(2, 7, 12, .38);
-  --dialog-glass: rgba(18, 29, 38, .58);
-  --dialog-glass-solid: #1b2933;
-  --dialog-panel: rgba(255, 255, 255, .055);
-  --glass-rim: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, .52) 0%,
-    rgba(255, 255, 255, .16) 20%,
-    rgba(255, 255, 255, 0) 40%,
-    rgba(255, 255, 255, 0) 60%,
-    rgba(255, 255, 255, .12) 80%,
-    rgba(255, 255, 255, .42) 100%
-  );
-  --text-2: #c8d7e1;
-  --placeholder: #b4c5d0;
-  --window: #152b3b;
-  --surface-raised: rgba(24, 35, 44, .86);
+
 }
 
 :root[data-theme="light"] {
-  --glass-window: rgba(246, 251, 252, .20);
-  --glass-window-solid: #e8f0f3;
-  --glass-panel: rgba(255, 255, 255, .13);
-  --glass-control: rgba(255, 255, 255, .18);
-  --glass-control-hover: rgba(255, 255, 255, .30);
-  --glass-selected: rgba(255, 255, 255, .30);
-  --glass-line: rgba(255, 255, 255, .45);
-  --glass-line-soft: rgba(39, 68, 88, .15);
-  --glass-highlight: rgba(255, 255, 255, .62);
+
   --glass-shadow: rgba(25, 54, 76, .13);
   --dialog-scrim: rgba(255, 255, 255, .32);
-  --dialog-glass: rgba(236, 246, 248, .58);
-  --dialog-glass-solid: #edf5f7;
-  --dialog-panel: rgba(255, 255, 255, .22);
-  --glass-rim: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, .92) 0%,
-    rgba(255, 255, 255, .42) 20%,
-    rgba(255, 255, 255, .08) 40%,
-    rgba(38, 67, 87, .05) 60%,
-    rgba(255, 255, 255, .35) 80%,
-    rgba(255, 255, 255, .86) 100%
-  );
-  --text-2: #425970;
-  --placeholder: #526980;
-  --window: #bcd9df;
-  --surface-raised: rgba(239, 247, 249, .88);
+
 }
 
 /* The standalone Popup needs its own scene; the page overlay samples the live page. */
@@ -111,7 +65,9 @@ body {
 }
 
 main { background: transparent; }
-.topbar, .list, .credential, .statusbar {
+.topbar, .tabs, .list, .credential, .statusbar, .host-chip, .search-field,
+:root .actions button, :root .item > button, :root .field-row button,
+:root .settings-reset, :root .settings-save {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
@@ -156,8 +112,8 @@ main { background: transparent; }
   background: rgba(255, 255, 255, .01);
   background-blend-mode: luminosity;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, .10);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 :root .tab-indicator {
   position: absolute;
@@ -263,8 +219,8 @@ main { background: transparent; }
   background: rgba(255, 255, 255, .055);
   background-blend-mode: luminosity;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, .15), inset 0 -1px 0 rgba(0, 10, 24, .08);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .search-field::before {
   position: absolute;
@@ -345,8 +301,8 @@ main { background: transparent; }
   border-radius: 999px;
   background: var(--glass-control);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, .09);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 :root .actions button:hover,
 :root .item > button:hover,

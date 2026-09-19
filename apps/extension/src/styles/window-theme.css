@@ -7,7 +7,8 @@
   /* Layer 0–2: ambient fallback, readable content, and raised controls. */
   --window-background: #1b1d20;
   --window-surface: #202225;
-  --window-surface-sidebar: var(--window-background);
+  /* Navigation remains distinct without becoming an opaque black strip. */
+  --window-surface-sidebar: rgb(25 42 56 / .58);
   --window-surface-raised: #282b2f;
   --window-surface-control: #34383e;
   /* Blue-gray readable surfaces for app content; controls stay lighter than the body. */
@@ -29,6 +30,10 @@
   --window-warning: #f2c66d;
   --window-danger: #ff9999;
   --window-focus-ring: #b6dcff;
+  /* UniPass retains its mint identity through the shared theme source. */
+  --window-vault-accent: #41d39b;
+  --window-vault-accent-strong: #23b983;
+  --window-vault-accent-text: #a8f5d7;
 
   /*
    * Optical surfaces have intentionally separate semantic roles. The desktop
@@ -93,8 +98,12 @@
 }
 
 html[data-theme='light'] {
+  --window-vault-accent: #159a6b;
+  --window-vault-accent-strong: #138558;
+  --window-vault-accent-text: #08734e;
   --window-background: #eff1f3;
   --window-surface: #f8f9fa;
+  --window-surface-sidebar: rgb(247 250 252 / .72);
   --window-surface-raised: #ffffff;
   --window-surface-control: #e7eaee;
   --window-surface-content: #edf5f9;
@@ -132,6 +141,7 @@ html[data-reduce-transparency='true'] {
   --window-glass-window: var(--window-surface-raised);
   --window-glass-dialog: var(--window-surface-raised);
   --window-surface-readable: var(--window-surface);
+  --window-surface-sidebar: var(--window-surface-raised);
   --window-surface-content: var(--window-surface);
   --window-surface-panel: var(--window-surface-raised);
   --window-surface-field: var(--window-surface-control);
@@ -147,6 +157,7 @@ html[data-reduce-transparency='true'] {
 html[data-high-contrast='true'] {
   --window-background: #050b14;
   --window-surface: #050b14;
+  --window-surface-sidebar: var(--window-surface);
   --window-surface-raised: #050b14;
   --window-surface-control: #142e4b;
   --window-text: #ffffff;

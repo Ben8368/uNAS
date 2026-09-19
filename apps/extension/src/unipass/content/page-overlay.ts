@@ -1,3 +1,5 @@
+import windowThemeCss from "../../styles/window-theme.css?inline";
+import unasThemeCss from "../popup/unas-theme.css?inline";
 import popupCss from "../popup/popup.css?inline";
 import componentsCss from "../popup/components.css?inline";
 import themeCss from "../popup/theme.css?inline";
@@ -26,7 +28,7 @@ async function mount(): Promise<void> {
   host.style.cssText = "position:fixed;top:16px;right:16px;width:420px;height:min(580px,calc(100vh - 32px));z-index:2147483647;pointer-events:none;background:transparent!important;";
   const shadow = host.attachShadow({ mode: "closed" });
   const style = document.createElement("style");
-  style.textContent = overlayStyles([popupCss, componentsCss, themeCss, glassCss].join("\n"));
+  style.textContent = overlayStyles([popupCss, componentsCss, themeCss, glassCss, windowThemeCss.replaceAll("html[", ":root["), unasThemeCss].join("\n"));
   shadow.append(style);
 
   const overlayRoot = document.createElement("div");

@@ -26,44 +26,53 @@ export class VaultSyncEngine {
   }
 
   private async runSynchronize(): Promise<VaultSyncResult> {
+    const progress = { uploaded: 0, downloaded: 0 };
     try {
       await this.remote.connect();
-      let uploaded = 0;
       for (const record of await this.cache.records()) {
         if (record.syncState !== "dirty") continue;
         try {
           const stored = await this.remote.put(record.id, record.data, record.remoteRevision);
           await this.cache.markUploaded(record.id, record.localRevision, stored.revision);
-          uploaded += 1;
+          progress.uploaded += 1;
         } catch (error) {
           if (error instanceof VaultConflictError || isConflict(error)) await this.cache.markConflict(record.id, record.localRevision, record.remoteRevision);
           else throw error;
         }
       }
-      const downloaded = await this.runPull();
-      return { ...(await this.status()), uploaded, downloaded };
+      await this.runPull(() => { progress.downloaded += 1; });
+      return { ...(await this.status()), ...progress };
     } catch {
-      return { ...(await this.status()), state: "offline", uploaded: 0, downloaded: 0 };
+      return { ...(await this.status()), state: "offline", ...progress };
     }
   }
 
   pull(): Promise<number> { return this.exclusive(() => this.runPull()); }
 
-  private async runPull(): Promise<number> {
+  private async runPull(onDownloaded: () => void = () => {}): Promise<number> {
     const remoteMetas = await this.remote.list();
     const remoteIds = new Set(remoteMetas.map((meta) => meta.id));
     const downloads: Array<{ object: StoredObject; kind?: VaultObjectKind; expectedLocalRevision: string | null }> = [];
     let downloaded = 0;
     for (const meta of remoteMetas) {
       const local = await this.cache.record(meta.id);
-      if (!local) { const object = await this.remote.get(meta.id); if (object) downloads.push({ object, kind: meta.kind ?? kindFor(meta.id), expectedLocalRevision: null }); continue; }
-      if (local.remoteRevision === meta.revision) continue;
-      if (local.syncState === "clean") { const object = await this.remote.get(meta.id); if (object) downloads.push({ object, kind: meta.kind ?? kindFor(meta.id), expectedLocalRevision: local.localRevision }); continue; }
+      if (local?.remoteRevision === meta.revision) continue;
+      if (!local || local.syncState === "clean") {
+        const object = await this.remote.get(meta.id);
+        // A listed object disappearing mid-pull is an incomplete snapshot, not
+        // a successful sync. Keep staged downloads uncommitted and retry later.
+        if (!object) throw new Error("远端 Vault 对象在同步期间不可用，请重试");
+        downloads.push({ object, kind: meta.kind ?? kindFor(meta.id), expectedLocalRevision: local?.localRevision ?? null });
+        continue;
+      }
       await this.cache.markConflict(meta.id, local.localRevision, local.remoteRevision);
     }
     for (const local of await this.cache.records()) if (!remoteIds.has(local.id) && local.remoteRevision) await this.cache.markConflict(local.id, local.localRevision, local.remoteRevision);
     for (const download of downloads) {
-      if (await this.cache.acceptRemoteIfUnchanged(download.object, download.kind, download.expectedLocalRevision)) downloaded += 1;
+      if (await this.cache.acceptRemoteIfUnchanged(download.object, download.kind, download.expectedLocalRevision)) {
+        downloaded += 1;
+        onDownloaded();
+      }
     }
     return downloaded;
   }

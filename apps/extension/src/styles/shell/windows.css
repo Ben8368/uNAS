@@ -56,9 +56,13 @@
   right: 0;
   left: 0;
   z-index: 0;
-  height: 132px;
+  bottom: 0;
   background: var(--window-glass-reflection);
   content: '';
+  opacity: .84;
+  /* Prevent the title reflection from ending as a visible horizontal strip. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 20%, transparent 58%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 20%, transparent 58%);
   pointer-events: none;
 }
 
@@ -266,22 +270,46 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  margin: 0 8px 8px;
-  border: 1px solid color-mix(in srgb, var(--window-text) 7%, transparent);
-  border-radius: 0 0 calc(var(--app-window-radius) - 8px) calc(var(--app-window-radius) - 8px);
-  background: var(--window-surface-readable);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--window-glass-highlight) 62%, transparent);
+  /* Continue the title bar's glass instead of placing a dark rectangle inside it. */
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   color: var(--window-text);
-}
-
-/* Link App content uses the same blue-gray family as the glass shell. */
-.mt-window[data-app-id='browser'] .mt-window-body {
-  background: var(--window-surface-content);
-  border-color: color-mix(in srgb, var(--window-accent) 18%, transparent);
 }
 
 .mt-window-body > * {
   min-height: 0;
+}
+
+/* All registered Apps inherit one continuous canvas from the Window shell.
+ * App styles may use raised surfaces for controls and panels, never as a full
+ * viewport replacement for the shell material. */
+.mt-window-body > :is(.dl-app, .fm-app, .settings-app, .lv-app, .transcode-app, .psd-app, .demo-tool) {
+  background: transparent;
+}
+
+.mt-window-body > :is(.dl-app, .fm-app, .settings-app, .transcode-app, .psd-app) > :is(.dl-panel, .fm-panel, .settings-panel, .transcode-panel, .psd-panel) {
+  background: transparent;
+}
+
+/* Shared App navigation is a quiet extension of the glass scene—not a separate
+ * black slab. This selector deliberately covers every App that exposes a sidebar. */
+.mt-window-body :is(.dl-sidebar, .fm-sidebar, .settings-sidebar, .transcode-sidebar, .psd-sidebar) {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--window-surface-sidebar) 92%, var(--window-glass-highlight)), var(--window-surface-sidebar));
+  border-right-color: color-mix(in srgb, var(--window-text) 12%, transparent);
+  box-shadow: inset -1px 0 0 color-mix(in srgb, var(--window-glass-highlight) 28%, transparent);
+}
+
+html[data-reduce-transparency='true'] .mt-window-body :is(.dl-sidebar, .fm-sidebar, .settings-sidebar, .transcode-sidebar, .psd-sidebar) {
+  background: var(--window-surface-sidebar);
+  box-shadow: none;
+}
+
+html[data-reduce-transparency='true'] .mt-window-body {
+  background: var(--window-surface);
 }
 
 /* Resize handles */

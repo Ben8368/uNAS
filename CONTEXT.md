@@ -1,6 +1,6 @@
 # 当前状态
 
-> **最后确认：** 2026-09-19
+> **最后确认：** 2026-09-20
 > **阶段：** Phase 2 / UniPass capability integration
 > **产品代码：** uNAS 唯一 WXT MV3 包已接入 UniPass AdBlock、WebDAV Vault、Legacy adapter 和原版 closed Shadow DOM 页面浮层；密码库管理不再另开独立 `passwords.html`，原有 New Tab/Workspace 保持。
 
@@ -19,9 +19,9 @@
 
 ## 近期优先级
 
-1. 实施 uNAS Glass D：为 UniPass Popup 增加仅展示层的共享 Token 适配，保留薄荷绿强调，且不改凭据、认证、WASM、网络或权限代码。
+1. 验收 uNAS Glass D：UniPass 展示层已接入共享 Token 并保留薄荷绿强调，补目标 Chrome 浮层深浅主题与控件状态人工证据。
 2. 实施 uNAS Glass E：补齐浅深主题、减少透明度、真实 Chrome 人工走查与可复现证据归档。
-3. 继续偿还 [TD-002](docs/TECH_DEBT.md#td-002全局兼容样式的局部化迁移)：将剩余 App 的全局 light-theme 兼容覆盖移回所属样式。
+3. 完成 [TD-002](docs/TECH_DEBT.md#td-002全局兼容样式的局部化迁移) 验收：代码迁移已完成，系统 Chrome 自动化未等到 Service Worker；补齐人工确认后归档。
 
 ## 当前阻断与风险
 
@@ -30,7 +30,7 @@
 
 ## 最近验证
 
-- 2026-09-19：[uNAS Glass 工作包 B/C 验收记录](docs/archive/reviews/2026-09-19-unas-glass-bc.md)：`pnpm verify` 通过（27 个测试文件、120 个测试），`pnpm test:e2e` 通过（40/40，0 skipped）；已人工查看 Playwright bundled Chromium 的桌面深色/紧凑、文件管理器浅色截图。该证据不替代 D/E 的目标 Chrome 人工验收。
+- 2026-09-20：[TD-002 主题迁移验证](docs/archive/reviews/2026-09-20-theme-debt.md)：共享 Token 与 App 样式局部化已实现；`pnpm verify` 通过（32 个测试文件、153 个测试），`pnpm test:e2e` 通过（46/46，0 skipped）。E2E 来自 bundled Chromium；系统 Chrome 153 的 5 项定向测试在等待 Service Worker 时超时，未验证 UI；TD-002 保留待人工验收，不关闭 RISK-012/014。前轮 Vault 修复见该证据链接。
 
 ## 按需入口
 

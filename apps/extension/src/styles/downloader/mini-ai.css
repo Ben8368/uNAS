@@ -10,8 +10,8 @@
   flex-direction: column;
   z-index: 6;
   border-radius: 10px;
-  border: 1px solid rgba(77, 171, 255, 0.28);
-  background: rgba(12, 14, 20, 0.97);
+  border: 1px solid color-mix(in srgb, var(--window-accent) 28%, var(--window-border));
+  background: var(--window-surface-raised);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
   overflow: hidden;
 }
@@ -21,20 +21,20 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 10px 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--window-divider);
   flex-shrink: 0;
 }
 
 .dl-mini-ai__title {
   font-size: 12px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--window-text);
 }
 
 .dl-mini-ai__close {
   border: 0;
   background: transparent;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--window-text-muted);
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
@@ -43,8 +43,8 @@
 }
 
 .dl-mini-ai__close:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--window-text);
+  background: var(--window-surface-control);
 }
 
 .dl-mini-ai__thread {
@@ -101,8 +101,8 @@
 .dl-mini-ai__composer {
   flex-shrink: 0;
   padding: 8px 10px 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(5, 6, 9, 0.55);
+  border-top: 1px solid var(--window-divider);
+  background: var(--window-surface-raised);
 }
 
 .dl-mini-ai__composer-inner {
@@ -115,13 +115,13 @@
   height: 30px;
   padding: 0 0 0 8px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--window-border);
   border-radius: 8px;
-  background: #202226;
+  background: var(--window-surface-raised);
 }
 
 .dl-mini-ai__composer-inner:focus-within {
-  border-color: rgba(77, 171, 255, 0.55);
+  border-color: color-mix(in srgb, var(--window-accent) 55%, var(--window-border));
   box-shadow: 0 0 0 2px rgba(77, 171, 255, 0.16);
 }
 
@@ -150,11 +150,11 @@
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: #f7f8fb;
+  color: var(--window-text);
   font-size: 12px;
   font-family: inherit;
   outline: 0;
-  color-scheme: dark;
+  color-scheme: inherit;
   white-space: pre-wrap;
   word-break: break-word;
   overflow-x: auto;
@@ -170,7 +170,7 @@
   max-width: 76px;
   font-size: 10px;
   line-height: 1.25;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--window-text-muted);
 }
 
 .dl-mini-ai__draft-stats-hint {

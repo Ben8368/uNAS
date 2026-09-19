@@ -1,32 +1,28 @@
 .transcode-app {
-  --mt-fill: rgba(255,255,255,.055);
-  --mt-border: rgba(255,255,255,.14);
-  --mt-text-0: rgba(248,250,252,.94);
-  --mt-text-1: rgba(226,232,240,.72);
   display: grid;
   grid-template-columns: var(--app-sidebar-width) minmax(0, 1fr);
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  background: rgba(10,12,18,.65);
-  color: rgba(255,255,255,.88);
+  background: transparent;
+  color: var(--window-text);
 }
 
 .transcode-app .mt-field input::placeholder {
-  color: rgba(226,232,240,.38);
+  color: var(--window-text-muted);
 }
 
 .transcode-app .mt-field input:focus,
 .transcode-app .mt-field select:focus,
 .transcode-app .mt-field textarea:focus {
-  border-color: rgba(77,171,255,.5);
+  border-color: color-mix(in srgb, var(--window-accent) 50%, var(--window-border));
   box-shadow: 0 0 0 2px rgba(77,171,255,.14);
 }
 
 .transcode-sidebar {
   min-width: 0;
-  border-right: 1px solid rgba(255,255,255,.07);
-  background: rgba(5,6,8,.96);
+  border-right: 1px solid var(--window-divider);
+  background: var(--window-surface-raised);
   padding: 16px 10px;
 }
 
@@ -40,15 +36,15 @@
   border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
-  color: rgba(255,255,255,.72);
+  color: var(--window-text-muted);
   padding: 0 10px;
   text-align: left;
 }
 
 .transcode-nav--active {
-  border-color: rgba(84,255,183,.18);
-  background: rgba(84,255,183,.08);
-  color: #d8ffeb;
+  border-color: color-mix(in srgb, var(--window-success) 25%, var(--window-border));
+  background: color-mix(in srgb, var(--window-success) 8%, var(--window-surface-raised));
+  color: var(--window-text);
 }
 
 .transcode-nav__icon {
@@ -57,8 +53,8 @@
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  background: rgba(84,255,183,.12);
-  color: #8dffc5;
+  background: color-mix(in srgb, var(--window-success) 12%, var(--window-surface-raised));
+  color: var(--window-success);
   font-size: 11px;
   font-weight: 800;
 }
@@ -73,7 +69,7 @@
 }
 
 .transcode-nav small {
-  color: rgba(255,255,255,.46);
+  color: var(--window-text-muted);
   font-size: 11px;
 }
 
@@ -85,7 +81,7 @@
   min-height: 0;
   overflow: hidden;
   padding: 16px;
-  background: rgba(16,17,21,.92);
+  background: transparent;
 }
 
 .transcode-form {
@@ -95,7 +91,7 @@
   gap: 10px;
   min-width: 0;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255,255,255,.07);
+  border-bottom: 1px solid var(--window-divider);
 }
 
 .transcode-submit {
@@ -104,19 +100,19 @@
 
 .transcode-message {
   min-height: 32px;
-  border: 1px solid rgba(84,255,183,.18);
+  border: 1px solid color-mix(in srgb, var(--window-success) 25%, var(--window-border));
   border-radius: 8px;
-  background: rgba(84,255,183,.08);
-  color: #baffe0;
+  background: color-mix(in srgb, var(--window-success) 8%, var(--window-surface-raised));
+  color: var(--window-success);
   padding: 8px 10px;
   font-size: 12px;
   line-height: 1.35;
 }
 
 .transcode-message--error {
-  border-color: rgba(255,107,107,.26);
-  background: rgba(255,107,107,.1);
-  color: #ffb5b5;
+  border-color: color-mix(in srgb, var(--window-danger) 26%, var(--window-border));
+  background: color-mix(in srgb, var(--window-danger) 10%, var(--window-surface-raised));
+  color: var(--window-danger);
 }
 
 .transcode-jobs {
@@ -142,7 +138,7 @@
   min-width: 0;
   min-height: 0;
   overflow: auto;
-  border-top: 1px solid rgba(255,255,255,.07);
+  border-top: 1px solid var(--window-divider);
 }
 
 .transcode-row {
@@ -151,8 +147,8 @@
   align-items: center;
   gap: 12px;
   min-height: 48px;
-  border-bottom: 1px solid rgba(255,255,255,.06);
-  color: rgba(255,255,255,.74);
+  border-bottom: 1px solid var(--window-divider);
+  color: var(--window-text-muted);
   font-size: 12px;
 }
 
@@ -161,8 +157,8 @@
   top: 0;
   z-index: 1;
   min-height: 36px;
-  background: rgba(16,17,21,.98);
-  color: rgba(255,255,255,.44);
+  background: var(--window-surface-raised);
+  color: var(--window-text-muted);
   font-size: 11px;
   font-weight: 700;
 }
@@ -184,13 +180,13 @@
 }
 
 .transcode-row strong {
-  color: rgba(255,255,255,.9);
+  color: var(--window-text);
   font-size: 12px;
 }
 
 .transcode-row small {
   margin-top: 4px;
-  color: rgba(255,159,159,.74);
+  color: var(--window-danger);
   font-size: 11px;
 }
 
@@ -200,30 +196,30 @@
   height: 8px;
   margin-right: 7px;
   border-radius: 999px;
-  background: rgba(255,255,255,.34);
+  background: var(--window-surface-control);
 }
 
 .transcode-status--running {
-  background: #54ffb7;
+  background: var(--window-success);
 }
 
 .transcode-status--succeeded {
-  background: #7cc4ff;
+  background: var(--window-accent);
 }
 
 .transcode-status--failed {
-  background: #ff6b6b;
+  background: var(--window-danger);
 }
 
 .transcode-status--canceled {
-  background: #ffd43b;
+  background: var(--window-warning);
 }
 
 .transcode-empty {
   display: grid;
   place-items: center;
   min-height: 150px;
-  color: rgba(255,255,255,.48);
+  color: var(--window-text-muted);
   font-size: 12px;
 }
 

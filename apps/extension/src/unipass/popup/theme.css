@@ -1,47 +1,12 @@
 /* Theme tokens keep both appearances readable without changing the popup layout. */
 :root {
-  --surface: rgba(16, 17, 21, .68);
-  --chrome: rgba(8, 12, 16, .60);
-  --tabs: rgba(13, 20, 25, .38);
-  --list: rgba(8, 14, 19, .43);
-  --input: rgba(6, 11, 16, .52);
-  --input-focus: rgba(6, 11, 16, .72);
-  --credential: rgba(8, 18, 17, .66);
-  --text-strong: #fff;
-  --control-text: rgba(255, 255, 255, .70);
-  --placeholder: rgba(203, 213, 225, .32);
-  --green-text: #a8f5d7;
-  --danger-text: #ffb4b8;
-  --warning: #ffc878;
+
   --shadow: rgba(0, 0, 0, .16);
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --window: #e5eef0;
-  --surface: rgba(244, 249, 250, .62);
-  --surface-raised: rgba(255, 255, 255, .74);
-  --chrome: rgba(255, 255, 255, .52);
-  --tabs: rgba(244, 250, 249, .36);
-  --list: rgba(255, 255, 255, .48);
-  --input: rgba(255, 255, 255, .60);
-  --input-focus: rgba(255, 255, 255, .82);
-  --credential: rgba(239, 251, 246, .66);
-  --text-0: #17212b;
-  --text-1: rgba(30, 41, 59, .78);
-  --text-2: rgba(71, 85, 105, .72);
-  --text-strong: #0f172a;
-  --control-text: rgba(30, 41, 59, .72);
-  --placeholder: rgba(71, 85, 105, .52);
-  --green: #159a6b;
-  --green-strong: #138558;
-  --green-soft: rgba(21, 154, 107, .10);
-  --green-text: #08734e;
-  --danger: #d84f5b;
-  --danger-text: #b42331;
-  --warning: #a96500;
-  --border: rgba(15, 23, 42, .14);
-  --divider: rgba(15, 23, 42, .09);
+
   --shadow: rgba(15, 23, 42, .10);
 }
 
@@ -57,19 +22,6 @@
 :root[data-theme="light"] .brand-copy h1,
 :root[data-theme="light"] .item-title { color: var(--text-strong); }
 /* Light theme contrast refinements. */
-:root[data-theme="light"] {
-  --surface: rgba(244, 249, 250, .62);
-  --list: rgba(255, 255, 255, .48);
-  --text-0: #172536;
-  --text-1: #334b62;
-  --text-2: #5d7185;
-  --green: #0b9968;
-  --green-strong: #087d56;
-  --green-soft: rgba(11, 153, 104, .12);
-  --green-text: #076b49;
-  --border: rgba(30, 55, 78, .20);
-  --divider: rgba(30, 55, 78, .13);
-}
 
 :root[data-theme="light"] .tab,
 :root[data-theme="light"] .tab:hover { color: #52677b; }

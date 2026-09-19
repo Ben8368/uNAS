@@ -37,6 +37,12 @@ test('the migrated UniPass overlay opens, fills, closes, and dies with an HTTPS 
     await page.locator('#unipass-page-overlay').screenshot({ path: testInfo.outputPath('unipass-original-overlay.png') })
     const overlayBox = await page.locator('#unipass-page-overlay').boundingBox()
     if (!overlayBox) throw new Error('Overlay fixture bounds were not found.')
+    // Theme toggle is the middle header control in the retained popup layout.
+    await page.mouse.click(overlayBox.x + overlayBox.width - 64, overlayBox.y + 32)
+    await page.locator('#unipass-page-overlay').screenshot({ path: testInfo.outputPath('unipass-alternate-theme.png') })
+    await page.emulateMedia({ contrast: 'more', reducedMotion: 'reduce' })
+    await page.locator('#unipass-page-overlay').screenshot({ path: testInfo.outputPath('unipass-reduced-effects.png') })
+    await page.emulateMedia({ contrast: 'no-preference', reducedMotion: 'no-preference' })
     // The overlay intentionally uses a closed Shadow DOM. Click the visible
     // tab by its rendered geometry and retain a visual artifact instead of
     // weakening that isolation with page-level DOM selectors.

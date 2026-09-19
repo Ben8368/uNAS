@@ -44,7 +44,7 @@ export class WebDavBackend implements VaultBackend {
     const response = await this.request("PROPFIND", new URL(OBJECTS_DIRECTORY, this.endpoint).toString(), { Depth: "1" });
     if (response.status === 404) return [];
     if (![200, 207].includes(response.status)) throw this.errorForStatus(response.status);
-    return parsePropfind(await response.text(), this.endpoint);
+    return parsePropfind(new TextDecoder().decode(response.data), this.endpoint);
   }
   async get(id: string): Promise<StoredObject | null> {
     const response = await this.request("GET", this.objectUrl(id));
@@ -52,7 +52,7 @@ export class WebDavBackend implements VaultBackend {
     if (!response.ok) throw this.errorForStatus(response.status);
     const revision = response.headers.get("ETag");
     if (!revision) throw new WebDavCompatibilityError("WebDAV 服务器未返回 ETag");
-    return { id, data: new Uint8Array(await response.arrayBuffer()), revision };
+    return { id, data: response.data, revision };
   }
   async put(id: string, data: Uint8Array, expectedRevision?: RevisionToken): Promise<StoredObjectMeta> {
     const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -75,9 +75,15 @@ export class WebDavBackend implements VaultBackend {
     if (id !== "manifest" && !/^[A-Za-z0-9_-]{16,160}$/.test(id)) throw new Error("Vault 对象 ID 无效");
     return new URL(`${OBJECTS_DIRECTORY}${encodeURIComponent(id)}.json`, this.endpoint).toString();
   }
-  private async request(method: string, input: string, headers: Record<string, string> = {}, body?: Uint8Array): Promise<Response> {
+  private async request(method: string, input: string, headers: Record<string, string> = {}, body?: Uint8Array): Promise<{ status: number; ok: boolean; headers: Headers; data: Uint8Array }> {
     const requestHeaders = { ...headers, Authorization: this.authorizationHeader(), Accept: "application/json, application/xml" };
-    const response = await fetchWithTimeout(input, { method, headers: requestHeaders, body: body ? body.slice().buffer as ArrayBuffer : undefined });
+    const response = await fetchWithTimeout(input, {
+      method, headers: requestHeaders, body: body ? body.slice().buffer as ArrayBuffer : undefined,
+    }, async (response) => {
+      const needsBody = response.ok && (method === "GET" || (method === "PROPFIND" && headers.Depth === "1"));
+      const data = needsBody ? new Uint8Array(await response.arrayBuffer()) : new Uint8Array();
+      return { status: response.status, ok: response.ok, headers: response.headers, data };
+    });
     if (response.status === 401) throw new Error("WebDAV 认证失败（HTTP 401），请确认地址和 App Password");
     if (response.status === 403) throw new Error("WebDAV 权限不足，请检查目标目录权限");
     return response;

@@ -3,20 +3,7 @@
   font-family: Inter, "Segoe UI Variable", "Segoe UI", "Microsoft YaHei UI", sans-serif;
   color: var(--text-0);
   background: var(--window);
-  --window: #0a0a0b;
-  --surface: #101115;
-  --surface-raised: #15171c;
-  --fill: rgba(255, 255, 255, .055);
-  --fill-hover: rgba(255, 255, 255, .085);
-  --border: rgba(255, 255, 255, .10);
-  --divider: rgba(255, 255, 255, .065);
-  --text-0: #f8fafc;
-  --text-1: rgba(241, 245, 249, .78);
-  --text-2: rgba(203, 213, 225, .50);
-  --green: #41d39b;
-  --green-strong: #23b983;
-  --green-soft: rgba(65, 211, 155, .11);
-  --danger: #ff858c;
+
 }
 
 * { box-sizing: border-box; }

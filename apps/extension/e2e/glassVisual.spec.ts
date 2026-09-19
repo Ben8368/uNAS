@@ -69,7 +69,7 @@ test('Liquid Glass refinement keeps environment transmission while the content s
   const reduced = evidence.find((entry) => entry.reduceTransparency)!
   expect(dark.navigation.background).toContain('0.48')
   expect(dark.window.background).toContain('0.44')
-  expect(dark.body.background).toContain('0.82')
+  expect(dark.body.background).toContain('rgba(0, 0, 0, 0)')
   expect(dark.launcher.background).toContain('0.58')
   expect(dark.window.backdropFilter).toContain('saturate(1.38)')
   expect(reduced.window.backdropFilter).toBe('none')
@@ -77,22 +77,55 @@ test('Liquid Glass refinement keeps environment transmission while the content s
   expect(extension.errors).toEqual([])
 })
 
-test('Browser App leaves the readable Liquid Glass surface exposed', async ({ extension }, testInfo) => {
+test('Browser App uses semantic content surfaces in both themes and reduced transparency', async ({ extension }, testInfo) => {
   const page = await extension.context.newPage()
   await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.locator('.app-icon--browser').click()
   await expect(page.getByRole('heading', { name: '网址 App' })).toBeVisible()
-  const surfaces = await page.evaluate(() => {
-    const app = getComputedStyle(document.querySelector('.link-apps')!)
-    const body = getComputedStyle(document.querySelector('.mt-window-body')!)
-    return { appBackground: app.background, bodyBackground: body.background }
-  })
-  expect(surfaces.appBackground).toContain('rgba(0, 0, 0, 0)')
-  expect(surfaces.bodyBackground).toContain('0.82')
-  await page.screenshot({ path: testInfo.outputPath('refined-dark-browser-app.png'), animations: 'disabled' })
+  const evidence = []
+  for (const theme of ['dark', 'light'] as const) {
+    for (const reduced of [false, true]) {
+      await applyAppearance(page, theme, reduced)
+      const surfaces = await page.evaluate(() => {
+        const root = document.querySelector<HTMLElement>(".mt-window[data-app-id='browser']")!
+        const body = root.querySelector<HTMLElement>('.mt-window-body')!
+        const app = getComputedStyle(root.querySelector('.link-apps')!)
+        // Resolve the semantic Token in the same inheritance scope, rather than
+        // duplicating its color/alpha value in the acceptance test.
+        const probe = document.createElement('div')
+        probe.style.backgroundColor = 'var(--window-surface-content)'
+        body.append(probe)
+        const expectedContent = getComputedStyle(probe).backgroundColor
+        probe.remove()
+        return {
+          appBackground: app.backgroundColor,
+          appImage: app.backgroundImage,
+          bodyBackground: getComputedStyle(body).backgroundColor,
+          bodyImage: getComputedStyle(body).backgroundImage,
+          bodyFilter: getComputedStyle(body).backdropFilter,
+          windowFilter: getComputedStyle(root).backdropFilter,
+          expectedContent,
+        }
+      })
+      expect(surfaces.bodyImage).toBe('none')
+      expect(surfaces.bodyFilter).toBe('none')
+      if (reduced) {
+        expect(surfaces.windowFilter).toBe('none')
+        expect(surfaces.bodyBackground).toBe(surfaces.expectedContent)
+        expect(surfaces.appBackground).toBe(surfaces.expectedContent)
+        expect(surfaces.appImage).toBe('none')
+      } else {
+        expect(surfaces.windowFilter).toContain('blur(')
+        expect(surfaces.bodyBackground).toBe('rgba(0, 0, 0, 0)')
+        expect(surfaces.appImage).not.toBe('none')
+      }
+      evidence.push({ theme, reduced, ...surfaces })
+      await page.screenshot({ path: testInfo.outputPath(`browser-app-${theme}${reduced ? '-reduced' : ''}.png`), animations: 'disabled' })
+    }
+  }
   await testInfo.attach('browser-app-surface-computed-style', {
-    body: JSON.stringify(surfaces, null, 2),
+    body: JSON.stringify(evidence, null, 2),
     contentType: 'application/json',
   })
   expect(extension.errors).toEqual([])

@@ -1,8 +1,8 @@
 .dl-form-error {
-  border: 1px solid rgba(255, 107, 107, .26);
+  border: 1px solid color-mix(in srgb, var(--window-danger) 26%, var(--window-border));
   border-radius: 8px;
-  background: rgba(255, 107, 107, .08);
-  color: #ffb4b4;
+  background: color-mix(in srgb, var(--window-danger) 8%, var(--window-surface-raised));
+  color: var(--window-danger);
   padding: 10px 12px;
   font-size: 12px;
 }
@@ -14,10 +14,10 @@
   z-index: 2;
   max-width: min(520px, calc(100% - 18px));
   overflow: hidden;
-  border: 1px solid rgba(255, 107, 107, .24);
+  border: 1px solid color-mix(in srgb, var(--window-danger) 25%, var(--window-border));
   border-radius: 8px;
-  background: rgba(36, 14, 18, .82);
-  color: #ffb7b7;
+  background: var(--window-surface-raised);
+  color: var(--window-danger);
   padding: 7px 12px;
   font-size: 12px;
   line-height: 1.2;
@@ -31,7 +31,7 @@
 .dl-btn--ghost {
   min-width: 68px;
   flex: 0 0 auto;
-  background: rgba(255,255,255,.03);
+  background: var(--window-surface-control);
 }
 
 html[data-reduce-transparency='true'] :is(.dl-table-scroll > .dl-head, .dl-status) {

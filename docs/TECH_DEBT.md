@@ -15,10 +15,10 @@ TD-001 的拆分、验证范围与关闭记录见 [2026-09 归档](archive/tech-
 ### TD-002：全局兼容样式的局部化迁移
 
 - **优先级 / 位置 / 来源 / 目标阶段：** P1；`apps/extension/src/styles/accessibility.css`、各 App 私有样式；uNAS Glass 工作包 A；UI-Glass-D。
-- **当前妥协与原因：** 工作包 A–C 已统一 Token、窗口材质、Desktop 和文件管理器，但为避免一次改动改变其余既有 App 的浅色可读性，仍保留少量全局 light-theme 兼容选择器与 App 私有 `--mt-*` 覆盖。
-- **影响与最坏结果：** 新组件可能意外继承旧选择器；主题值再度分叉时，局部修复会依赖选择器优先级，增加视觉回归与维护成本。
-- **偿还方案：** 在 D 中将剩余 App/UniPass 的表面与状态样式移回所属 CSS，并仅引用 `window-theme.css` 语义 Token；删除已无消费者的全局选择器和 App 私有主题值。
-- **验证方式：** 每次迁移运行 `pnpm verify`、`pnpm test:e2e`，并按 Quality 第 5 节对深浅主题、减少透明度、高对比、键盘焦点和窄容器截图/真实扩展走查。
+- **当前妥协与原因：** 2026-09-20 已完成代码迁移：删除全局浅色补丁和 App 私有 `--mt-*` 定义，Settings 独立样式，下载器/日志/PSD/Transcode 使用共享 Token，UniPass 通过展示层适配消费同一主题源；目标 Chrome 人工走查尚缺，保留本项待验收，不继续扩大代码改版。
+- **影响与最坏结果：** 自动化未覆盖的工具栏真实手势、200% 浏览器缩放、触控或存量未注册工具仍可能出现视觉差异；不能由构建通过推定验收。
+- **剩余偿还方案：** 在维护者实际加载扩展的 Chrome Profile 按 UI-Glass-E 完成截图对照和人工确认；系统 Chrome 153 的本轮自动化未等到 Service Worker，需先恢复该测试入口或直接人工加载。细节见[本轮证据](archive/reviews/2026-09-20-theme-debt.md)。
+- **验证方式：** 保留 `themeOwnership.test.ts` 防止别名/全局补丁回流，`appTheme.spec.ts` 检查深浅主题、键盘焦点与窄屏降级；`pnpm verify`、`pnpm test:e2e` 及 Quality 第 5 节人工证据全部满足后归档。
 
 不得用空的“以后优化”占位；产生真实妥协时按下列字段登记：
 

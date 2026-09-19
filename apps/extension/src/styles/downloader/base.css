@@ -6,7 +6,7 @@
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  background: var(--window-surface);
+  background: transparent;
   color: var(--window-text);
   /* 侧栏底栏与主区状态栏同高，保证顶部分隔线齐平 */
   --dl-footer-h: 48px;
@@ -16,7 +16,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border-right: 1px solid rgba(255,255,255,.07);
+  border-right: 1px solid var(--window-divider);
   background: var(--window-surface-sidebar);
   padding: 8px 0 0;
 }
@@ -41,7 +41,7 @@
   height: var(--dl-footer-h);
   box-sizing: border-box;
   padding: 0 10px;
-  border-top: 1px solid rgba(255,255,255,.07);
+  border-top: 1px solid var(--window-divider);
   justify-content: center;
 }
 
@@ -53,7 +53,7 @@
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: rgba(255,255,255,.72);
+  color: var(--window-text-muted);
   cursor: pointer;
   gap: 10px;
   padding: 0 11px;
@@ -64,13 +64,13 @@
 }
 
 .dl-nav-item:hover {
-  background: rgba(255,255,255,.07);
-  color: rgba(255,255,255,.95);
+  background: var(--window-surface-control);
+  color: var(--window-text);
 }
 
 .dl-nav-item--active {
-  background: rgba(0,102,255,.14);
-  color: #4dabff;
+  background: color-mix(in srgb, var(--window-accent) 14%, var(--window-surface-raised));
+  color: var(--window-accent);
 }
 
 .dl-nav-item span {
@@ -82,7 +82,7 @@
 
 .dl-nav-item small {
   margin-left: auto;
-  color: rgba(255,255,255,.35);
+  color: var(--window-text-muted);
   font-size: 11px;
   font-weight: 400;
   flex-shrink: 0;
@@ -102,7 +102,7 @@
   overflow: hidden;
   position: relative;
   padding: 14px 16px calc(var(--dl-footer-h) + 6px);
-  background: var(--window-surface);
+  background: transparent;
 }
 
 .dl-stage {
@@ -129,7 +129,7 @@
   gap: 10px;
   min-width: 0;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255,255,255,.07);
+  border-bottom: 1px solid var(--window-divider);
 }
 
 .dl-btn {
@@ -138,10 +138,10 @@
   justify-content: center;
   min-height: 32px;
   gap: 6px;
-  border: 1px solid rgba(255,255,255,.12);
+  border: 1px solid var(--window-border);
   border-radius: 6px;
-  background: rgba(255,255,255,.04);
-  color: rgba(255,255,255,.82);
+  background: var(--window-surface-control);
+  color: var(--window-text);
   cursor: pointer;
   padding: 0 12px;
   font-size: 12px;
@@ -151,24 +151,27 @@
 }
 
 .dl-btn:hover:not(:disabled) {
-  background: rgba(255,255,255,.09);
-  color: #fff;
+  background: var(--window-surface-control);
+  color: var(--window-text);
 }
 
 .dl-btn:disabled {
   cursor: not-allowed;
-  color: rgba(255,255,255,.28);
+  color: var(--window-text-muted);
   opacity: .6;
 }
 
 .dl-btn--primary {
-  border-color: rgba(0,102,255,.35);
-  background: var(--mt-brand);
-  color: #fff;
+  border-color: color-mix(in srgb, var(--window-accent) 35%, var(--window-border));
+  background: var(--window-primary);
+  color: var(--window-on-primary);
 }
 
+.dl-btn--primary:disabled { color: var(--window-on-primary); }
+
 .dl-btn--primary:hover:not(:disabled) {
-  background: #0a5ce6;
+  color: var(--window-on-primary);
+  background: color-mix(in srgb, var(--window-primary) 88%, black);
 }
 
 .dl-btn svg {
@@ -182,10 +185,10 @@
   display: flex;
   align-items: center;
   min-height: 32px;
-  border: 1px solid rgba(255,255,255,.12);
+  border: 1px solid var(--window-border);
   border-radius: 6px;
-  background: rgba(255,255,255,.04);
-  color: rgba(255,255,255,.48);
+  background: var(--window-surface-control);
+  color: var(--window-text-muted);
   gap: 8px;
   padding: 0 12px;
   width: min(260px, 100%);
@@ -197,10 +200,10 @@
   border: 0;
   outline: 0;
   background: transparent;
-  color: rgba(255,255,255,.88);
+  color: var(--window-text);
   font-size: 12px;
 }
 
-.dl-search input::placeholder { color: rgba(255,255,255,.35); }
+.dl-search input::placeholder { color: var(--window-text-muted); }
 
 .dl-search svg { width: 14px; height: 14px; flex-shrink: 0; }

@@ -1,0 +1,63 @@
+/* Presentation-only bridge: all material and theme values come from window-theme.css. */
+:root, :root[data-theme="light"], :root[data-theme="dark"] {
+  --window: var(--window-background);
+  --surface: var(--window-surface);
+  --surface-raised: var(--window-surface-raised);
+  --fill: var(--window-surface-raised);
+  --fill-hover: var(--window-surface-control);
+  --border: var(--window-border);
+  --divider: var(--window-divider);
+  --text-0: var(--window-text);
+  --text-1: var(--window-text);
+  --text-2: var(--window-text-muted);
+  --text-strong: var(--window-text);
+  --control-text: var(--window-text);
+  --placeholder: var(--window-text-muted);
+  --green: var(--window-vault-accent);
+  --green-strong: var(--window-vault-accent-strong);
+  --green-text: var(--window-vault-accent-text);
+  --green-soft: color-mix(in srgb, var(--window-vault-accent) 12%, transparent);
+  --danger: var(--window-danger);
+  --danger-text: var(--window-danger);
+  --warning: var(--window-warning);
+  --chrome: var(--window-glass-navigation);
+  --tabs: color-mix(in srgb, var(--window-surface) 64%, transparent);
+  --list: color-mix(in srgb, var(--window-surface) 72%, transparent);
+  --input: color-mix(in srgb, var(--window-surface-control) 86%, transparent);
+  --input-focus: color-mix(in srgb, var(--window-surface-control) 94%, transparent);
+  --credential: color-mix(in srgb, var(--window-surface-raised) 82%, transparent);
+  --glass-window: var(--window-glass-window);
+  --glass-window-solid: var(--window-surface);
+  --glass-panel: var(--window-surface);
+  --glass-control: var(--window-surface-raised);
+  --glass-control-hover: var(--window-surface-control);
+  --glass-selected: color-mix(in srgb, var(--window-vault-accent) 16%, var(--window-surface));
+  --glass-line: var(--window-border);
+  --glass-line-soft: var(--window-divider);
+  --glass-highlight: var(--window-glass-highlight);
+  --glass-rim: var(--window-glass-rim);
+  --dialog-glass: var(--window-glass-dialog);
+  --dialog-glass-solid: var(--window-surface-raised);
+  --dialog-panel: var(--window-surface);
+}
+:root .app-window, :root[data-theme="dark"] .app-window { backdrop-filter: var(--window-glass-filter); -webkit-backdrop-filter: var(--window-glass-filter); box-shadow: var(--window-shadow); }
+/* The overlay is one continuous surface: content does not introduce a second blue slab.
+ * Cards retain their own readable fill; the outer app window is the only glass layer. */
+:root .content-area { background: transparent; color: var(--window-text); }
+:root :is(input, select, textarea) { color: var(--window-text); caret-color: var(--window-vault-accent); border-radius: var(--window-radius-control); }
+:root :is(input, textarea)::placeholder { color: var(--window-text-muted); }
+:root :focus-visible { outline: 3px solid var(--window-focus-ring); outline-offset: 2px; }
+:root .window-controls { gap: var(--window-space-2); }
+:root .content-area { padding-inline: var(--window-space-3); }
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  :root .app-window { background: var(--window-surface); }
+  :root :is(.app-window, .app-window *) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  :root .app-window::before, :root .app-window::after { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root *, :root *::before, :root *::after { animation: none !important; transition: none !important; }
+}
+@media (forced-colors: active) {
+  :root .app-window, :root .content-area { background: Canvas; color: CanvasText; }
+  :root :focus-visible { outline-color: Highlight; }
+}

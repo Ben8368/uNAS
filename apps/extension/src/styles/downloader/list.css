@@ -16,7 +16,7 @@
 
 .dl-table-scroll::-webkit-scrollbar { width: 4px; }
 .dl-table-scroll::-webkit-scrollbar-track { background: transparent; }
-.dl-table-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
+.dl-table-scroll::-webkit-scrollbar-thumb { background: var(--window-surface-control); border-radius: 2px; }
 
 /* 下载队列：无勾选框，状态图标贴近标题；末尾为行内菜单 */
 .dl-table--queue .dl-head,
@@ -45,8 +45,8 @@
 .dl-head {
   min-height: 40px;
   padding-right: calc(18px + 10px);
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  color: rgba(255,255,255,.42);
+  border-bottom: 1px solid var(--window-divider);
+  color: var(--window-text-muted);
   font-size: 12px;
   font-weight: 600;
 }
@@ -93,22 +93,22 @@
 
 .dl-list::-webkit-scrollbar { width: 4px; }
 .dl-list::-webkit-scrollbar-track { background: transparent; }
-.dl-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
+.dl-list::-webkit-scrollbar-thumb { background: var(--window-surface-control); border-radius: 2px; }
 
 .dl-row {
   min-height: 46px;
   padding-right: 10px;
-  border-bottom: 1px solid rgba(255,255,255,.05);
+  border-bottom: 1px solid var(--window-divider);
   cursor: default;
   font-size: 13px;
 }
 
 .dl-row:hover {
-  background: rgba(255,255,255,.035);
+  background: var(--window-surface-control);
 }
 
 .dl-row--selected {
-  background: rgba(28,126,255,.12);
+  background: color-mix(in srgb, var(--window-accent) 12%, var(--window-surface-raised));
 }
 
 .dl-row--focused {
@@ -134,11 +134,11 @@
   flex-shrink: 0;
 }
 
-.dl-status-icon--running { color: #54ffb7; }
-.dl-status-icon--pending { color: #ffcc66; }
-.dl-status-icon--completed { color: #4dabff; }
-.dl-status-icon--failed { color: #ff8a82; }
-.dl-status-icon--cancelled { color: rgba(255,255,255,.35); }
+.dl-status-icon--running { color: var(--window-success); }
+.dl-status-icon--pending { color: var(--window-warning); }
+.dl-status-icon--completed { color: var(--window-accent); }
+.dl-status-icon--failed { color: var(--window-danger); }
+.dl-status-icon--cancelled { color: var(--window-text-muted); }
 
 .dl-col-name {
   display: flex;
@@ -148,7 +148,7 @@
 }
 
 .dl-col-name strong {
-  color: #fff;
+  color: var(--window-text);
   font-size: 13px;
   font-weight: 600;
   overflow: hidden;
@@ -157,7 +157,7 @@
 }
 
 .dl-col-name small {
-  color: rgba(255,255,255,.38);
+  color: var(--window-text-muted);
   font-size: 11px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -174,7 +174,7 @@
 .dl-progress-bar {
   flex: 1;
   height: 4px;
-  background: rgba(255,255,255,.06);
+  background: var(--window-surface-control);
   border-radius: 2px;
   overflow: hidden;
   min-width: 40px;
@@ -182,14 +182,14 @@
 
 .dl-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4a8fff, #5b9bff);
+  background: linear-gradient(90deg, var(--window-accent), var(--window-accent));
   border-radius: 2px;
   transition: width .3s ease;
 }
 
 .dl-progress-text {
   font-size: 11px;
-  color: rgba(255,255,255,.55);
+  color: var(--window-text-muted);
   width: 42px;
   text-align: right;
   flex-shrink: 0;
@@ -198,7 +198,7 @@
 .dl-col-time {
   font-size: 11px;
   font-weight: 400;
-  color: rgba(255,255,255,.45);
+  color: var(--window-text-muted);
   text-align: end;
   font-variant-numeric: tabular-nums;
   min-width: 0;
@@ -225,15 +225,15 @@
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: rgba(255,255,255,.38);
+  color: var(--window-text-muted);
   cursor: pointer;
   transition: background .12s, color .12s;
 }
 
 .dl-row-menu-trigger:hover,
 .dl-row-menu-trigger--open {
-  background: rgba(255,255,255,.08);
-  color: rgba(255,255,255,.92);
+  background: var(--window-surface-control);
+  color: var(--window-text);
 }
 
 .dl-row-menu-trigger__icon {
@@ -249,8 +249,8 @@
   width: 180px;
   padding: 4px 0;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(22,24,30,.98);
+  border: 1px solid var(--window-border);
+  background: var(--window-surface-raised);
   box-shadow: 0 8px 28px rgba(0,0,0,.45);
 }
 
@@ -259,7 +259,7 @@
   width: 100%;
   border: 0;
   background: transparent;
-  color: rgba(255,255,255,.88);
+  color: var(--window-text);
   text-align: left;
   font-size: 12px;
   padding: 8px 12px;
@@ -267,12 +267,12 @@
 }
 
 .dl-row-menu-item:hover:not(:disabled) {
-  background: rgba(255,255,255,.06);
+  background: var(--window-surface-control);
 }
 
 .dl-row-menu-item:disabled {
   cursor: not-allowed;
-  color: rgba(255,255,255,.32);
+  color: var(--window-text-muted);
 }
 
 .dl-empty {
@@ -281,7 +281,7 @@
   align-items: center;
   justify-content: center;
   min-height: 280px;
-  color: rgba(255,255,255,.35);
+  color: var(--window-text-muted);
   text-align: center;
 }
 

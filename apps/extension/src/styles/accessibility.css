@@ -23,10 +23,7 @@ button:disabled { cursor: not-allowed; }
 .mt-left-nav__power-menu { width: 250px; color: #eff4fa; line-height: 1.6; }
 .icon-grid { display: grid; width: 92px; height: auto; grid-template-columns: 92px; grid-auto-flow: row; gap: var(--window-space-4); align-content: start; }
 .app-icon { width: 92px; }
-.settings-app--single { display: block; height: 100%; min-height: 0; overflow: hidden; }
-.settings-wallpapers { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.settings-wallpaper { min-height: 64px; color: #fff; text-shadow: 0 1px 4px #000; }
-.settings-panel, .demo-tool, .psd-panel, .transcode-main { overflow: auto; }
+.demo-tool, .psd-panel, .transcode-main { overflow: auto; }
 .fm-actions, .fm-topbar, .psd-form { flex-wrap: wrap; }
 .fm-table { overflow-x: auto; }
 .fm-app .fm-head, .fm-app .fm-row { min-width: 650px; }
@@ -34,25 +31,6 @@ button:disabled { cursor: not-allowed; }
 .mt-window-status { flex-shrink: 0; white-space: nowrap; color: var(--color-text); }
 .mt-window-btn { min-width: 36px; color: var(--color-text); font-size: 20px; }
 
-/* Legacy App selectors retain their class contract while consuming the shared tokens. */
-html[data-theme='light'] :is(.settings-app, .fm-app, .dl-app, .psd-app, .transcode-app, .log-viewer) {
-  --mt-surface: var(--window-surface); --mt-fill: var(--window-surface-raised); --mt-fill-2: var(--window-surface-control); --mt-border: var(--window-border); --mt-divider: var(--window-divider);
-  --mt-text-0: var(--window-text); --mt-text-1: var(--window-text); --mt-text-2: var(--window-text-muted);
-  background: var(--color-content); color: var(--color-text);
-}
-html[data-theme='light'] :is(.mt-window-brand, .mt-window-body p, .mt-window-body span, .mt-window-body label, .mt-window-body strong, .mt-window-body small, .mt-window-body h2, .mt-window-body h3, .fm-row, .fm-head) { color: var(--color-text); text-shadow: none; }
-html[data-theme='light'] .mt-window-body :is(input, select, textarea, option, button, aside, .fm-panel, .fm-sidebar, .fm-topbar, .fm-actions, .dl-panel, .psd-panel, .psd-form, .transcode-panel, .settings-card, .dl-form) { background: var(--color-content); color: var(--color-text); border-color: var(--color-line); }
-html[data-theme='light'] .mt-window-body :is(input, textarea)::placeholder { color: var(--color-muted); }
-html[data-theme='light'] .mt-window-body :is(.fm-local-notice, .fm-local-footer, .fm-local-empty__detail, .settings-toolbar p, .settings-field, .settings-card p) { color: var(--window-text-muted); }
-html[data-theme='light'] .fm-local-browser .fm-name strong { color: var(--window-text); }
-html[data-theme='light'] .fm-local-browser .fm-row > span { color: var(--window-text-muted); }
-html[data-theme='light'] .fm-local-browser .fm-local-search input { border: 0; background: transparent; }
-html[data-theme='light'] .mt-window-body .fm-action-btn--primary { color: #fff; background: var(--window-primary); border-color: var(--window-primary); }
-html[data-theme='light'] .fm-local-error { color: var(--window-danger); }
-html[data-theme='light'] .fm-local-browser .fm-file-icon em { color: var(--window-accent); }
-html[data-theme='light'] .fm-local-browser .fm-file-icon svg { stroke: var(--window-accent); }
-html[data-theme='light'] .fm-local-browser .fm-local-delete { border-color: transparent; background: transparent; }
-html[data-theme='light'] .mt-window-body :is(.fm-row--selected, [aria-selected='true'], [aria-pressed='true']) { background: color-mix(in srgb, var(--window-accent) 18%, var(--window-surface)); }
 html[data-reduce-transparency='true'] :is(.mt-window, .mt-left-nav, .mt-launcher-overlay, .mt-launcher, .mt-right-panel, .rp-panel-content) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background-color: var(--window-surface-raised) !important; }
 html[data-high-contrast='true'] :is(.mt-window, .mt-window-body, .mt-window-header, .mt-window-body main, .mt-window-body aside, .rp-panel-content, .demo-tool, .settings-app) { background: #050b14 !important; color: #fff !important; }
 html[data-high-contrast='true'] .mt-window-body :is(p, span, label, small, strong, button, input, select, textarea, h2, h3) { color: #fff !important; background-color: #050b14 !important; border-color: #fff !important; }
@@ -83,7 +61,7 @@ html[data-reduce-motion='true'] *, html[data-reduce-motion='true'] *::before, ht
   .fm-action-btn span { display: inline; font-size: 12px; }
   .fm-table { min-height: 200px; }
   .psd-form { display: flex; flex-direction: column; }
-  .settings-panel, .demo-tool { padding: 16px; }
+  .demo-tool { padding: 16px; }
 }
 @media (max-width: 600px) {
   :root { --desktop-top: 12px; }
@@ -101,7 +79,6 @@ html[data-reduce-motion='true'] *, html[data-reduce-motion='true'] *::before, ht
   .mt-window-brand img, .mt-window-status:not(.mt-window-mode), .mt-window-btn[title='最大化'], .mt-window-btn[title='还原'] { display: none; }
   .mt-window-controls { gap: 4px; }
   .mt-window-brand { font-size: 13px; }
-  .settings-wallpapers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .workspace-status { margin: 0; }
 }
 @media (pointer: coarse) { button, select, input:not([type='checkbox']):not([type='radio']) { min-height: 44px; }.mt-window-btn { min-width: 40px; } }

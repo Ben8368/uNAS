@@ -1,14 +1,10 @@
 .psd-app {
-  --mt-fill: rgba(255,255,255,.055);
-  --mt-border: rgba(255,255,255,.14);
-  --mt-text-0: rgba(248,250,252,.94);
-  --mt-text-1: rgba(226,232,240,.72);
   display: grid;
   grid-template-columns: var(--app-sidebar-width) minmax(0, 1fr);
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  background: rgba(10,12,18,.65);
+  background: transparent;
   gap: 0;
 }
 
@@ -17,7 +13,7 @@
   flex-direction: column;
   gap: 2px;
   padding: 8px;
-  background: rgba(5,6,8,.96);
+  background: var(--window-surface-raised);
   border-right: 1px solid var(--mt-border);
   overflow-y: auto;
 }
@@ -49,8 +45,8 @@
 }
 
 .psd-nav--active {
-  background: rgba(239,68,68,.08);
-  border-color: rgba(239,68,68,.24);
+  background: color-mix(in srgb, var(--window-danger) 8%, var(--window-surface-raised));
+  border-color: color-mix(in srgb, var(--window-danger) 25%, var(--window-border));
   color: var(--mt-text-0);
 }
 
@@ -60,7 +56,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: rgba(239,68,68,.18);
+  background: color-mix(in srgb, var(--window-danger) 18%, var(--window-surface-raised));
   border-radius: 4px;
   font-size: 14px;
   font-weight: 600;
@@ -68,16 +64,16 @@
 
 .psd-nav small {
   font-size: 11px;
-  color: rgba(248,250,252,.6);
+  color: var(--window-text-muted);
 }
 
 .psd-nav__beta {
   padding: 2px 6px;
-  background: rgba(168,85,247,.12);
-  border: 1px solid rgba(168,85,247,.24);
+  background: color-mix(in srgb, var(--window-accent) 12%, var(--window-surface-raised));
+  border: 1px solid color-mix(in srgb, var(--window-accent) 25%, var(--window-border));
   border-radius: 3px;
   font-size: 10px;
-  color: rgba(216,180,254,.85);
+  color: var(--window-accent);
   font-weight: 600;
 }
 
@@ -86,7 +82,7 @@
   flex-direction: column;
   gap: 0;
   padding: 16px;
-  background: rgba(16,17,21,.92);
+  background: transparent;
   overflow: hidden;
   min-height: 0;
 }
@@ -96,7 +92,7 @@
   grid-template-columns: 1fr auto;
   gap: 8px;
   padding: 12px;
-  background: rgba(24,26,32,.8);
+  background: var(--window-surface-raised);
   border: 1px solid var(--mt-border);
   border-radius: 8px;
   margin-bottom: 12px;
@@ -106,24 +102,24 @@
 .psd-message {
   padding: 10px 14px;
   margin-bottom: 12px;
-  background: rgba(34,197,94,.08);
-  border: 1px solid rgba(34,197,94,.24);
+  background: color-mix(in srgb, var(--window-success) 8%, var(--window-surface-raised));
+  border: 1px solid color-mix(in srgb, var(--window-success) 25%, var(--window-border));
   border-radius: 6px;
-  color: rgba(134,239,172,.9);
+  color: var(--window-success);
   font-size: 13px;
   flex-shrink: 0;
 }
 
 .psd-message--error {
-  background: rgba(239,68,68,.08);
-  border-color: rgba(239,68,68,.24);
-  color: rgba(252,165,165,.9);
+  background: color-mix(in srgb, var(--window-danger) 8%, var(--window-surface-raised));
+  border-color: color-mix(in srgb, var(--window-danger) 25%, var(--window-border));
+  color: var(--window-danger);
 }
 
 .psd-message--ok {
-  background: rgba(34,197,94,.08);
-  border-color: rgba(34,197,94,.24);
-  color: rgba(134,239,172,.9);
+  background: color-mix(in srgb, var(--window-success) 8%, var(--window-surface-raised));
+  border-color: color-mix(in srgb, var(--window-success) 25%, var(--window-border));
+  color: var(--window-success);
 }
 
 .psd-message strong { display: block; font-weight: 600; }
@@ -153,7 +149,7 @@
   flex-direction: column;
   gap: 4px;
   padding: 12px 14px;
-  background: rgba(24,26,32,.8);
+  background: var(--window-surface-raised);
   border: 1px solid var(--mt-border);
   border-radius: 6px;
   flex-shrink: 0;
