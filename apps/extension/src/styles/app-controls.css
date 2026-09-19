@@ -1,18 +1,18 @@
 ﻿/* Shared application chrome: sizes and control rhythm used inside app windows. */
 :root {
-  --app-control-height: 32px;
-  --app-input-height: 34px;
-  --app-control-radius: 6px;
+  --app-control-height: var(--window-control-height);
+  --app-input-height: var(--window-control-height);
+  --app-control-radius: var(--window-radius-control);
   --app-control-font-size: 12px;
   --app-control-padding-x: 12px;
   --app-sidebar-width: 200px;
   --app-sidebar-row-height: 32px;
-  --app-sidebar-row-radius: 6px;
-  --app-sidebar-row-gap: 10px;
-  --app-sidebar-row-padding-x: 11px;
+  --app-sidebar-row-radius: var(--window-radius-control);
+  --app-sidebar-row-gap: var(--window-space-2);
+  --app-sidebar-row-padding-x: var(--window-space-3);
   --app-sidebar-font-size: 12.5px;
-  --app-list-header-height: 40px;
-  --app-list-row-height: 46px;
+  --app-list-header-height: 44px;
+  --app-list-row-height: 44px;
   --app-list-font-size: 13px;
   --app-list-folder-icon-width: 28px;
   --app-list-folder-icon-height: 24px;
@@ -53,8 +53,8 @@
 .app-sidebar-resize-handle:hover::before,
 .app-sidebar-resize-handle:focus-visible::before,
 .app-resizable-sidebar--resizing + .app-sidebar-resize-handle::before {
-  background: rgba(77,171,255,.82);
-  box-shadow: 0 0 0 1px rgba(77,171,255,.16), 0 0 10px rgba(77,171,255,.28);
+  background: var(--window-focus-ring);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--window-focus-ring) 20%, transparent), 0 0 10px color-mix(in srgb, var(--window-focus-ring) 32%, transparent);
 }
 
 .app-surface {
@@ -103,14 +103,14 @@
 }
 
 .mt-btn:hover:not(:disabled) {
-  background: rgba(255,255,255,.09);
-  color: #fff;
+  background: var(--window-surface-control);
+  color: var(--window-text);
 }
 
 .mt-btn--primary {
-  border-color: rgba(0,102,255,.4);
-  background: var(--mt-brand);
-  color: #fff;
+  border-color: var(--window-primary);
+  background: var(--window-primary);
+  color: var(--window-on-primary);
 }
 
 .mt-btn:disabled {
@@ -142,14 +142,14 @@
 }
 
 select option {
-  background: #17191f;
-  color: #f8fafc;
+  background: var(--window-surface-raised);
+  color: var(--window-text);
 }
 
 select option:checked,
 select option:hover {
-  background: #2563eb;
-  color: #fff;
+  background: var(--window-primary);
+  color: var(--window-on-primary);
 }
 
 .mt-field textarea {

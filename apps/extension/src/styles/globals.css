@@ -17,6 +17,8 @@
   --mt-text-0: var(--window-text);
   --mt-text-1: var(--window-text);
   --mt-text-2: var(--window-text-muted);
+  --mt-brand: var(--window-primary);
+  --mt-danger: var(--window-danger);
   display: grid;
   grid-template-columns: var(--app-sidebar-width) minmax(0, 1fr);
   height: 100%;

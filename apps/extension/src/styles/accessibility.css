@@ -13,16 +13,8 @@ button:disabled { cursor: not-allowed; }
 .mt-main, .mt-windows { top: var(--desktop-top); }
 .mt-main { right: 20px; }
 .mt-windows { left: 70px; right: 20px; bottom: 16px; }
-.mt-window { min-width: 0; min-height: 0; backdrop-filter: none; }
+.mt-window { min-width: 0; min-height: 0; }
 .mt-window-body { container-type: inline-size; }
-.mt-window-header, .mt-window-body { background: var(--color-content); color: var(--color-text); }
-
-/* Shared glass belongs to the window shell; app content remains readable on a lighter pane. */
-.mt-window { background: var(--glass-window); backdrop-filter: blur(26px) saturate(128%); -webkit-backdrop-filter: blur(26px) saturate(128%); }
-.mt-window-header { background: var(--glass-toolbar); backdrop-filter: blur(18px) saturate(122%); -webkit-backdrop-filter: blur(18px) saturate(122%); }
-.mt-window-body { background: var(--glass-content); }
-.mt-window-body > :is(.settings-app, .fm-app, .fm-local-browser, .dl-app, .lv-app, .link-apps, .psd-app, .transcode-app, .demo-tool) { background: transparent; }
-.mt-window-body :is(.settings-sidebar, .fm-sidebar, .dl-sidebar, .fm-panel, .dl-panel, .lv-panel, .psd-panel, .transcode-panel) { background: var(--glass-pane); }
 .mt-right-panel { top: var(--desktop-top); }
 .mt-main:has(.workspace-status) { right: 20px; bottom: 16px; overflow: auto; }
 .workspace-status { margin: 0; }
@@ -44,8 +36,8 @@ button:disabled { cursor: not-allowed; }
 
 /* Legacy App selectors retain their class contract while consuming the shared tokens. */
 html[data-theme='light'] :is(.settings-app, .fm-app, .dl-app, .psd-app, .transcode-app, .log-viewer) {
-  --mt-surface: #fff; --mt-fill: #e4ecf5; --mt-fill-2: #d3e0ef; --mt-border: #8c9db2; --mt-divider: #bac8d8;
-  --mt-text-0: #182c45; --mt-text-1: #304964; --mt-text-2: #455c78;
+  --mt-surface: var(--window-surface); --mt-fill: var(--window-surface-raised); --mt-fill-2: var(--window-surface-control); --mt-border: var(--window-border); --mt-divider: var(--window-divider);
+  --mt-text-0: var(--window-text); --mt-text-1: var(--window-text); --mt-text-2: var(--window-text-muted);
   background: var(--color-content); color: var(--color-text);
 }
 html[data-theme='light'] :is(.mt-window-brand, .mt-window-body p, .mt-window-body span, .mt-window-body label, .mt-window-body strong, .mt-window-body small, .mt-window-body h2, .mt-window-body h3, .fm-row, .fm-head) { color: var(--color-text); text-shadow: none; }
@@ -60,12 +52,15 @@ html[data-theme='light'] .fm-local-error { color: var(--window-danger); }
 html[data-theme='light'] .fm-local-browser .fm-file-icon em { color: var(--window-accent); }
 html[data-theme='light'] .fm-local-browser .fm-file-icon svg { stroke: var(--window-accent); }
 html[data-theme='light'] .fm-local-browser .fm-local-delete { border-color: transparent; background: transparent; }
-html[data-theme='light'] .mt-window-body :is(.fm-row--selected, [aria-selected='true'], [aria-pressed='true']) { background: #d2e3f6; }
-html[data-reduce-transparency='true'] :is(.mt-left-nav, .mt-window, .mt-window-header, .mt-launcher-overlay, .mt-launcher, .mt-right-panel, .rp-panel-content) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background-color: var(--color-content) !important; }
+html[data-theme='light'] .mt-window-body :is(.fm-row--selected, [aria-selected='true'], [aria-pressed='true']) { background: color-mix(in srgb, var(--window-accent) 18%, var(--window-surface)); }
+html[data-reduce-transparency='true'] :is(.mt-left-nav, .mt-launcher-overlay, .mt-launcher, .mt-right-panel, .rp-panel-content) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background-color: var(--window-surface-raised) !important; }
 html[data-high-contrast='true'] :is(.mt-window, .mt-window-body, .mt-window-header, .mt-window-body main, .mt-window-body aside, .rp-panel-content, .demo-tool, .settings-app) { background: #050b14 !important; color: #fff !important; }
 html[data-high-contrast='true'] .mt-window-body :is(p, span, label, small, strong, button, input, select, textarea, h2, h3) { color: #fff !important; background-color: #050b14 !important; border-color: #fff !important; }
 html[data-reduce-motion='true'] *, html[data-reduce-motion='true'] *::before, html[data-reduce-motion='true'] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-@supports not (backdrop-filter: blur(1px)) { .mt-left-nav, .mt-window, .rp-panel-content { background-color: var(--color-content); } }
+@supports not (backdrop-filter: blur(1px)) {
+  :root { --window-glass-filter: none; --window-overlay-filter: none; --window-glass-navigation: var(--window-surface-raised); --window-glass-overlay: var(--window-surface-raised); }
+  .mt-left-nav, .rp-panel-content { background-color: var(--window-surface-raised); }
+}
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 @media (forced-colors: active) {
   .mt-desktop { background: Canvas; }

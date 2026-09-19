@@ -1,6 +1,6 @@
 # 当前状态
 
-> **最后确认：** 2026-09-18
+> **最后确认：** 2026-09-19
 > **阶段：** Phase 2 / UniPass capability integration
 > **产品代码：** uNAS 唯一 WXT MV3 包已接入 UniPass AdBlock、WebDAV Vault、Legacy adapter 和原版 closed Shadow DOM 页面浮层；密码库管理不再另开独立 `passwords.html`，原有 New Tab/Workspace 保持。
 
@@ -13,14 +13,15 @@
 - 维护者已确认进入 Frontend Demo 阶段；现有 Demo 固定使用浏览器内置 mock adapter 验证桌面、App、文件和任务流程，并提供 WXT Manifest V3 的 New Tab、Workspace 与 Service Worker 壳；真实能力随后逐项替换。
 - 维护者已授权进入前端界面正式打磨：优先收敛桌面层级、App 启动入口、状态抽屉、响应式与无障碍；该授权不改变 mock 与真实能力的边界。
 - 视觉采用原创的 macOS/iPadOS 启发式桌面层级与 Liquid Glass 原则，玻璃限于导航/控制层，并提供无障碍和性能降级。
+- uNAS Glass 工作包 A 已实现：`window-theme.css` 是窗口主题、材质与兼容别名的唯一值来源；窗口根承担唯一 blur，正文为实色内容面。后续 B–E 的顺序与验收见 [Development Blueprint](docs/DEVELOPMENT_BLUEPRINT.md#uNAS-glass-后续迁移顺序)。
 - TypeScript、React/Vite、WXT、统一 App/Task contract、Worker 与 adapter 隔离是当前工程方向；Demo 依赖已通过 pnpm 锁定。
 - UniPass 功能来源基线为 `ee749982cc31efbcf912866b854afbf5f1b36c1c`；uNAS 融合分支为 `codex/unipass-integration`，uNAS 起点为 `fef41ae0ba49ad5a043de22b18feafb495d3deab`。
 
 ## 近期优先级
 
-1. 在隔离 Chrome Profile 完成工具栏 action 浮层的人工点击、主题、外部点击/Escape、SPA 导航和合成账号填充验收；Playwright headless 无法代替该手势。
-2. 为 WebDAV Vault 建立 uNAS 原生核心单测/冲突夹具，并用合成 WebDAV 服务验证创建、恢复、离线、ETag 冲突和 CSV 导入。
-3. 解决发布前阻断：确认 UniPass 资源再分发许可、生成并由维护者保管 uNAS 签名 key/固定扩展 ID，审查新增权限和外部主机。
+1. 实施 uNAS Glass B：桌面、Dock 与启动器复用共享导航玻璃，验收键盘路径、长名称和三种响应式宽度。
+2. 实施 uNAS Glass C：将文件管理器作为完整 App 试点，迁移侧栏、搜索、操作与列表状态，且不改变文件授权或写入行为。
+3. 实施 uNAS Glass D/E：为 UniPass Popup 增加仅展示层的共享 Token 适配，并完成浅深主题、减少透明度、真实 Chrome 人工走查与证据归档。
 
 ## 当前阻断与风险
 
@@ -29,7 +30,7 @@
 
 ## 最近验证
 
-- 2026-09-18：[融合验证记录](docs/QUALITY.md)：本轮 `pnpm verify` 通过（27 个测试文件、119 个测试），`pnpm test:e2e` 通过（40/40，0 skipped）。E2E 使用 HTTPS 合成登录页验证浮层打开、tab 切换、合成填充、Escape/外部点击关闭、重开和页面 reload 生命周期，并保存 `unipass-original-overlay.png` 与 `unipass-apps-overlay.png`；构建包含单一 `background.js`、AdBlock content script、`page-overlay.js` 和 `credential-core.wasm`，且不再包含 `passwords.html`。
+- 2026-09-19：[uNAS Glass 工作包 A 验收记录](docs/archive/reviews/2026-09-19-unas-glass-a.md)：`pnpm verify` 通过（27 个测试文件、120 个测试），`pnpm test:e2e` 通过（40/40，0 skipped）；Playwright 扩展截图覆盖深浅主题、文件管理器、高对比和紧凑布局。该证据不替代 B–E 的目标 Chrome 人工验收。
 
 ## 按需入口
 

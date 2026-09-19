@@ -14,34 +14,66 @@
   display: flex;
   flex-direction: column;
   contain: layout paint;
-  background: var(--window-surface);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  isolation: isolate;
+  background: var(--window-glass-navigation);
+  backdrop-filter: var(--window-glass-filter);
+  -webkit-backdrop-filter: var(--window-glass-filter);
   border-radius: var(--app-window-radius);
-  box-shadow: 0 26px 90px rgba(0,0,0,.55), 0 0 0 1px rgba(80,145,255,.18);
+  box-shadow: var(--window-shadow);
   overflow: hidden;
   pointer-events: auto;
   min-width: var(--app-window-min-width);
   min-height: var(--app-window-min-height);
-  transition: box-shadow .2s ease;
+  transition: box-shadow var(--window-motion-normal) var(--window-motion-ease);
 }
 
 .mt-window--active {
-  box-shadow: 0 30px 100px rgba(0,0,0,.62), 0 0 0 1px rgba(102,164,255,.22);
+  box-shadow: var(--window-shadow), 0 0 0 1px color-mix(in srgb, var(--window-focus-ring) 28%, transparent);
 }
 
-.mt-window--maximized { border-radius: var(--app-window-radius); box-shadow: 0 0 0 1px rgba(255,255,255,.04); }
+.mt-window--maximized { border-radius: var(--app-window-radius); box-shadow: 0 0 0 1px var(--window-divider); }
+
+/* A border-only rim and shallow reflection make the shell legible without a second blur layer. */
+.mt-window::before {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  padding: 1px;
+  border-radius: inherit;
+  background: var(--window-glass-rim);
+  content: '';
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+.mt-window::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 0;
+  height: 56px;
+  background: linear-gradient(180deg, var(--window-glass-highlight), transparent);
+  content: '';
+  pointer-events: none;
+}
 
 .mt-window-header {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   height: var(--app-window-header-height);
   padding: 0 var(--app-window-header-padding-x);
-  background: var(--window-surface);
+  background: transparent;
+  color: var(--window-text);
   cursor: default;
   user-select: none;
   flex-shrink: 0;
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid var(--window-divider);
 }
 
 .mt-window-brand {
@@ -49,7 +81,7 @@
   align-items: center;
   min-width: 0;
   gap: var(--app-window-brand-gap);
-  color: #fff;
+  color: var(--window-text);
   font-size: var(--app-window-title-font-size);
   font-weight: 800;
 }
@@ -88,14 +120,14 @@
   height: 28px;
   max-width: 180px;
   margin-right: 4px;
-  border: 1px solid rgba(255,255,255,.08);
+  border: 1px solid var(--window-border);
   border-radius: 999px;
-  background: rgba(255,255,255,.045);
-  color: rgba(242,246,255,.76);
+  background: var(--window-surface-control);
+  color: var(--window-text-muted);
   padding: 0 11px 0 9px;
   font-size: 12px;
   font-weight: 700;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.045);
+  box-shadow: inset 0 1px 0 var(--window-glass-highlight);
 }
 
 .mt-window-mode {
@@ -117,26 +149,28 @@
 }
 
 .mt-window-mode--writable {
-  border-color: rgba(52,211,153,.24);
-  background: rgba(20,184,166,.10);
-  color: #9df4d2;
+  border-color: var(--window-success);
+  background: color-mix(in srgb, var(--window-success) 16%, var(--window-surface-control));
+  color: var(--window-success);
 }
 
 .mt-write-confirm {
   width: min(420px, calc(100vw - 32px));
   margin: auto;
-  border: 1px solid rgba(130,171,230,.26);
-  border-radius: 16px;
-  background: var(--window-surface, #182332);
-  color: var(--window-text, #e7eff8);
-  box-shadow: 0 24px 80px rgba(0,0,0,.5);
+  border: 1px solid var(--window-border);
+  border-radius: var(--window-radius-dialog);
+  background: var(--window-glass-overlay);
+  color: var(--window-text);
+  box-shadow: var(--window-shadow);
+  backdrop-filter: var(--window-overlay-filter);
+  -webkit-backdrop-filter: var(--window-overlay-filter);
   padding: 0;
 }
 
 .mt-write-confirm::backdrop {
-  background: rgba(3, 8, 16, .62);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--window-background) 72%, transparent);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .mt-write-confirm form { padding: 22px; }
@@ -144,8 +178,8 @@
 .mt-write-confirm p { margin: 0 0 8px; color: var(--window-text-muted, #aab7c8); font-size: 13px; line-height: 1.55; }
 .mt-write-confirm__actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 .mt-write-confirm__actions button { min-height: 34px; border-radius: 7px; padding: 0 12px; font: inherit; font-size: 13px; cursor: pointer; }
-.mt-write-confirm__cancel { border: 1px solid var(--window-border, rgba(255,255,255,.12)); background: var(--window-surface-raised, rgba(255,255,255,.05)); color: var(--window-text, #e7eff8); }
-.mt-write-confirm__allow { border: 1px solid var(--window-primary, #378ef5); background: var(--window-primary, #378ef5); color: #fff; }
+.mt-write-confirm__cancel { border: 1px solid var(--window-border); background: var(--window-surface-raised); color: var(--window-text); }
+.mt-write-confirm__allow { border: 1px solid var(--window-primary); background: var(--window-primary); color: var(--window-on-primary); }
 .mt-write-confirm__actions button:disabled { cursor: wait; opacity: .65; }
 
 .mt-window-status span {
@@ -165,30 +199,30 @@
 }
 
 .mt-window-status--online {
-  border-color: rgba(52,211,153,.24);
-  background: rgba(20,184,166,.10);
-  color: #9df4d2;
+  border-color: var(--window-success);
+  background: color-mix(in srgb, var(--window-success) 16%, var(--window-surface-control));
+  color: var(--window-success);
 }
 
 .mt-window-status--online span {
-  background: #35d89b;
-  box-shadow: 0 0 0 3px rgba(53,216,155,.15), 0 0 16px rgba(53,216,155,.42);
+  background: var(--window-success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--window-success) 18%, transparent);
 }
 
 .mt-window-status--offline {
-  border-color: rgba(248,113,113,.22);
-  background: rgba(239,68,68,.10);
-  color: #ffb7b7;
+  border-color: var(--window-danger);
+  background: color-mix(in srgb, var(--window-danger) 16%, var(--window-surface-control));
+  color: var(--window-danger);
 }
 
 .mt-window-status--offline span {
-  background: #ff5c68;
-  box-shadow: 0 0 0 3px rgba(255,92,104,.14), 0 0 16px rgba(255,92,104,.32);
+  background: var(--window-danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--window-danger) 18%, transparent);
 }
 
 .mt-window-status--pending span {
-  background: #7cb7ff;
-  box-shadow: 0 0 0 3px rgba(124,183,255,.14);
+  background: var(--window-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--window-accent) 18%, transparent);
 }
 
 .mt-window-btn {
@@ -199,10 +233,10 @@
   border-radius: var(--app-window-control-radius);
   border: none;
   background: transparent;
-  color: rgba(255,255,255,.75);
+  color: var(--window-text-muted);
   cursor: pointer;
   padding: 0;
-  transition: all .15s ease;
+  transition: background var(--window-motion-fast) var(--window-motion-ease), color var(--window-motion-fast) var(--window-motion-ease), transform var(--window-motion-fast) var(--window-motion-ease);
 }
 
 .mt-window-btn svg {
@@ -216,20 +250,23 @@
 }
 
 .mt-window-btn:hover {
-  background: rgba(255,255,255,.15);
-  color: rgba(255,255,255,1);
+  background: var(--window-surface-control);
+  color: var(--window-text);
 }
 
 .mt-window-btn:active {
-  background: rgba(255,255,255,.2);
+  background: color-mix(in srgb, var(--window-text) 12%, var(--window-surface-control));
   transform: scale(0.95);
 }
 
 .mt-window-body {
+  position: relative;
+  z-index: 1;
   flex: 1;
   min-height: 0;
   overflow: hidden;
   background: var(--window-surface);
+  color: var(--window-text);
 }
 
 .mt-window-body > * {
