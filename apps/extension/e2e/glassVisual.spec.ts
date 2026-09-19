@@ -69,9 +69,31 @@ test('Liquid Glass refinement keeps environment transmission while the content s
   const reduced = evidence.find((entry) => entry.reduceTransparency)!
   expect(dark.navigation.background).toContain('0.48')
   expect(dark.window.background).toContain('0.44')
-  expect(dark.body.background).toContain('0.94')
+  expect(dark.body.background).toContain('0.82')
   expect(dark.launcher.background).toContain('0.58')
   expect(dark.window.backdropFilter).toContain('saturate(1.38)')
   expect(reduced.window.backdropFilter).toBe('none')
+
+  expect(extension.errors).toEqual([])
+})
+
+test('Browser App leaves the readable Liquid Glass surface exposed', async ({ extension }, testInfo) => {
+  const page = await extension.context.newPage()
+  await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.locator('.app-icon--browser').click()
+  await expect(page.getByRole('heading', { name: '网址 App' })).toBeVisible()
+  const surfaces = await page.evaluate(() => {
+    const app = getComputedStyle(document.querySelector('.link-apps')!)
+    const body = getComputedStyle(document.querySelector('.mt-window-body')!)
+    return { appBackground: app.background, bodyBackground: body.background }
+  })
+  expect(surfaces.appBackground).toContain('rgba(0, 0, 0, 0)')
+  expect(surfaces.bodyBackground).toContain('0.82')
+  await page.screenshot({ path: testInfo.outputPath('refined-dark-browser-app.png'), animations: 'disabled' })
+  await testInfo.attach('browser-app-surface-computed-style', {
+    body: JSON.stringify(surfaces, null, 2),
+    contentType: 'application/json',
+  })
   expect(extension.errors).toEqual([])
 })

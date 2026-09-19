@@ -1,7 +1,7 @@
 .link-apps {
   height: 100%;
   overflow: auto;
-  background: var(--window-surface);
+  background: transparent;
   color: var(--window-text);
   padding: 24px;
 }

@@ -51,7 +51,7 @@
 | material.navigation | Light rgb(235 244 249 / .60)，Dark rgb(17 28 39 / .48)；blur 18、saturate 138%、contrast 104% |
 | material.floating | Light rgb(238 247 250 / .58)，Dark rgb(18 30 41 / .50)；blur 20、saturate 142%、contrast 103% |
 | material.window | Light rgb(239 247 250 / .56)，Dark rgb(18 30 41 / .44)；唯一 backdrop-filter 外壳，带非对称反射和渐变 rim |
-| material.readable | Light rgb(248 249 250 / .94)，Dark rgb(32 34 37 / .94)；无 blur，作为窗口正文内层，四周保留外壳可见边缘 |
+| material.readable | Light rgb(248 249 250 / .90)，Dark rgb(31 42 52 / .82)；无 blur，作为窗口正文内层，四周保留外壳可见边缘 |
 | material.dialog | Light rgb(247 251 252 / .68)，Dark rgb(22 35 47 / .58)；blur 22、saturate 138%、contrast 104% |
 | shadow | window：0 22px 62px + 0 3px 12px；floating：0 12px 32px + 0 2px 8px（分别按主题调色） |
 | motion | fast 120ms、normal 180ms、slow 240ms；ease-out；仅 transform/opacity，不动画 blur |

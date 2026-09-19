@@ -31,7 +31,7 @@
   --window-glass-floating: rgb(18 30 41 / .50);
   --window-glass-window: rgb(18 30 41 / .44);
   --window-glass-dialog: rgb(22 35 47 / .58);
-  --window-surface-readable: rgb(32 34 37 / .94);
+  --window-surface-readable: rgb(31 42 52 / .82);
   --window-glass-rim: linear-gradient(154deg, rgb(255 255 255 / .44) 0%, rgb(255 255 255 / .13) 19%, rgb(177 224 255 / .03) 47%, rgb(255 255 255 / .10) 74%, rgb(255 255 255 / .34) 100%);
   --window-glass-reflection: radial-gradient(118% 76% at 4% -27%, rgb(255 255 255 / .29) 0%, rgb(215 240 255 / .12) 27%, transparent 58%), linear-gradient(112deg, rgb(255 255 255 / .10) 0%, transparent 30% 70%, rgb(102 205 207 / .08) 100%);
   --window-glass-highlight: rgb(255 255 255 / .16);
@@ -102,7 +102,7 @@ html[data-theme='light'] {
   --window-glass-floating: rgb(238 247 250 / .58);
   --window-glass-window: rgb(239 247 250 / .56);
   --window-glass-dialog: rgb(247 251 252 / .68);
-  --window-surface-readable: rgb(248 249 250 / .94);
+  --window-surface-readable: rgb(248 249 250 / .90);
   --window-glass-rim: linear-gradient(154deg, rgb(255 255 255 / .94) 0%, rgb(255 255 255 / .47) 22%, rgb(82 136 161 / .08) 49%, rgb(255 255 255 / .32) 73%, rgb(255 255 255 / .88) 100%);
   --window-glass-reflection: radial-gradient(118% 76% at 4% -27%, rgb(255 255 255 / .82) 0%, rgb(255 255 255 / .35) 29%, transparent 60%), linear-gradient(112deg, rgb(255 255 255 / .38) 0%, transparent 32% 69%, rgb(110 192 194 / .12) 100%);
   --window-glass-highlight: rgb(255 255 255 / .70);
