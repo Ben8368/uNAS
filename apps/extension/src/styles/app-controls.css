@@ -134,11 +134,18 @@
   min-height: var(--app-input-height);
   border: 1px solid var(--mt-border);
   border-radius: var(--app-control-radius);
-  background: var(--mt-fill);
+  background: var(--window-surface-field, var(--mt-fill));
   color: var(--mt-text-0);
   padding: 0 10px;
   outline: none;
   font-size: var(--app-control-font-size);
+}
+
+.mt-field :is(input, select, textarea):focus-visible,
+.mt-path-input input:focus-visible,
+.mt-picker__tools select:focus-visible {
+  border-color: var(--window-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--window-focus-ring) 30%, transparent), inset 0 1px 0 var(--window-content-highlight, transparent);
 }
 
 select option {

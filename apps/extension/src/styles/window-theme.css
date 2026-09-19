@@ -10,6 +10,14 @@
   --window-surface-sidebar: var(--window-background);
   --window-surface-raised: #282b2f;
   --window-surface-control: #34383e;
+  /* Blue-gray readable surfaces for app content; controls stay lighter than the body. */
+  --window-surface-content: #1b3143;
+  --window-surface-panel: #223b4f;
+  --window-surface-field: #304b5e;
+  --window-surface-preview: #203a4d;
+  --window-content-border: rgb(171 220 255 / .19);
+  --window-content-highlight: rgb(224 246 255 / .12);
+  --window-content-shadow: 0 10px 28px rgb(4 15 25 / .16);
   --window-text: #f1f3f5;
   --window-text-muted: #b0b6be;
   --window-border: #87919d;
@@ -89,6 +97,13 @@ html[data-theme='light'] {
   --window-surface: #f8f9fa;
   --window-surface-raised: #ffffff;
   --window-surface-control: #e7eaee;
+  --window-surface-content: #edf5f9;
+  --window-surface-panel: #f5fafc;
+  --window-surface-field: #e6f0f5;
+  --window-surface-preview: #edf6fa;
+  --window-content-border: rgb(52 105 135 / .22);
+  --window-content-highlight: rgb(255 255 255 / .78);
+  --window-content-shadow: 0 10px 28px rgb(36 60 74 / .10);
   --window-text: #24282e;
   --window-text-muted: #5b6470;
   --window-border: #7b8490;
@@ -117,6 +132,10 @@ html[data-reduce-transparency='true'] {
   --window-glass-window: var(--window-surface-raised);
   --window-glass-dialog: var(--window-surface-raised);
   --window-surface-readable: var(--window-surface);
+  --window-surface-content: var(--window-surface);
+  --window-surface-panel: var(--window-surface-raised);
+  --window-surface-field: var(--window-surface-control);
+  --window-surface-preview: var(--window-surface-raised);
   --window-glass-rim: transparent;
   --window-glass-reflection: transparent;
   --window-glass-highlight: transparent;
@@ -140,6 +159,10 @@ html[data-high-contrast='true'] {
   --window-glass-window: var(--window-surface);
   --window-glass-dialog: var(--window-surface-raised);
   --window-surface-readable: var(--window-surface);
+  --window-surface-content: var(--window-surface);
+  --window-surface-panel: var(--window-surface-raised);
+  --window-surface-field: var(--window-surface-control);
+  --window-surface-preview: var(--window-surface-raised);
   --window-glass-rim: transparent;
   --window-glass-reflection: transparent;
   --window-glass-highlight: transparent;

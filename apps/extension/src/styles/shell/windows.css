@@ -274,6 +274,12 @@
   color: var(--window-text);
 }
 
+/* Link App content uses the same blue-gray family as the glass shell. */
+.mt-window[data-app-id='browser'] .mt-window-body {
+  background: var(--window-surface-content);
+  border-color: color-mix(in srgb, var(--window-accent) 18%, transparent);
+}
+
 .mt-window-body > * {
   min-height: 0;
 }
