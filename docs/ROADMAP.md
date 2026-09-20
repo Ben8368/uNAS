@@ -59,7 +59,8 @@ Roadmap 只描述阶段结果和门禁；具体工作包见 [DEVELOPMENT_BLUEPRI
 4. Archive：ZIP 列表/解压、Zip64、路径穿越、炸弹预算和取消。
 5. PDF：合并/拆分/渲染、加密、损坏、字体、对象和像素预算。
 6. Media：WebCodecs、容器、ffmpeg.wasm、CSP、冷/热启动、内存和输出播放验证。
-7. Packaging：Chrome 解包安装、包体、离线资源、权限清单、更新迁移和许可证。
+7. Music encrypted-container：固定 `um/cli` 来源、作者许可、依赖清单、浏览器 Worker/WASM 路线、授权夹具和 KGM/QMC/NCM 能力边界。
+8. Packaging：Chrome 解包安装、包体、离线资源、权限清单、更新迁移和许可证。
 
 交付物：能力矩阵、固定夹具 manifest、基准结果、资源阈值、依赖/许可证清单、需要修改的契约和 ADR。
 
@@ -98,12 +99,22 @@ ZIP、PDF、Media 不阻断 G2-Core；它们在进入各自集成前完成模块
 
 默认顺序：Archive ZIP → PDF → Media。
 
+Music encrypted-container 不继承 Media 的支持结论，单独使用 [Music Module Gate](#music-module-gate)。在该 Gate 通过前，Music 仅作为计划研究项，不进入真实 App、文件管理入口或产品能力承诺。
+
 每个模块自己的进入 Gate 至少要求：
 
 - 成功、损坏、伪扩展名、资源膨胀、取消和清理夹具。
 - 目标浏览器、设备、输入、耗时、内存、输出验证和不支持表。
 - 依赖、WASM、字体/素材、许可证、CSP 和包体影响可审计。
 - Tool App 文案只展示已验证能力，未接入部分继续显示 mock 或不可用，但不能混为真实。
+
+### Music Module Gate
+
+- `um/cli` 源码版本、提交 SHA、根许可证、依赖许可证和资源 provenance 已固定并可复核；Go CLI 不直接进入扩展。
+- KGM、QMC、NCM 各自有合法授权的固定夹具、magic/container 探测、输出签名/完整性和失败清理证据；库声称支持的其他格式不自动纳入范围。
+- 浏览器 Worker 路线通过目标 Chrome 的 CSP、WASM、内存、取消、页面关闭和输出提交验证；不能以作者构建物或 bundled Chromium 代替。
+- 不联网获取封面、元数据、密钥或账号，不读取任意路径，不引入 Native Helper；KGM v5 外部数据库等额外资源必须先完成来源、许可和包体审查。
+- 只有在上述证据齐全后，才决定进入 V1、降级为格式识别，或延后/不支持；本 Gate 不改变 Product 的 DRM 非目标。
 
 **Gate G4 — V1 功能候选：**
 

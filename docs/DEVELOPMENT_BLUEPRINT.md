@@ -198,6 +198,17 @@ Scenario 属于测试与演示资产，不是产品支持矩阵。
 - 输出：权限清单、安装/升级/卸载步骤、包体与离线资源报告、公开分发前置项。
 - 权限清单按实际构建 manifest 核对 required/optional/host permissions、用户动作、用途、拒绝与撤销后果；不为商店或工具示例增加权限。进入未来 Store Gate 时再按官方模板生成 `CHROMEWEBSTORE.md`，引用 Product/Security 与实际证据，不复写当前阶段，也不把资料准备视为发布授权。
 
+### SP-09 Music encrypted-container 来源与浏览器可行性
+
+- 固定候选来源为 `um/cli` `v0.2.12`，记录 tag 提交 `61fba401c7ba83e6a0e69a528460f08f0f707c`、Go module checksum 和根 `MIT` 文本；源码只允许同步到系统临时目录，不进入 uNAS Git、扩展包或构建产物。
+- 审计 `LICENSE`、`go.mod`、`go.sum`、`algo/kgm`、`algo/qmc`、`algo/ncm`、`pc_kugou_db` 及所有间接依赖；逐项记录许可证、资源来源、是否需要文件路径/外部数据库/网络和是否可在浏览器 Worker 中复用。
+- 将维护者提供的 `um-web.extension.v1.10.8` 仅作为静态参考：确认其 MV3 manifest、Worker、WASM、CSP、权限和算法分工；不把 minified 构建物当作源码、许可证或产品支持证据。
+- 分别设计 KGM、QMC、NCM 的授权夹具和输出验证；只记录用户明确有权处理的本地文件，不收集真实用户媒体，不把扩展名清单写成能力承诺。
+- 比较 TypeScript 与 WASM 的包体、内存、Transferable、取消、Worker 生命周期和 CSP；禁止直接运行 Go CLI、调用 Native Helper 或恢复远程封面/元数据/密钥请求。
+- 输出：来源/许可证清单、算法能力矩阵、夹具 manifest 与 SHA-256、浏览器探针、资源阈值、不支持表，以及进入 [Music Module Gate](ROADMAP.md#music-module-gate) 的建议。
+
+本探针当前状态是计划；本轮只完成了临时源码同步和静态构建物观察，不代表任何 KGM/QMC/NCM 能力已验证。
+
 ## 6. 探针记录格式
 
 每个探针在 `benchmarks/<probe>/README.md`（进入 Phase 2 后创建）记录：
@@ -231,6 +242,17 @@ App/File/Task schemas
 ```
 
 真实 adapter 接入以 scenario parity 验收：同一 UI 流程在 mock 和 real 下结构一致，但能力原因、性能和结果来自真实证据。
+
+### MD-01～MD-06 Music 计划工作包
+
+这些工作包只在 SP-09 与 Music Module Gate 允许后启动；当前不开发 UI、Intent 或真实解密 adapter。
+
+1. **MD-01 来源与供应链锁定：** 固定 `um/cli` tag/SHA/checksum，完成根项目与 Go 依赖许可证清单，确认作者授权记录的可审计形式。
+2. **MD-02 格式识别：** 仅实现 magic/container 与资源预算探测，分别列出 KGM v3/v5、QMC 变体和 NCM 结构；未知或伪扩展名进入 `unsupported`。
+3. **MD-03 NCM 候选 Worker：** 在授权夹具上验证本地流式读取、输出签名、元数据边界、取消和清理；禁用远程封面/元数据请求。
+4. **MD-04 QMC 候选 Worker：** 先验证浏览器可用的密钥路径和 QMC 变体；macOS MMKV/文件路径依赖没有浏览器替代前保持不支持。
+5. **MD-05 KGM 候选 Worker：** 先分别验证 v3；v5 的 KGG 数据库来源、许可、包体、更新和内存未通过前不打包、不承诺。
+6. **MD-06 产品接入：** 只有真实夹具、目标 Chrome、任务状态、输出提交和清理证据齐全后，才注册 Tool App、接入文件管理 OpenIntent，并替换对应 mock scenario。
 
 ## 8. 前端与依赖策略
 
