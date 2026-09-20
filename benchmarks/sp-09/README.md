@@ -26,6 +26,8 @@
 
 实现：[scripts/sp09-probe.mjs](../../scripts/sp09-probe.mjs)；固定夹具定义：[fixtures/manifest.json](fixtures/manifest.json)。
 
+对维护者明确授权的本地样本，可用 `node scripts/sp09-probe.mjs --input <path> --json` 做只读结构探测；命令只输出文件大小、输入 SHA-256、规范化识别结果和结果 SHA-256，不上传、改写或解密媒体，也不会自动把样本纳入仓库夹具。
+
 - KGM：读取 16-byte KGM/VPR magic、版本、audio offset；分别识别 v3/v5；v5 明确记录外部 KGG 依赖；audio offset 和输入大小先过预算。
 - NCM：读取 `CTENFDAM` magic 和 key/meta/cover 长度，逐段限制最大长度；不解密、不解析远程封面、不发网络请求。
 - QMC：只接受 extension-independent 的 `QTag`、raw-key footer 或 `MusicEx` 结构；没有稳定容器标记的静态 QMC 不因扩展名而被接受。

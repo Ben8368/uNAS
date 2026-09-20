@@ -191,6 +191,47 @@ const args = process.argv.slice(2);
 const moduleFlag = args.indexOf('--module-dir');
 const moduleDir = moduleFlag >= 0 ? args[moduleFlag + 1] : undefined;
 const jsonOnly = args.includes('--json');
+const inputFlag = args.indexOf('--input');
+const inputPath = inputFlag >= 0 ? args[inputFlag + 1] : undefined;
+if (inputFlag >= 0 && (!inputPath || inputPath.startsWith('--'))) {
+  throw new Error('--input requires a file path');
+}
+
+if (inputPath) {
+  const resolvedInputPath = path.resolve(inputPath);
+  const bytes = await readFile(resolvedInputPath);
+  const actual = probe(bytes);
+  const comparable = {
+    status: actual.status,
+    format: actual.format,
+    variant: actual.variant,
+    reason: actual.reason,
+  };
+  const report = {
+    schemaVersion: 1,
+    inputPath: resolvedInputPath,
+    inputBytes: bytes.length,
+    inputSha256: sha256(bytes),
+    resultSha256: jsonSha256(comparable),
+    result: actual,
+    limits: {
+      maxInputBytes: MAX_INPUT_BYTES,
+      maxSectionBytes: MAX_SECTION_BYTES,
+      maxQmcFooterBytes: MAX_QMC_FOOTER_BYTES,
+    },
+  };
+  if (jsonOnly) {
+    console.log(JSON.stringify(report, null, 2));
+  } else {
+    console.log(`SP-09 MD-02 input probe: ${actual.status}/${actual.format}/${actual.variant}`);
+    console.log(`input=${report.inputBytes} bytes sha256=${report.inputSha256}`);
+    console.log(`resultSha256=${report.resultSha256}`);
+    console.log(actual.reason);
+    console.log(JSON.stringify(report.limits));
+  }
+  process.exit(0);
+}
+
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
 const rows = [];
 
