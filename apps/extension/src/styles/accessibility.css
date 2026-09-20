@@ -12,7 +12,7 @@ button:disabled { cursor: not-allowed; }
 .mt-window-header, .mt-resize-handle { touch-action: none; }
 .mt-main, .mt-windows { top: var(--desktop-top); }
 .mt-main { right: 20px; }
-.mt-windows { left: 70px; right: 20px; bottom: 16px; }
+.mt-windows { left: 80px; right: 20px; bottom: 16px; }
 .mt-window { min-width: 0; min-height: 0; }
 .mt-window-body { container-type: inline-size; }
 .mt-right-panel { top: var(--desktop-top); }
@@ -46,7 +46,7 @@ html[data-reduce-motion='true'] *, html[data-reduce-motion='true'] *::before, ht
   :focus-visible { outline: 3px solid Highlight !important; }
 }
 @media (max-width: 1100px) {
-  .mt-windows { left: 64px; right: 10px; bottom: 10px; }
+  .mt-windows { left: 72px; right: 10px; bottom: 10px; }
   .mt-window { inset: 0 !important; width: 100% !important; height: 100% !important; }
   .mt-window:not(.mt-window--active) { display: none; }
   .mt-resize-handle { display: none; }

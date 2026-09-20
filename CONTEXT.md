@@ -30,7 +30,7 @@
 
 ## 最近验证
 
-- 2026-09-20：[SP-04-A/B/C 验证](benchmarks/sp-04/README.md)：负向夹具/预检修复、预提交取消/Files 窗口关闭/暂存清理，以及提交阶段受控写入失败与后续新目录恢复；ZIP 单测 11/11、完整扩展 E2E 49/49（0 skipped）通过（bundled Chromium）。`pnpm verify` 已通过；GitHub CI #33 的 `Verify demo` 已通过，但旧 run 的 `Browser regression` 失败，当前变更需以新 CI run 复核；目标 Chrome 验收仍未运行，RISK-007 保持开放。
+- 2026-09-20：本地 `main` 与 `origin/main` 同为 `8df9d8621f2168cb5d8dbd2fcb5df43a2b068bae`；[GitHub Actions CI #35](https://github.com/Ben8368/uNAS/actions/runs/35487284796) 的 `Docs governance`、`Verify demo`、`Browser regression` 均成功。SP-04-A/B/C 的事实与缺口见 [SP-04](benchmarks/sp-04/README.md)：目标 Chrome Stable 复走和资源/压力/资源失败态证据仍缺，RISK-007 保持开放；现有部分输出与受控写入失败证据不构成原子回滚或自动回滚保证。
 
 ## 按需入口
 

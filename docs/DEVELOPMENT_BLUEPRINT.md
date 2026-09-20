@@ -206,6 +206,7 @@ Scenario 属于测试与演示资产，不是产品支持矩阵。
 - 分别设计 KGM、QMC、NCM 的授权夹具和输出验证；只记录用户明确有权处理的本地文件，不收集真实用户媒体，不把扩展名清单写成能力承诺。
 - 比较 TypeScript 与 WASM 的包体、内存、Transferable、取消、Worker 生命周期和 CSP；禁止直接运行 Go CLI、调用 Native Helper 或恢复远程封面/元数据/密钥请求。
 - 输出：来源/许可证清单、算法能力矩阵、夹具 manifest 与 SHA-256、浏览器探针、资源阈值、不支持表，以及进入 [Music Module Gate](ROADMAP.md#music-module-gate) 的建议。
+- SP-09 是来源、探针证据与按格式验收的唯一记录；它允许先开展隔离算法、Worker、目标浏览器和输出探针，不要求 Music Module Gate 先通过。Gate 只决定已验收格式能否进入产品集成，新增证据继续回填本记录，不另建格式事实源。
 
 本探针当前状态是计划；本轮只完成了临时源码同步和静态构建物观察，不代表任何 KGM/QMC/NCM 能力已验证。
 
@@ -243,16 +244,65 @@ App/File/Task schemas
 
 真实 adapter 接入以 scenario parity 验收：同一 UI 流程在 mock 和 real 下结构一致，但能力原因、性能和结果来自真实证据。
 
-### MD-01～MD-06 Music 计划工作包
+### FR-01 最小真实 FileRef 只读接入与输出闭环
 
-这些工作包只在 SP-09 与 Music Module Gate 允许后启动；当前不开发 UI、Intent 或真实解密 adapter。
+这是 Phase 3 的最小可验证工作包设计，不代表已实现，也不单独关闭 G2-Core/G3。
+
+**目标与边界**
+
+- 复用现有 File Workspace 的单一已授权目录和 owner 路由：用户在明确的 `read` 目录授权下选择一个直接子文件，生成 owner 内存中的真实 `FileRef`（`source: 'handle'`、`authorization: 'available'`、`executionSource: 'real'`）。
+- `FileRef` 只保留不透明 `id`、名称、大小和声明 MIME；FSA handle、虚拟路径映射和任何本机绝对路径只留在 owner adapter，不进入 UI、BroadcastChannel、持久化或日志。
+- 只读接入只允许重新取得文件并读取受限字节流；不修改原文件、不递归目录、不多选、不接受 URL/远程内容，不新增 NAS/WebDAV 协议。
+- 用一个 `file.copy` 探针完成最小闭环：读取并校验实际字节数与 SHA-256，生成不可覆盖的同级新文件，写入后重新读取输出并比较摘要；输出失败进入 `failed` 并报告已观察到的结果，不声称原子提交、自动回滚或部分输出可恢复。
+- 输出写入必须在用户明确开启现有目录写入模式后进行；唯一名称由 adapter 检查直接子项冲突后生成。没有新增权限、后台恢复、删除/覆盖、媒体转码或 ZIP/PDF 接入。
+
+**最小实现面**
+
+- `contracts/filesystem.ts`：增加只表达稳定事实的 `FileRef`/读取结果/输出结果类型；不传 handle、路径或 Blob 大对象。
+- `src/api/real/fileWorkspace.ts`：增加 owner-only 的 `createReadFileRef`、受限 `readFileRef` 和 `exportFileRef`；复用现有 read permission、write-mode gate、唯一名称检查与清理边界。
+- `src/api/fileWorkspace.ts`：只暴露经过 Workspace owner 校验的 port 方法；client 只能得到摘要/终态，不转发 FileRef 内部句柄。
+- 一个最小 File Manager 入口和 `executionSource: real` 标识；不改 Desktop、Task Center、Downloader、Image、Archive 或 Media 的 mock 场景。
+
+**验证与证据**
+
+- Contract/unit：序列化 FileRef 不含绝对路径或 handle；未知/过期 ref、owner 丢失、读取超限、读取权限拒绝、同名输出和写入失败均得到结构化终态；原文件摘要保持不变。
+- Extension E2E：隔离临时目录中使用小型文本与二进制夹具，覆盖只读选择、原文件不变、显式开启写入、唯一新文件、输出复读比对和失败提示；不把浏览器模拟写成目标 Chrome 支持。
+- 目标 Chrome 证据：在 Chrome Stable 152.0.7977.82 / Windows win32 10.0.26200 x64 的解包扩展中人工复走授权拒绝、关闭/owner 丢失、输出写入失败和清理；记录实际浏览器与 profile，而不是复用 bundled Chromium 结论。
+- 资源证据：固定上限与采样方法后记录读取/暂存/写入/清理的峰值 JS/Worker/Chrome 进程内存及 OPFS 占用；若无可靠采样则写明未测，不以测试时长代替资源结论。
+
+**明确不做**
+
+- 不引入 `engine: 'media'`、WebCodecs、ffmpeg.wasm、NAS/WebDAV、远程上传、递归目录导入、跨标签写请求、覆盖原文件或通用原子回滚抽象。
+- 不在本包把 `FileRef` 扩展成持久文件数据库；权限失效只返回 `requires-user`/结构化失败，要求用户重新授权。
+
+**完成条件**
+
+原文件只读事实、FileRef 脱敏边界、输出新文件复读验证、错误终态和清理证据全部可由单测/扩展 E2E/目标 Chrome 记录复现；未覆盖项继续登记在 SP-02 与 RISK-005/RISK-010，不把该包结果外推为任意文件格式或性能支持。
+
+### MD-01～MD-09 Music 计划工作包
+
+MD-01～MD-08 是 SP-09 下的隔离验证工作包，可在不通过 Music Module Gate 的情况下启动；当前不开发 UI、Intent 或真实解密 adapter。MD-09 才是按格式进行的产品集成申请。若探针结果需要改变长期分层、公开契约、权限、数据流或技术栈，按 [GOVERNANCE](GOVERNANCE.md) 与 [ADR 目录](ADR/README.md) 评估并在需要时新增/替代 ADR；探针本身不自动创建架构决策。
 
 1. **MD-01 来源与供应链锁定：** 固定 `um/cli` tag/SHA/checksum，完成根项目与 Go 依赖许可证清单，确认作者授权记录的可审计形式。
 2. **MD-02 格式识别：** 仅实现 magic/container 与资源预算探测，分别列出 KGM v3/v5、QMC 变体和 NCM 结构；未知或伪扩展名进入 `unsupported`。
 3. **MD-03 NCM 候选 Worker：** 在授权夹具上验证本地流式读取、输出签名、元数据边界、取消和清理；禁用远程封面/元数据请求。
 4. **MD-04 QMC 候选 Worker：** 先验证浏览器可用的密钥路径和 QMC 变体；macOS MMKV/文件路径依赖没有浏览器替代前保持不支持。
 5. **MD-05 KGM 候选 Worker：** 先分别验证 v3；v5 的 KGG 数据库来源、许可、包体、更新和内存未通过前不打包、不承诺。
-6. **MD-06 产品接入：** 只有真实夹具、目标 Chrome、任务状态、输出提交和清理证据齐全后，才注册 Tool App、接入文件管理 OpenIntent，并替换对应 mock scenario。
+6. **MD-06 按格式独立验收：** 在同一 SP-09 记录中为 KGM、QMC、NCM 分别维护验收条目；KGM v3/v5、QMC 变体和 NCM 结构按证据拆分。每条至少覆盖授权夹具 manifest/SHA-256、真实格式探测、Worker/目标 Chrome、任务状态、资源上限、输出验收、取消/页面关闭和失败清理。结论只能是 `已验证`、`降级`、`延后` 或 `不支持`；某格式通过不替其他格式背书。
+7. **MD-07 FileRef 与 Workspace owner：** 为真实音乐任务生成只表达稳定事实的不透明 `FileRef`，绑定唯一 Workspace owner 和任务 lease；FSA handle、虚拟路径、本机绝对路径和大 Blob 只留在 owner adapter，不进入 UI、跨上下文消息、持久化或日志。owner 丢失、过期 ref 和权限失效必须进入结构化失败/重新授权状态。
+8. **MD-08 授权读取、输出位置与安全提交：** 仅读取用户明确授权的本地文件，并在任务创建时记录输入只读摘要；输出位置必须是用户明确选择且已获写入授权的目录，不默认覆盖原文件。提交前检查同级文件名冲突并生成可解释的唯一名称；输出先写入 owner 控制的暂存位置，完成音频/编码/元数据/封面验收后再提交，提交失败或取消时清理未提交输出和临时资源，不把部分写入标为成功。
+9. **MD-09 取消与产品集成：** 取消覆盖读取、解密、编码、验证和提交前各阶段，并验证 Worker 终止、owner/页面关闭和清理；只有对应格式的独立验收、目标 Chrome 证据和安全提交证据齐全后，才允许该格式注册 Tool App、接入文件管理 OpenIntent，并替换对应 mock scenario。其他未验收格式保持未验证，不得声明支持。
+
+### 音乐输出验收基线
+
+每个格式的独立验收和 MD-09 产品集成申请都必须使用同一组输出规则；规则未通过时任务不得进入 `succeeded`：
+
+- **音频内容：** 输出必须能被独立解码器完整读取，并证明存在有效音频内容（时长、采样/帧信息和夹具预期一致）；只生成 Blob、文件大小变化或扩展名正确不算成功。
+- **编码识别：** 通过 magic/container 与独立 codec/parser 识别容器、codec 及可见 profile；识别不到时记录 `unknown` 并降级/失败，不以文件名猜测支持。
+- **元数据：** 读取并校验实际存在的可支持字段，保留范围以验收条目为准；缺失、无法解析或未验证的字段不得伪造，需明确标记为缺失/未保留，不阻塞已独立证明的音频内容，除非该格式验收明确把字段保留列为必需项。
+- **封面：** 仅处理输入内嵌且通过 MIME、大小和图片签名校验的封面；禁止联网补取。缺失或被安全策略丢弃时标记为 `absent`/`dropped` 及原因，不得宣称已保留。
+- **原文件：** 输入只读，处理前后摘要一致，永不覆盖、删除或移动原文件；输出位置和文件名必须能与原文件区分。
+- **失败清理：** 在提交前失败或取消不得产生成功态最终文件；必须尽力清理 owner 控制的暂存、Worker、句柄和未提交输出。提交失败进入结构化 `export-failed`/相应错误终态；若浏览器无法证明原子回滚，不得宣称已回滚，只报告可观察的部分结果并阻止假成功。
 
 ## 8. 前端与依赖策略
 

@@ -54,3 +54,12 @@
 - 测试随后恢复原生写入方法，在同一隔离目录再次解压同一 ZIP；新目录使用唯一后缀并完整写入两个文件，证明提交失败后 owner/Worker 不被卡死，失败不伪装为成功。
 - 定向命令：`pnpm build:extension`；`pnpm --dir apps/extension exec playwright test e2e/archiveWriteFailure.spec.ts --reporter=list`（1/1 通过，3.2 秒，仅测试时长）。完整 MV3 回归随后 49/49 通过、0 skipped（2.0 分钟；bundled Chromium，不是目标 Chrome Stable 验收）。
 - 该证据证明当前契约允许提交失败保留部分输出并提供可解释错误，不证明原子提交、自动回滚、原生目录权限失败、配额失败或页面/进程终止恢复；RISK-007 保持开放。
+
+## 当前尚缺：目标 Chrome 与资源证据
+
+以下缺口仍属于 Archive 模块 Gate 的未验证证据，不改变 SP-04-A/B/C 已记录的限定结论：
+
+- **目标 Chrome：** 尚未在维护者基线 Chrome Stable 152.0.7977.82 / Windows win32 10.0.26200 x64 的解包 MV3 扩展中，人工复走 A/B/C 的真实目录授权、预提交取消、Files 窗口关闭、受控提交失败和后续重试路径；CI #35 的 Browser regression 使用 Playwright bundled Chromium，不能替代该证据。
+- **资源测量：** 尚未在目标 Chrome 中记录输入读取、Worker、暂存 Blob、输出写入和清理的峰值 JS/Worker/Chrome 进程内存、OPFS 配额占用及可复现的资源采样方法。
+- **压力夹具：** 尚未用 ZIP64、真实高压缩比/展开膨胀和接近当前 50 MiB 输入、32 MiB 单项、64 MiB 总展开、200 项、深度 12 上限的夹具完成资源曲线；小型声明超限负例只证明拒绝，不证明压力下的内存或性能边界。
+- **资源失败态：** 尚未在目标 Chrome 记录配额耗尽、原生目录权限拒绝、Worker 崩溃或强制终止后的资源清理与终态；这些不应由现有取消或受控写入失败证据推断。

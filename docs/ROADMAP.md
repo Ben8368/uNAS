@@ -59,7 +59,7 @@ Roadmap 只描述阶段结果和门禁；具体工作包见 [DEVELOPMENT_BLUEPRI
 4. Archive：ZIP 列表/解压、Zip64、路径穿越、炸弹预算和取消。
 5. PDF：合并/拆分/渲染、加密、损坏、字体、对象和像素预算。
 6. Media：WebCodecs、容器、ffmpeg.wasm、CSP、冷/热启动、内存和输出播放验证。
-7. Music encrypted-container：固定 `um/cli` 来源、作者许可、依赖清单、浏览器 Worker/WASM 路线、授权夹具和 KGM/QMC/NCM 能力边界。
+7. Music encrypted-container：固定 `um/cli` 来源、作者许可、依赖清单、浏览器 Worker/WASM 路线、授权夹具和 KGM/QMC/NCM 能力边界。SP-09 允许先开展隔离算法、Worker 和目标浏览器探针；Music Module Gate 只决定是否允许产品集成。
 8. Packaging：Chrome 解包安装、包体、离线资源、权限清单、更新迁移和许可证。
 
 交付物：能力矩阵、固定夹具 manifest、基准结果、资源阈值、依赖/许可证清单、需要修改的契约和 ADR。
@@ -99,7 +99,7 @@ ZIP、PDF、Media 不阻断 G2-Core；它们在进入各自集成前完成模块
 
 默认顺序：Archive ZIP → PDF → Media。
 
-Music encrypted-container 不继承 Media 的支持结论，单独使用 [Music Module Gate](#music-module-gate)。在该 Gate 通过前，Music 仅作为计划研究项，不进入真实 App、文件管理入口或产品能力承诺。
+Music encrypted-container 不继承 Media 的支持结论，单独使用 [Music Module Gate](#music-module-gate)。在该 Gate 通过前，Music 不进入真实 App、文件管理入口或产品能力承诺，但不阻断 SP-09 下的隔离算法、Worker、浏览器和输出探针。
 
 每个模块自己的进入 Gate 至少要求：
 
@@ -110,11 +110,14 @@ Music encrypted-container 不继承 Media 的支持结论，单独使用 [Music 
 
 ### Music Module Gate
 
+该 Gate 按格式决定产品集成，不是隔离探针的启动前置条件。
+
 - `um/cli` 源码版本、提交 SHA、根许可证、依赖许可证和资源 provenance 已固定并可复核；Go CLI 不直接进入扩展。
-- KGM、QMC、NCM 各自有合法授权的固定夹具、magic/container 探测、输出签名/完整性和失败清理证据；库声称支持的其他格式不自动纳入范围。
+- 首批目标固定为 KGM、QMC、NCM；每个格式维护独立验收结论，KGM v3/v5、QMC 变体和 NCM 结构按实际探针结果拆分。一个格式完成验收即可单独申请产品集成，不要求其他格式先完成。
+- 每个格式必须有合法授权的固定夹具、magic/container 探测、Worker/浏览器证据、音频输出验收和失败清理证据；库声称支持的其他格式不自动纳入范围。
 - 浏览器 Worker 路线通过目标 Chrome 的 CSP、WASM、内存、取消、页面关闭和输出提交验证；不能以作者构建物或 bundled Chromium 代替。
 - 不联网获取封面、元数据、密钥或账号，不读取任意路径，不引入 Native Helper；KGM v5 外部数据库等额外资源必须先完成来源、许可和包体审查。
-- 只有在上述证据齐全后，才决定进入 V1、降级为格式识别，或延后/不支持；本 Gate 不改变 Product 的 DRM 非目标。
+- Music Module Gate 只负责产品集成决定：格式验收通过的格式才可注册 Tool App、接入文件关联或声明真实支持；未验证格式继续标记为计划/未验证，不得随首批目标清单写成支持。每个格式可单独进入 V1、降级为格式识别，或延后/不支持；本 Gate 不改变 Product 的 DRM 非目标。
 
 **Gate G4 — V1 功能候选：**
 
