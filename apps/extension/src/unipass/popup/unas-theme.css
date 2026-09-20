@@ -28,7 +28,9 @@
   --credential: color-mix(in srgb, var(--window-surface-raised) 82%, transparent);
   --glass-window: var(--window-glass-window);
   --glass-window-solid: var(--window-surface);
-  --glass-panel: var(--window-surface);
+  /* Directory lists sit inside the single blurred window layer, so preserve a
+   * translucent panel instead of painting an opaque content slab. */
+  --glass-panel: color-mix(in srgb, var(--window-surface) 78%, transparent);
   --glass-control: var(--window-surface-raised);
   --glass-control-hover: var(--window-surface-control);
   --glass-selected: color-mix(in srgb, var(--window-vault-accent) 16%, var(--window-surface));
@@ -53,6 +55,7 @@
   :root .app-window { background: var(--window-surface); }
   :root :is(.app-window, .app-window *) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
   :root .app-window::before, :root .app-window::after { display: none; }
+  :root :is(.list, .credential, .settings-form) { background: var(--window-surface); }
 }
 @media (prefers-reduced-motion: reduce) {
   :root *, :root *::before, :root *::after { animation: none !important; transition: none !important; }
