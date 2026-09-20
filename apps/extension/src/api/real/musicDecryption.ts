@@ -29,6 +29,7 @@ export function probeMusicCapability(): MusicCapability {
   if (typeof Worker !== 'function') reasons.push('当前页面没有 Dedicated Worker。')
   const storage = (globalThis as typeof globalThis & { navigator?: { storage?: StorageWithOpfs } }).navigator?.storage
   if (typeof storage?.getDirectory !== 'function') reasons.push('当前浏览器没有 OPFS 临时文件能力。')
+  if (typeof globalThis.crypto?.subtle?.digest !== 'function') reasons.push('当前浏览器没有可用的 SHA-256 输出一致性校验能力。')
   return {
     supported: reasons.length === 0,
     reasons,
@@ -49,6 +50,11 @@ function opfsStorage() {
   const storage = (globalThis as typeof globalThis & { navigator?: { storage?: StorageWithOpfs } }).navigator?.storage
   if (typeof storage?.getDirectory !== 'function') throw new Error('当前浏览器没有 OPFS 临时文件能力。')
   return storage
+}
+
+async function sha256Hex(file: File) {
+  const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer())
+  return Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, '0')).join('')
 }
 
 export function prepareMusicDecrypt(file: File, onProgress?: (progress: MusicProgress) => void): MusicDecryptRun {
@@ -114,8 +120,10 @@ export function prepareMusicDecrypt(file: File, onProgress?: (progress: MusicPro
           const outputHandle = directory
           if (!outputHandle) throw new Error('OPFS staged 输出已丢失。')
           const outputFile = await outputHandle.getFileHandle(temporaryName).then((handle) => handle.getFile())
+          if (outputFile.size !== outputBytes) throw new Error('OPFS staged 输出大小与 Worker 结果不一致。')
+          const outputSha256 = await sha256Hex(outputFile)
           settled = true; finishWorker()
-          resolveResult({ format: started!.format, outputFormat: message.outputFormat, inputBytes: file.size, outputBytes, outputFile })
+          resolveResult({ format: started!.format, outputFormat: message.outputFormat, validationDepth: message.validationDepth, inputBytes: file.size, outputBytes, outputSha256, outputFile })
         }).catch(fail)
         return
       }

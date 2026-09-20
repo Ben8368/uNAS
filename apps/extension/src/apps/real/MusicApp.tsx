@@ -60,7 +60,7 @@ export function MusicApp() {
       if (run.current !== current) return
       succeeded = true
       setResult(next)
-      setNotice(`已验证 ${next.outputFormat.toUpperCase()} 输出，${formatBytes(next.outputBytes)} 暂存在 OPFS。`)
+      setNotice(`已识别 ${next.outputFormat.toUpperCase()} 音频签名（仅签名级验证，未完成完整音频验证），${formatBytes(next.outputBytes)} 暂存在 OPFS。`)
     } catch (reason) {
       if (run.current === current) setError(reason instanceof Error ? reason.message : '本地音乐解密失败。')
     } finally {
@@ -84,15 +84,20 @@ export function MusicApp() {
 
   const download = useCallback(() => {
     if (!result) return
-    const url = URL.createObjectURL(result.outputFile)
-    objectUrl.current = url
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = outputName(file?.name ?? 'decrypted-audio', result.outputFormat)
-    anchor.click()
-    setNotice('已提交浏览器下载；本次 OPFS 暂存将在下载触发后清理。')
-    window.setTimeout(() => { void cleanup() }, 1000)
-  }, [cleanup, file?.name, result])
+    try {
+      const url = objectUrl.current ?? URL.createObjectURL(result.outputFile)
+      objectUrl.current = url
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = outputName(file?.name ?? 'decrypted-audio', result.outputFormat)
+      anchor.click()
+      setError('')
+      setNotice('已发起浏览器下载，但当前页面无法确认下载是否完成；OPFS 暂存已保留，可重试下载或手动清理。')
+    } catch (reason) {
+      setError(reason instanceof Error ? `下载未能提交：${reason.message}` : '下载未能提交。')
+      setNotice('下载失败；OPFS 暂存仍保留，可重试下载。')
+    }
+  }, [file?.name, result])
 
   if (workspaceState !== 'owner') return <section className="music-app music-app--blocked" role="status"><h2>本地音乐处理需要 Workspace owner</h2><p>当前页面只是任务投影，不能取得本地文件或启动 Worker。请回到实际 Workspace 页面。</p></section>
 
@@ -115,6 +120,6 @@ export function MusicApp() {
     {busy && <div className="music-app__progress" role="status"><span style={{ width: `${Math.min(100, file ? processed / file.size * 100 : 0)}%` }} /><small>{processed ? `${formatBytes(processed)} 已写入 OPFS staged output` : '正在读取与验证输入…'}</small></div>}
     {notice && <p className="music-app__notice" role="status">{notice}</p>}
     {error && <p className="music-app__error" role="alert">{error}</p>}
-    {result && !busy && <div className="music-app__result"><div><strong>{result.outputFormat.toUpperCase()} 已验证</strong><span>{formatBytes(result.outputBytes)} · {result.format}</span></div><button type="button" className="mt-btn mt-btn--primary" onClick={download}>下载解密结果</button><button type="button" className="mt-btn" onClick={() => void cleanup()}>清理暂存</button></div>}
+    {result && !busy && <div className="music-app__result"><div><strong>{result.outputFormat.toUpperCase()} 音频签名已识别</strong><span>仅签名级验证，未完成完整音频验证 · {formatBytes(result.outputBytes)} · {result.format}</span><span data-output-sha256={result.outputSha256}>SHA-256 {result.outputSha256}</span></div><button type="button" className="mt-btn mt-btn--primary" onClick={download}>下载解密结果</button><button type="button" className="mt-btn" onClick={() => void cleanup()}>清理暂存</button></div>}
   </section>
 }

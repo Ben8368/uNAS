@@ -4,7 +4,7 @@
 
 本轮基于 `main` 最新计划完成 MD-01（来源与供应链锁定）和 MD-02（格式识别探针），并补做隔离的本地解密 smoke test、Worker/OPFS 浏览器验证和 Beta Tool App 接入。已注册 `music` Beta Tool App；没有修改文件管理右键菜单，没有引入第三方源码、WASM、KGG 数据库、Native Helper 或远程资源。
 
-探针的 `已验证` 只表示“在固定输入上识别出结构并通过预算检查”。本节的浏览器结果表示独立 Worker 在 bundled Chromium 中完成了解密、输出校验、取消和 OPFS 清理；不外推为目标 Chrome Stable、FileRef/Task 完整契约或稳定 Music Module Gate 已通过。
+探针的 `已验证` 只表示“在固定输入上识别出结构并通过预算检查”。Beta App 的输出状态进一步区分为“音频签名级验证”：Worker 只检查解密输出的音频 magic/signature，不等同于完整音频解码验证。本节的浏览器结果表示独立 Worker 在 bundled Chromium 中完成了解密、签名检查、取消和 OPFS 清理；不外推为目标 Chrome Stable、FileRef/Task 完整契约或稳定 Music Module Gate 已通过。
 
 ## MD-01 来源与供应链
 
@@ -79,15 +79,15 @@ node scripts/sp09-probe.mjs --module-dir C:\Users\ben.luo\go\pkg\mod\unlock-musi
 
 ## 已验证、未验证与不支持汇总
 
-**已验证：** MD-01 的根来源/tag/SHA/checksum、根 MIT 许可证、可取得依赖的静态许可证清单、QMC 上游夹具来源与哈希；MD-02 对 KGM v3/v5、NCM 结构、QMC QTag/raw-key footer 的固定输入识别和预算拒绝；一个本地 KGM v3 样本经自有脚本和浏览器 Worker 解密后通过 FLAC magic、`ffprobe` 和完整 `ffmpeg` 解码；一个本地 NCM 样本经自有脚本和浏览器 Worker 解密后通过 MP3 magic、`ffprobe` 和完整 `ffmpeg` 解码；26 个本地 QMC `.mgg` 样本全部经自有脚本解密并通过 OGG/Vorbis `ffprobe` 和完整 `ffmpeg` 解码；`music` Beta Tool App 在 bundled Chromium 中完成三格式各一份下载、取消路径和 OPFS 暂存清理验证。Worker 使用 1 MiB 分块、ACK 背压和 OPFS 暂存，输入/输出上限 128 MiB，单 section 上限 16 MiB，QMC footer 上限 64 KiB。
+**已验证：** MD-01 的根来源/tag/SHA/checksum、根 MIT 许可证、可取得依赖的静态许可证清单、QMC 上游夹具来源与哈希；MD-02 对 KGM v3/v5、NCM 结构、QMC QTag/raw-key footer 的固定输入识别和预算拒绝；一个本地 KGM v3 样本经自有脚本和浏览器 Worker 解密后通过 FLAC magic、`ffprobe` 和完整 `ffmpeg` 解码；一个本地 NCM 样本经自有脚本和浏览器 Worker 解密后通过 MP3 magic、`ffprobe` 和完整 `ffmpeg` 解码；26 个本地 QMC `.mgg` 样本全部经自有脚本解密并通过 OGG/Vorbis `ffprobe` 和完整 `ffmpeg` 解码；`music` Beta Tool App 在 bundled Chromium 中完成三格式各一份签名级输出、取消路径和显式 OPFS 清理验证。Worker 使用 1 MiB 分块、ACK 背压和 OPFS 暂存，输入/输出上限 128 MiB，单 section 上限 16 MiB，QMC footer 上限 64 KiB。
 
-**未验证：** 上游 `unlock-music.dev/mmkv` 许可证与再分发授权（已退出 uNAS 产品依赖）；uNAS 自有 MMKV 兼容层；完整 Go module graph；KGM v5 KGG 实际数据库 provenance/许可证/schema/打包；可纳入仓库再分发的真实音频夹具；目标 Chrome Stable 的本功能复验；音乐 App 的完整 FileRef/Task/owner lease 接入；页面关闭后的音乐专项 E2E；峰值 JS/Worker/Chrome 进程内存实测和多样本跨版本兼容性。
+**未验证：** 上游 `unlock-music.dev/mmkv` 许可证与再分发授权（已退出 uNAS 产品依赖）；uNAS 自有 MMKV 兼容层；完整 Go module graph；KGM v5 KGG 实际数据库 provenance/许可证/schema/打包；可纳入仓库再分发的真实音频夹具；目标 Chrome Stable 的本功能复验；音乐 App 的完整 FileRef/Task/owner lease 接入；页面关闭后的音乐专项 E2E；峰值 JS/Worker/Chrome 进程内存实测和多样本跨版本兼容性；本轮私有夹具未配置，因此下载完成、下载失败、重复下载的浏览器 E2E 和下载文件 SHA-256 一致性尚未取得真实媒体证据。
 
 **不支持：** 文件管理关联、右键菜单、在线封面/元数据/密钥/账号、Native Helper、在线 DRM/付费墙/站点授权绕过、KGM v5 实际解密、QMC `cex\0`/外部 MMKV 分支，以及没有 extension-independent marker 的 QMC static 分支。Beta App 只暴露已验证的 KGM v3、NCM 和 QMC raw-key-footer 路径。
 
 ## 后续阻断项
 
-上游 `mmkv` 许可证阻断已通过“退出上游依赖、改走自有 clean-room 实现”降级，但自有兼容层尚未实现和单独审查；KGM v5 KGG 实际资源审计仍阻断供应链锁定。KGM v3、NCM 和 QMC raw-key-footer 已完成隔离脚本、Worker、OPFS 暂存、取消/清理和 bundled Chromium Beta App 验收；音乐专用 FileRef/Task/owner lease、目标 Chrome Stable、峰值内存实测和可再分发真实音频夹具仍未完成。`VipSongsDownload` 只读盘点得到 26 个 `.mgg`，均为 raw-key-footer；未发现 KGM/VPR。RISK-015 保持开放，Music Module Gate 仍未整体通过。
+上游 `mmkv` 许可证阻断已通过“退出上游依赖、改走自有 clean-room 实现”降级，但自有兼容层尚未实现和单独审查；KGM v5 KGG 实际资源审计仍阻断供应链锁定。KGM v3、NCM 和 QMC raw-key-footer 已完成隔离脚本、Worker、OPFS 暂存、取消/显式清理和 bundled Chromium Beta App 验收；下载无完成回执时结果保留并允许重试，但本轮尚未用私有媒体夹具取得下载完成/失败/重复下载及 SHA-256 一致性证据。音乐专用 FileRef/Task/owner lease、目标 Chrome Stable、峰值内存实测和可再分发真实音频夹具仍未完成。`VipSongsDownload` 只读盘点得到 26 个 `.mgg`，均为 raw-key-footer；未发现 KGM/VPR。RISK-015 保持开放，Music Module Gate 仍未整体通过。
 
 ## Worker、浏览器与产品集成验证
 
@@ -95,11 +95,11 @@ node scripts/sp09-probe.mjs --module-dir C:\Users\ben.luo\go\pkg\mod\unlock-musi
 
 - `apps/extension/src/workers/musicDecrypt.worker.ts`：独立 Worker，按 1 MiB 读取和发送，主线程 ACK 后继续，支持取消和结构化失败。
 - `apps/extension/src/api/real/musicDecryption.ts`：能力探测、OPFS staged output、顺序写入、取消超时兜底和幂等清理。
-- `apps/extension/src/apps/MusicApp.tsx`：`executionSource: real` 的 Beta Tool App；只接受用户通过文件选择器选取的本地文件，不读任意路径、不覆盖原文件、不联网。
+- `apps/extension/src/apps/real/MusicApp.tsx`：`executionSource: real` 的 Beta Tool App；只接受用户通过文件选择器选取的本地文件，不读任意路径、不覆盖原文件、不联网。
 
-固定资源预算：输入/输出各 128 MiB、单 section 16 MiB、QMC footer 64 KiB、Worker 分块 1 MiB。输出先写入 OPFS `unas-music-*.stage`，下载成功或取消/失败后清理暂存项。
+固定资源预算：输入/输出各 128 MiB、单 section 16 MiB、QMC footer 64 KiB、Worker 分块 1 MiB。输出先写入 OPFS `unas-music-*.stage`，Worker 只做音频签名级检查并记录输出 SHA-256；取消/失败由用户流程清理，下载触发后因页面无法确认浏览器完成状态而保留暂存项，用户可重试下载或显式清理。
 
-实际命令与结果：
+变更前基线命令与结果（保留用于对照；不代表本轮输出可靠性回归已取得私有媒体证据）：
 
 ```text
 pnpm --dir apps/extension exec playwright test e2e/musicDecrypt.spec.ts
@@ -109,6 +109,21 @@ pnpm test:e2e
 ```
 
 三项浏览器样本分别覆盖本地 KGM v3、NCM 和 QMC raw-key-footer `.mgg`；每项都在真实打包的 MV3 bundled Chromium 中完成解密、下载和 OPFS 清理断言，另有取消测试。该证据不代表目标 Chrome Stable 已复验，也不代表 KGM v5、QMC MMKV/`cex\0` 或静态无 marker 分支可用。
+
+### 本轮输出可靠性回归（基于 `f19f983`）
+
+```text
+pnpm verify
+通过：治理检查、lint、Demo 边界、依赖一致性、159 passed + 1 skipped（共 160）单测、类型检查、Demo 构建、MV3 构建和包检查。
+
+pnpm --dir apps/extension exec playwright test e2e/musicDecrypt.spec.ts
+结果：3 skipped；未配置 UNAS_MUSIC_KGM_FIXTURE、UNAS_MUSIC_NCM_FIXTURE、UNAS_MUSIC_QMC_FIXTURE 私有夹具。
+
+pnpm test:e2e
+结果：49 passed、3 skipped；跳过项为上述音乐专项 E2E，未计入通过数。
+```
+
+音乐专项 E2E 已准备覆盖下载提交失败、用户取消、重复下载、OPFS 暂存保留/显式清理和下载文件 SHA-256 与 staged 输出一致性；在上述三个私有夹具变量配置前，这些场景保持未验证，不得写成通过。
 
 目标 Chrome 尝试：
 

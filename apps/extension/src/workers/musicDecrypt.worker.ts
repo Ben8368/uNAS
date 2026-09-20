@@ -119,7 +119,7 @@ async function decrypt(request: Extract<MusicWorkerRequest, { type: 'decrypt' }>
     }
     const detected = detectAudio(first)
     if (detected.format === 'unknown') throw new Error(`解密输出签名无法识别：${detected.magic}`)
-    post({ type: 'complete', id: request.id, outputBytes, outputFormat: detected.format })
+    post({ type: 'complete', id: request.id, outputBytes, outputFormat: detected.format, validationDepth: 'audio-signature' })
   } catch (error) {
     const cancelled = error instanceof DOMException && error.name === 'AbortError'
     post({ type: 'error', id: request.id, code: cancelled ? 'cancelled' : 'processing-failed', message: cancelled ? '已取消；临时输出将被清理。' : error instanceof Error ? error.message : '本地音乐解密失败。' })

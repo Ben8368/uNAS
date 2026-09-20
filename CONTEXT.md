@@ -26,13 +26,14 @@
 ## 当前阻断与风险
 
 - G1 已由维护者确认验收；SP-04 仍开放 RISK-007，详见 [SP-04](benchmarks/sp-04/README.md)。
-- SP-09 已完成 KGM v3、NCM、QMC raw-key-footer 的 Worker/OPFS Beta App 验证；bundled Chromium 下载、取消和清理通过，`pnpm test:e2e` 为 51 passed。无右键/Intent、原文件覆盖或联网。
+- SP-09 已完成 KGM v3、NCM、QMC raw-key-footer 的 Worker/OPFS Beta App 验证；输出仅作音频签名级验证，下载无完成回执时保留结果供重试。无右键/Intent、原文件覆盖或联网。
 - SP-09 仍开放 RISK-015：目标 Chrome、owner lease、页面关闭、峰值内存、KGM v5 KGG、QMC MMKV/`cex\0` 和真实夹具尚未完成。
 - 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；Chrome Web Store 更新属于未来 Store Gate。
 
 ## 最近验证
 
-- 2026-09-20：本地 `main` 与 `origin/main` 同为 `8df9d8621f2168cb5d8dbd2fcb5df43a2b068bae`；[GitHub Actions CI #35](https://github.com/Ben8368/uNAS/actions/runs/35487284796) 的 `Docs governance`、`Verify demo`、`Browser regression` 均成功。SP-04-A/B/C 的事实与缺口见 [SP-04](benchmarks/sp-04/README.md)：目标 Chrome Stable 复走和资源/压力/资源失败态证据仍缺，RISK-007 保持开放；现有部分输出与受控写入失败证据不构成原子回滚或自动回滚保证。
+- 2026-09-20： [GitHub Actions CI #35](https://github.com/Ben8368/uNAS/actions/runs/35487284796) 的文档、Demo 和浏览器回归均成功；SP-04 目标 Chrome 与资源证据仍缺，RISK-007 保持开放，详见 [SP-04](benchmarks/sp-04/README.md)。
+- 2026-09-20（本轮音乐可靠性）：`pnpm verify` 通过（159 passed、1 skipped）；全量 E2E 为 49 passed、3 skipped，因未配置三个私有夹具变量。下载完成/失败/重试及 SHA-256 一致性仍未实证，详见 [SP-09](benchmarks/sp-09/README.md)。
 
 ## 按需入口
 

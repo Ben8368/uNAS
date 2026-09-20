@@ -9,6 +9,7 @@ export const MUSIC_LIMITS = Object.freeze({
 
 export type MusicFormat = 'kgm-v3' | 'ncm' | 'qmc'
 export type MusicOutputFormat = 'flac' | 'mp3' | 'ogg' | 'wav' | 'unknown'
+export type MusicValidationDepth = 'audio-signature'
 
 export type MusicWorkerRequest =
   | { type: 'decrypt'; id: string; file: File }
@@ -18,7 +19,7 @@ export type MusicWorkerRequest =
 export type MusicWorkerMessage =
   | { type: 'started'; id: string; format: MusicFormat; outputFormat: MusicOutputFormat; inputBytes: number; audioBytes: number; cipher?: string }
   | { type: 'chunk'; id: string; buffer: ArrayBuffer; bytes: number }
-  | { type: 'complete'; id: string; outputBytes: number; outputFormat: Exclude<MusicOutputFormat, 'unknown'> }
+  | { type: 'complete'; id: string; outputBytes: number; outputFormat: Exclude<MusicOutputFormat, 'unknown'>; validationDepth: MusicValidationDepth }
   | { type: 'error'; id: string; code: string; message: string }
 
 export type MusicCapability = {
@@ -35,7 +36,9 @@ export type MusicCapability = {
 export type MusicDecryptResult = {
   format: MusicFormat
   outputFormat: Exclude<MusicOutputFormat, 'unknown'>
+  validationDepth: MusicValidationDepth
   inputBytes: number
   outputBytes: number
+  outputSha256: string
   outputFile: File
 }

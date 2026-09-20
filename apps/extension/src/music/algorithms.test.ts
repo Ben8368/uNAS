@@ -23,9 +23,10 @@ describe('music browser algorithms', () => {
     expect(detectAudio(new TextEncoder().encode('OggS')).format).toBe('ogg')
   })
 
-  it('decrypts the maintained local KGM sample with the browser algorithm when present', () => {
-    const path = 'C:/Users/ben.luo/Downloads/陈奕迅 - K歌之王 (粤语版).kgm.flac'
-    if (!existsSync(path)) return
+  const kgmFixture = process.env.UNAS_MUSIC_KGM_FIXTURE
+
+  it.skipIf(!kgmFixture || !existsSync(kgmFixture))('decrypts the configured private KGM sample with the browser algorithm', () => {
+    const path = kgmFixture!
     const input = readFileSync(path)
     const header = new Uint8Array(input.subarray(0, 60))
     const parsed = parseKgmHeader(header)
