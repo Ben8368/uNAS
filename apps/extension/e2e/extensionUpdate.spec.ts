@@ -6,6 +6,7 @@ import path from 'node:path'
 import { extensionBrowserOptions } from './browserLaunch'
 
 type Manifest = { version: string }
+const LINK_STORAGE_KEY = 'unas-link-apps-v1'
 
 function nextVersion(version: string) {
   const parts = version.split('.').map(Number)
@@ -67,6 +68,16 @@ test('unpacked extension reload accepts a newer manifest and preserves Link Apps
     await browserApp.getByLabel('名称', { exact: true }).fill('Update proof')
     await browserApp.getByLabel('选择网址', { exact: true }).fill('https://update.example/path')
     await browserApp.getByRole('button', { name: '添加 App', exact: true }).click()
+    await expect.poll(async () => {
+      try {
+        return await before.evaluate(async (storageKey) => {
+          const stored = (await browser.storage.local.get(storageKey))[storageKey]
+          return Array.isArray(stored) ? stored : []
+        }, LINK_STORAGE_KEY)
+      } catch {
+        return []
+      }
+    }).toEqual(expect.arrayContaining([expect.objectContaining({ url: 'https://update.example/path' })]))
 
     await writeFile(manifestPath, JSON.stringify({ ...manifest, version: updatedVersion }), 'utf8')
     const extensionsPage = await context.newPage()
@@ -84,6 +95,20 @@ test('unpacked extension reload accepts a newer manifest and preserves Link Apps
         return undefined
       }
     }).toBe(updatedVersion)
+
+    // Chrome can report the new manifest before the reloaded service worker is
+    // ready to serve extension storage. Converge on the persisted value before
+    // asserting the React view, otherwise this race looks like data loss in CI.
+    await expect.poll(async () => {
+      try {
+        return await after.evaluate(async (storageKey) => {
+          const stored = (await browser.storage.local.get(storageKey))[storageKey]
+          return Array.isArray(stored) ? stored : []
+        }, LINK_STORAGE_KEY)
+      } catch {
+        return []
+      }
+    }).toEqual(expect.arrayContaining([expect.objectContaining({ url: 'https://update.example/path' })]))
     await after.locator('.app-icon--browser').click()
     await expect(after.locator('[data-app-id="browser"] li')).toContainText('https://update.example/path')
     expect(pageErrors).toEqual([])
