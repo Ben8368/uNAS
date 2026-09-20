@@ -126,8 +126,8 @@
     },
     {
       "path": "apps/extension/public/runtime-config.json",
-      "bytes": 46,
-      "sha256": "16efe1da8105c4a6105ada982dc173bc7f91f9774a1d06abee0d7db6a2777335",
+      "bytes": 45,
+      "sha256": "6c5443bea04b220555e08148feaa336322180d12df6c1062584a4d66fe8ea52a",
       "kind": "uNAS build-time UniPass network version configuration"
     },
     {
