@@ -21,6 +21,21 @@ export function LocalDirectoryPane() {
   const [sort, setSort] = useState<DirectorySort>('name')
   const request = useRef(0)
   const previousGrant = useRef(access.grantId)
+  const extractionInFlight = useRef(false)
+  const mounted = useRef(true)
+
+  useEffect(() => {
+    mounted.current = true
+    const cancelExtraction = () => {
+      if (extractionInFlight.current) fileWorkspacePort.cancelZipExtraction()
+    }
+    window.addEventListener('pagehide', cancelExtraction)
+    return () => {
+      mounted.current = false
+      window.removeEventListener('pagehide', cancelExtraction)
+      cancelExtraction()
+    }
+  }, [])
 
   useEffect(() => fileWorkspacePort.subscribe(() => {
     const next = fileWorkspacePort.getSnapshot()
@@ -105,19 +120,25 @@ export function LocalDirectoryPane() {
     if (!window.confirm(`将“${name}”解压到当前目录中新建的文件夹。仅处理受限 ZIP，且不会覆盖已有项目。是否继续？`)) return
     setWriting(true)
     setExtracting(true)
+    extractionInFlight.current = true
     setError('')
     setNotice('正在在隔离 Worker 中验证并解压 ZIP；完成校验前不会写入目录。')
     void (async () => {
       try {
         const result = await fileWorkspacePort.extractZip(currentPath, name)
+        if (!mounted.current) return
         setNotice(`已解压 ${result.filesWritten} 个文件到“${result.directoryName}”。`)
         await load()
       } catch (reason) {
+        if (!mounted.current) return
         setNotice('')
         setError(getErrorMessage(reason))
       } finally {
-        setExtracting(false)
-        setWriting(false)
+        extractionInFlight.current = false
+        if (mounted.current) {
+          setExtracting(false)
+          setWriting(false)
+        }
       }
     })()
   }, [currentPath, load])

@@ -3,7 +3,7 @@
 > 审计日期：2026-09-20。源码基线：`c189b835726b5f9d10dee749faa5ce9562c16c35`，开局工作区干净。
 > 本文是该基线的审计快照，不替代 [CONTEXT](../CONTEXT.md) 的当前状态、[Roadmap](ROADMAP.md) 的 Gate、[Development Blueprint](DEVELOPMENT_BLUEPRINT.md) 的执行计划及各 benchmark 的原始证据。下述最小交付项均为建议，尚未实施或批准进入相应 Gate。
 
-> 后续实施注记：用户随后授权开展剩余工作包；SP-04-A 的负向夹具与预检修复见 [SP-04](../benchmarks/sp-04/README.md)。下文保留审计时的源码事实，尤其 ZIP magic/名称与目录祖先检查观察不代表修复后状态；模块 Gate 仍未关闭。
+> 后续实施注记：SP-04-A 的负向夹具/预检修复及 SP-04-B 的预提交取消/暂存清理由 [SP-04](../benchmarks/sp-04/README.md) 记录。下文 ZIP 行已同步这些已验证限定事实；Archive 模块 Gate 仍未关闭。
 
 ## 1. 判定方法与结论总表
 
@@ -63,15 +63,15 @@
 | --- | --- |
 | 已实现 / mock / 缺口 | 文件管理器有真实单 ZIP 解压。没有独立 Archive App、ZIP 创建、列表预览/选择性解压、覆盖冲突处理、分卷/密码输入；RAR/7z/TAR 和修复不支持。不能把 zip.js 自身功能当成产品功能 |
 | 执行位置 | owner 页读取选定 ZIP → 随包 `archive-worker.js` → zip.js `ZipReader`；禁用 zip.js 内部 Worker。Worker 逐项发 Blob，owner ACK；全部校验后 owner 页创建同级目录并写入 |
-| 生命周期 | prepare 期间可请求取消，Worker `AbortController` 响应；完成/报错后 adapter terminate Worker。提交前清除 `activeExtraction`，提交阶段没有取消。UI 卸载未接取消；owner 页关闭后无 checkpoint、统一真实 Job 终态或恢复机制。App 按钮忙状态约束当前 UI，但 adapter 的单次锁只覆盖 prepare，不是完整提交互斥 |
+| 生命周期 | prepare 期间取消会立即终止 Worker、断开回调并释放 owner 对暂存 Blob 的引用；Files 窗口卸载与 `pagehide` 请求同一取消。提交前清除 `activeExtraction`，提交阶段没有取消。没有 checkpoint、统一真实 Job 终态或恢复机制；浏览器标签/进程强制终止及提交期间关闭没有验收。App 按钮忙状态约束当前 UI，但 adapter 的单次锁只覆盖 prepare，不是完整提交互斥 |
 | 权限、数据流与安全 | 需要已授权目录及写入模式；`.zip` 后缀加前四字节 magic 初筛，再严格解析、路径检查和 CRC。拒绝加密、软链接、穿越、绝对/反斜杠/保留名路径、重复名和文件祖先冲突。Blob 暂存在内存，未落 OPFS；通过全部检查才选择新目录，不主动覆盖。写入失败保留部分输出并报错；不是原子提交或完整回滚 |
 | 限制与性能 | 输入 50 MiB、200 项、单文件展开 32 MiB、总展开 64 MiB、深度 12、路径段 120 字符、原始路径 2,048 字符；最多尝试 100 个输出目录名称。是代码拒绝阈值，不是测得的舒适性能。条目先 `getEntries()`，输出先生成 Blob 后核对大小；没有实测峰值内存、CPU/耗时 watchdog 或整体内存硬封顶证据 |
-| 验证等级 | 已实现未验证（模块 Gate 未过）。SP-04 有 bundled Chromium/Windows/解包 MV3 的单条 Store/Deflate 正向夹具，验证嵌套文本内容一致及无 HTTP(S) 请求；路径/预算有单元测试。缺真实损坏/CRC/Zip64/炸弹负例、原生目录写权限、取消/页面关闭/崩溃/写失败、系统 Chrome 与资源测量 |
-| 下一步最小交付 / 阻断 | 建议实施 SP-04 的 Worker 负向夹具子包：验证危险输入在写入前被拒绝。该子包可独立开展；RISK-007 继续阻断 Archive Gate，不能因负例通过立即扩大格式范围 |
+| 验证等级 | 已实现未验证（模块 Gate 未过）。SP-04-A 已在 bundled Chromium/Windows/解包 MV3 验证损坏/CRC、路径、标记和声明资源超限的提交前拒绝；SP-04-B 已验证预提交取消、Files 窗口关闭、Worker 终止及失败后合法 ZIP 恢复。完整扩展 E2E 48/48、0 skipped；`pnpm verify` 已运行但本环境在 Vite 输出时未返回最终退出码，相关组成门禁均另行通过。仍缺 ZIP64、实际解码膨胀/峰值内存、原生目录写权限、浏览器标签/进程关闭、Worker 崩溃、提交失败/部分输出和目标 Chrome Stable 人工验收 |
+| 下一步最小交付 / 阻断 | 优先补隔离目录句柄的受控写入失败与输出残留证据，或独立设计实际浏览器关闭探针；两者均须保留 RISK-007。不得因 SP-04-A/B 或 zip.js 功能扩大格式范围或宣称通用 ZIP 可用 |
 
 源码：[文件提交入口](../apps/extension/src/api/real/fileWorkspace.ts)、[prepare adapter](../apps/extension/src/api/real/zipExtraction.ts)、[Worker](../apps/extension/src/workers/archiveExtraction.worker.ts)、[zipSafety](../apps/extension/src/archive/zipSafety.ts)。证据：[SP-04](../benchmarks/sp-04/README.md)、[ZIP E2E](../apps/extension/e2e/archiveExtraction.spec.ts)、[安全单测](../apps/extension/src/archive/zipSafety.test.ts)。
 
-额外边界：入口 magic 判断对第 3/4 字节分别判断集合，不能单独证明合法 ZIP 头；Worker 严格解析仍是后续检查。路径集合按原始大小写比较，跨文件系统大小写折叠/别名冲突与外部并发创建同名目标尚无证据。以上是源码观察及待验证项，本轮未用用户目录复现。
+额外边界：入口现在按三种合法 ZIP magic 字节对匹配，仍不能单独证明 ZIP 可解析；Worker 严格解析仍是后续检查。路径预检已拒绝 NFC/大小写折叠别名和文件祖先冲突；跨文件系统的完整别名矩阵与外部并发创建同名目标仍无证据。以上是源码观察及待验证项，本轮未用用户目录复现。
 
 ## 5. 媒体播放矩阵
 

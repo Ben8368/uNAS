@@ -22,10 +22,21 @@ export function prepareZipExtraction(file: File): ZipExtractionRun {
   let outputBytes = 0
   let settled = false
   let rejectResult: (reason: Error) => void = () => undefined
-  const finish = () => { worker.terminate() }
+  const releasePrepared = () => {
+    // Blob storage is reclaimed by the browser, but remove this owner's
+    // references immediately when preparation cannot reach commit.
+    prepared.length = 0
+    outputBytes = 0
+  }
+  const finish = () => {
+    worker.onmessage = null
+    worker.onerror = null
+    worker.terminate()
+  }
   const fail = (message: string) => {
     if (settled) return
     settled = true
+    releasePrepared()
     finish()
     rejectResult(new Error(message))
   }
@@ -69,5 +80,10 @@ export function prepareZipExtraction(file: File): ZipExtractionRun {
     worker.onerror = () => fail('ZIP 解压 Worker 意外停止；未向目录写入任何文件。')
     worker.postMessage({ type: 'extract', id, file })
   })
-  return { result, cancel: () => { if (!settled) worker.postMessage({ type: 'cancel', id }) } }
+  return {
+    result,
+    // Do not wait for an ACK or a cooperative decoder before releasing the
+    // page-owned staging buffers. No target directory exists during prepare.
+    cancel: () => fail('已取消解压；未向目录写入任何文件。'),
+  }
 }
