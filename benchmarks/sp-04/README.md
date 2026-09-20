@@ -2,7 +2,7 @@
 
 ## 问题 / 阻断 Gate
 
-验证解包 MV3 扩展能否在用户已授权的目录中安全解压单个 ZIP。该探针关联 RISK-007；记录受限实现、正向路径及 SP-04-A 负向夹具证据，不关闭 Archive 模块 Gate。
+验证解包 MV3 扩展能否在用户已授权的目录中安全解压单个 ZIP。该探针关联 RISK-007；记录受限实现、正向路径及 SP-04-A/B/C 的限定证据，不关闭 Archive 模块 Gate。
 
 ## 实现边界
 
@@ -19,12 +19,12 @@
 
 ## 未覆盖
 
-- ZIP64、真实解码膨胀/内存压力、原生 OS 目录与权限拒绝、Worker 崩溃、配额/写入失败，以及目标 Chrome Stable 的人工验证和资源测量。SP-04-B 已覆盖预提交取消及 Files 窗口关闭，不等同浏览器标签/进程被强制终止或提交阶段的页面关闭；小型声明超限夹具不等于压缩炸弹压力测试。
+- ZIP64、真实解码膨胀/内存压力、原生 OS 目录与权限拒绝、Worker 崩溃、配额失败，以及目标 Chrome Stable 的人工验证和资源测量。SP-04-B 已覆盖预提交取消及 Files 窗口关闭，SP-04-C 已覆盖受控提交写入失败，不等同浏览器标签/进程被强制终止或提交阶段的页面关闭；小型声明超限夹具不等于压缩炸弹压力测试。
 - 不支持 RAR、7z、TAR、分卷、密码输入或损坏包修复；不把本探针结论外推为通用 ZIP 支持。
 
 ## 当前结论
 
-受限 ZIP 解压整体仍为**已实现未验证**；SP-04-A 的限定自动化拒绝路径和 SP-04-B 的预提交取消路径均已验证，但 RISK-007 仍阻断 Archive 模块 Gate。后续证据和范围变化只更新本记录与 RISK-007。
+受限 ZIP 解压整体仍为**已实现未验证**；SP-04-A 的限定自动化拒绝路径、SP-04-B 的预提交取消路径和 SP-04-C 的提交写入失败路径均已验证，但 RISK-007 仍阻断 Archive 模块 Gate。后续证据和范围变化只更新本记录与 RISK-007。
 
 ## SP-04-A：真实 Worker 负向夹具
 
@@ -46,3 +46,11 @@
 - 定向命令：`pnpm --dir apps/extension exec vitest run src/api/real/zipExtraction.test.ts src/archive/zipSafety.test.ts`（2 文件、11 测试通过）；`pnpm build:extension`；`pnpm --dir apps/extension exec playwright test e2e/archiveCancellation.spec.ts e2e/archiveNegative.spec.ts e2e/archiveExtraction.spec.ts --reporter=list`（3/3 通过，12.2 秒，仅测试时长）。
 - 完整回归：完整扩展 E2E 按测试文件分组运行以保留终态输出，48/48 通过、0 skipped（bundled Chromium；不是目标 Chrome Stable 验收）。`pnpm verify` 已运行；此环境的命令桥在 Vite 输出时截断最终退出码，因而不把它标记为“通过”。其可见组成门禁已分别通过：治理、lint、边界、依赖、33 个单测文件/156 测试、类型检查、Web/MV3 构建与包体检查；`pnpm build:demo`、`pnpm build:extension`、`pnpm check:package` 随后又独立通过。
 - 已关闭的限定证据缺口：预提交用户取消、Files 窗口关闭时的预提交取消、Worker/owner 暂存引用清理的单元级行为。未关闭：浏览器标签或进程强制终止、提交中的关闭/取消、Worker 崩溃、写入失败后部分输出、原生目录权限、ZIP64、真实炸弹压力和峰值内存。没有测量浏览器堆/进程峰值，因此不能把引用清理写成内存上限或性能结论；RISK-007 保持开放。
+
+## SP-04-C：提交阶段受控写入失败与部分输出
+
+- 2026-09-20，bundled Chromium 151.0.7922.34，Windows win32 10.0.26200 x64，headless 1440×900，隔离临时 Profile 和固定 OPFS 子目录；仅使用 [archiveFixtures.ts](../../apps/extension/e2e/archiveFixtures.ts) 生成的双文件合法 Deflate ZIP，不操作用户目录、密码库或网络服务。
+- [archiveWriteFailure.spec.ts](../../apps/extension/e2e/archiveWriteFailure.spec.ts) 只在测试页面临时替换 `FileSystemFileHandle.prototype.createWritable`，让第二个输出文件返回受控 `NotAllowedError`；没有增加产品运行时开关或权限。测试断言 UI 进入失败态，错误包含已写入文件数且不显示成功，输出目录保留首个已写入文件。
+- 测试随后恢复原生写入方法，在同一隔离目录再次解压同一 ZIP；新目录使用唯一后缀并完整写入两个文件，证明提交失败后 owner/Worker 不被卡死，失败不伪装为成功。
+- 定向命令：`pnpm build:extension`；`pnpm --dir apps/extension exec playwright test e2e/archiveWriteFailure.spec.ts --reporter=list`（1/1 通过，3.2 秒，仅测试时长）。完整 MV3 回归随后 49/49 通过、0 skipped（2.0 分钟；bundled Chromium，不是目标 Chrome Stable 验收）。
+- 该证据证明当前契约允许提交失败保留部分输出并提供可解释错误，不证明原子提交、自动回滚、原生目录权限失败、配额失败或页面/进程终止恢复；RISK-007 保持开放。

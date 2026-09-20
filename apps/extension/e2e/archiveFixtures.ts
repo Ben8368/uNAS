@@ -55,6 +55,10 @@ function crc32(bytes: Buffer): number {
 
 const MiB = 1024 * 1024
 export const validZip = zip([{ path: 'nested/hello.txt' }], true)
+export const writeFailureZip = zip([
+  { path: 'nested/first.txt', text: 'first committed fixture\n' },
+  { path: 'nested/second.txt', text: 'second committed fixture\n' },
+], true)
 export const unsafeZips = [
   { id: 'fake-extension', data: Buffer.from('This is not a ZIP file.') },
   { id: 'invalid-magic-pair', data: Buffer.from([0x50, 0x4b, 0x03, 0x06, 0, 0, 0, 0]) },

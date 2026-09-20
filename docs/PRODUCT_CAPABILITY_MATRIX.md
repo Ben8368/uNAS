@@ -3,7 +3,7 @@
 > 审计日期：2026-09-20。源码基线：`c189b835726b5f9d10dee749faa5ce9562c16c35`，开局工作区干净。
 > 本文是该基线的审计快照，不替代 [CONTEXT](../CONTEXT.md) 的当前状态、[Roadmap](ROADMAP.md) 的 Gate、[Development Blueprint](DEVELOPMENT_BLUEPRINT.md) 的执行计划及各 benchmark 的原始证据。下述最小交付项均为建议，尚未实施或批准进入相应 Gate。
 
-> 后续实施注记：SP-04-A 的负向夹具/预检修复及 SP-04-B 的预提交取消/暂存清理由 [SP-04](../benchmarks/sp-04/README.md) 记录。下文 ZIP 行已同步这些已验证限定事实；Archive 模块 Gate 仍未关闭。
+> 后续实施注记：SP-04-A 的负向夹具/预检修复、SP-04-B 的预提交取消/暂存清理及 SP-04-C 的受控提交写入失败由 [SP-04](../benchmarks/sp-04/README.md) 记录。下文 ZIP 行已同步这些已验证限定事实；Archive 模块 Gate 仍未关闭。
 
 ## 1. 判定方法与结论总表
 
@@ -66,8 +66,8 @@
 | 生命周期 | prepare 期间取消会立即终止 Worker、断开回调并释放 owner 对暂存 Blob 的引用；Files 窗口卸载与 `pagehide` 请求同一取消。提交前清除 `activeExtraction`，提交阶段没有取消。没有 checkpoint、统一真实 Job 终态或恢复机制；浏览器标签/进程强制终止及提交期间关闭没有验收。App 按钮忙状态约束当前 UI，但 adapter 的单次锁只覆盖 prepare，不是完整提交互斥 |
 | 权限、数据流与安全 | 需要已授权目录及写入模式；`.zip` 后缀加前四字节 magic 初筛，再严格解析、路径检查和 CRC。拒绝加密、软链接、穿越、绝对/反斜杠/保留名路径、重复名和文件祖先冲突。Blob 暂存在内存，未落 OPFS；通过全部检查才选择新目录，不主动覆盖。写入失败保留部分输出并报错；不是原子提交或完整回滚 |
 | 限制与性能 | 输入 50 MiB、200 项、单文件展开 32 MiB、总展开 64 MiB、深度 12、路径段 120 字符、原始路径 2,048 字符；最多尝试 100 个输出目录名称。是代码拒绝阈值，不是测得的舒适性能。条目先 `getEntries()`，输出先生成 Blob 后核对大小；没有实测峰值内存、CPU/耗时 watchdog 或整体内存硬封顶证据 |
-| 验证等级 | 已实现未验证（模块 Gate 未过）。SP-04-A 已在 bundled Chromium/Windows/解包 MV3 验证损坏/CRC、路径、标记和声明资源超限的提交前拒绝；SP-04-B 已验证预提交取消、Files 窗口关闭、Worker 终止及失败后合法 ZIP 恢复。完整扩展 E2E 48/48、0 skipped；`pnpm verify` 已运行但本环境在 Vite 输出时未返回最终退出码，相关组成门禁均另行通过。仍缺 ZIP64、实际解码膨胀/峰值内存、原生目录写权限、浏览器标签/进程关闭、Worker 崩溃、提交失败/部分输出和目标 Chrome Stable 人工验收 |
-| 下一步最小交付 / 阻断 | 优先补隔离目录句柄的受控写入失败与输出残留证据，或独立设计实际浏览器关闭探针；两者均须保留 RISK-007。不得因 SP-04-A/B 或 zip.js 功能扩大格式范围或宣称通用 ZIP 可用 |
+| 验证等级 | 已实现未验证（模块 Gate 未过）。SP-04-A 已在 bundled Chromium/Windows/解包 MV3 验证损坏/CRC、路径、标记和声明资源超限的提交前拒绝；SP-04-B 已验证预提交取消、Files 窗口关闭、Worker 终止及失败后合法 ZIP 恢复；SP-04-C 已验证提交阶段第二文件写入失败、部分输出提示及后续唯一目录恢复。完整扩展 E2E 49/49、0 skipped；`pnpm verify` 与相关组成门禁需以当前基线重新记录。仍缺 ZIP64、实际解码膨胀/峰值内存、原生目录写权限、浏览器标签/进程关闭、Worker 崩溃、配额失败、原子提交/回滚和目标 Chrome Stable 人工验收 |
+| 下一步最小交付 / 阻断 | 优先独立设计实际浏览器标签/进程关闭探针或受控资源/配额压力证据；两者均须保留 RISK-007。不得因 SP-04-A/B/C 或 zip.js 功能扩大格式范围或宣称通用 ZIP 可用 |
 
 源码：[文件提交入口](../apps/extension/src/api/real/fileWorkspace.ts)、[prepare adapter](../apps/extension/src/api/real/zipExtraction.ts)、[Worker](../apps/extension/src/workers/archiveExtraction.worker.ts)、[zipSafety](../apps/extension/src/archive/zipSafety.ts)。证据：[SP-04](../benchmarks/sp-04/README.md)、[ZIP E2E](../apps/extension/e2e/archiveExtraction.spec.ts)、[安全单测](../apps/extension/src/archive/zipSafety.test.ts)。
 

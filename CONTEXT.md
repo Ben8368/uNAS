@@ -25,12 +25,12 @@
 
 ## 当前阻断与风险
 
-- G1 已由维护者确认验收：Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工走查与自动化证据已接受；关闭记录见 [2026-09 风险归档](docs/archive/risks/2026-09.md)。MV3 壳层和 File Workspace 边界已由 SP-01、SP-02 验收；[SP-04](benchmarks/sp-04/README.md) 已补 ZIP 负向预检与预提交取消/Files 窗口关闭证据，仍不关闭 RISK-007。
+- G1 已由维护者确认验收：Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工走查与自动化证据已接受；关闭记录见 [2026-09 风险归档](docs/archive/risks/2026-09.md)。MV3 壳层和 File Workspace 边界已由 SP-01、SP-02 验收；[SP-04](benchmarks/sp-04/README.md) 已补 ZIP 负向预检、预提交取消/Files 窗口关闭及受控提交写入失败证据，仍不关闭 RISK-007。
 - 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；本轮新增的真实外部服务、工具栏手势、资源许可和最终扩展 ID 尚未全部人工验收。Chrome Web Store 更新属于未来 Store Gate，不阻断当前本地解包插件。
 
 ## 最近验证
 
-- 2026-09-20：[SP-04-A/B 验证](benchmarks/sp-04/README.md)：负向夹具/预检修复，以及预提交取消、Files 窗口关闭和暂存清理；ZIP 单测 11/11、完整扩展 E2E 48/48（0 skipped）通过（bundled Chromium）。`pnpm verify` 已运行但命令桥未返回最终退出码，组成门禁另行通过；目标 Chrome 验收仍未运行，RISK-007 保持开放。
+- 2026-09-20：[SP-04-A/B/C 验证](benchmarks/sp-04/README.md)：负向夹具/预检修复、预提交取消/Files 窗口关闭/暂存清理，以及提交阶段受控写入失败与后续新目录恢复；ZIP 单测 11/11、完整扩展 E2E 49/49（0 skipped）通过（bundled Chromium）。`pnpm verify` 已通过；GitHub CI #33 的 `Verify demo` 已通过，但旧 run 的 `Browser regression` 失败，当前变更需以新 CI run 复核；目标 Chrome 验收仍未运行，RISK-007 保持开放。
 
 ## 按需入口
 
