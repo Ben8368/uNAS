@@ -7,6 +7,7 @@ import { inlineWorkspace } from 'unas-src/runtime/inlineWorkspace'
 const BrowserApp = lazy(() => import('unas-src/apps/BrowserApp').then((module) => ({ default: module.BrowserApp })))
 const DownloaderApp = lazy(async () => { await inlineWorkspace.connect(); return import('unas-src/apps/DownloaderApp').then((module) => ({ default: module.DownloaderApp })) })
 const FileManagerApp = lazy(async () => { await inlineWorkspace.connect(); return import('unas-src/apps/FileManagerApp').then((module) => ({ default: module.FileManagerApp })) })
+const MusicApp = lazy(async () => { await inlineWorkspace.connect(); return import('unas-src/apps/real/MusicApp').then((module) => ({ default: module.MusicApp })) })
 const SettingsApp = lazy(() => import('unas-src/apps/SettingsApp').then((module) => ({ default: module.SettingsApp })))
 const LogViewer = lazy(() => import('unas-src/LogViewer').then((module) => ({ default: module.LogViewer })))
 
@@ -24,6 +25,7 @@ export const appRegistry: RegisteredApp[] = [
   { id: 'browser', label: '添加 App', title: '添加 App', icon: APP_ICON_PATHS.browser, component: BrowserApp, status: 'beta' },
   { id: 'file-manager', label: '文件管理', title: '文件管理', icon: APP_ICON_PATHS.fileManager, component: FileManagerApp, status: 'stable' },
   { id: 'fetcher', label: '下载', title: '下载', icon: APP_ICON_PATHS.fetcher, component: DownloaderApp, status: 'stable' },
+  { id: 'music', label: '本地音乐', title: '本地音乐', icon: APP_ICON_PATHS.music, component: MusicApp, status: 'beta' },
   { id: 'settings', label: '设置', title: '设置', icon: APP_ICON_PATHS.settings, component: SettingsApp, status: 'beta', launcherVisible: false },
   { id: 'logs', label: '日志', title: '日志', icon: APP_ICON_PATHS.logs, component: LogViewer, status: 'hidden', launcherVisible: false },
 ]

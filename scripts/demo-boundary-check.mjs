@@ -2,12 +2,13 @@ import { readdir, readFile } from 'node:fs/promises'
 import { resolve, relative } from 'node:path'
 const root = resolve(import.meta.dirname, '..')
 const source = resolve(root, 'apps/extension/src')
+const realApps = resolve(source, 'apps/real')
 const failures = []
 async function visit(directory) {
   for (const item of await readdir(directory, { withFileTypes: true })) {
     const path = resolve(directory, item.name)
     if (item.isDirectory()) {
-      if (path !== resolve(source, 'api/real')) await visit(path)
+      if (path !== resolve(source, 'api/real') && path !== realApps) await visit(path)
       continue
     }
     if (!/\.tsx?$/.test(item.name) || /\.(test|spec)\.tsx?$/.test(item.name)) continue

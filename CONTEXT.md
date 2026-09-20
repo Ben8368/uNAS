@@ -25,8 +25,10 @@
 
 ## 当前阻断与风险
 
-- G1 已由维护者确认验收：Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工走查与自动化证据已接受；关闭记录见 [2026-09 风险归档](docs/archive/risks/2026-09.md)。MV3 壳层和 File Workspace 边界已由 SP-01、SP-02 验收；[SP-04](benchmarks/sp-04/README.md) 已补 ZIP 负向预检、预提交取消/Files 窗口关闭及受控提交写入失败证据，仍不关闭 RISK-007。
-- 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；本轮新增的真实外部服务、工具栏手势、资源许可和最终扩展 ID 尚未全部人工验收。Chrome Web Store 更新属于未来 Store Gate，不阻断当前本地解包插件。
+- G1 已由维护者确认验收；SP-04 仍开放 RISK-007，详见 [SP-04](benchmarks/sp-04/README.md)。
+- SP-09 已完成 KGM v3、NCM、QMC raw-key-footer 的 Worker/OPFS Beta App 验证；bundled Chromium 下载、取消和清理通过，`pnpm test:e2e` 为 51 passed。无右键/Intent、原文件覆盖或联网。
+- SP-09 仍开放 RISK-015：目标 Chrome、owner lease、页面关闭、峰值内存、KGM v5 KGG、QMC MMKV/`cex\0` 和真实夹具尚未完成。
+- 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；Chrome Web Store 更新属于未来 Store Gate。
 
 ## 最近验证
 

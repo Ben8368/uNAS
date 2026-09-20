@@ -99,7 +99,7 @@ ZIP、PDF、Media 不阻断 G2-Core；它们在进入各自集成前完成模块
 
 默认顺序：Archive ZIP → PDF → Media。
 
-Music encrypted-container 不继承 Media 的支持结论，单独使用 [Music Module Gate](#music-module-gate)。在该 Gate 通过前，Music 不进入真实 App、文件管理入口或产品能力承诺，但不阻断 SP-09 下的隔离算法、Worker、浏览器和输出探针。
+Music encrypted-container 不继承 Media 的支持结论，单独使用 [Music Module Gate](#music-module-gate)。SP-09 已允许已验证的 KGM v3、NCM 和 QMC raw-key-footer 进入仅限本地文件选择的 Beta Tool App；在 Gate 完整通过前，Music 不进入文件管理入口，也不作稳定产品能力承诺。
 
 每个模块自己的进入 Gate 至少要求：
 
@@ -116,8 +116,8 @@ Music encrypted-container 不继承 Media 的支持结论，单独使用 [Music 
 - 首批目标固定为 KGM、QMC、NCM；每个格式维护独立验收结论，KGM v3/v5、QMC 变体和 NCM 结构按实际探针结果拆分。一个格式完成验收即可单独申请产品集成，不要求其他格式先完成。
 - 每个格式必须有合法授权的固定夹具、magic/container 探测、Worker/浏览器证据、音频输出验收和失败清理证据；库声称支持的其他格式不自动纳入范围。
 - 浏览器 Worker 路线通过目标 Chrome 的 CSP、WASM、内存、取消、页面关闭和输出提交验证；不能以作者构建物或 bundled Chromium 代替。
-- 不联网获取封面、元数据、密钥或账号，不读取任意路径，不引入 Native Helper；KGM v5 外部数据库等额外资源必须先完成来源、许可和包体审查。
-- Music Module Gate 只负责产品集成决定：格式验收通过的格式才可注册 Tool App、接入文件关联或声明真实支持；未验证格式继续标记为计划/未验证，不得随首批目标清单写成支持。每个格式可单独进入 V1、降级为格式识别，或延后/不支持；本 Gate 不改变 Product 的 DRM 非目标。
+- 不联网获取封面、元数据、密钥或账号，不读取任意路径，不引入 Native Helper；KGM v5 外部数据库等额外资源必须先完成来源、许可和包体审查。允许的解密仅限用户明确有权处理的本地已下载容器。
+- Music Module Gate 只负责稳定产品集成决定：格式验收通过的格式才可进入稳定 Tool App、接入文件关联或声明真实支持；Beta Tool App 只能展示已验证的实验性本地路径，未验证格式继续标记为计划/未验证，不得随首批目标清单写成支持。每个格式可单独进入 V1、降级为格式识别，或延后/不支持；本 Gate 不改变在线 DRM、付费墙和站点授权绕过的非目标。
 
 **Gate G4 — V1 功能候选：**
 

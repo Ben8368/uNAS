@@ -208,7 +208,7 @@ Scenario 属于测试与演示资产，不是产品支持矩阵。
 - 输出：来源/许可证清单、算法能力矩阵、夹具 manifest 与 SHA-256、浏览器探针、资源阈值、不支持表，以及进入 [Music Module Gate](ROADMAP.md#music-module-gate) 的建议。
 - SP-09 是来源、探针证据与按格式验收的唯一记录；它允许先开展隔离算法、Worker、目标浏览器和输出探针，不要求 Music Module Gate 先通过。Gate 只决定已验收格式能否进入产品集成，新增证据继续回填本记录，不另建格式事实源。
 
-本探针当前状态是计划；本轮只完成了临时源码同步和静态构建物观察，不代表任何 KGM/QMC/NCM 能力已验证。
+当前证据已覆盖 MD-01/MD-02、KGM v3/NCM/QMC raw-key-footer 的隔离解密、浏览器 Worker/OPFS、取消/清理和 bundled Chromium Beta App；这不代表目标 Chrome Stable、KGM v5、QMC MMKV/`cex\0`、完整 FileRef/Task owner lease 或稳定产品能力已通过 Gate。细节唯一记录在 [SP-09](../benchmarks/sp-09/README.md)。
 
 ## 6. 探针记录格式
 
@@ -281,17 +281,17 @@ App/File/Task schemas
 
 ### MD-01～MD-09 Music 计划工作包
 
-MD-01～MD-08 是 SP-09 下的隔离验证工作包，可在不通过 Music Module Gate 的情况下启动；当前不开发 UI、Intent 或真实解密 adapter。MD-09 才是按格式进行的产品集成申请。若探针结果需要改变长期分层、公开契约、权限、数据流或技术栈，按 [GOVERNANCE](GOVERNANCE.md) 与 [ADR 目录](ADR/README.md) 评估并在需要时新增/替代 ADR；探针本身不自动创建架构决策。
+MD-01～MD-08 是 SP-09 下的隔离验证工作包，可在不通过 Music Module Gate 的情况下启动；当前已增加仅限已验证路径的 Beta Tool App，但尚未接入文件管理 Intent 或完整 FileRef/Task owner lease。MD-03～MD-09 可以在本地授权边界内实现和验证真实解密 adapter；稳定产品集成仍需按格式完成目标 Chrome、安全提交和 owner 生命周期证据。若探针结果需要改变长期分层、公开契约、权限、数据流或技术栈，按 [GOVERNANCE](GOVERNANCE.md) 与 [ADR 目录](ADR/README.md) 评估并在需要时新增/替代 ADR；探针本身不自动创建架构决策。
 
 1. **MD-01 来源与供应链锁定：** 固定 `um/cli` tag/SHA/checksum，完成根项目与 Go 依赖许可证清单，确认作者授权记录的可审计形式。
 2. **MD-02 格式识别：** 仅实现 magic/container 与资源预算探测，分别列出 KGM v3/v5、QMC 变体和 NCM 结构；未知或伪扩展名进入 `unsupported`。
-3. **MD-03 NCM 候选 Worker：** 在授权夹具上验证本地流式读取、输出签名、元数据边界、取消和清理；禁用远程封面/元数据请求。
-4. **MD-04 QMC 候选 Worker：** 先验证浏览器可用的密钥路径和 QMC 变体；macOS MMKV/文件路径依赖没有浏览器替代前保持不支持。
-5. **MD-05 KGM 候选 Worker：** 先分别验证 v3；v5 的 KGG 数据库来源、许可、包体、更新和内存未通过前不打包、不承诺。
+3. **MD-03 NCM 候选 Worker：** 已在本地样本上验证浏览器流式读取、输出签名、元数据边界、取消和清理；继续保持远程封面/元数据请求禁用。
+4. **MD-04 QMC 候选 Worker：** 已验证 raw-key-footer 路径和一份浏览器输出；QMC `cex\0`/外部 MMKV、无 marker static 分支和其他变体保持不支持。
+5. **MD-05 KGM 候选 Worker：** KGM v3 已验证浏览器 Worker 路径；v5 的 KGG 数据库来源、许可、包体、更新和内存未通过前不打包、不承诺。
 6. **MD-06 按格式独立验收：** 在同一 SP-09 记录中为 KGM、QMC、NCM 分别维护验收条目；KGM v3/v5、QMC 变体和 NCM 结构按证据拆分。每条至少覆盖授权夹具 manifest/SHA-256、真实格式探测、Worker/目标 Chrome、任务状态、资源上限、输出验收、取消/页面关闭和失败清理。结论只能是 `已验证`、`降级`、`延后` 或 `不支持`；某格式通过不替其他格式背书。
 7. **MD-07 FileRef 与 Workspace owner：** 为真实音乐任务生成只表达稳定事实的不透明 `FileRef`，绑定唯一 Workspace owner 和任务 lease；FSA handle、虚拟路径、本机绝对路径和大 Blob 只留在 owner adapter，不进入 UI、跨上下文消息、持久化或日志。owner 丢失、过期 ref 和权限失效必须进入结构化失败/重新授权状态。
 8. **MD-08 授权读取、输出位置与安全提交：** 仅读取用户明确授权的本地文件，并在任务创建时记录输入只读摘要；输出位置必须是用户明确选择且已获写入授权的目录，不默认覆盖原文件。提交前检查同级文件名冲突并生成可解释的唯一名称；输出先写入 owner 控制的暂存位置，完成音频/编码/元数据/封面验收后再提交，提交失败或取消时清理未提交输出和临时资源，不把部分写入标为成功。
-9. **MD-09 取消与产品集成：** 取消覆盖读取、解密、编码、验证和提交前各阶段，并验证 Worker 终止、owner/页面关闭和清理；只有对应格式的独立验收、目标 Chrome 证据和安全提交证据齐全后，才允许该格式注册 Tool App、接入文件管理 OpenIntent，并替换对应 mock scenario。其他未验收格式保持未验证，不得声明支持。
+9. **MD-09 取消与产品集成：** 已验证独立 Worker 的读取/解密取消、OPFS 暂存清理和 bundled Chromium Beta App 下载路径；仍需补目标 Chrome、页面关闭专项、完整 owner/Task lease、输出安全提交和峰值内存证据后，才能把对应格式提升为稳定 Tool App 能力或接入文件管理 OpenIntent。其他未验收格式保持未验证，不得声明支持。
 
 ### 音乐输出验收基线
 

@@ -63,14 +63,14 @@
 - **问题：** 仓库许可证、WASM/codec、字体、图标、壁纸和夹具来源尚未批准。
 - **关闭证据：** 根 LICENSE、第三方清单、素材 provenance、哈希与发布审查。
 
-### RISK-015（P0）：Music encrypted-container 来源与浏览器边界尚未验证
+### RISK-015（P0）：Music encrypted-container 来源与稳定产品边界尚未验证
 
 - **阻断 Gate：** Music Module Gate；不阻断 G2-Core、G3 或其他已规划模块。
-- **问题：** `um/cli` `v0.2.12` 根项目为 MIT，但若复用上游 `go-mmkv`，其许可证/再分发授权仍未确认；WASM、KGM v5 的 KGG 数据库、构建物 provenance 和授权夹具也仍未完成逐项审查；Module Proxy 的 `@main` 快照与网页当前 `main` 提交不一致；QMC 还存在 MMKV/文件路径分支，不能直接当作浏览器能力。
-- **当前事实：** 维护者已说明获得作者授权；源码已通过 Go Module Proxy 临时同步并固定 tag/SHA/checksum；uNAS 已接受 ADR-0010，不复制或继续依赖上游 `go-mmkv`，未来仅允许自有 clean-room 兼容实现；维护者提供的 `um-web.extension.v1.10.8` 仅完成静态观察，未加载、未执行、未进入 Git。
-- **控制：** 不提交上游源代码/构建物，不运行 Go CLI，不引入 Native Helper；所有真实测试只用用户明确有权处理的固定夹具；uNAS 路径禁止远程封面、元数据、密钥、账号和在线链接；自有兼容实现未完成许可证、来源和独立审查前不进入产品或公开分发；依赖/资源许可证和来源未清前不公开分发。
+- **问题：** 允许用户明确有权处理的本地 KGM/QMC/NCM 容器解密；KGM v3、NCM、QMC raw-key-footer 已有自有 adapter、Worker/OPFS 和 bundled Chromium Beta App 证据，但目标 Chrome、完整 FileRef/Task owner lease、峰值内存、KGM v5 的 KGG 数据库、构建物 provenance 和可再分发授权夹具仍未完成逐项审查；若复用上游 `go-mmkv`，其许可证/再分发授权仍未确认；QMC 仍存在 MMKV/文件路径分支，不能直接当作浏览器能力。
+- **当前事实：** 维护者已说明获得作者授权；源码已通过 Go Module Proxy 临时同步并固定 tag/SHA/checksum；uNAS 已接受 ADR-0010，不复制或继续依赖上游 `go-mmkv`，未来仅允许自有 clean-room 兼容实现；本地授权解密边界已由 ADR-0011 固化；维护者提供的 `um-web.extension.v1.10.8` 仅完成静态观察，未加载、未执行、未进入 Git。
+- **控制：** 不提交上游源代码/构建物，不运行 Go CLI，不引入 Native Helper；所有真实测试只用用户明确有权处理的固定夹具；禁止远程封面、元数据、密钥、账号、在线 DRM 或站点授权路径；Beta App 仅暴露已验证的本地文件选择路径；自有兼容实现、解密 adapter 和资源未完成许可证、来源和独立审查前不进入稳定产品或公开分发。
 - **关闭证据：** [SP-09](../benchmarks/sp-09/README.md) 补齐依赖许可证清单、KGM/QMC/NCM 夹具 manifest 与 SHA-256、Worker/WASM/CSP/内存/取消/清理结果、不支持表，并由维护者决定进入、降级或延后 Music Module Gate。
-- **降级：** 只提供格式识别与能力提示；无法证明浏览器安全、正确或可再分发时，不支持真实处理。
+- **降级：** 已验证格式可在 bundled Chromium Beta App 中提供本地实验性处理；目标 Chrome、稳定 Task/FileRef 接入、KGM v5、QMC MMKV/`cex\0` 和无 marker static 分支继续只提供格式识别/能力提示，不支持真实处理。
 
 ### RISK-010（P1）：前端先行导致真实能力返工
 

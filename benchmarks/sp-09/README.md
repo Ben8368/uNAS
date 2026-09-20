@@ -2,9 +2,9 @@
 
 ## 本轮范围
 
-本轮基于 `main` 最新计划，仅执行 MD-01（来源与供应链锁定）和 MD-02（格式识别探针）。没有注册正式 Tool App，没有修改文件管理右键菜单，没有引入第三方源码、WASM、KGG 数据库、Native Helper 或远程资源。
+本轮基于 `main` 最新计划完成 MD-01（来源与供应链锁定）和 MD-02（格式识别探针），并补做隔离的本地解密 smoke test、Worker/OPFS 浏览器验证和 Beta Tool App 接入。已注册 `music` Beta Tool App；没有修改文件管理右键菜单，没有引入第三方源码、WASM、KGG 数据库、Native Helper 或远程资源。
 
-探针的 `已验证` 只表示“在固定输入上识别出结构并通过预算检查”，不表示已验证解密、音频输出、Worker 生命周期、目标 Chrome 或产品支持。
+探针的 `已验证` 只表示“在固定输入上识别出结构并通过预算检查”。本节的浏览器结果表示独立 Worker 在 bundled Chromium 中完成了解密、输出校验、取消和 OPFS 清理；不外推为目标 Chrome Stable、FileRef/Task 完整契约或稳定 Music Module Gate 已通过。
 
 ## MD-01 来源与供应链
 
@@ -67,24 +67,129 @@ node scripts/sp09-probe.mjs --module-dir C:\Users\ben.luo\go\pkg\mod\unlock-musi
 
 | 格式/分支 | 结果 | 证据边界 |
 | --- | --- | --- |
-| KGM v3 | 已验证（结构识别） | 未验证解密、输出、Worker/Chrome；当前不支持产品处理 |
+| KGM v3 | 已验证（结构识别 + Node/Worker 单一本地样本解密） | bundled Chromium 中已验证 Worker、OPFS 暂存、下载和清理；目标 Chrome Stable、多样本兼容性仍未验证 |
 | KGM v5 | 已验证（结构识别） | KGG 数据库缺失且未审计；当前不支持产品处理 |
 | KGM 超预算 offset | 不支持 | 64-byte header 在声明 offset 超过 128 MiB 时拒绝 |
-| NCM 容器结构 | 已验证（结构识别） | 未验证 AES、metadata、音频输出、取消/清理；当前不支持产品处理 |
+| NCM 容器结构 | 已验证（结构识别 + Node/Worker 单一本地样本解密） | 输出 MP3 已通过 `ffprobe`/`ffmpeg`；bundled Chromium 中已验证 Worker、OPFS 暂存、下载和清理；目标 Chrome Stable仍未验证 |
 | NCM section 超预算 | 不支持 | 16 MiB section 上限先拒绝 |
 | QMC QTag | 已验证（结构识别） | 未验证解密和音频输出；不代表所有 QTag 文件支持 |
-| QMC raw-key footer | 已验证（结构识别） | 仅覆盖上游四个算法向量的 footer 结构；不代表产品支持 |
+| QMC raw-key footer | 已验证（结构识别 + 26 份本地 `.mgg` 解密 smoke test） | 26/26 输出为 OGG/Vorbis；其中一份已在 bundled Chromium 中验证 Worker、OPFS 暂存、下载和清理；目标 Chrome Stable、多样本浏览器兼容性仍未验证 |
 | QMC static/no marker | 不支持 | 不依赖扩展名猜测；需要后续有界、可复核的识别路径 |
 | 未知/伪扩展名 | 不支持 | 未识别 magic/container |
 
 ## 已验证、未验证与不支持汇总
 
-**已验证：** MD-01 的根来源/tag/SHA/checksum、根 MIT 许可证、可取得依赖的静态许可证清单、QMC 上游夹具来源与哈希；MD-02 对 KGM v3/v5、NCM 结构、QMC QTag/raw-key footer 的固定输入识别和预算拒绝。
+**已验证：** MD-01 的根来源/tag/SHA/checksum、根 MIT 许可证、可取得依赖的静态许可证清单、QMC 上游夹具来源与哈希；MD-02 对 KGM v3/v5、NCM 结构、QMC QTag/raw-key footer 的固定输入识别和预算拒绝；一个本地 KGM v3 样本经自有脚本和浏览器 Worker 解密后通过 FLAC magic、`ffprobe` 和完整 `ffmpeg` 解码；一个本地 NCM 样本经自有脚本和浏览器 Worker 解密后通过 MP3 magic、`ffprobe` 和完整 `ffmpeg` 解码；26 个本地 QMC `.mgg` 样本全部经自有脚本解密并通过 OGG/Vorbis `ffprobe` 和完整 `ffmpeg` 解码；`music` Beta Tool App 在 bundled Chromium 中完成三格式各一份下载、取消路径和 OPFS 暂存清理验证。Worker 使用 1 MiB 分块、ACK 背压和 OPFS 暂存，输入/输出上限 128 MiB，单 section 上限 16 MiB，QMC footer 上限 64 KiB。
 
-**未验证：** 上游 `unlock-music.dev/mmkv` 许可证与再分发授权（已退出 uNAS 产品依赖）；uNAS 自有 MMKV 兼容层；完整 Go module graph；KGM v5 KGG 实际数据库 provenance/许可证/schema/打包；合法授权的真实 KGM/NCM 正向音频夹具；Worker/WASM/CSP/内存/取消/页面关闭/清理；目标 Chrome；输出音频 hash。
+**未验证：** 上游 `unlock-music.dev/mmkv` 许可证与再分发授权（已退出 uNAS 产品依赖）；uNAS 自有 MMKV 兼容层；完整 Go module graph；KGM v5 KGG 实际数据库 provenance/许可证/schema/打包；可纳入仓库再分发的真实音频夹具；目标 Chrome Stable 的本功能复验；音乐 App 的完整 FileRef/Task/owner lease 接入；页面关闭后的音乐专项 E2E；峰值 JS/Worker/Chrome 进程内存实测和多样本跨版本兼容性。
 
-**不支持：** 正式 Tool App、文件管理关联、右键菜单、真实解密、在线封面/元数据/密钥/账号、Native Helper、DRM 绕过，以及没有 extension-independent marker 的 QMC static 分支。
+**不支持：** 文件管理关联、右键菜单、在线封面/元数据/密钥/账号、Native Helper、在线 DRM/付费墙/站点授权绕过、KGM v5 实际解密、QMC `cex\0`/外部 MMKV 分支，以及没有 extension-independent marker 的 QMC static 分支。Beta App 只暴露已验证的 KGM v3、NCM 和 QMC raw-key-footer 路径。
 
 ## 后续阻断项
 
-上游 `mmkv` 许可证阻断已通过“退出上游依赖、改走自有 clean-room 实现”降级，但自有兼容层尚未实现和单独审查；KGM v5 KGG 实际资源审计仍阻断供应链锁定，本轮只完成依赖路径与包体边界的静态审计启动。没有合法数据库样本，不能完成实际资源审计；真实 KGM/NCM 授权夹具缺失也阻断对应正向输出验证。RISK-015 保持开放。MD-03～MD-09 未启动，Music Module Gate 不变。
+上游 `mmkv` 许可证阻断已通过“退出上游依赖、改走自有 clean-room 实现”降级，但自有兼容层尚未实现和单独审查；KGM v5 KGG 实际资源审计仍阻断供应链锁定。KGM v3、NCM 和 QMC raw-key-footer 已完成隔离脚本、Worker、OPFS 暂存、取消/清理和 bundled Chromium Beta App 验收；音乐专用 FileRef/Task/owner lease、目标 Chrome Stable、峰值内存实测和可再分发真实音频夹具仍未完成。`VipSongsDownload` 只读盘点得到 26 个 `.mgg`，均为 raw-key-footer；未发现 KGM/VPR。RISK-015 保持开放，Music Module Gate 仍未整体通过。
+
+## Worker、浏览器与产品集成验证
+
+实现入口：
+
+- `apps/extension/src/workers/musicDecrypt.worker.ts`：独立 Worker，按 1 MiB 读取和发送，主线程 ACK 后继续，支持取消和结构化失败。
+- `apps/extension/src/api/real/musicDecryption.ts`：能力探测、OPFS staged output、顺序写入、取消超时兜底和幂等清理。
+- `apps/extension/src/apps/MusicApp.tsx`：`executionSource: real` 的 Beta Tool App；只接受用户通过文件选择器选取的本地文件，不读任意路径、不覆盖原文件、不联网。
+
+固定资源预算：输入/输出各 128 MiB、单 section 16 MiB、QMC footer 64 KiB、Worker 分块 1 MiB。输出先写入 OPFS `unas-music-*.stage`，下载成功或取消/失败后清理暂存项。
+
+实际命令与结果：
+
+```text
+pnpm --dir apps/extension exec playwright test e2e/musicDecrypt.spec.ts
+2 passed
+pnpm test:e2e
+51 passed
+```
+
+三项浏览器样本分别覆盖本地 KGM v3、NCM 和 QMC raw-key-footer `.mgg`；每项都在真实打包的 MV3 bundled Chromium 中完成解密、下载和 OPFS 清理断言，另有取消测试。该证据不代表目标 Chrome Stable 已复验，也不代表 KGM v5、QMC MMKV/`cex\0` 或静态无 marker 分支可用。
+
+目标 Chrome 尝试：
+
+```text
+$env:UNAS_E2E_BROWSER = 'chrome'
+pnpm --dir apps/extension exec playwright test e2e/musicDecrypt.spec.ts
+```
+
+结果：无头和 headed 两种模式均在 `fixtures.ts` 等待 `serviceworker` 超时，两个用例都未进入 Workspace 或音乐解密逻辑；因此目标 Chrome 证据仍为**阻断/未验证**，不是解密失败结论。需在能加载解包 MV3 Service Worker 的目标 Chrome 环境中重新复验。
+
+## KGM v3 本地解密 smoke test
+
+脚本：[scripts/sp09-kgm-v3-decrypt.mjs](../../scripts/sp09-kgm-v3-decrypt.mjs)。脚本只读取用户指定的本地输入，输出到系统临时目录，不覆盖原文件、不上传、不把媒体带入 Git。
+
+| 项目 | 结果 |
+| --- | --- |
+| 输入 | 用户本地 KGM v3 样本（不记录文件名或本机路径） |
+| 输入 bytes / SHA-256 | `23,776,931` / `fa6adc4594c994b61933dcb57179c363f007cafa79729f8ee4f207262e99fd8c` |
+| header | `audioOffset=1024`，`cryptoVersion=3`，`cryptoSlot=1` |
+| 输出 bytes / SHA-256 | `23,775,907` / `2a27f0a9d9480bc5643b6453591138c285f86a37a118cdd6163dab7ac31e8f53` |
+| 输出验证 | `fLaC` magic；`ffprobe` 识别 FLAC、44.1 kHz、2 channels、222.351406 s；`ffmpeg -v error -f null` 完整解码通过 |
+| 结论 | **已验证：单一本地样本的 KGM v3 解密输出可被独立 FLAC 工具读取；不等于 Worker/Chrome/产品支持** |
+
+## NCM 本地解密 smoke test
+
+脚本：[scripts/sp09-ncm-decrypt.mjs](../../scripts/sp09-ncm-decrypt.mjs)。脚本实现 NCM 音频 key、metadata、音频区段的本地解码；不访问 metadata 中的远程封面 URL，不覆盖原文件，输出只写系统临时目录。
+
+| 项目 | 结果 |
+| --- | --- |
+| 输入 | 用户本地 NCM v1 样本（未复制进仓库） |
+| 输入 bytes / SHA-256 | `8,858,233` / `a22f710a16177e6b366ea08809cbcce20cecf575818789753fc840ed19f1bcf3` |
+| NCM 解析 | `audioOffset=142472`，`metadataType=music`，metadata format=`mp3` |
+| 输出 bytes / SHA-256 | `8,715,761` / `9b3a588ebfb42029c606a94b0dbba95c76e3562b1634b02bb06ac95f99b91638` |
+| 输出验证 | `ID3` magic；`ffprobe` 识别 MP3、44.1 kHz、2 channels、320 kbps、217.800000 s；`ffmpeg -v error -f null` 完整解码通过 |
+| 结论 | **已验证：单一本地样本的 NCM 解密输出可被独立 MP3 工具读取；不等于 Worker/Chrome/产品支持** |
+
+复现命令：
+
+```text
+node scripts/sp09-ncm-decrypt.mjs --input <local-ncm-file> --output-dir <temp-output-dir> --json
+```
+
+## QMC `.mgg` 本地解密 smoke test
+
+脚本：[scripts/sp09-qmc-decrypt.mjs](../../scripts/sp09-qmc-decrypt.mjs)。本轮针对用户本地 `VipSongsDownload` 目录中已识别为 QMC raw-key-footer 的 `.mgg` 文件，落地了 raw-key footer、V1/V2 key derive、Map cipher 和 RC4 cipher；不读取外部 MMKV、不联网、不覆盖原文件，输出只写系统临时目录。
+
+批次结果：26/26 成功解密；25 个使用 RC4，1 个使用 Map；26/26 输出识别为 OGG/Vorbis，26/26 通过 `ffprobe`，26/26 通过 `ffmpeg -v error -f null` 完整解码。以下记录全部输入和输出 SHA-256；文件名仅作本地样本映射，不代表仓库夹具或再分发授权。
+
+| 本地样本 | 输入 bytes | 输入 SHA-256 | cipher | 输出 bytes | 输出 SHA-256 |
+| --- | ---: | --- | --- | ---: | --- |
+| `5ive _ Queen - We Will Rock You (Radio Edit).mgg` | 2,183,640 | `9cc0bfaafbff93b522e8eff2133c33411889e50c9349b8f5e7f610ff453e094c` | RC4 | 2,182,627 | `e0c296f08a6668a6829eb0b11ad22a2c04d3bc102f46248b064495076b156d39` |
+| `ARI HICKS - Kiss Me, Kill Me.mgg` | 2,230,511 | `21322b1d3f6f32b56e46c7d9efffc88fcbb94797b75c1ff11fe8317c784a7c3e` | RC4 | 2,229,498 | `57a5dccc3e8366e56a6f08a09fffaf0cb07945bb5af5e4e8cc13b53a0fb60be4` |
+| `Bemax - Gambare Gambare Senpai.mgg` | 1,521,068 | `fc03c9bc02b5e0cf23c7af9430323b440e2286fad10e8c44e1ceb09d20035078` | RC4 | 1,520,055 | `3651a9a431b2d30aff0fc97474d6ec7f9e96c03c8dee13a196227cb3440826e1` |
+| `D1ofaquavibe - Monkeybiz.mgg` | 2,982,448 | `3a0c5085466b5d5e44f8658a09e2fbe23ccba466103a2f089a054d0c3432c56d` | RC4 | 2,981,435 | `8596c7735fc44782f0f8db275185dab7b7faf703da5fda5909187a2209e67dcd` |
+| `DIOR _ Samo _ Chicagoo - Положение (Chicagoo Remix).mgg` | 1,821,836 | `87d6c3b5c71acad0a5be0f66bac423c0085f5eac0fd48226011b29c8469f7366` | RC4 | 1,820,823 | `54da4d7bed45b0e6399f8b4f11176dc797d449982ddc6cc6a689f565dc7efc10` |
+| `Dxrk ダーク - RAVE.mgg` | 2,120,973 | `1cf38161f098f5e675ceade4142328e720af752af56d9d638beab08ae1c0d24d` | RC4 | 2,119,960 | `66628a9db895a20f8e81d7a6df6721af2798f832187e2aa7b30904df1d0a47b5` |
+| `Eternxlkz - Montagem Nada Tropica.mgg` | 1,386,973 | `832813d6be2fe0bf57e9d904412a3e5525eb60c6784e85e6f6c5a864f0b82a9b` | RC4 | 1,385,960 | `664e5aad399851db5e918a3ee40a841f73ca563e0076f278b79f15ae4273bfda` |
+| `F_O_O_L - Criminals.mgg` | 3,095,152 | `1f2671ee135be84dd3b5341ae0a30c51c7d9fafcc87afe12d9436e1ac04b02bd` | RC4 | 3,094,139 | `19c04098c3a145b21f6e37e206d35c65958108531e7f29aabf1b79273911382e` |
+| `Fatrik _ L1NO - 窒 Suffocating.mgg` | 1,587,972 | `6221917964c45241fa14bc171b15964ec42716e4dd7053ee3ae30f79af749535` | RC4 | 1,586,959 | `f609ee28e3498f68e4554b504e65a90a49c9b626f37c2c33c9d3280f5ad40720` |
+| `Flipped - Dark Blue.mgg` | 2,288,967 | `a1c3843cf830f16ec2a4667ba6a10ff26872f7cf0dc16190042696718a59d2f9` | RC4 | 2,287,954 | `e96b64129f15a3d792b72f45001c50ed51cf7bd78ba3d363fd6298b18c843779` |
+| `GkTz1k - 出征.mgg` | 660,822 | `9c249237d0a770daf65ad56ac333b3e309497b10d3bfe2a78868aefe5034ebb8` | RC4 | 659,809 | `a67ead6ea6ab72462b8d70145ad8a618384b7003f014c1ceb74a1a219de3d62c` |
+| `Glichery - Heavenly Key (Explicit).mgg` | 1,509,108 | `e0bb6ab1cccc68710dc1ea1d45665df83f02ae8ae704eb7fe8b747d9a7646a89` | RC4 | 1,508,095 | `a5315d3667f8dfc546b99ab47ab1c9f65648d6236b74d9efb7bf5ce2a00172d0` |
+| `Kenny Loggins - Danger Zone (From _Top Gun_ Original Soundtrack).mgg` | 2,482,411 | `a3bb389c50b9074325142d084b01d9490b03f825b383d70642bed09835ec0d17` | Map | 2,481,858 | `dd09dba4808cade935969c33bf42608876be88cef4e839bf788c3f955109c8a6` |
+| `Lunak - UwU Funk.mgg` | 1,593,419 | `47707f1f1b9f61623d01e7e87eff69147796aecb9d3c4a2cd5cdb1690a57492e` | RC4 | 1,592,406 | `e92bbd679478ef0d13b84ad43137b950c8d0825ea4f162eaebe5c7b76ef8b845` |
+| `Michael Calfan _ INNA - Call Me Now.mgg` | 1,746,891 | `efa860022aeca40e5e60de8aa42198c7111d8467c241133ba15d846092c68a8d` | RC4 | 1,745,878 | `3de1ddf55829b67daea491a7440bc7ca66c703d78eeb87188d77ffd0433ef299` |
+| `Mike Posner - Cooler Than Me (Single Mix).mgg` | 2,506,824 | `4945d670e418a4db7405dc407b86e38cefd4bd83652d818b9d9425cf96d3501c` | RC4 | 2,505,811 | `1aa4bf1f1d1fffa285faf1365d2740fd50130863d5b98de86d836af4909f6b1a` |
+| `Moondeity _ Eduard Vodovozik - NEON BLADE (Explicit).mgg` | 3,083,633 | `4f993895545327b0f896e56236597b0ad2665d752d2984baf4a91acbec86a5f2` | RC4 | 3,082,620 | `78a43dd4b1060a9e79a2d6c2a813f98d638690e64c21a1426bc6a5ac71f6fbd8` |
+| `MXZI - Corazón Fugaz.mgg` | 1,114,639 | `a38f9e9b9f799bf7a9d5ed255eb36de41da05e15bf100eb6cfafaafcba1dfb38` | RC4 | 1,113,626 | `447277751f980bcd393038e6f39ec4f9c13429aaf7fbb433e53c8b0fae9e5802` |
+| `Oliver Koletzki _ HVOB - Bones.mgg` | 3,528,916 | `945111ad082322334df71012db43473ea3e61e87df958eb556cd29aa79fddae0` | RC4 | 3,527,903 | `4ab0a47e04318ff54e12145ae1bed36e407a954752d5309ab74400dec70b99a1` |
+| `Queen - We Will Rock You (Remastered 2011).mgg` | 1,443,000 | `da64f0495246be90898ab0eed1463c73b2c1c4dd774dd45042a4096d9763dfa5` | RC4 | 1,441,987 | `f8670ea1b4e990e221a1c13fc83eed1d9b44860760a23b93e4ade73163ada26a` |
+| `Sea of Thieves - Bosun Bill.mgg` | 1,590,749 | `5f64bf7d989892ee8c7a3258aa9335f2709acf93a3720254a2af93f17949a139` | RC4 | 1,589,736 | `dee14091c3158d738132824e243c3526663cb319561a94a9bc5013b6ed71798c` |
+| `Selena Gomez - Hands To Myself.mgg` | 2,452,485 | `20fbf453e0ec596b983d6ad0b11931ad61c95e2fcae5f03d1068d2476e3826dd` | RC4 | 2,451,472 | `67e66b04ebc0f58eeb7ac631e2013113f6111ca7dca2401136c58ad55dd12344` |
+| `The Tech Thieves - Fake.mgg` | 1,658,196 | `393235d36cf092642656a390161a85ef429d3c46b188833f752a3d1b91e4fae8` | RC4 | 1,657,183 | `39236b6707d2f0d90f25b360116c2bf50013943071980d24e0155910bf3473ff` |
+| `TheFatRat - Unity.mgg` | 2,764,451 | `60b2f31f7676670865b172f5c2c5bf282101db21056d19cce1c335930ec72575` | RC4 | 2,763,438 | `7ff3bb54b31193b8ffe53fc5e76690b29d023f2f9b4ef1886b76842ef2a2b2cf` |
+| `Tove Lo - Talking Body.mgg` | 2,798,060 | `3fc0bd088e251dbbad93f9a17d085e0315ff974329d857dd29445c3acb4a6911` | RC4 | 2,797,047 | `dff5d14e500904e02777fb1986f3e1cbaa5105e9a3fb71c533bf9e979866fd9f` |
+| `Wham! - Last Christmas (Single Version).mgg` | 2,785,758 | `d45d936df91a4e90506abff83a0987f5fb3a573a97b1b0b6cb2cfdb1f56d3c1a` | RC4 | 2,784,745 | `e466d3fbff106202442bcbf7eff56efd0874a643a8181a90738d89759fd531d7` |
+
+复现命令：
+
+```text
+node scripts/sp09-qmc-decrypt.mjs --input <local-mgg-file> --output-dir <temp-output-dir> --json
+```
+
+QMC 本地 batch 结论只覆盖本批 raw-key-footer `.mgg`；`cex\0`/外部 MMKV、无 marker 的 static 分支、其他后缀和 KGM v5 KGG 仍不宣称支持。

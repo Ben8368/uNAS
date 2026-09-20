@@ -27,5 +27,6 @@ ADR 记录影响长期维护的决定及理由。Roadmap 说明“按什么阶�
 | [0008](0008-private-preview-modern-chrome.md) | 已接受 | 私有预览追随 Chrome Stable，原生 API 优先与主动移除旧版兼容负担 |
 | [0009](0009-unipass-capability-integration.md) | 已接受 | UniPass AdBlock、WebDAV Vault、Legacy 边界与原版页面浮层并入 uNAS 的单一 MV3 构建 |
 | [0010](0010-clean-room-mmkv-replacement.md) | 已接受 | 不再依赖无许可证的上游 `go-mmkv`；如需 MMKV 能力，采用自有 clean-room 实现 |
+| [0011](0011-local-authorized-music-processing.md) | 已接受 | 允许用户明确有权处理的本地 KGM/QMC/NCM 容器解密；禁止在线 DRM、账号、密钥和内容分发路径 |
 
 “已接受”表示维护者接受的方案基线，依据见各 ADR；不等于对应源码已实现或 Gate 已通过。若后续阶段改变边界，须以新 ADR 替代。0002 只保留历史，不再约束实现。

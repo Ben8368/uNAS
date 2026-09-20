@@ -1,0 +1,37 @@
+.music-app {
+  height: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 24px;
+  color: var(--window-text, #edf3ff);
+  background: var(--window-surface-content, #192538);
+}
+.music-app--blocked { display: grid; place-content: center; text-align: center; }
+.music-app__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; max-width: 900px; }
+.music-app__header h2 { margin: 0 0 8px; font-size: 24px; }
+.music-app__header p { max-width: 720px; margin: 0; color: var(--window-text-muted, #b8c4d8); line-height: 1.6; }
+.music-app__eyebrow { margin-bottom: 6px !important; color: #78e1bc !important; font-size: 11px; letter-spacing: .12em; }
+.music-app__badge { flex: none; border: 1px solid #a86b6b; border-radius: 999px; padding: 5px 10px; color: #ffcaca; font-size: 11px; }
+.music-app__badge--ready { border-color: #4b9e82; color: #9ef3ce; }
+.music-app__limits { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0; color: var(--window-text-muted, #b8c4d8); font-size: 12px; }
+.music-app__limits span { padding: 6px 9px; border: 1px solid var(--window-border, #536886); border-radius: 7px; }
+.music-app__controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.music-app__picker { display: inline-flex; align-items: center; min-height: 40px; padding: 0 12px; border: 1px solid #7185a1; border-radius: 7px; cursor: pointer; background: var(--window-surface-control, #283c59); }
+.music-app__picker input { width: 1px; height: 1px; overflow: hidden; opacity: 0; position: absolute; }
+.music-app__file, .music-app__notice, .music-app__error { max-width: 900px; margin: 18px 0 0; padding: 12px 14px; border-radius: 8px; overflow-wrap: anywhere; }
+.music-app__file { display: flex; justify-content: space-between; gap: 12px; background: rgba(255,255,255,.05); color: var(--window-text-muted, #b8c4d8); }
+.music-app__file strong { color: var(--window-text, #edf3ff); }
+.music-app__notice { border: 1px solid #3d7181; color: #c8f1fb; }
+.music-app__error { border: 1px solid #a86b6b; color: #ffd2d2; }
+.music-app__progress { max-width: 900px; margin-top: 18px; padding: 2px; border: 1px solid var(--window-border, #536886); border-radius: 8px; }
+.music-app__progress span { display: block; height: 8px; border-radius: 5px; background: #78e1bc; transition: width .15s ease; }
+.music-app__progress small { display: block; padding: 8px; color: var(--window-text-muted, #b8c4d8); }
+.music-app__result { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; max-width: 900px; margin-top: 18px; padding: 14px; border: 1px solid #4b9e82; border-radius: 8px; }
+.music-app__result div { display: grid; gap: 4px; margin-right: auto; }
+.music-app__result span { color: var(--window-text-muted, #b8c4d8); font-size: 12px; }
+@media (max-width: 700px) {
+  .music-app { padding: 16px; }
+  .music-app__header { display: block; }
+  .music-app__badge { display: inline-block; margin-top: 12px; }
+  .music-app__file { display: grid; }
+}
