@@ -41,18 +41,20 @@ export function validateArchiveEntries(entries: readonly SafeArchiveEntry[]): Sa
     if (!Number.isSafeInteger(entry.size) || entry.size < 0) throw new Error('ZIP_INVALID_SIZE')
     if (!entry.directory && entry.size > ZIP_EXTRACTION_LIMITS.maxEntryBytes) throw new Error('ZIP_ENTRY_TOO_LARGE')
     const path = safeArchivePath(entry.path, entry.directory)
-    if (paths.has(path)) throw new Error('ZIP_DUPLICATE_ENTRY')
-    paths.add(path)
+    // Reject aliases conservatively before touching case-insensitive targets.
+    const identity = path.normalize('NFC').toLowerCase()
+    if (paths.has(identity)) throw new Error('ZIP_DUPLICATE_ENTRY')
+    paths.add(identity)
     if (!entry.directory) {
       outputBytes += entry.size
       if (!Number.isSafeInteger(outputBytes) || outputBytes > ZIP_EXTRACTION_LIMITS.maxOutputBytes) throw new Error('ZIP_OUTPUT_TOO_LARGE')
-      filePaths.add(path)
+      filePaths.add(identity)
     }
     return { ...entry, path }
   })
 
-  for (const filePath of filePaths) {
-    const segments = filePath.split('/')
+  for (const path of paths) {
+    const segments = path.split('/')
     for (let index = 1; index < segments.length; index += 1) {
       if (filePaths.has(segments.slice(0, index).join('/'))) throw new Error('ZIP_FILE_DIRECTORY_CONFLICT')
     }

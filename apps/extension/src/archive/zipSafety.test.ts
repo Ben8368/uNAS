@@ -21,4 +21,23 @@ describe('ZIP extraction safety', () => {
     ])).toThrow('ZIP_FILE_DIRECTORY_CONFLICT')
     expect(() => validateArchiveEntries([{ path: 'large.bin', directory: false, size: ZIP_EXTRACTION_LIMITS.maxOutputBytes + 1 }])).toThrow('ZIP_ENTRY_TOO_LARGE')
   })
+
+  it('rejects explicit directory descendants of files in either ordering', () => {
+    const entries = [
+      { path: 'parent', directory: false, size: 1 },
+      { path: 'parent/child/', directory: true, size: 0 },
+    ]
+    expect(() => validateArchiveEntries(entries)).toThrow('ZIP_FILE_DIRECTORY_CONFLICT')
+    expect(() => validateArchiveEntries([...entries].reverse())).toThrow('ZIP_FILE_DIRECTORY_CONFLICT')
+  })
+
+  it('rejects case and Unicode aliases before committing to the target filesystem', () => {
+    for (const names of [['Same.txt', 'same.txt'], ['caf\u00e9.txt', 'cafe\u0301.txt']]) {
+      expect(() => validateArchiveEntries(names.map(path => ({ path, directory: false, size: 1 })))).toThrow('ZIP_DUPLICATE_ENTRY')
+    }
+    expect(() => validateArchiveEntries([
+      { path: 'Parent', directory: false, size: 1 },
+      { path: 'parent/child/', directory: true, size: 0 },
+    ])).toThrow('ZIP_FILE_DIRECTORY_CONFLICT')
+  })
 })

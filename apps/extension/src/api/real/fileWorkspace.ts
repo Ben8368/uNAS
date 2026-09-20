@@ -250,7 +250,11 @@ async function commitPreparedArchive(directory: FsaDirectoryHandle, outputName: 
 async function looksLikeZip(file: File) {
   if (file.size < 4 || file.size > ZIP_EXTRACTION_LIMITS.maxInputBytes) return false
   const bytes = new Uint8Array(await file.slice(0, 4).arrayBuffer())
-  return bytes[0] === 0x50 && bytes[1] === 0x4b && (bytes[2] === 0x03 || bytes[2] === 0x05 || bytes[2] === 0x07) && (bytes[3] === 0x04 || bytes[3] === 0x06 || bytes[3] === 0x08)
+  return bytes[0] === 0x50 && bytes[1] === 0x4b && (
+    bytes[2] === 0x03 && bytes[3] === 0x04 ||
+    bytes[2] === 0x05 && bytes[3] === 0x06 ||
+    bytes[2] === 0x07 && bytes[3] === 0x08
+  )
 }
 
 async function entryFor(name: string, handle: FsaHandle, route: Route): Promise<FileEntry> {

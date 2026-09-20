@@ -2,13 +2,13 @@
 
 ## 问题 / 阻断 Gate
 
-验证解包 MV3 扩展能否在用户已授权的目录中安全解压单个 ZIP。该探针关联 RISK-007；当前仅记录一条受限实现和自动化成功证据，不关闭 Archive 模块 Gate。
+验证解包 MV3 扩展能否在用户已授权的目录中安全解压单个 ZIP。该探针关联 RISK-007；记录受限实现、正向路径及 SP-04-A 负向夹具证据，不关闭 Archive 模块 Gate。
 
 ## 实现边界
 
 - 输入：单个 `.zip`，先验证 ZIP magic；最大 50 MiB。
 - Worker：打包的 `archive-worker.js` 使用 `@zip.js/zip.js 2.8.60` 严格读取，禁用其内部 Worker；最多 200 项、单项 32 MiB、展开总量 64 MiB、深度最多 12。
-- 安全：拒绝绝对/反斜杠/穿越/保留名路径、加密、软链接、重复条目和文件目录冲突；读取时校验 CRC。
+- 安全：ZIP magic 按合法字节对匹配；拒绝绝对/反斜杠/穿越/保留名路径、加密、软链接、NFC/大小写折叠后的重复条目和所有条目的文件祖先冲突；读取时校验 CRC。
 - 输出：先把已验证 Blob 暂存于受限内存，再创建唯一同级目录提交；不覆盖已有项目。取消仅在提交前生效，提交失败不标记成功并保留已写入的部分结果。
 
 ## 已验证证据
@@ -19,9 +19,20 @@
 
 ## 未覆盖
 
-- 损坏/ZIP64/伪扩展名/压缩炸弹等真实负向夹具，原生 OS 目录与权限拒绝，取消与页面关闭，Worker 崩溃，配额/写入失败，以及目标 Chrome Stable 的人工验证和资源测量。
+- ZIP64、真实解码膨胀/内存压力、原生 OS 目录与权限拒绝、取消与页面关闭、Worker 崩溃、配额/写入失败，以及目标 Chrome Stable 的人工验证和资源测量。小型声明超限夹具不等于压缩炸弹压力测试。
 - 不支持 RAR、7z、TAR、分卷、密码输入或损坏包修复；不把本探针结论外推为通用 ZIP 支持。
 
 ## 当前结论
 
-受限 ZIP 解压为**已实现未验证**：自动化 MV3 正向路径可运行，但 RISK-007 仍阻断 Archive 模块 Gate。后续证据和范围变化只更新本记录与 RISK-007。
+受限 ZIP 解压整体仍为**已实现未验证**；SP-04-A 的限定自动化拒绝路径已验证，但 RISK-007 仍阻断 Archive 模块 Gate。后续证据和范围变化只更新本记录与 RISK-007。
+
+## SP-04-A：真实 Worker 负向夹具
+
+- 2026-09-20，bundled Chromium 151.0.7922.34，Windows win32 10.0.26200 x64，headless 1440×900，隔离临时 Profile 和固定 OPFS 子目录；不操作用户目录或密码库。
+- [archiveFixtures.ts](../../apps/extension/e2e/archiveFixtures.ts) 确定性生成 18 个负例与一个合法 Deflate 对照；全部为自生成小型内容，fixture data 按 CC0-1.0 提供，无第三方素材。测试附件 `fixture-manifest` 保存各项大小、SHA-256、来源及期望；源码可重建，不提交二进制产物。
+- [archiveNegative.spec.ts](../../apps/extension/e2e/archiveNegative.spec.ts) 经真实 Files UI/port/打包 Worker 验证：伪扩展名、非法 magic 对、截断目录、CRC 错误、穿越/绝对/反斜杠/保留名、加密标记、软链接标记、重复名、文件祖先/目录后代、大小写冲突及条目/总量/数量/深度预算。入口拒绝项不进入 Worker；合法 ZIP 结构负例由 Worker 处理。
+- 每个失败都断言没有输出目录和成功提示；整组失败后合法对照仍可执行，最终文本内容精确一致，页面错误及非订阅远程请求为空。结束仅删除临时 Profile 中专用 OPFS 测试目录。
+- 测试先复现 `parent` 文件加 `parent/child/` 显式目录漏检：旧版进入提交后留下部分目录。现在检查所有路径的文件祖先；同时拒绝 NFC/大小写折叠后的重复名、按合法 ZIP magic 字节对初筛。单测覆盖目录顺序反转与 Unicode 等价名称。
+- 定向命令：`pnpm build:extension`；`pnpm --dir apps/extension exec playwright test e2e/archiveNegative.spec.ts e2e/archiveExtraction.spec.ts --reporter=list`。结果：2/2 通过（8.8 秒，仅整组测试时长，不是解压性能）。
+- 完整回归：`pnpm verify` 通过（32 个测试文件、155 个测试；治理、lint、边界、依赖、类型、Web/MV3 构建和包体检查通过）；随后 `pnpm --dir apps/extension exec playwright test --reporter=list` 47/47 通过（2.0 分钟，0 skipped）。MV3 包体 949,935 B、初始静态 JS 261,010 B；不将包体或测试时长当成峰值内存/性能承诺。
+- 这些夹具没有证明任意加密算法、跨文件系统所有别名、外部并发写入、强制终止或提交回滚能力。RISK-007 保持开放。

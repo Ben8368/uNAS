@@ -25,12 +25,12 @@
 
 ## 当前阻断与风险
 
-- G1 已由维护者确认验收：Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工走查与自动化证据已接受；关闭记录见 [2026-09 风险归档](docs/archive/risks/2026-09.md)。MV3 壳层和 File Workspace 边界已由 SP-01、SP-02 验收；[SP-04](benchmarks/sp-04/README.md) 的自动化正向路径不关闭 RISK-007。
+- G1 已由维护者确认验收：Chrome 152.0.7977.82 / win32 10.0.26200 x64 的人工走查与自动化证据已接受；关闭记录见 [2026-09 风险归档](docs/archive/risks/2026-09.md)。MV3 壳层和 File Workspace 边界已由 SP-01、SP-02 验收；[SP-04](benchmarks/sp-04/README.md) 已补限定 ZIP 负向夹具与预检修复，仍不关闭 RISK-007。
 - 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；本轮新增的真实外部服务、工具栏手势、资源许可和最终扩展 ID 尚未全部人工验收。Chrome Web Store 更新属于未来 Store Gate，不阻断当前本地解包插件。
 
 ## 最近验证
 
-- 2026-09-20：[TD-002 主题迁移验证](docs/archive/reviews/2026-09-20-theme-debt.md)：共享 Token 与 App 样式局部化已实现；`pnpm verify` 通过（32 个测试文件、153 个测试），`pnpm test:e2e` 通过（46/46，0 skipped）。E2E 来自 bundled Chromium；系统 Chrome 153 的 5 项定向测试在等待 Service Worker 时超时，未验证 UI；TD-002 保留待人工验收，不关闭 RISK-012/014。前轮 Vault 修复见该证据链接。
+- 2026-09-20：[SP-04-A 验证](benchmarks/sp-04/README.md)：ZIP 负向夹具与预检修复；`pnpm verify` 通过（32 文件、155 测试），构建后的完整扩展 E2E 47/47 通过（0 skipped，bundled Chromium）。RISK-007 保持开放；[TD-002 主题证据](docs/archive/reviews/2026-09-20-theme-debt.md)中的系统 Chrome 启动超时和 RISK-012/014 人工验收缺口仍保留。
 
 ## 按需入口
 
