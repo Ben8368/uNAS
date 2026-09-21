@@ -7,7 +7,7 @@ import { FILTER_SUBSCRIPTIONS } from './subscriptions';
 let data: Record<string, unknown>;
 let fetchMock: ReturnType<typeof vi.fn>;
 let notify: ReturnType<typeof vi.fn>;
-const next = { version: 1, revision: 2, sites: [{ host: 'www.example.com', selectors: ['.sponsor'] }] };
+const next = { version: 1, revision: 3, sites: [{ host: 'www.example.com', selectors: ['.sponsor'] }] };
 
 beforeEach(() => {
   data = {};
@@ -62,7 +62,7 @@ describe('independent repository updater', () => {
 
   it('keeps the cache when storage fails before committing the new rules', async () => {
     data[REPOSITORY_FILTER_STORAGE_KEY] = BUNDLED_REPOSITORY_RULES;
-    vi.mocked(chrome.storage.local.set).mockRejectedValueOnce(new Error('storage full'));
+    const set = chrome.storage.local.set as ReturnType<typeof vi.fn>; set.mockRejectedValueOnce(new Error('storage full'));
     await updateRepositorySubscription();
     expect(data[REPOSITORY_FILTER_STORAGE_KEY]).toEqual(BUNDLED_REPOSITORY_RULES);
     expect(notify).not.toHaveBeenCalled();

@@ -7,11 +7,13 @@ const COSMETIC_STORAGE_KEY = 'unipass_cosmetic_store'
 // Synthetic DOM reproduces the public container/link structure inspected on
 // 2026-09-21, without retaining page tracking IDs, images or user content.
 const fixture = `<!doctype html><html><head><title>Bilibili cosmetic fixture</title></head><body>
-<main id="player">Video player</main><section id="comments">Comments</section>
+<style>.grid-feed { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; } .feed-card { min-height: 24px; }</style><main id="player">Video player</main><section id="comments">Comments</section>
 <div id="strip" class="ad-report strip-ad left-banner"><a class="ad-report-inner"><div class="strip-ad-inner">Banner ad</div></a></div>
 <div id="promoted-video" class="video-card-ad-small"><div class="video-card-ad-small-inner"><div class="ad-report"><a class="ad-report-inner" href="https://cm.bilibili.com/cm/api/fees/pc/sync/v2"><div class="vcd">Promoted video</div></a></div></div></div>
 <div id="activity" class="ad-report ad-floor-exp right-bottom-banner"><a class="ad-report-inner" href="https://www.bilibili.com/blackboard/synthetic">Site activity</a></div>
-<section id="feed">
+<section id="feed" class="grid-feed">
+<div id="wrapped-feed-ad" class="feed-card"><div class="bili-feed-card"><div class="bili-video-card"><a href="https://cm.bilibili.com/cm/api/fees/pc/sync/v2">Wrapped promoted feed card</a></div></div></div>
+<div id="wrapped-ordinary" class="feed-card"><div class="bili-feed-card"><div class="bili-video-card"><a href="https://www.bilibili.com/video/synthetic">Wrapped CMOS video</a></div></div></div>
 <div id="feed-ad" class="bili-feed-card"><div class="bili-video-card is-rcmd"><a href="https://cm.bilibili.com/cm/api/fees/pc/sync/v2">Promoted feed card</a></div></div>
 <div id="feed-relative-ad" class="bili-feed-card"><div class="bili-video-card"><a href="//cm.bilibili.com/cm/api/fees/pc/sync/v2">Protocol relative promotion</a></div></div>
 <div id="ordinary" class="bili-feed-card"><div class="bili-video-card is-rcmd"><a href="https://www.bilibili.com/video/synthetic">CMOS video</a></div></div>
@@ -21,7 +23,7 @@ const fixture = `<!doctype html><html><head><title>Bilibili cosmetic fixture</ti
 </section><aside id="ordinary-vcd" class="vcd">Ordinary recommendation</aside>
 </body></html>`
 const ads = ['strip', 'promoted-video', 'activity', 'feed-ad', 'feed-relative-ad']
-const retained = ['player', 'comments', 'ordinary', 'lookalike', 'query-only', 'protected', 'ordinary-vcd']
+const retained = ['player', 'comments', 'ordinary', 'lookalike', 'query-only', 'protected', 'ordinary-vcd', 'wrapped-ordinary']
 
 test('Bilibili placements hide, update dynamically and restore when site protection is paused', async ({ extension }, testInfo) => {
   const url = 'https://www.bilibili.com/video/unas-synthetic-adblock'
@@ -37,6 +39,10 @@ test('Bilibili placements hide, update dynamically and restore when site protect
   await expect(page.locator('style[id^="unipass-cosmetic-style-"]')).toHaveCount(1)
   expect(await page.evaluate(() => CSS.supports('selector(:has(a))'))).toBe(true)
   for (const id of ads) await expect(page.locator(`#${id}`)).toBeHidden()
+  await expect(page.locator('#wrapped-feed-ad')).toBeHidden()
+  await expect(page.locator('#wrapped-feed-ad .bili-feed-card')).toBeHidden()
+  await expect.poll(() => page.locator('.grid-feed > .feed-card:visible').count()).toBe(1)
+  await expect(page.locator('#wrapped-ordinary')).toHaveCSS('grid-column-start', 'auto')
   for (const id of retained) await expect(page.locator(`#${id}`)).toBeVisible()
   // Rules hide the outer grid slot and leave the DOM reversible.
   for (const id of ads) await expect(page.locator(`#${id}`)).toHaveCount(1)
@@ -60,9 +66,11 @@ test('Bilibili placements hide, update dynamically and restore when site protect
   }, { key: BLOCKING_PAUSE_STORAGE_KEY, paused, url })
   await setPaused(true)
   await expect(page.locator('style[id^="unipass-cosmetic-style-"]')).toHaveCount(0)
-  for (const id of [...ads, 'late-ad', ...retained]) await expect(page.locator(`#${id}`)).toBeVisible()
+  await expect.poll(() => page.locator('.grid-feed > .feed-card:visible').count()).toBe(2)
+  for (const id of [...ads, 'late-ad', 'wrapped-feed-ad', ...retained]) await expect(page.locator(`#${id}`)).toBeVisible()
   await setPaused(false)
-  for (const id of [...ads, 'late-ad']) await expect(page.locator(`#${id}`)).toBeHidden()
+  await expect.poll(() => page.locator('.grid-feed > .feed-card:visible').count()).toBe(1)
+  for (const id of [...ads, 'late-ad', 'wrapped-feed-ad']) await expect(page.locator(`#${id}`)).toBeHidden()
   for (const id of retained) await expect(page.locator(`#${id}`)).toBeVisible()
   // A newer repository revision can withdraw a bad rule without rebuilding.
   await worker.evaluate(async (url) => {
@@ -71,7 +79,8 @@ test('Bilibili placements hide, update dynamically and restore when site protect
     if (tab?.id == null) throw new Error('Fixture tab not found.')
     await chrome.tabs.sendMessage(tab.id, { type: 'refreshCosmeticEffects' })
   }, url)
-  for (const id of [...ads, 'late-ad']) await expect(page.locator(`#${id}`)).toBeVisible()
+  for (const id of [...ads, 'late-ad', 'wrapped-feed-ad']) await expect(page.locator(`#${id}`)).toBeVisible()
+  await expect.poll(() => page.locator('.grid-feed > .feed-card:visible').count()).toBe(2)
   expect(extension.errors).toEqual([])
 })
 

@@ -18,4 +18,4 @@
 
 ## B 站依据
 
-2026-09-21 依据用户标注及在线 DOM 只读检查：视频页 `.ad-report.strip-ad`、`.video-card-ad-small`、`.ad-report.ad-floor-exp` 各命中一个推广容器；首页 8 个推广卡片含 `cm.bilibili.com` 链接，普通 CMOS 视频未命中。第 3 类含站内活动推广。未保存追踪参数、登录态或页面素材；固定合成结构见 [E2E](../apps/extension/e2e/bilibili-adblock.spec.ts)。这只是当日 DOM 依据，不是目标 Chrome 实站拦截完成证据。
+2026-09-21 依据用户标注及在线 DOM 只读检查：视频页 `.ad-report.strip-ad`、`.video-card-ad-small`、`.ad-report.ad-floor-exp` 各命中一个推广容器；首页 8 个推广卡片含 `cm.bilibili.com` 链接，普通 CMOS 视频未命中。首页推广卡在 `.feed-card` 外层包装内时，补充规则同时隐藏该网格项，避免留下空白列。第 3 类含站内活动推广。未保存追踪参数、登录态或页面素材；固定合成结构见 [E2E](../apps/extension/e2e/bilibili-adblock.spec.ts)。这只是当日 DOM 依据，不是目标 Chrome 实站拦截完成证据。
