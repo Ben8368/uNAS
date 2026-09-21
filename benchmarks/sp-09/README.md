@@ -79,15 +79,15 @@ node scripts/sp09-probe.mjs --module-dir C:\Users\ben.luo\go\pkg\mod\unlock-musi
 
 ## 已验证、未验证与不支持汇总
 
-**已验证：** MD-01 的根来源/tag/SHA/checksum、根 MIT 许可证、可取得依赖的静态许可证清单、QMC 上游夹具来源与哈希；MD-02 对 KGM v3/v5、NCM 结构、QMC QTag/raw-key footer 的固定输入识别和预算拒绝；一个本地 KGM v3 样本经自有脚本和浏览器 Worker 解密后通过 FLAC magic、`ffprobe` 和完整 `ffmpeg` 解码；一个本地 NCM 样本经自有脚本和浏览器 Worker 解密后通过 MP3 magic、`ffprobe` 和完整 `ffmpeg` 解码；26 个本地 QMC `.mgg` 样本全部经自有脚本解密并通过 OGG/Vorbis `ffprobe` 和完整 `ffmpeg` 解码；`music` Beta Tool App 在 bundled Chromium 中完成三格式各一份签名级输出、取消路径和显式 OPFS 清理验证。Worker 使用 1 MiB 分块、ACK 背压和 OPFS 暂存，输入/输出上限 128 MiB，单 section 上限 16 MiB，QMC footer 上限 64 KiB。
+**已验证：** MD-01 的根来源/tag/SHA/checksum、根 MIT 许可证、可取得依赖的静态许可证清单、QMC 上游夹具来源与哈希；MD-02 对 KGM v3/v5、NCM 结构、QMC QTag/raw-key footer 的固定输入识别和预算拒绝；6 个本地 KGM v3 样本（历史 1 个 + 本轮授权 5 个）经自有脚本解密并通过 FLAC magic、`ffprobe` 和完整 `ffmpeg` 解码；一个本地 NCM 样本经自有脚本解密后通过 MP3 magic、`ffprobe` 和完整 `ffmpeg` 解码；26 个本地 QMC `.mgg` 样本全部经自有脚本解密并通过 OGG/Vorbis `ffprobe` 和完整 `ffmpeg` 解码；本轮 5 个 KGM v3 样本均在 bundled Chromium 的 `music` Beta Tool App 中完成失败重试、取消、SHA-256 一致性和 OPFS 暂存清理验证。Worker 使用 1 MiB 分块、ACK 背压和 OPFS 暂存，输入/输出上限 128 MiB，单 section 上限 16 MiB，QMC footer 上限 64 KiB。
 
-**未验证：** 上游 `unlock-music.dev/mmkv` 许可证与再分发授权（已退出 uNAS 产品依赖）；uNAS 自有 MMKV 兼容层；完整 Go module graph；KGM v5 KGG 实际数据库 provenance/许可证/schema/打包；可纳入仓库再分发的真实音频夹具；目标 Chrome Stable 的本功能复验；音乐 App 的完整 FileRef/Task/owner lease 接入；页面关闭后的音乐专项 E2E；峰值 JS/Worker/Chrome 进程内存实测和多样本跨版本兼容性；本轮私有夹具未配置，因此下载完成、下载失败、重复下载的浏览器 E2E 和下载文件 SHA-256 一致性尚未取得真实媒体证据。
+**未验证：** 上游 `unlock-music.dev/mmkv` 许可证与再分发授权（已退出 uNAS 产品依赖）；uNAS 自有 MMKV 兼容层；完整 Go module graph；KGM v5 KGG 实际数据库 provenance/许可证/schema/打包；可纳入仓库再分发的真实音频夹具；目标 Chrome Stable 的本功能复验；音乐 App 的完整 FileRef/Task/owner lease 接入；页面关闭后的音乐专项 E2E；峰值 JS/Worker/Chrome 进程内存实测和跨版本兼容性；NCM/QMC 私有夹具仍未配置，因此对应下载/失败/重试和 SHA-256 浏览器 E2E 尚未取得真实媒体证据。KGM v3 本轮只证明这 5 个用户授权样本，不扩大为所有 KGM v3 文件兼容性。
 
 **不支持：** 文件管理关联、右键菜单、在线封面/元数据/密钥/账号、Native Helper、在线 DRM/付费墙/站点授权绕过、KGM v5 实际解密、QMC `cex\0`/外部 MMKV 分支，以及没有 extension-independent marker 的 QMC static 分支。Beta App 只暴露已验证的 KGM v3、NCM 和 QMC raw-key-footer 路径。
 
 ## 后续阻断项
 
-上游 `mmkv` 许可证阻断已通过“退出上游依赖、改走自有 clean-room 实现”降级，但自有兼容层尚未实现和单独审查；KGM v5 KGG 实际资源审计仍阻断供应链锁定。KGM v3、NCM 和 QMC raw-key-footer 已完成隔离脚本、Worker、OPFS 暂存、取消/显式清理和 bundled Chromium Beta App 验收；下载无完成回执时结果保留并允许重试，但本轮尚未用私有媒体夹具取得下载完成/失败/重复下载及 SHA-256 一致性证据。音乐专用 FileRef/Task/owner lease、目标 Chrome Stable、峰值内存实测和可再分发真实音频夹具仍未完成。`VipSongsDownload` 只读盘点得到 26 个 `.mgg`，均为 raw-key-footer；未发现 KGM/VPR。RISK-015 保持开放，Music Module Gate 仍未整体通过。
+上游 `mmkv` 许可证阻断已通过“退出上游依赖、改走自有 clean-room 实现”降级，但自有兼容层尚未实现和单独审查；KGM v5 KGG 实际资源审计仍阻断供应链锁定。KGM v3、NCM 和 QMC raw-key-footer 已完成隔离脚本、Worker、OPFS 暂存、取消/显式清理和 bundled Chromium Beta App 验收；本轮 5 个 KGM v3 授权样本新增了浏览器下载失败/重试、取消、SHA-256 一致性和清理证据。下载无完成回执时结果保留并允许重试；NCM/QMC 仍缺私有浏览器夹具。音乐专用 FileRef/Task/owner lease、目标 Chrome Stable、峰值内存实测和可再分发真实音频夹具仍未完成。`VipSongsDownload` 只读盘点得到 26 个 `.mgg`，均为 raw-key-footer；未发现 KGM/VPR。RISK-015 保持开放，Music Module Gate 仍未整体通过。
 
 ## Worker、浏览器与产品集成验证
 
@@ -133,6 +133,28 @@ pnpm --dir apps/extension exec playwright test e2e/musicDecrypt.spec.ts
 ```
 
 结果：无头和 headed 两种模式均在 `fixtures.ts` 等待 `serviceworker` 超时，两个用例都未进入 Workspace 或音乐解密逻辑；因此目标 Chrome 证据仍为**阻断/未验证**，不是解密失败结论。需在能加载解包 MV3 Service Worker 的目标 Chrome 环境中重新复验。
+
+### 2026-09-21 授权 KGM v3 批次回归
+
+本轮使用用户明确提供的 5 个本地 `.kgma` 文件，仅通过环境变量传入现有 E2E，不复制到仓库、不改写输入。每个样本均完成：
+
+- Node 解密输出 `fLaC`，并通过 `ffprobe` 与 `ffmpeg -v error -f null -` 完整解码；
+- bundled Chromium 音乐 App 的下载提交失败后重试，暂存输出 SHA-256 与下载文件一致；
+- 用户取消并清理 OPFS 暂存。
+
+批次结果：`5/5` 解密与独立音频完整性验收通过；音乐专项 E2E 对每个样本 `2 passed、1 skipped`，合计 `10 passed、5 skipped`。跳过项是同一测试文件中要求同时提供 NCM/QMC 夹具的三格式下载用例，不代表 KGM 失败。
+
+本轮 KGM v3 输入/输出摘要：
+
+| 样本序号 | 输入 bytes | 输入 SHA-256 | 输出 bytes | 输出 SHA-256 | 音频参数 |
+| ---: | ---: | --- | ---: | --- | --- |
+| 1 | 76,398,032 | `f77b4fcba5f5e08c8fcccf8071fb89ae0813f3cb1b6495156711c7d2a8d84dc5` | 76,397,008 | `5c239ebc9e6bb85aed042203eb3f1feef543d96b5602e6f5c23940dce1e2b881` | FLAC / 96 kHz / 2 ch / 253.735188 s |
+| 2 | 27,225,708 | `da46a80ef52cf721a7e983e1e05241649e9817c516312aaba27a4eb525b54077` | 27,224,684 | `d63160215290f998212247f2cbce3c3101e333376d9b6d3e89d798494a0b8e94` | FLAC / 44.1 kHz / 2 ch / 229.333333 s |
+| 3 | 94,516,538 | `012575bc29e00190bf221af5471169ca94398451f97b9dd96faa8612ab0a98be` | 94,515,514 | `e85574c5a76dd886bdf2bc169c066668f3e401d04ec527c88e2b88ad0e9c1b7d` | FLAC / 96 kHz / 2 ch / 217.720792 s |
+| 4 | 104,403,251 | `03b5446d05f54a23fb6db2628965a2213a5d175027cf1a0b743731073353d6a1` | 104,402,227 | `1f16f684313eece64828831cc6f4e740c8813890b35f0ec99813814dbdbdefeb` | FLAC / 96 kHz / 2 ch / 234.951063 s |
+| 5 | 126,094,908 | `1321153c2aebf178d2e7334d21b028f1d5e50783b804f137cdec46a075aba4b7` | 126,093,884 | `eda1b33e28fae5440b0616bbf7cc5f0afa7835a420058fac299ce488e6782fe1` | FLAC / 96 kHz / 2 ch / 279.029188 s |
+
+证据边界：这是授权本地样本 + bundled Chromium 的 KGM v3 证据，不是目标 Chrome Stable、全部 KGM v3 版本兼容性、页面关闭恢复、owner lease、峰值内存或稳定产品集成证据。
 
 ## KGM v3 本地解密 smoke test
 

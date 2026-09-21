@@ -1,6 +1,6 @@
 # 当前状态
 
-> **最后确认：** 2026-09-20
+> **最后确认：** 2026-09-21
 > **阶段：** Phase 2 / UniPass capability integration
 > **产品代码：** uNAS 唯一 WXT MV3 包已接入 UniPass AdBlock、WebDAV Vault、Legacy adapter 和原版 closed Shadow DOM 页面浮层；密码库管理不再另开独立 `passwords.html`，原有 New Tab/Workspace 保持。
 
@@ -26,14 +26,14 @@
 ## 当前阻断与风险
 
 - G1 已由维护者确认验收；SP-04 仍开放 RISK-007，详见 [SP-04](benchmarks/sp-04/README.md)。
-- SP-09 已完成 KGM v3、NCM、QMC raw-key-footer 的 Worker/OPFS Beta App 验证；输出仅作音频签名级验证，下载无完成回执时保留结果供重试。无右键/Intent、原文件覆盖或联网。
-- SP-09 仍开放 RISK-015：目标 Chrome、owner lease、页面关闭、峰值内存、KGM v5 KGG、QMC MMKV/`cex\0` 和真实夹具尚未完成。
+- SP-09：KGM v3、NCM、QMC raw-key-footer 已完成 Worker/OPFS Beta 验证；5 个授权 KGM v3 样本通过解码及浏览器下载/取消/清理。暂存下载无完成回执；无覆盖或联网。
+- SP-09 仍开放 RISK-015：目标 Chrome、owner lease、页面关闭、峰值内存、KGM v5 KGG、QMC MMKV/`cex\0`、可再分发夹具未完成。
 - 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；Chrome Web Store 更新属于未来 Store Gate。
 
 ## 最近验证
 
 - 2026-09-20： [GitHub Actions CI #35](https://github.com/Ben8368/uNAS/actions/runs/35487284796) 的文档、Demo 和浏览器回归均成功；SP-04 目标 Chrome 与资源证据仍缺，RISK-007 保持开放，详见 [SP-04](benchmarks/sp-04/README.md)。
-- 2026-09-20（本轮音乐可靠性）：`pnpm verify` 通过（159 passed、1 skipped）；全量 E2E 为 49 passed、3 skipped，因未配置三个私有夹具变量。下载完成/失败/重试及 SHA-256 一致性仍未实证，详见 [SP-09](benchmarks/sp-09/README.md)。
+- 2026-09-21：KGM v3 5 样本通过 Node/`ffprobe`/`ffmpeg` 和 bundled E2E（10/5）；Chrome、owner、关页、内存、KGM v5 未验收，详见 [SP-09](benchmarks/sp-09/README.md)。
 
 ## 按需入口
 
