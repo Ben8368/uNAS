@@ -23,6 +23,7 @@ export default defineConfig({
       'https://accounts.feishu.cn/*',
       'https://jupiter.tec-do.com/*',
       'https://easylist-downloads.adblockplus.org/*',
+      'https://raw.githubusercontent.com/*',
     ],
     optional_host_permissions: ['https://*/*'],
     icons: {

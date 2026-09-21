@@ -33,6 +33,7 @@ export const test = base.extend<{ extension: Extension }>({
       // fixed public lists during SW startup. Keep legacy Demo assertions
       // focused on unexpected application/network traffic.
       if (/^https:\/\/easylist-downloads\.adblockplus\.org\/(?:easylist|easyprivacy|easylistchina|abp-filters-anti-cv)\.txt$/.test(request.url())) return
+      if (request.url() === 'https://raw.githubusercontent.com/Ben8368/uNAS/main/filters/unas.json') return
       remoteRequests.push(request.url())
     })
     await context.tracing.start({ screenshots: true, snapshots: true, sources: true })

@@ -5,6 +5,7 @@ import {
 import { isSubscriptionRule } from "./filter-updater";
 import { FILTER_UPDATE_STORAGE_KEY } from "./subscriptions";
 import { reconcileSitePauses } from "./site-pauses";
+import { REPOSITORY_UPDATE_STORAGE_KEY } from "./repository-updater";
 
 let reconciliation: Promise<void> | undefined;
 
@@ -17,9 +18,10 @@ export function initializeBlocking(): Promise<void> {
 export async function getBlockingStatus(): Promise<BlockingStatus> {
   await initializeBlocking();
   const rules = (await chrome.declarativeNetRequest.getDynamicRules()).filter(isSubscriptionRule);
-  const stored = await chrome.storage.local.get(FILTER_UPDATE_STORAGE_KEY);
+  const stored = await chrome.storage.local.get([FILTER_UPDATE_STORAGE_KEY, REPOSITORY_UPDATE_STORAGE_KEY]);
   const state = stored[FILTER_UPDATE_STORAGE_KEY] as { updatedAt?: number; error?: string } | undefined;
-  const error = state?.error;
+  const repositoryState = stored[REPOSITORY_UPDATE_STORAGE_KEY] as { error?: string } | undefined;
+  const error = [state?.error, repositoryState?.error].filter(Boolean).join("；") || undefined;
   const status = rules.length ? (error ? "stale" : "ready") : (error ? "error" : "baseline-only");
   return { enabled: true, state: status, ready: status === "ready", ruleCount: rules.length,
     baselineRuleCount: BASELINE_RULE_COUNT, updatedAt: state?.updatedAt, error };

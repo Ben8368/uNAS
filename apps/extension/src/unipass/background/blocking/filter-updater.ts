@@ -2,6 +2,7 @@ import { convertFilterList } from "./filter-converter";
 import { compactDomainRules } from "./rule-compactor";
 import { COSMETIC_STORAGE_KEY, COSMETIC_STAGING_STORAGE_KEY, createCosmeticStore, validateCosmeticStore, type CosmeticStore } from "./cosmetic-store";
 import { refreshOpenCosmeticEffects } from "./cosmetic-notifier";
+import { updateRepositorySubscription } from "./repository-updater";
 import {
   FILTER_SUBSCRIPTIONS, FILTER_UPDATE_ALARM, FILTER_UPDATE_STORAGE_KEY,
   FILTER_UPDATE_INTERVAL_MS, FILTER_RULE_ID_BASE, FILTER_RULE_LIMIT, FILTER_GENERATION,
@@ -17,7 +18,12 @@ interface UpdateState {
 let pending: Promise<void> | undefined;
 
 export function updateFilterSubscriptions(): Promise<void> {
-  pending ??= update().finally(() => { pending = undefined; });
+  // Independent state/transactions: an unavailable repository never prevents
+  // EasyList updates, and a failed EasyList download never blocks site hotfixes.
+  pending ??= Promise.allSettled([update(), updateRepositorySubscription()]).then((results) => {
+    const failure = results.find((result) => result.status === 'rejected');
+    if (failure?.status === 'rejected') throw failure.reason;
+  }).finally(() => { pending = undefined; });
   return pending;
 }
 

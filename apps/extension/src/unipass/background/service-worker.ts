@@ -59,6 +59,7 @@ import { COSMETIC_STORAGE_KEY, createCosmeticStore, pageRulesForHost, validateCo
 import type { BackgroundRequest, BackgroundResponse } from "../shared/types";
 
 import { updateFilterSubscriptions } from "./blocking/filter-updater";
+import { REPOSITORY_FILTER_STORAGE_KEY } from "./blocking/repository-rules";
 import { FILTER_GENERATION, FILTER_UPDATE_ALARM } from "./blocking/subscriptions";
 import { BLOCKING_RECONCILE_ALARM } from "../shared/blocking";
 import { isExtensionPageSender, isWebPageSender } from "./sender-guard";
@@ -180,12 +181,12 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
         if (!url) return { generation: 0, selectors: [], scriptlets: [] };
         const parsed = new URL(url);
         if (!/^https?:$/.test(parsed.protocol)) return { generation: 0, selectors: [], scriptlets: [] };
-        const stored = await chrome.storage.local.get(COSMETIC_STORAGE_KEY);
+        const stored = await chrome.storage.local.get([COSMETIC_STORAGE_KEY, REPOSITORY_FILTER_STORAGE_KEY]);
         const store = validateCosmeticStore(stored[COSMETIC_STORAGE_KEY])
           ? stored[COSMETIC_STORAGE_KEY]
           : createCosmeticStore("", FILTER_GENERATION);
         if (await isSitePaused(parsed.hostname.toLowerCase())) return { generation: store?.generation ?? 0, selectors: [], scriptlets: [] };
-        return pageRulesForHost(store, parsed.hostname.toLowerCase());
+        return pageRulesForHost(store, parsed.hostname.toLowerCase(), stored[REPOSITORY_FILTER_STORAGE_KEY]);
       })();
     case "currentPageCatalog":
       return (async () => {

@@ -1,8 +1,6 @@
 /**
- * Small, audited compatibility rules for known blocker test fixtures.
- *
- * These rules are deliberately site-scoped. They complement, but do not
- * replace, the remote subscriptions and must never become a remote code path.
+ * Audited, site-scoped cosmetic rules bundled with the extension.
+ * These complement subscriptions without introducing remote executable code.
  */
 export const BUILTIN_COSMETIC_FILTERS = [
   "d3ward.com##.adbox.banner_ads.adsbox",

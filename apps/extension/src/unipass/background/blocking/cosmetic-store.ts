@@ -1,5 +1,6 @@
 import { compileCosmeticFilters, hostMatches, selectorIsSafe, type CosmeticCompilation, type CosmeticScriptlet } from "./cosmetic-compiler";
 import { BUILTIN_COSMETIC_FILTERS } from "./builtin-filters";
+import { effectiveRepositoryRules } from "./repository-rules";
 export type { CosmeticScriptlet } from "./cosmetic-compiler";
 
 export const COSMETIC_STORAGE_KEY = "unipass_cosmetic_store";
@@ -57,7 +58,7 @@ export function validateCosmeticStore(value: unknown): value is CosmeticStore {
     && new TextEncoder().encode(JSON.stringify(store)).byteLength <= MAX_COSMETIC_STORAGE_BYTES;
 }
 
-export function pageRulesForHost(store: CosmeticStore | undefined, hostname: string): PageCosmeticRules {
+export function pageRulesForHost(store: CosmeticStore | undefined, hostname: string, repositoryRules?: unknown): PageCosmeticRules {
   if (!store || !isHost(hostname)) return { generation: store?.generation ?? 0, selectors: [], scriptlets: [] };
   const selectors: string[] = [];
   const scriptlets: CosmeticScriptlet[] = [];
@@ -77,6 +78,9 @@ export function pageRulesForHost(store: CosmeticStore | undefined, hostname: str
   };
   // Compatibility rules must be first: the content script has a bounded CSS
   // budget, so a large remote list must not push these audited rules out.
+  for (const rule of effectiveRepositoryRules(repositoryRules).sites) {
+    if (hostname === rule.host) selectors.push(...rule.selectors);
+  }
   append(BUILTIN_COSMETIC_COMPILATION);
   append(store);
   return {

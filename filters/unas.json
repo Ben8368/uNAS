@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "revision": 1,
+  "sites": [{
+    "host": "www.bilibili.com",
+    "selectors": [
+      ".ad-report.strip-ad",
+      ".video-card-ad-small",
+      ".ad-report.ad-floor-exp",
+      ".bili-feed-card:has(.bili-video-card a[href^=\"https://cm.bilibili.com/\"])",
+      ".bili-feed-card:has(.bili-video-card a[href^=\"//cm.bilibili.com/\"])",
+      ".bili-video-card:has(a[href^=\"https://cm.bilibili.com/\"])",
+      ".bili-video-card:has(a[href^=\"//cm.bilibili.com/\"])"
+    ]
+  }]
+}

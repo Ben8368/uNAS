@@ -209,6 +209,7 @@ New Tab / Workspace / page overlay
 ```
 
 - `entrypoints/adblock.content.ts` 只处理 cosmetic rules；`content-script.js` 和 `page-overlay.js` 是用户触发的 unlisted scripts，分别用于一次性填充和页面浮层。
+- 自维护补充规则按 [ADR 0012](ADR/0012-repository-filter-subscription.md) 独立于第三方订阅更新；仓库 JSON 同时为随包快照，缓存通过校验后按 host 精确合并到页面规则，不引入远程代码。
 - `installUniPassBackground()` 不注册第二个 `runtime.onMessage` listener；消息由 `installWorkspaceRouter()` 做来源/页面/动作分流。密码消息不能由普通网页触发，AdBlock content script 不能调用 Vault 操作。
 - `apps/extension/src/unipass/background/vault/vault-core.ts`、WebDAV backend、encrypted cache 和 sync engine 不依赖 Legacy；`legacy-credential-source.ts` 只作为可删除的兼容 adapter。
 - 不再新增独立 `passwords.html` 管理页或 `passwords` System App；WebDAV Vault 管理只通过用户主动打开的原 UniPass closed Shadow DOM 浮层完成。

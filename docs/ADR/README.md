@@ -28,5 +28,6 @@ ADR 记录影响长期维护的决定及理由。Roadmap 说明“按什么阶�
 | [0009](0009-unipass-capability-integration.md) | 已接受 | UniPass AdBlock、WebDAV Vault、Legacy 边界与原版页面浮层并入 uNAS 的单一 MV3 构建 |
 | [0010](0010-clean-room-mmkv-replacement.md) | 已接受 | 不再依赖无许可证的上游 `go-mmkv`；如需 MMKV 能力，采用自有 clean-room 实现 |
 | [0011](0011-local-authorized-music-processing.md) | 已接受 | 允许用户明确有权处理的本地 KGM/QMC/NCM 容器解密；禁止在线 DRM、账号、密钥和内容分发路径 |
+| [0012](0012-repository-filter-subscription.md) | 已接受 | 仓库自维护 JSON 补充订阅；独立缓存、受限 CSS 与随包兜底，不替换原有订阅 |
 
 “已接受”表示维护者接受的方案基线，依据见各 ADR；不等于对应源码已实现或 Gate 已通过。若后续阶段改变边界，须以新 ADR 替代。0002 只保留历史，不再约束实现。
