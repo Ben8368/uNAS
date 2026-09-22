@@ -24,6 +24,24 @@ export function formatUptime(totalSeconds = 0) {
   return `${d}天${h}时${m}分${s}秒`
 }
 
+export function formatCompactUptime(totalSeconds = 0) {
+  const d = Math.floor(totalSeconds / 86400)
+  const h = Math.floor((totalSeconds % 86400) / 3600)
+  const m = Math.floor((totalSeconds % 3600) / 60)
+  const s = Math.floor(totalSeconds % 60)
+  const clock = [h, m, s].map((value) => String(value).padStart(2, '0')).join(':')
+  return d > 0 ? `${d}天${clock}` : clock
+}
+
+export function compactCpuModel(model?: string) {
+  if (!model) return ''
+  return model
+    .replace(/\(R\)|\(TM\)/gi, '')
+    .replace(/\s+CPU\s+@/i, ' @')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 export function serviceTitle(service: NonNullable<RuntimeMetrics['services']>[number]) {
   return [service.id, service.detail || service.dep || service.status].filter(Boolean).join(' · ')
 }

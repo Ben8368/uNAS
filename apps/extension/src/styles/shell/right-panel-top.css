@@ -113,6 +113,64 @@
   margin-bottom: 0;
 }
 
+.rp-collapsible-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.rp-card-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 14px 16px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.rp-card-toggle .rp-card-title {
+  margin: 0;
+}
+
+.rp-card-chevron {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: rgba(255,255,255,.52);
+  font-size: 0;
+  flex: 0 0 18px;
+}
+
+.rp-card-chevron::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translate(-50%, -65%) rotate(45deg);
+  transition: transform .16s ease;
+}
+
+.rp-card-chevron--open::before {
+  transform: translate(-50%, -35%) rotate(225deg);
+}
+
+.rp-system-details {
+  display: grid;
+  gap: 8px;
+  padding: 0 16px 14px;
+}
+
 .rp-runtime-head {
   margin-bottom: 12px;
 }
@@ -265,52 +323,41 @@
   backface-visibility: hidden;
 }
 
-.rp-uptime {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 11px;
-  color: rgba(255,255,255,.45);
-}
-
-.rp-uptime-value {
+.rp-runtime-detail-value {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
   min-width: 0;
+  flex: 1 1 auto;
   margin-left: auto;
 }
 
-.rp-uptime-value strong {
-  min-width: 0;
-  overflow: hidden;
-  color: rgba(255,255,255,.8);
-  font-size: 11px;
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.rp-system-detail-row .rp-runtime-detail-value strong {
+  max-width: 100%;
 }
 
-.rp-sample-detail {
+.rp-system-detail-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 12px;
   color: rgba(255,255,255,.45);
   font-size: 11px;
 }
 
-.rp-sample-detail strong {
+.rp-system-detail-row > strong,
+.rp-runtime-detail-value strong {
   min-width: 0;
+  max-width: 72%;
   overflow: hidden;
   color: rgba(255,255,255,.78);
   font-size: 11px;
   font-weight: 600;
-  text-overflow: ellipsis;
+  line-height: 1.35;
   white-space: nowrap;
+  text-align: right;
+  text-overflow: ellipsis;
 }
 
 .rp-diskio-chart {

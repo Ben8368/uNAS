@@ -4,7 +4,12 @@ export type RuntimeMetrics = {
   executionSource?: 'browser' | 'mock'
   runtime?: { uptime_seconds?: number }
   system?: {
+    platform?: string
     cpu_percent?: number
+    cpu_model?: string
+    cpu_arch?: string
+    cpu_cores?: number
+    cpu_temperature_c?: number
     memory_percent?: number
     memory_pressure_percent?: number
     memory_pressure_label?: string
@@ -13,7 +18,19 @@ export type RuntimeMetrics = {
     memory_free_bytes?: number
     gpu_percent?: number
     gpu_available?: boolean
-    gpu_detail?: string
+    gpu_model?: string
+    storage_count?: number
+    storage_capacity_bytes?: number
+    storage_details?: Array<{
+      capacity_bytes?: number
+    }>
+    display_count?: number
+    display_details?: Array<{
+      label: string
+      is_primary: boolean
+      resolution?: string
+      refresh_rate_hz?: number
+    }>
   }
   network?: {
     online?: boolean

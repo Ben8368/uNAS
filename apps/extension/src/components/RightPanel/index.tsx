@@ -9,8 +9,9 @@ import { TaskGroupList } from './TaskGroupList'
 import { EMPTY_METRICS, type RuntimeMetrics } from './types'
 import {
   clampPercent,
+  compactCpuModel,
   formatBytes,
-  formatUptime,
+  formatCompactUptime,
   frontendModeLabel,
   healthScore,
   healthStatus,
@@ -23,6 +24,7 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
   const [error, setError] = useState('')
   const [lastSampleAt, setLastSampleAt] = useState<Date | null>(null)
   const [expandedTaskType, setExpandedTaskType] = useState<string | null>(null)
+  const [isRuntimeDetailsOpen, setIsRuntimeDetailsOpen] = useState(true)
   const systemLifecycle = useSystemStore((state) => state.systemLifecycle)
 
   async function refresh(signal?: AbortSignal) {
@@ -88,6 +90,13 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
       : health >= 60
         ? '#F2C66D'
         : '#FF9999'
+  const cpuModel = compactCpuModel(system.cpu_model) || '不可用'
+  const cpuTemperature = typeof system.cpu_temperature_c === 'number' ? `${system.cpu_temperature_c.toFixed(1)} °C` : null
+  const storageDetails = system.storage_details || []
+  const displayCount = typeof system.display_count === 'number' ? `${system.display_count} 台` : '不可用'
+  const displayDetails = system.display_details || []
+  const systemPlatform = system.platform || '不可用'
+  const gpuModel = system.gpu_model || '浏览器未开放'
   const sampleTime = lastSampleAt
     ? lastSampleAt.toLocaleTimeString('zh-CN', { hour12: false })
     : '未采样'
@@ -124,18 +133,68 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
             valueSuffix=""
           />
         </div>
-        <div className="rp-uptime">
-          <span>系统运行</span>
-          <span className="rp-uptime-value">
-            <strong>{metrics.runtime?.uptime_seconds == null ? '不可用' : formatUptime(metrics.runtime.uptime_seconds)}</strong>
-            {frontendModeLabel(metrics.log_mode) && <span className="rp-runtime-mode">{frontendModeLabel(metrics.log_mode)}</span>}
-          </span>
-        </div>
-        <div className="rp-sample-detail">
-          <span>内存{memoryLabel === '物理占用' ? '' : ` · ${memoryLabel}`}</span>
-          <strong>{memoryDetail}</strong>
-        </div>
         {error && <div className="rp-error">{error}</div>}
+      </div>
+
+      <div className="rp-card rp-collapsible-card">
+        <button
+          type="button"
+          className="rp-card-toggle"
+          aria-expanded={isRuntimeDetailsOpen}
+          aria-controls="system-details-content"
+          aria-label={isRuntimeDetailsOpen ? '收拢系统详情' : '展开系统详情'}
+          onClick={() => setIsRuntimeDetailsOpen((open) => !open)}
+        >
+          <span className="rp-card-title">系统详情</span>
+          <span className={`rp-card-chevron${isRuntimeDetailsOpen ? ' rp-card-chevron--open' : ''}`} aria-hidden="true">⌄</span>
+        </button>
+        {isRuntimeDetailsOpen && <div id="system-details-content" className="rp-system-details">
+          <div className="rp-system-detail-row">
+            <span>系统</span>
+            <strong>{systemPlatform}</strong>
+          </div>
+          <div className="rp-system-detail-row">
+            <span>运行</span>
+            <span className="rp-runtime-detail-value">
+              <strong>{metrics.runtime?.uptime_seconds == null ? '不可用' : formatCompactUptime(metrics.runtime.uptime_seconds)}</strong>
+              {frontendModeLabel(metrics.log_mode) && <span className="rp-runtime-mode">{frontendModeLabel(metrics.log_mode)}</span>}
+            </span>
+          </div>
+          <div className="rp-system-detail-row">
+            <span>CPU</span>
+            <strong>{cpuModel}</strong>
+          </div>
+          <div className="rp-system-detail-row">
+            <span>内存{memoryLabel === '物理占用' ? '' : ` · ${memoryLabel}`}</span>
+            <strong>{memoryDetail}</strong>
+          </div>
+          {cpuTemperature && <div className="rp-system-detail-row">
+            <span>CPU 温度</span>
+            <strong>{cpuTemperature}</strong>
+          </div>}
+          {storageDetails.length > 0
+            ? storageDetails.map((storage, index) => (
+              <div className="rp-system-detail-row" key={`storage-${index}`}>
+                <span>硬盘{index + 1}</span>
+                <strong>{storage.capacity_bytes && storage.capacity_bytes > 0 ? formatBytes(storage.capacity_bytes) : '容量不可用'}</strong>
+              </div>
+            ))
+            : <div className="rp-system-detail-row"><span>硬盘</span><strong>不可用</strong></div>}
+          <div className="rp-system-detail-row">
+            <span>GPU</span>
+            <strong>{gpuModel}</strong>
+          </div>
+          <div className="rp-system-detail-row">
+            <span>显示器数量</span>
+            <strong>{displayCount}</strong>
+          </div>
+          {displayDetails.map((display, index) => (
+            <div className="rp-system-detail-row" key={`display-${index}`}>
+              <span>显示器{index + 1}{displayDetails.length > 2 && display.is_primary ? '（主）' : ''}</span>
+              <strong>{[display.label, display.resolution, display.refresh_rate_hz ? `${display.refresh_rate_hz}Hz` : ''].filter(Boolean).join(' · ')}</strong>
+            </div>
+          ))}
+        </div>}
       </div>
 
       {workspace && <TaskGroupList

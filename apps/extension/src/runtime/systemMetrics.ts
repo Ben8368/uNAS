@@ -3,22 +3,59 @@ import type { RuntimeMetrics } from '#contracts'
 import { extensionApi } from './extensionPlatform'
 
 type CpuTime = { idle?: number; total?: number; user?: number; kernel?: number }
-type CpuInfo = { processors?: Array<{ usage?: CpuTime }> }
+type CpuInfo = {
+  archName?: string
+  modelName?: string
+  numOfProcessors?: number
+  processors?: Array<{ usage?: CpuTime }>
+  temperatures?: number[]
+}
 type MemoryInfo = { capacity?: number; availableCapacity?: number }
+type StorageInfo = {
+  capacity?: number
+  type?: 'fixed' | 'removable' | 'unknown'
+  name?: string
+}
+type DisplayInfo = {
+  activeState?: 'active' | 'inactive'
+  bounds?: { width?: number; height?: number }
+  isEnabled?: boolean
+  isPrimary?: boolean
+  refreshRate?: number
+  modes?: Array<{
+    height?: number
+    heightInNativePixels?: number
+    isNative?: boolean
+    isSelected?: boolean
+    refreshRate?: number
+    width?: number
+    widthInNativePixels?: number
+  }>
+  name?: string
+}
 type SystemApi = {
   cpu?: { getInfo?: () => Promise<CpuInfo> }
   memory?: { getInfo?: () => Promise<MemoryInfo> }
+  storage?: { getInfo?: () => Promise<StorageInfo[]> }
+  display?: { getInfo?: () => Promise<DisplayInfo[]> }
 }
-type GpuAdapter = { info?: { vendor?: string; architecture?: string; device?: string } }
+type GpuAdapter = { info?: { vendor?: string; architecture?: string; device?: string; description?: string } }
 type NetworkInformation = { effectiveType?: string; downlink?: number; rtt?: number }
 type RuntimeNavigator = Navigator & { connection?: NetworkInformation; gpu?: { requestAdapter?: () => Promise<GpuAdapter | null> } }
 type RuntimePerformance = Performance & { memory?: { usedJSHeapSize?: number; jsHeapSizeLimit?: number } }
-type CpuSample = { cpu_percent?: number; uptime_seconds?: number }
+type CpuSample = {
+  cpu_percent?: number
+  uptime_seconds?: number
+  cpu_model?: string
+  cpu_arch?: string
+  cpu_cores?: number
+  cpu_temperature_c?: number
+}
 type CpuBaseline = { total: number; idle: number; counter_total: number; sampled_at: number }
 
 let previousCpu: CpuBaseline | null = null
 let cpuCounterScale: number | undefined
-let gpuProbe: Promise<Pick<NonNullable<RuntimeMetrics['system']>, 'gpu_available' | 'gpu_detail'>> | null = null
+let gpuProbe: Promise<Pick<NonNullable<RuntimeMetrics['system']>, 'gpu_available' | 'gpu_model'>> | null = null
 
 // Chrome documents CpuTime in milliseconds, but some Chromium/Windows builds
 // expose a different scale. Calibrate against wall-clock time instead of
@@ -47,17 +84,24 @@ async function readCpu(signal?: AbortSignal): Promise<CpuSample | undefined> {
   try {
     const info = await getInfo()
     abortIfNeeded(signal)
+    const temperatures = (info.temperatures || []).filter((temperature): temperature is number => Number.isFinite(temperature))
+    const metadata: CpuSample = {
+      cpu_model: info.modelName,
+      cpu_arch: info.archName,
+      cpu_cores: Number.isInteger(info.numOfProcessors) ? info.numOfProcessors : undefined,
+      cpu_temperature_c: temperatures.length ? Math.max(...temperatures) : undefined,
+    }
     const usages = (info.processors || [])
       .map((processor) => processor.usage)
       .filter((usage): usage is CpuTime => usage != null && Number.isFinite(usage.total) && Number.isFinite(usage.idle))
-    if (!usages.length) return undefined
+    if (!usages.length) return metadata
     let total = 0
     let idle = 0
     for (const usage of usages) {
       total += usage.total || 0
       idle += usage.idle || 0
     }
-    if (total <= 0) return undefined
+    if (total <= 0) return metadata
     const counterTotal = Math.max(0, usages[0].total || 0)
     const current: CpuBaseline = { total, idle, counter_total: counterTotal, sampled_at: Date.now() }
     const baseline = previousCpu
@@ -66,11 +110,11 @@ async function readCpu(signal?: AbortSignal): Promise<CpuSample | undefined> {
       cpuCounterScale = inferCpuCounterScale(counterTotal - baseline.counter_total, current.sampled_at - baseline.sampled_at) || cpuCounterScale
     }
     const uptimeSeconds = cpuCounterScale ? Math.floor(counterTotal / cpuCounterScale / 1000) : undefined
-    if (!baseline) return { uptime_seconds: uptimeSeconds }
+    if (!baseline) return { ...metadata, uptime_seconds: uptimeSeconds }
     const totalDelta = current.total - baseline.total
     const idleDelta = current.idle - baseline.idle
-    if (totalDelta <= 0) return { uptime_seconds: uptimeSeconds }
-    return { cpu_percent: percent((1 - Math.max(0, idleDelta) / totalDelta) * 100), uptime_seconds: uptimeSeconds }
+    if (totalDelta <= 0) return { ...metadata, uptime_seconds: uptimeSeconds }
+    return { ...metadata, cpu_percent: percent((1 - Math.max(0, idleDelta) / totalDelta) * 100), uptime_seconds: uptimeSeconds }
   } catch {
     return undefined
   }
@@ -104,21 +148,114 @@ async function readGpu(signal?: AbortSignal) {
   if (!gpuProbe) {
     const gpu = (globalThis.navigator as RuntimeNavigator | undefined)?.gpu
     gpuProbe = (async () => {
-      if (!gpu?.requestAdapter) return { gpu_available: false, gpu_detail: '浏览器未提供 WebGPU；无法读取 GPU 利用率或显存。' }
+      if (!gpu?.requestAdapter) return { gpu_available: false }
       try {
         const adapter = await gpu.requestAdapter()
-        if (!adapter) return { gpu_available: false, gpu_detail: '未检测到可用 GPU；无法读取 GPU 利用率或显存。' }
+        if (!adapter) return { gpu_available: false }
         const info = adapter.info || {}
-        const device = [info.vendor, info.architecture, info.device].filter(Boolean).join(' / ')
-        return { gpu_available: true, gpu_detail: device ? `已检测到 GPU（${device}）；浏览器未开放利用率或显存读数。` : '已检测到 GPU；浏览器未开放利用率或显存读数。' }
+        const rawModel = [info.device, info.description].filter(Boolean).join(' ')
+        const model = rawModel.match(/\b((?:RTX|GTX)\s*\d{3,4}(?:\s*(?:Ti|SUPER))?|RX\s*\d{3,4}|Arc\s*A\d+|Apple\s+M\d(?:\s+(?:Pro|Max|Ultra))?)\b/i)?.[1]
+          ?.replace(/\s+/g, ' ')
+          .replace(/^(RTX|GTX|RX)\s+(?=\d)/i, '$1')
+          .trim()
+        const vendorSource = [info.vendor, info.description, info.device].filter(Boolean).join(' ')
+        const vendor = /nvidia/i.test(vendorSource)
+          ? 'NVIDIA'
+          : /intel/i.test(vendorSource)
+            ? 'Intel'
+            : /amd|advanced micro devices/i.test(vendorSource)
+              ? 'AMD'
+              : /apple/i.test(vendorSource)
+                ? 'Apple'
+                : undefined
+        return { gpu_available: true, gpu_model: model || vendor }
       } catch {
-        return { gpu_available: false, gpu_detail: 'GPU 能力探测失败；无法读取 GPU 利用率或显存。' }
+        return { gpu_available: false }
       }
     })()
   }
   const result = await gpuProbe
   abortIfNeeded(signal)
   return result
+}
+
+async function readStorage(signal?: AbortSignal) {
+  const system = (extensionApi() as (ReturnType<typeof extensionApi> & { system?: SystemApi }) | undefined)?.system
+  const getInfo = system?.storage?.getInfo
+  if (!getInfo) return {}
+  try {
+    const info = await getInfo()
+    abortIfNeeded(signal)
+    const fixed = info.filter((unit) => unit.type === 'fixed')
+    const storageDetails = fixed.map((unit) => ({ capacity_bytes: Number(unit.capacity || 0) }))
+    return {
+      storage_count: fixed.length,
+      storage_capacity_bytes: fixed.reduce((total, unit) => total + Number(unit.capacity || 0), 0),
+      storage_details: storageDetails,
+    }
+  } catch {
+    return {}
+  }
+}
+
+function displayLabel(display: DisplayInfo, index: number, deviceScaleFactor?: number) {
+  const name = display.name || `显示器 ${index + 1}`
+  const nativeMode = display.modes?.find((candidate) => candidate.isNative) || display.modes?.find((candidate) => candidate.isSelected)
+  const nativeWidth = Number(nativeMode?.widthInNativePixels || 0)
+  const nativeHeight = Number(nativeMode?.heightInNativePixels || 0)
+  const scale = typeof deviceScaleFactor === 'number' && Number.isFinite(deviceScaleFactor) && deviceScaleFactor > 1 ? deviceScaleFactor : 1
+  const width = nativeWidth > 0 ? nativeWidth : Math.round(Number(display.bounds?.width || 0) * scale)
+  const height = nativeHeight > 0 ? nativeHeight : Math.round(Number(display.bounds?.height || 0) * scale)
+  const resolution = width >= 3800 && height >= 2100
+    ? '4K'
+    : width >= 2500 && height >= 1400
+      ? '2K'
+      : width >= 1900 && height >= 1000
+        ? '1080P'
+        : width >= 1200 && height >= 700
+          ? '720P'
+          : width > 0 && height > 0 ? `${width}×${height}` : undefined
+  const selectedMode = display.modes?.find((candidate) => candidate.isSelected) || nativeMode
+  const refreshRate = Number(selectedMode?.refreshRate || display.refreshRate || 0)
+  return {
+    label: name,
+    resolution,
+    refresh_rate_hz: refreshRate > 0 ? Math.round(refreshRate) : undefined,
+  }
+}
+
+async function readDisplays(signal?: AbortSignal) {
+  const system = (extensionApi() as (ReturnType<typeof extensionApi> & { system?: SystemApi }) | undefined)?.system
+  const getInfo = system?.display?.getInfo
+  if (!getInfo) return {}
+  try {
+    const info = await getInfo()
+    abortIfNeeded(signal)
+    const displays = info.filter((display) => display.activeState !== 'inactive' && display.isEnabled !== false)
+    const primary = displays.find((display) => display.isPrimary) || displays[0]
+    const primaryIndex = primary ? displays.indexOf(primary) : -1
+    const deviceScaleFactor = Number((globalThis as typeof globalThis & { devicePixelRatio?: number }).devicePixelRatio)
+    return {
+      display_count: displays.length,
+      display_details: displays.map((display, index) => ({
+        ...displayLabel(display, index, deviceScaleFactor),
+        is_primary: index === primaryIndex,
+      })),
+    }
+  } catch {
+    return {}
+  }
+}
+
+function readPlatform() {
+  const runtimeNavigator = globalThis.navigator as RuntimeNavigator | undefined
+  const raw = (runtimeNavigator as RuntimeNavigator & { userAgentData?: { platform?: string } } | undefined)?.userAgentData?.platform || runtimeNavigator?.platform
+  if (!raw) return undefined
+  if (/win/i.test(raw)) return 'Windows'
+  if (/mac/i.test(raw)) return 'macOS'
+  if (/cros/i.test(raw)) return 'ChromeOS'
+  if (/linux/i.test(raw)) return 'Linux'
+  return raw
 }
 
 function readNetwork() {
@@ -141,7 +278,24 @@ function readNetwork() {
 
 export async function readBrowserSystemMetrics(signal?: AbortSignal): Promise<Pick<RuntimeMetrics, 'runtime' | 'system' | 'network'> & { executionSource: 'browser' }> {
   abortIfNeeded(signal)
-  const [cpu, memory, gpu] = await Promise.all([readCpu(signal), readMemory(signal), readGpu(signal)])
+  const [cpu, memory, gpu, storage, displays] = await Promise.all([readCpu(signal), readMemory(signal), readGpu(signal), readStorage(signal), readDisplays(signal)])
   abortIfNeeded(signal)
-  return { executionSource: 'browser', runtime: cpu?.uptime_seconds == null ? undefined : { uptime_seconds: cpu.uptime_seconds }, system: { ...memory, cpu_percent: cpu?.cpu_percent, ...gpu, gpu_percent: undefined }, network: readNetwork() }
+  return {
+    executionSource: 'browser',
+    runtime: cpu?.uptime_seconds == null ? undefined : { uptime_seconds: cpu.uptime_seconds },
+    system: {
+      ...memory,
+      platform: readPlatform(),
+      cpu_percent: cpu?.cpu_percent,
+      cpu_model: cpu?.cpu_model,
+      cpu_arch: cpu?.cpu_arch,
+      cpu_cores: cpu?.cpu_cores,
+      cpu_temperature_c: cpu?.cpu_temperature_c,
+      ...gpu,
+      gpu_percent: undefined,
+      ...storage,
+      ...displays,
+    },
+    network: readNetwork(),
+  }
 }
