@@ -46,7 +46,7 @@ export default defineConfig({
       extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",
     },
     web_accessible_resources: [{
-      resources: ['icons/icon16.png', 'icons/icon48.png', 'icons/icon128.png'],
+      resources: ['icons/icon16.png', 'icons/icon48.png', 'icons/icon128.png', 'static/app/icons/default/adblock.svg'],
       matches: ['https://*/*'],
     }],
   },

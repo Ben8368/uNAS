@@ -8,92 +8,84 @@
     {
       "path": "apps/extension/public/static/app/icons/default/browser.svg",
       "bytes": 349,
-      "sha256": "2399831666af361a873b4d5fe7760121ca4d038850e885c419b9fc634a77a14a",
+      "sha256": "f140f6822c540baea336367d4f8298c7bc0204ba25bd4856de5e7092028a1bfa",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/adblock.svg",
       "bytes": 342,
-      "sha256": "3a6ea4db07a2a870bd357c2943865bb6da347fe03fa9bbc44176a5d2bb702d92",
+      "sha256": "a0dcc7e1161ce73a9d2a5e4cb4fd10b85368528247410b5aafb1720bb84a9130",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/download.svg",
       "bytes": 307,
-      "sha256": "69a6136edc97b1ec3946c33d82bf7ed0a21912da486daccd1cd006cda96343bc",
+      "sha256": "59915576be1ba10a8fe36f4871dbde9be39277ea18c9e9b7a0ae5d3af0ee9714",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/files.svg",
       "bytes": 310,
-      "sha256": "749fece49fef26fd36080de81398aa2927154bca9440822677ba086b4268c249",
+      "sha256": "4e00343d597ca540e3bb78f033d08c0e93b5ca4bbf9d929ed687f39b37fc3a03",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/media.svg",
       "bytes": 334,
-      "sha256": "0a2d0f513dd9845eb2e5dcdfd21f8f9522b8221ddf3e34db868a5beb1de5de1e",
+      "sha256": "21715ace728091dd3c3fc3812f5328f9c2b9b25cf2c4352c0dbe2b15172b0777",
       "width": 64,
       "height": 64
     },
     {
-      "path": "apps/extension/public/static/app/icons/default/music.png",
-      "bytes": 32881,
-      "sha256": "20f4aee697078df64492bdfb46495367d2eb04a2f7db5a0943cff3e5f1ba40d1",
-      "width": 512,
-      "height": 512,
-      "kind": "Maintainer-provided local PNG from C:\\Users\\ben.luo\\Downloads\\Compressed\\um-web.extension.v1.10.8\\img\\icons\\android-chrome-512x512.png; copied unchanged on 2026-09-22; local development only, public distribution approval remains pending"
-    },
-    {
       "path": "apps/extension/public/static/app/icons/default/layers.svg",
       "bytes": 326,
-      "sha256": "af89c50dd82f6aed451d75d6f6c1aed60ec1756bdd080b670b723bc36e25802e",
+      "sha256": "94ef1d3adc6bd6f5374c2dd312c7eee35deb5620bc1f880fc8be78962b84271d",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/settings.svg",
       "bytes": 386,
-      "sha256": "a44fd247fba626cda4875bd118cf1d99dbb1ab4388458d25111e7442d175382f",
+      "sha256": "133a67b3804b946ec1200ad391dcb704a1a78dbdbb151c377e0f79e2b2b1346b",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/logs.svg",
       "bytes": 309,
-      "sha256": "55dc973f8b594f6679b71394d05c781b44470432932a4f5459740baff57627e9",
+      "sha256": "d52c4baae7cded7d88301037812e5895e1f5195351e66a80b8a913e5327c69fc",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/image.svg",
       "bytes": 374,
-      "sha256": "f7225a2a6d775221a8376819b6856e6d046cf4c5032543ed0545d8544336cc6e",
+      "sha256": "6b3c62a1ec443088bfa768f833faf19b67374dba4d14d4b6f1e81558fec6f987",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/document.svg",
       "bytes": 318,
-      "sha256": "7a3eb52704950c72dee6775a55556dbd620d74ae29819cc50043b0638097ce31",
+      "sha256": "f07283e8b5b16217eb79a90caf45de6ddca8e23901b3223804efa217d3605776",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/archive.svg",
       "bytes": 348,
-      "sha256": "05386f37e5b64f9e2a14efac6b019256924997d571fa4c4b58c4175614c1b977",
+      "sha256": "88f911ce04462a9ef5e5d502d4ea7c47478d3b228e333887d4c4f6831967f8ad",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/tasks.svg",
       "bytes": 322,
-      "sha256": "7022c57535109a10748b59f1bde748cefa2b44a3d6ebe2ac8082d15c56cf7c97",
+      "sha256": "ed78cd226165abaae606528e426020afa158efe1e4a62fbe41229e5e7d1d6d52",
       "width": 64,
       "height": 64
     },
@@ -105,9 +97,17 @@
     },
     {
       "path": "apps/extension/public/startupAppearance.js",
-      "bytes": 2888,
-      "sha256": "e3f4f4165c3f6e6a81fa0dd606c8cf77629f143e58d5b4c6b34e58a9a9cb2c91",
+      "bytes": 2770,
+      "sha256": "d22afc66874dddf79237df97b0d6fafcedb6404f693b51f56793d495f57e622d",
       "kind": "local-startup-prepaint-script"
+    },
+    {
+      "path": "apps/extension/public/static/app/icons/default/music.png",
+      "bytes": 32881,
+      "sha256": "20f4aee697078df64492bdfb46495367d2eb04a2f7db5a0943cff3e5f1ba40d1",
+      "width": 512,
+      "height": 512,
+      "kind": "Maintainer-provided local PNG from C:\\Users\\ben.luo\\Downloads\\Compressed\\um-web.extension.v1.10.8\\img\\icons\\android-chrome-512x512.png; copied unchanged on 2026-09-22; local development only, public distribution approval remains pending"
     },
     {
       "path": "apps/extension/public/icons/icon16.png",

@@ -1,8 +1,8 @@
 # 视觉与交互设计系统
 
-本文统一规范 Desktop、System/Tool App 与 Link App 管理界面的视觉值、骨架、状态及输入行为。实现方式见 [FRONTEND_GUIDE](FRONTEND_GUIDE.md)，验收见 [QUALITY](QUALITY.md)。
+统一 Desktop、System/Tool App、Link App 的视觉与交互。实现见 [FRONTEND_GUIDE](FRONTEND_GUIDE.md)，验收见 [QUALITY](QUALITY.md)。
 
-**基线 UI v1.5 · 2026-09-22**：新增和改动 UI 必须遵循，存量按受影响范围对齐；非实现或验证声明，不追认旧截图，不要求重做无关页面。
+**基线 UI v1.7 · 2026-09-22**：改动 UI 必须遵循，存量按影响范围对齐；不代表已实现或验证，不追认旧截图。
 
 ## UI-01 视觉方向与材料
 
@@ -15,13 +15,15 @@
 | 控制 | Dock、窗口标题栏、导航 | navigation glass；窗口根是唯一采样/blur 层，内部工具栏不得叠加 blur |
 | 临时层 | 菜单、Popover、Dialog、Sheet、Toast | floating/dialog glass；长表单及正文仍用实色 |
 
-仅透明度、边缘高光和静态阴影表现材料，不做实时折射或鼠标追光。不在内容卡片嵌套玻璃。壁纸不可读时改用实色表面，不靠加重文字阴影补救。
+仅透明度、边缘高光和静态阴影表现材料，不做实时折射或鼠标追光。不在内容卡片嵌套玻璃。壁纸影响可读性时用实色面，不加重文字阴影。
 
 UniPass 薄荷绿映射 `window-theme.css` 的 `--window-vault-accent{,-strong,-text}`；其余复用窗口 Token，不重复定义主题值。
 
+New Tab / Workspace 及 App 固定深色，无主题选项；Light Token 仅供 UniPass 网页浮层独立切换。App 图标以广告拦截、音乐解锁为亮度参照，保留色相与白色图形对比，不加全局滤镜。
+
 ## UI-02 语义 Token
 
-以下为设计名与目标值（CSS px），非现存 CSS API；实现统一映射共享 window-* 变量，不重复定义同义变量。App 不得私设主题值。
+以下为设计目标（CSS px），非 CSS API；统一映射共享 window-* 变量，App 不私设主题。
 
 | 颜色 Token | Light | Dark | 用途 |
 | --- | --- | --- | --- |
@@ -52,20 +54,20 @@ UniPass 薄荷绿映射 `window-theme.css` 的 `--window-vault-accent{,-strong,-
 | border / focus | 边框 1；焦点环 3、外偏移 2；禁止只用阴影表示焦点 |
 | material.navigation | Light rgb(235 244 249 / .60)，Dark rgb(17 28 39 / .48)；blur 18、saturate 138%、contrast 104% |
 | material.floating | Light rgb(238 247 250 / .58)，Dark rgb(18 30 41 / .50)；blur 20、saturate 142%、contrast 103% |
-| material.window | Light rgb(239 247 250 / .56)，Dark rgb(18 30 41 / .44)；唯一 backdrop-filter 外壳，带非对称反射和渐变 rim |
+| material.window | Light rgb(239 247 250 / .56)，Dark rgb(18 30 41 / .44)；唯一 backdrop-filter 外壳，带非对称反射、单一边框 |
 | material.readable | Light rgb(248 249 250 / .90)，Dark rgb(31 42 52 / .82)；无 blur，作为窗口正文内层，四周保留外壳可见边缘 |
 | material.dialog | Light rgb(247 251 252 / .68)，Dark rgb(22 35 47 / .58)；blur 22、saturate 138%、contrast 104% |
 | shadow | window：0 22px 62px + 0 3px 12px；floating：0 12px 32px + 0 2px 8px（分别按主题调色） |
 | motion | fast 120ms、normal 180ms、slow 240ms；ease-out；仅 transform/opacity，不动画 blur |
 | layer | desktop 0、window 100–199（聚焦排序）、shell 200、drawer 300、popover 400、modal 500、toast 600；原生 top layer 按打开顺序管理 |
 
-浅/深/跟随系统为主题选项。控件可透出窗口环境，不叠加 blur。透明度减少或 blur 不可用时，导航和控件回退实色；高对比用实色边界，forced-colors 尊重系统色。减少动态时取消非必要动画，进度仍可读。降级由用户设置或已验证检测触发，不宣称未实测的自动判断。
+控件可透出窗口环境，不叠加 blur。透明度减少或 blur 不可用时，导航和控件回退实色；高对比用实色边界，forced-colors 尊重系统色。减少动态时取消非必要动画，进度仍可读。降级由用户设置或已验证检测触发，不宣称未实测的自动判断。
 
 ## UI-03 页面骨架与密度
 
 以当前文件管理的外框比例与“导航/操作 → 搜索筛选 → 提示 → 主内容 → 底部摘要”为共同母版。只吸收布局语言，不把文件操作或现有样式缺陷推广到其他 App；UI v1.1 将上一版窗口目标校准到该参照。
 
-所有内置 App 使用同一 WindowFrame：左侧图标/名称，中间可选状态，右侧最小化/最大化/关闭；标题栏高 50、水平内距 16、标题字号 14。工具栏最小 44；内容内距上/左右/下为 22/24/16，区域间距 14；多行内容可增高。侧栏默认 200（可调 160–360），Inspector 280。一个区域只设一个主操作，危险操作分开。
+内置 App 共用 WindowFrame：左侧图标/名称，中间可选状态，右侧最小化/最大化/关闭；标题栏高 50、水平内距 16、标题字号 14。工具栏最小 44；内容内距上/左右/下为 22/24/16，区域间距 14；多行内容可增高。侧栏默认 200（可调 160–360），Inspector 280。一个区域只设一个主操作，危险操作分开。
 
 | Surface | 固定结构与行为 |
 | --- | --- |
@@ -123,7 +125,7 @@ App 只改变图标/名称、导航项、筛选字段、业务内容、状态与
 
 ## UI-07 执行与变更
 
-- 开工先引用本文件版本与适用 UI 编号，列出受影响页面、公共组件与状态；只写差异，不复制规范全文。新功能必须落入 UI-03 的骨架。
-- 固定值是默认约束。需要例外时，在本次任务/PR 记录“规则编号、原因、影响、替代、验收”；未获维护者接受不得把例外作为新公共基线。纯视觉选择不要求另写 ADR，长期边界变更按 [GOVERNANCE](GOVERNANCE.md)。
-- 普通修正直接更新本文并在变更说明交代影响；改变公共 token、页面骨架或组件行为时更新基线版本/日期，执行拆分只放 [DEVELOPMENT_BLUEPRINT](DEVELOPMENT_BLUEPRINT.md)，不在本文维护迁移进度。
-- 完成条件与截图/状态证据统一见 [QUALITY](QUALITY.md) 第 5 节；文档检查通过只证明治理结构通过，不能证明 UI 已遵循规范。
+- 开工注明版本、UI 编号、受影响页面/组件/状态，只写差异；新功能遵循 UI-03。
+- 固定值例外在任务/PR 注明规则、原因、影响、替代与验收，需维护者接受；纯视觉选择不需 ADR，长期边界变更按 [GOVERNANCE](GOVERNANCE.md)。
+- 修正注明影响；公共 token、骨架或组件行为变化需更新基线版本/日期，执行拆分只放 [DEVELOPMENT_BLUEPRINT](DEVELOPMENT_BLUEPRINT.md)，不在本文维护迁移进度。
+- 完成条件与证据见 [QUALITY](QUALITY.md) 第 5 节；文档检查不证明 UI 验收通过。

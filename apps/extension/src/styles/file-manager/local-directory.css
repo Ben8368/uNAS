@@ -152,14 +152,6 @@
   .fm-local-empty__content, .fm-local-empty__action > svg { transition: none; }
 }
 
-html[data-theme='light'] .fm-local-search,
-html[data-theme='light'] .fm-local-sort { background: var(--window-surface-raised); }
-
-html[data-theme='light'] .mt-window-body .fm-local-browser :is(.fm-icon-btn, .fm-action-btn, .fm-local-change) {
-  background: var(--window-surface-raised);
-  color: var(--window-text);
-  border-color: var(--window-border);
-}
 
 
 .fm-local-empty:hover .fm-local-empty__content {

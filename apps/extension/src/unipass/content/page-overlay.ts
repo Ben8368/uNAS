@@ -33,6 +33,7 @@ async function mount(): Promise<void> {
 
   const overlayRoot = document.createElement("div");
   overlayRoot.className = "overlay-root";
+  overlayRoot.dataset.themeScope = "overlay";
   overlayRoot.style.pointerEvents = "none";
   const parsed = new DOMParser().parseFromString(popupHtml, "text/html");
   const appWindow = parsed.querySelector<HTMLElement>(".app-window");

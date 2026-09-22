@@ -18,21 +18,20 @@
   }
   const wallpapers = definitions.map((definition) => ({ srgb: gradient(definition, 'srgb'), p3: gradient(definition, 'p3') }))
 
+  // Tab surfaces are always dark, including before React and with stale preferences.
+  const root = document.documentElement
+  root.className = 'dark'
+  root.dataset.theme = 'dark'
+  root.style.colorScheme = 'dark'
+
   try {
     const storedValue = JSON.parse(localStorage.getItem('unas.appearance.v1') || '{}')
     const value = storedValue.schemaVersion === 1 ? storedValue : {}
 
     const wallpaper = Number.isInteger(value.wallpaper) && wallpapers[value.wallpaper] ? value.wallpaper : 2
-    const theme = value.themeMode === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : value.themeMode
-    const root = document.documentElement
     root.style.setProperty('--mt-wp-srgb', wallpapers[wallpaper].srgb)
     root.style.setProperty('--mt-wp-p3', wallpapers[wallpaper].p3)
 
-    if (theme === 'light' || theme === 'dark') {
-      root.className = theme
-      root.dataset.theme = theme
-      root.style.colorScheme = theme
-    }
   } catch {
     // Invalid or unavailable local storage falls back to the default wallpaper.
   }

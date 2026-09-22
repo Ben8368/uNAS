@@ -321,13 +321,17 @@ main {
 .host-chip:disabled { cursor: default; opacity: .72; }
 .host-chip:not(:disabled):hover { border-color: rgba(112, 167, 255, .38); background: rgba(112, 167, 255, .10); }
 .host-chip.paused { border-color: rgba(65, 211, 155, .30); }
-.host-chip > .host-status-dot {
-  width: 6px;
-  height: 6px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: #70a7ff;
-  box-shadow: 0 0 0 3px rgba(112, 167, 255, .10);
+.host-chip > .host-status-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px rgba(88, 168, 135, .10);
+}
+.host-chip.paused > .host-status-icon {
+  opacity: .78;
+  filter: saturate(.72);
 }
 .context,
 .host-chip > span:last-child {

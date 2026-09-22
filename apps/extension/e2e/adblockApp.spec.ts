@@ -20,7 +20,7 @@ test('广告拦截桌面入口、共享窗口与真实状态', async ({ extensio
   expect(extension.context.pages().length).toBe(pagesBefore)
   for (const size of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }, { width: 390, height: 844 }]) {
     await page.setViewportSize(size)
-    for (const theme of ['light', 'dark']) {
+    for (const theme of ['dark']) {
       await page.evaluate(value => { document.documentElement.dataset.theme = value }, theme)
       await expect(app.getByRole('button', { name: '检查更新' })).toBeInViewport()
       expect(await app.locator('.adblock-app').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true)

@@ -18,7 +18,7 @@
   background: var(--window-glass-window);
   backdrop-filter: var(--window-glass-filter);
   -webkit-backdrop-filter: var(--window-glass-filter);
-  border: 1px solid color-mix(in srgb, var(--window-text) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--window-text) 18%, transparent);
   border-radius: var(--app-window-radius);
   box-shadow: var(--window-shadow);
   overflow: hidden;
@@ -29,27 +29,12 @@
 }
 
 .mt-window--active {
-  box-shadow: var(--window-shadow), 0 0 0 1px color-mix(in srgb, var(--window-focus-ring) 28%, transparent);
+  border-color: color-mix(in srgb, var(--window-focus-ring) 28%, transparent);
 }
 
-.mt-window--maximized { border-radius: var(--app-window-radius); box-shadow: 0 0 0 1px var(--window-divider); }
+.mt-window--maximized { border-radius: var(--app-window-radius); box-shadow: none; }
 
-/* The rim and off-axis reflection live on the one blurred outer shell. */
-.mt-window::before {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  padding: 1px;
-  border-radius: inherit;
-  background: var(--window-glass-rim);
-  content: '';
-  pointer-events: none;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-}
-
+/* One physical border owns the contour; reflection adds no second rim. */
 .mt-window::after {
   position: absolute;
   top: 0;

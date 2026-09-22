@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { RefreshCw, ShieldCheck } from 'lucide-react'
+import { AlertTriangle, RefreshCw, ShieldCheck } from 'lucide-react'
 import { readAdBlockingStatus, refreshAdBlockingStatus, type BlockingStatus } from 'unas-src/runtime/adBlocking'
 import 'unas-src/styles/adblock.css'
 
@@ -55,7 +55,10 @@ export function AdBlockApp() {
           <section className="adblock-section" aria-labelledby="adblock-state">
             <h3 id="adblock-state"><ShieldCheck size={20} aria-hidden="true" />{stateLabels[status.state]}</h3>
             <p>来源：扩展实时状态。关闭此窗口不会关闭广告拦截。</p>
-            {status.error && <p role="alert">{status.error}</p>}
+            {status.error && <div className="adblock-notice adblock-notice--warning" role="alert">
+              <AlertTriangle size={18} aria-hidden="true" />
+              <span>{status.error}</span>
+            </div>}
             <dl className="adblock-facts">
               <div><dt>基础规则</dt><dd>{status.baselineRuleCount.toLocaleString('zh-CN')} 条</dd></div>
               <div><dt>订阅规则</dt><dd>{status.ruleCount.toLocaleString('zh-CN')} 条</dd></div>

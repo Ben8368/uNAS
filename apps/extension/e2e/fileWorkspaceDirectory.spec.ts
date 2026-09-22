@@ -105,8 +105,7 @@ test('File Manager requires an in-app confirmation before enabling write mode fo
   await testInfo.attach('directory-write-layout', { path: screenshotPath, contentType: 'image/png' })
   for (const sample of [
     { width: 1440, height: 900, theme: 'dark' },
-    { width: 1440, height: 900, theme: 'light' },
-    { width: 390, height: 844, theme: 'light' },
+    { width: 390, height: 844, theme: 'dark' },
   ]) {
     await first.setViewportSize({ width: sample.width, height: sample.height })
     await first.evaluate((theme) => document.documentElement.setAttribute('data-theme', theme), sample.theme)

@@ -91,7 +91,7 @@
 - **阻断 Gate：** 不阻断本地前端打磨；由维护者在本轮界面验收时确认，不改变已验收的 G1。
 - **问题：** 目录搜索、排序、路径导航、网址 App、中性窗口表面及精简文案已有自动化验证，但视觉偏好、真实触控与浏览器缩放体验仍待维护者确认。
 - **本轮范围：** “广告拦截”桌面 App 复用共享窗口；主题/响应式回归入口为 `apps/extension/e2e/adblockApp.spec.ts`，bundled Chromium 已通过，系统 Chrome 自动化未等到 Service Worker；目标 Chrome 人工视觉、触控与真实 200% 缩放仍待确认。
-- **外观补充：** Dock 收窄至 56px、各 App 透明画布与 readable 卡片共用文件管理器的窗口 blur；回归入口为 `appTheme.spec.ts` 与 `glassVisual.spec.ts`，目标 Chrome 人工视觉、真实触控和 200% 缩放沿用本项待确认。
+- **外观补充：** 图标提亮、标签页固定深色（浮层保留浅/深）、设置卡片铺满与窗口单边框沿用本项人工验收缺口；旧浅色偏好回归入口为 `startupAppearance.spec.ts`。Dock 收窄至 56px、各 App 透明画布与 readable 卡片共用文件管理器的窗口 blur；回归入口为 `appTheme.spec.ts` 与 `glassVisual.spec.ts`，目标 Chrome 人工视觉、真实触控和 200% 缩放沿用本项待确认。
 - **负责人：** 项目发起人。
 - **关闭证据：** [本轮验收记录](archive/reviews/2026-09-08-ui.md)列出深浅主题、长名称和窄窗口截图场景；生成产物位于被 Git 忽略的 `apps/extension/test-results/extension-e2e/`。维护者结合截图与解包扩展人工走查给出确认。真实文件处理不在当前 UI 风险范围内。
 

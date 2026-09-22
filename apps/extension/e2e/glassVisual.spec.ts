@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test'
 import { test, expect, workspace } from './fixtures'
 
 type MaterialSnapshot = {
-  theme: 'dark' | 'light'
+  theme: 'dark'
   reduceTransparency: boolean
   navigation: Record<string, string>
   window: Record<string, string>
@@ -10,7 +10,7 @@ type MaterialSnapshot = {
   launcher: Record<string, string>
 }
 
-async function applyAppearance(page: Page, theme: 'dark' | 'light', reduceTransparency = false) {
+async function applyAppearance(page: Page, theme: 'dark', reduceTransparency = false) {
   await page.evaluate(({ theme, reduceTransparency }) => {
     document.documentElement.setAttribute('data-theme', theme)
     document.documentElement.toggleAttribute('data-reduce-transparency', reduceTransparency)
@@ -18,7 +18,7 @@ async function applyAppearance(page: Page, theme: 'dark' | 'light', reduceTransp
   }, { theme, reduceTransparency })
 }
 
-async function inspectMaterials(page: Page, theme: 'dark' | 'light', reduceTransparency: boolean): Promise<MaterialSnapshot> {
+async function inspectMaterials(page: Page, theme: 'dark', reduceTransparency: boolean): Promise<MaterialSnapshot> {
   return page.evaluate(({ theme, reduceTransparency }) => {
     const inspect = (selector: string) => {
       const computed = getComputedStyle(document.querySelector(selector)!)
@@ -45,7 +45,7 @@ test('Liquid Glass refinement keeps environment transmission while the content s
   await page.setViewportSize({ width: 1440, height: 900 })
   const evidence: MaterialSnapshot[] = []
 
-  for (const theme of ['dark', 'light'] as const) {
+  for (const theme of ['dark'] as const) {
     await applyAppearance(page, theme)
     evidence.push(await inspectMaterials(page, theme, false))
     await page.screenshot({ path: testInfo.outputPath(`refined-${theme}-files-and-dock.png`), animations: 'disabled' })
@@ -77,14 +77,14 @@ test('Liquid Glass refinement keeps environment transmission while the content s
   expect(extension.errors).toEqual([])
 })
 
-test('Browser App uses semantic content surfaces in both themes and reduced transparency', async ({ extension }, testInfo) => {
+test('Browser App uses semantic content surfaces in dark mode and reduced transparency', async ({ extension }, testInfo) => {
   const page = await extension.context.newPage()
   await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.locator('.app-icon--browser').click()
   await expect(page.getByRole('heading', { name: '网址 App' })).toBeVisible()
   const evidence = []
-  for (const theme of ['dark', 'light'] as const) {
+  for (const theme of ['dark'] as const) {
     for (const reduced of [false, true]) {
       await applyAppearance(page, theme, reduced)
       const surfaces = await page.evaluate(() => {

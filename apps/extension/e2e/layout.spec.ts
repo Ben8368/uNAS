@@ -4,7 +4,7 @@ const cases = [
   { name: 'wide-dark', width: 1440, height: 900, theme: 'dark' as const },
   { name: 'regular-dark', width: 1024, height: 768, theme: 'dark' as const },
   { name: 'compact-dark', width: 390, height: 844, theme: 'dark' as const },
-  { name: 'wide-light', width: 1440, height: 900, theme: 'light' as const },
+  { name: 'light-system-dark-tab', width: 1440, height: 900, theme: 'light' as const },
   { name: 'reduced-motion', width: 1440, height: 900, theme: 'dark' as const, reducedMotion: true },
   { name: 'high-contrast', width: 1024, height: 768, theme: 'dark' as const, highContrast: true },
   { name: '200-percent-layout-simulation', width: 720, height: 450, theme: 'dark' as const },
@@ -17,9 +17,9 @@ for (const sample of cases) {
     await page.emulateMedia({ colorScheme: sample.theme, reducedMotion: sample.reducedMotion ? 'reduce' : 'no-preference', contrast: sample.highContrast ? 'more' : 'no-preference' })
     await page.getByRole('button', { name: '设置', exact: true }).click()
     const settings = page.locator('[data-app-id="settings"]')
-    await settings.getByRole('combobox', { name: /主题/ }).selectOption(sample.theme)
+    await expect(settings.getByRole('combobox', { name: /主题/ })).toHaveCount(0)
     await settings.getByRole('button', { name: '关闭设置', exact: true }).click()
-    await expect(page.locator('html')).toHaveAttribute('data-theme', sample.theme)
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
     if (sample.reducedMotion) await expect(page.locator('html')).toHaveAttribute('data-reduce-motion', 'true')
     if (sample.highContrast) await expect(page.locator('html')).toHaveAttribute('data-high-contrast', 'true')
     const app = page.locator('[data-app-id="fetcher"]')

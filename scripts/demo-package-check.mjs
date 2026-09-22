@@ -49,6 +49,8 @@ if (JSON.stringify(manifest.optional_host_permissions) !== JSON.stringify(['http
 if (!manifest.declarative_net_request?.rule_resources?.some((resource) => resource.id === 'baseline' && resource.path === 'rules/baseline.json')) errors.push('DNR baseline 未进入最终 manifest。')
 if (!manifest.content_scripts?.some((script) => script.js?.some((file) => file.includes('adblock')) && script.matches?.includes('https://*/*'))) errors.push('AdBlock cosmetic content script 未进入最终 manifest。')
 if (!manifest.web_accessible_resources?.some((resource) => resource.resources?.includes('icons/icon48.png'))) errors.push('浮层品牌资源未限制性公开。')
+if (!manifest.web_accessible_resources?.some((resource) => resource.resources?.includes('static/app/icons/default/adblock.svg')
+  && resource.matches?.includes('https://*/*'))) errors.push('AdBlock overlay icon must be accessible to HTTPS pages.')
 let total = 0
 for (const file of await filesIn(output)) {
   total += (await stat(file)).size

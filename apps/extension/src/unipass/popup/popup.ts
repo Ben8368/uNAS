@@ -29,7 +29,9 @@ export function initializePopup(environment: PopupEnvironment = {}): PopupHandle
   const sessionBadge = get<HTMLButtonElement>("sessionBadge");
   const status = get("status");
   const pageHostControl = get<HTMLButtonElement>("pageHostControl");
+  const pageHostIcon = get<HTMLImageElement>("pageHostIcon");
   const apps = get("apps");
+  pageHostIcon.src = environment.overlay ? chrome.runtime.getURL("static/app/icons/default/adblock.svg") : "static/app/icons/default/adblock.svg";
   let userScope: string | null = null;
   let loginRefreshTimer: number | undefined;
   let loginRefreshDeadline = 0;

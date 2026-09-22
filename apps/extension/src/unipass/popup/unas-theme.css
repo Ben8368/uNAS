@@ -51,6 +51,8 @@
 :root :focus-visible { outline: 3px solid var(--window-focus-ring); outline-offset: 2px; }
 :root .window-controls { gap: var(--window-space-2); }
 :root .content-area { padding-inline: var(--window-space-3); }
+/* Account directories share the window's blur; only their fill becomes lighter. */
+:root .list { background: color-mix(in srgb, var(--window-surface) 44%, transparent); }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   :root .app-window { background: var(--window-surface); }
   :root :is(.app-window, .app-window *) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }

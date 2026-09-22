@@ -7,7 +7,6 @@ interface SystemStore extends AppearancePreferences {
   systemLifecycle: 'running' | 'shutting-down' | 'shutdown-complete'
   setShowLauncher: (show: boolean) => void
   toggleLauncher: () => void
-  setThemeMode: (mode: AppearancePreferences['themeMode']) => void
   setWallpaper: (idx: number) => void
   setAccessibility: (key: 'reduceMotion' | 'reduceTransparency' | 'highContrast', value: boolean) => void
   beginSystemShutdown: () => void
@@ -25,7 +24,7 @@ export const useSystemStore = create<SystemStore>()((set) => {
     preferenceNotice: '外观偏好仅保存在此浏览器，不上传。', systemLifecycle: 'running',
     setShowLauncher: (show) => set({ showLauncher: show }),
     toggleLauncher: () => set((state) => ({ showLauncher: !state.showLauncher })),
-    setThemeMode: (themeMode) => update({ themeMode }), setWallpaper: (wallpaper) => update({ wallpaper }),
+    setWallpaper: (wallpaper) => update({ wallpaper }),
     setAccessibility: (key, value) => update({ [key]: value }),
     beginSystemShutdown: () => set({ systemLifecycle: 'shutting-down' }),
     completeSystemShutdown: () => set({ systemLifecycle: 'shutdown-complete' }),

@@ -2,24 +2,25 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { resolve } from 'node:path'
 
+// Bright App palette aligned with AdBlock; retain hue and white-glyph contrast.
 // Original geometric artwork for this repository. Re-running yields identical bytes.
 const root = resolve(import.meta.dirname, '..')
 const base = 'apps/extension/public/static/app/icons/default'
 const assetManifestPath = resolve(root, 'assets/demo-assets.json')
 const existingManifest = JSON.parse(await readFile(assetManifestPath, 'utf8'))
 const shapes = {
-  browser: ['#3975a8', '<circle cx="32" cy="32" r="17"/><path d="M15 32h34M32 15c-12 10-12 24 0 34 12-10 12-24 0-34Z"/>'],
-  adblock: ['#437a66', '<path d="M32 13 49 20v12c0 12-17 20-17 20S15 44 15 32V20Z"/><path d="m23 32 6 6 13-14"/>'],
-  download: ['#437a66', '<path d="M32 14v25m-10-9 10 10 10-10M16 42v7h32v-7"/>'],
-  files: ['#487d9d', '<path d="M13 23h15l5 5h18v20H13ZM13 23v-5h16l5 5h17v5"/>'],
-  media: ['#7774a8', '<rect x="13" y="16" width="38" height="32" rx="5"/><path d="m27 24 13 8-13 8Z"/>'],
-  layers: ['#497493', '<path d="m12 24 20-11 20 11-20 11Zm0 10 20 11 20-11M12 44l20 11 20-11"/>'],
-  settings: ['#64748b', '<path d="M15 20h34M15 32h34M15 44h34"/><circle cx="25" cy="20" r="4"/><circle cx="41" cy="32" r="4"/><circle cx="29" cy="44" r="4"/>'],
-  logs: ['#64798f', '<path d="M17 13h30v38H17ZM23 23h18M23 32h18M23 41h12"/>'],
-  image: ['#548774', '<rect x="13" y="15" width="38" height="34" rx="4"/><circle cx="24" cy="26" r="4"/><path d="m15 45 12-12 7 7 7-11 9 13"/>'],
-  document: ['#a86763', '<path d="M18 12h20l10 10v30H18ZM38 12v12h10M25 33h16M25 41h12"/>'],
-  archive: ['#a28755', '<rect x="14" y="15" width="36" height="36" rx="4"/><path d="M14 24h36M29 28h6v8h-6ZM29 41h6"/>'],
-  tasks: ['#557eaa', '<path d="m14 21 4 4 7-9m-11 20 4 4 7-9M32 22h18M32 37h18M14 49h36"/>'],
+  browser: ['#438fc6', '<circle cx="32" cy="32" r="17"/><path d="M15 32h34M32 15c-12 10-12 24 0 34 12-10 12-24 0-34Z"/>'],
+  adblock: ['#58a887', '<path d="M32 13 49 20v12c0 12-17 20-17 20S15 44 15 32V20Z"/><path d="m23 32 6 6 13-14"/>'],
+  download: ['#519b7c', '<path d="M32 14v25m-10-9 10 10 10-10M16 42v7h32v-7"/>'],
+  files: ['#509ac0', '<path d="M13 23h15l5 5h18v20H13ZM13 23v-5h16l5 5h17v5"/>'],
+  media: ['#9087c5', '<rect x="13" y="16" width="38" height="32" rx="5"/><path d="m27 24 13 8-13 8Z"/>'],
+  layers: ['#558fb8', '<path d="m12 24 20-11 20 11-20 11Zm0 10 20 11 20-11M12 44l20 11 20-11"/>'],
+  settings: ['#8191a8', '<path d="M15 20h34M15 32h34M15 44h34"/><circle cx="25" cy="20" r="4"/><circle cx="41" cy="32" r="4"/><circle cx="29" cy="44" r="4"/>'],
+  logs: ['#7e96af', '<path d="M17 13h30v38H17ZM23 23h18M23 32h18M23 41h12"/>'],
+  image: ['#5da088', '<rect x="13" y="15" width="38" height="34" rx="4"/><circle cx="24" cy="26" r="4"/><path d="m15 45 12-12 7 7 7-11 9 13"/>'],
+  document: ['#c97f79', '<path d="M18 12h20l10 10v30H18ZM38 12v12h10M25 33h16M25 41h12"/>'],
+  archive: ['#b18d4d', '<rect x="14" y="15" width="36" height="36" rx="4"/><path d="M14 24h36M29 28h6v8h-6ZM29 41h6"/>'],
+  tasks: ['#6395c8', '<path d="m14 21 4 4 7-9m-11 20 4 4 7-9M32 22h18M32 37h18M14 49h36"/>'],
 }
 await mkdir(resolve(root, base), { recursive: true })
 const records = []

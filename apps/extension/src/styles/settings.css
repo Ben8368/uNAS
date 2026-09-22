@@ -99,7 +99,7 @@
 .settings-content {
   display: grid;
   gap: var(--window-space-4);
-  max-width: 760px;
+  min-width: 0;
 }
 
 .settings-card {

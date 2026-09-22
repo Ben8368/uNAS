@@ -105,7 +105,8 @@
   --mt-danger: var(--window-danger);
 }
 
-html[data-theme='light'] {
+/* Light tokens are available only to the page overlay, never tab surfaces. */
+:root[data-theme-scope='overlay'][data-theme='light'] {
   --window-vault-accent: #159a6b;
   --window-vault-accent-strong: #138558;
   --window-vault-accent-text: #08734e;

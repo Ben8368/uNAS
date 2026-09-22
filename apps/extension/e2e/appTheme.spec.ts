@@ -12,7 +12,7 @@ for (const appId of ['fetcher', 'settings', 'logs', 'file-manager', 'music', 'br
     await page.mouse.move(700, 20)
     const app = page.locator(`[data-app-id="${appId}"]`)
     if (appId === 'fetcher') await app.getByRole('button', { name: '添加任务', exact: true }).click()
-    for (const theme of ['dark', 'light'] as const) {
+    for (const theme of ['dark'] as const) {
       await page.evaluate((theme) => {
         document.documentElement.dataset.theme = theme
         document.documentElement.dataset.highContrast = 'false'
@@ -80,7 +80,7 @@ test('Downloader sidebar and task pane share one continuous material', async ({ 
   const page = await workspace(extension, 'fetcher')
   await page.mouse.move(700, 20)
   const app = page.locator('[data-app-id="fetcher"]')
-  for (const theme of ['dark', 'light']) {
+  for (const theme of ['dark']) {
     for (const reduced of [false, true]) {
       await page.evaluate(({ theme, reduced }) => {
         document.documentElement.dataset.theme = theme

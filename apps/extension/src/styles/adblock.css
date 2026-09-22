@@ -14,6 +14,18 @@
 .adblock-app h3 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 16px; line-height: 24px; }
 .adblock-app p { margin: 0; color: var(--window-text-muted); overflow-wrap: anywhere; }
 .adblock-app [role="alert"] { color: var(--window-danger); }
+.adblock-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--window-danger) 35%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--window-danger) 9%, transparent);
+  color: var(--window-text);
+}
+.adblock-notice svg { flex: 0 0 auto; margin-top: 1px; color: var(--window-danger); }
+.adblock-notice span { overflow-wrap: anywhere; }
 .adblock-section { display: grid; gap: 14px; padding-block: 24px; border-top: 1px solid var(--window-divider); }
 .adblock-facts { display: grid; gap: 12px; margin: 0; }
 .adblock-facts > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; }

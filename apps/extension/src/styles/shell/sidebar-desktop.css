@@ -350,7 +350,7 @@ html, body, #root {
   display: grid;
   height: 100%;
   grid-template-rows: repeat(var(--desktop-icon-rows, 6), auto);
-  grid-auto-columns: 92px;
+  grid-auto-columns: 116px;
   grid-auto-flow: column;
   gap: var(--window-space-4) var(--window-space-5);
   align-content: start;
@@ -361,7 +361,7 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 92px;
+  width: 116px;
   padding: var(--window-space-1);
   border: 0;
   border-radius: var(--window-radius-panel);
@@ -389,8 +389,8 @@ html, body, #root {
 
 .app-icon-img {
   position: relative;
-  width: 48px;
-  height: 48px;
+  width: 72px;
+  height: 72px;
   margin-bottom: var(--window-space-2);
   display: flex;
   align-items: center;

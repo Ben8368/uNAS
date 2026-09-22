@@ -33,3 +33,13 @@ describe('shared control material', () => {
     expect(source).toContain('--window-scrollbar-thumb: #ffffff')
   })
 })
+
+describe('tab / overlay theme boundary', () => {
+  it('scopes light tokens to the overlay and keeps its explicit opt-in', () => {
+    const source = readFileSync(path.join(styles, 'window-theme.css'), 'utf8')
+    expect(source).toContain(":root[data-theme-scope='overlay'][data-theme='light']")
+    expect(source).not.toContain("html[data-theme='light']")
+    const overlay = readFileSync(path.resolve('src/unipass/content/page-overlay.ts'), 'utf8')
+    expect(overlay).toContain('overlayRoot.dataset.themeScope = "overlay"')
+  })
+})
