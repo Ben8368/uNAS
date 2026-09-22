@@ -7,7 +7,7 @@ export const APP_ICON_PATHS = {
   fileManager: `${BASE}/files.svg`,
   'file-manager': `${BASE}/files.svg`,
   transcode:   `${BASE}/media.svg`,
-  music:       `${BASE}/media.svg`,
+  music:       `${BASE}/music.png`,
   ps:          `${BASE}/layers.svg`,
   settings:    `${BASE}/settings.svg`,
   logs:        `${BASE}/logs.svg`,

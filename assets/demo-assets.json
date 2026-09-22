@@ -41,6 +41,14 @@
       "height": 64
     },
     {
+      "path": "apps/extension/public/static/app/icons/default/music.png",
+      "bytes": 32881,
+      "sha256": "20f4aee697078df64492bdfb46495367d2eb04a2f7db5a0943cff3e5f1ba40d1",
+      "width": 512,
+      "height": 512,
+      "kind": "Maintainer-provided local PNG from C:\\Users\\ben.luo\\Downloads\\Compressed\\um-web.extension.v1.10.8\\img\\icons\\android-chrome-512x512.png; copied unchanged on 2026-09-22; local development only, public distribution approval remains pending"
+    },
+    {
       "path": "apps/extension/public/static/app/icons/default/layers.svg",
       "bytes": 326,
       "sha256": "af89c50dd82f6aed451d75d6f6c1aed60ec1756bdd080b670b723bc36e25802e",

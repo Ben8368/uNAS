@@ -3,10 +3,10 @@
   display: flex;
   align-items: center;
   min-height: 32px;
-  border: 1px solid rgba(255,255,255,.13);
+  border: 1px solid var(--window-content-border);
   border-radius: 7px;
-  background: rgba(13,14,16,.42);
-  color: #f4f4f5;
+  background: var(--window-surface-field);
+  color: var(--window-text);
 }
 
 .fm-address {
@@ -24,7 +24,7 @@
   width: min(230px, 25%);
   gap: 10px;
   padding: 0 14px;
-  color: rgba(255,255,255,.48);
+  color: var(--window-text-muted);
 }
 
 .fm-search input {
@@ -33,18 +33,18 @@
   border: 0;
   outline: 0;
   background: transparent;
-  color: #f4f4f5;
+  color: var(--window-text);
   font-size: 11.7px;
 }
 
 .fm-search input::placeholder {
-  color: rgba(255,255,255,.35);
+  color: color-mix(in srgb, var(--window-text-muted) 72%, transparent);
 }
 
 .fm-actions {
   margin-bottom: 8px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255,255,255,.09);
+  border-bottom: 1px solid var(--window-divider);
 }
 
 .fm-actions-spacer {
@@ -56,9 +56,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.04);
-  color: rgba(255,255,255,.82);
+  border: 1px solid var(--window-content-border);
+  background: var(--window-surface-control);
+  color: var(--window-text);
   cursor: pointer;
 }
 
@@ -81,14 +81,14 @@
 
 .fm-icon-btn:hover:not(:disabled),
 .fm-action-btn:hover:not(:disabled) {
-  background: rgba(255,255,255,.09);
-  color: #fff;
+  background: color-mix(in srgb, var(--window-text) 8%, var(--window-surface-control));
+  color: var(--window-text);
 }
 
 .fm-icon-btn:disabled,
 .fm-action-btn:disabled {
   cursor: not-allowed;
-  color: rgba(255,255,255,.28);
+  color: color-mix(in srgb, var(--window-text-muted) 52%, transparent);
 }
 
 .fm-upload-label {
@@ -98,9 +98,9 @@
   gap: 7px;
   min-width: 90px;
   min-height: 29px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.04);
-  color: rgba(255,255,255,.82);
+  border: 1px solid var(--window-content-border);
+  background: var(--window-surface-control);
+  color: var(--window-text);
   cursor: pointer;
   border-radius: 6px;
   padding: 0 11px;
@@ -110,13 +110,13 @@
 }
 
 .fm-upload-label:hover {
-  background: rgba(255,255,255,.09);
-  color: #fff;
+  background: color-mix(in srgb, var(--window-text) 8%, var(--window-surface-control));
+  color: var(--window-text);
 }
 
 .fm-upload-label--disabled {
   cursor: not-allowed;
-  color: rgba(255,255,255,.28);
+  color: color-mix(in srgb, var(--window-text-muted) 52%, transparent);
   pointer-events: none;
 }
 
@@ -137,8 +137,8 @@
 
 .fm-head {
   min-height: 34px;
-  border-bottom: 1px solid rgba(255,255,255,.09);
-  color: rgba(255,255,255,.48);
+  border-bottom: 1px solid var(--window-divider);
+  color: var(--window-text-muted);
   font-size: 12px;
   font-weight: 760;
 }
@@ -148,7 +148,7 @@
   overflow: auto;
   padding-bottom: 12px;
   scrollbar-width: auto;
-  scrollbar-color: rgba(130, 175, 240, 0.55) rgba(5, 12, 22, 0.52);
+  scrollbar-color: var(--window-scrollbar-thumb) var(--window-scrollbar-track);
 }
 
 /* 与 Photoshop ps-operation / .ps-task-list 同款（WebKit） */
@@ -160,14 +160,14 @@
 
 .fm-panel::-webkit-scrollbar-track,
 .fm-list::-webkit-scrollbar-track {
-  background: rgba(5, 12, 22, 0.52);
+  background: var(--window-scrollbar-track);
   border-radius: 999px;
   margin: 4px 2px 4px 0;
 }
 
 .fm-panel::-webkit-scrollbar-thumb,
 .fm-list::-webkit-scrollbar-thumb {
-  background: rgba(130, 175, 240, 0.52);
+  background: var(--window-scrollbar-thumb);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
@@ -175,24 +175,24 @@
 
 .fm-panel::-webkit-scrollbar-thumb:hover,
 .fm-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(165, 205, 255, 0.72);
+  background: var(--window-scrollbar-thumb-hover);
   background-clip: padding-box;
 }
 
 .fm-row {
   min-height: var(--app-list-row-height);
-  border-bottom: 1px solid rgba(255,255,255,.075);
-  color: rgba(255,255,255,.88);
+  border-bottom: 1px solid var(--window-divider);
+  color: var(--window-text);
   cursor: default;
   font-size: var(--app-list-font-size);
 }
 
 .fm-row:hover {
-  background: rgba(255,255,255,.045);
+  background: color-mix(in srgb, var(--window-text) 4%, transparent);
 }
 
 .fm-row--selected {
-  background: rgba(28,126,255,.14);
+  background: color-mix(in srgb, var(--window-accent) 14%, transparent);
 }
 
 .fm-row > span,
@@ -205,7 +205,7 @@
 }
 
 .fm-row > span {
-  color: rgba(255,255,255,.78);
+  color: var(--window-text-muted);
 }
 
 .fm-name {
@@ -216,13 +216,13 @@
 }
 
 .fm-name strong {
-  color: #fff;
+  color: var(--window-text);
   font-size: 13px;
   font-weight: 600;
 }
 
 .fm-name small {
-  color: rgba(255,255,255,.35);
+  color: color-mix(in srgb, var(--window-text-muted) 72%, transparent);
   font-size: 12px;
   font-weight: 500;
 }
@@ -280,7 +280,7 @@
   bottom: 5px;
   max-width: 24px;
   overflow: hidden;
-  color: rgba(255,255,255,.82);
+  color: var(--window-text);
   font-size: 7px;
   font-style: normal;
   font-weight: 800;

@@ -62,7 +62,7 @@ export function MusicApp() {
       setResult(next)
       setNotice(`已识别 ${next.outputFormat.toUpperCase()} 音频签名（仅签名级验证，未完成完整音频验证），${formatBytes(next.outputBytes)} 暂存在 OPFS。`)
     } catch (reason) {
-      if (run.current === current) setError(reason instanceof Error ? reason.message : '本地音乐解密失败。')
+      if (run.current === current) setError(reason instanceof Error ? reason.message : '音乐解锁失败。')
     } finally {
       if (run.current === current) { if (!succeeded) run.current = undefined; setBusy(false) }
     }
@@ -99,11 +99,11 @@ export function MusicApp() {
     }
   }, [file?.name, result])
 
-  if (workspaceState !== 'owner') return <section className="music-app music-app--blocked" role="status"><h2>本地音乐处理需要 Workspace owner</h2><p>当前页面只是任务投影，不能取得本地文件或启动 Worker。请回到实际 Workspace 页面。</p></section>
+  if (workspaceState !== 'owner') return <section className="music-app music-app--blocked" role="status"><h2>音乐解锁需要 Workspace owner</h2><p>当前页面只是任务投影，不能取得本地文件或启动 Worker。请回到实际 Workspace 页面。</p></section>
 
-  return <section className="music-app" aria-label="本地音乐解密">
+  return <section className="music-app" aria-label="音乐解锁">
     <header className="music-app__header">
-      <div><p className="music-app__eyebrow">LOCAL MUSIC ENGINE · executionSource: real</p><h2>本地音乐解密</h2><p>仅处理你主动选择的本地 KGM v3、NCM 和 QMC `.mgg` 文件；不联网、不读取外部 key、不覆盖原文件。</p></div>
+      <div><p className="music-app__eyebrow">LOCAL MUSIC ENGINE · executionSource: real</p><h2>音乐解锁</h2><p>仅处理你主动选择的本地 KGM v3、NCM 和 QMC `.mgg` 文件；不联网、不读取外部 key、不覆盖原文件。</p></div>
       <span className={`music-app__badge ${capability.supported ? 'music-app__badge--ready' : ''}`}>{capability.supported ? 'Worker READY' : 'UNAVAILABLE'}</span>
     </header>
     {!capability.supported && <div className="music-app__error" role="alert">{capability.reasons.join(' ')}</div>}

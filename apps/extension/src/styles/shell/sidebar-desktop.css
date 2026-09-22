@@ -195,7 +195,8 @@ html, body, #root {
 }
 
 .mt-left-nav__app-btn--active {
-  background: color-mix(in srgb, var(--window-accent) 22%, transparent);
+  /* Keep the active window discernible without competing with the App icon. */
+  background: color-mix(in srgb, var(--window-accent) 12%, transparent);
 }
 
 .mt-left-nav__app-btn img {
@@ -398,6 +399,11 @@ html, body, #root {
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, .28);
   transition: box-shadow var(--window-motion-fast) var(--window-motion-ease), transform var(--window-motion-fast) var(--window-motion-ease);
+}
+
+/* The Music Unlock PNG has a circular silhouette, so its hover/focus ring follows it. */
+.app-icon--music .app-icon-img {
+  border-radius: 50%;
 }
 
 .app-icon-img::after {

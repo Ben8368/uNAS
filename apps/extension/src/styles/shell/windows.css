@@ -349,8 +349,8 @@ html[data-reduce-transparency='true'] .mt-window-body {
 .mt-resize-sw { bottom: 0; left: 0; cursor: nesw-resize; }
 .mt-resize-se { bottom: 0; right: 0; cursor: nwse-resize; }
 
-/* Scrollbar */
+/* All App scroll containers share the same quiet translucent track and thumb. */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.15); }
+::-webkit-scrollbar-track { background: var(--window-scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--window-scrollbar-thumb); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--window-scrollbar-thumb-hover); }

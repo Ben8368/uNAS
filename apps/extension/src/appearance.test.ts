@@ -25,3 +25,11 @@ describe('wallpaper gradients', () => {
     expect(stylesheet).toContain('--mt-wp: var(--mt-wp-p3)')
   })
 })
+describe('desktop application affordances', () => {
+  it('uses a circular visual and focus container for Music Unlock while keeping its navigation selection subtle', async () => {
+    const stylesheet = await readFile(new URL('./styles/shell/sidebar-desktop.css', import.meta.url), 'utf8')
+
+    expect(stylesheet).toMatch(/\.app-icon--music \.app-icon-img\s*\{\s*border-radius: 50%;\s*\}/)
+    expect(stylesheet).toMatch(/\.mt-left-nav__app-btn--active\s*\{[^}]*background: color-mix\(in srgb, var\(--window-accent\) 12%, transparent\);/)
+  })
+})

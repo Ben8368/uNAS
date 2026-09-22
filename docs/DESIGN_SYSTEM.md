@@ -2,7 +2,7 @@
 
 本文统一规范 Desktop、System/Tool App 与 Link App 管理界面的视觉值、骨架、状态及输入行为。实现方式见 [FRONTEND_GUIDE](FRONTEND_GUIDE.md)，验收见 [QUALITY](QUALITY.md)。
 
-**基线 UI v1.4 · 2026-09-22**：新增和改动 UI 必须遵循，存量按受影响范围对齐；非实现或验证声明，不追认旧截图，不要求重做无关页面。
+**基线 UI v1.5 · 2026-09-22**：新增和改动 UI 必须遵循，存量按受影响范围对齐；非实现或验证声明，不追认旧截图，不要求重做无关页面。
 
 ## UI-01 视觉方向与材料
 
@@ -11,7 +11,7 @@
 | 层 | 用途 | 固定规则 |
 | --- | --- | --- |
 | 背景 | 壁纸与环境色 | 不承载正文；无持续漂浮、视差或自动轮播 |
-| 内容 | 文件、参数、表格、预览、正文 | App 根画布透明，延续窗口唯一 blur；正文卡片使用 readable，输入框与密集表格使用不透明 content/raised，不随壁纸改变文字色 |
+| 内容 | 文件、参数、表格、预览、正文 | App 根画布透明；正文卡片 readable，输入框与密集表格使用共享 raised，不随壁纸改变文字色 |
 | 控制 | Dock、窗口标题栏、导航 | navigation glass；窗口根是唯一采样/blur 层，内部工具栏不得叠加 blur |
 | 临时层 | 菜单、Popover、Dialog、Sheet、Toast | floating/dialog glass；长表单及正文仍用实色 |
 
@@ -27,8 +27,8 @@ UniPass 薄荷绿映射 `window-theme.css` 的 `--window-vault-accent{,-strong,-
 | --- | --- | --- | --- |
 | color.background | #EFF1F3 | #1B1D20 | 壁纸回退、侧栏 |
 | color.content | #F8F9FA | #202225 | 正文主面 |
-| color.raised | #FFFFFF | #282B2F | 浮层、抬升面 |
-| color.control | #E7EAEE | #34383E | 控件底色 |
+| color.raised | rgb(255 255 255 / .74) | rgb(35 57 75 / .66) | 浮层、抬升面 |
+| color.control | rgb(231 234 238 / .76) | rgb(48 72 91 / .62) | 控件底色 |
 | color.text | #24282E | #F1F3F5 | 正文 |
 | color.muted | #5B6470 | #B0B6BE | 次要说明，不用透明度再淡化 |
 | color.divider | #DCE0E5 | #373B41 | 装饰分隔线 |
@@ -59,7 +59,7 @@ UniPass 薄荷绿映射 `window-theme.css` 的 `--window-vault-accent{,-strong,-
 | motion | fast 120ms、normal 180ms、slow 240ms；ease-out；仅 transform/opacity，不动画 blur |
 | layer | desktop 0、window 100–199（聚焦排序）、shell 200、drawer 300、popover 400、modal 500、toast 600；原生 top layer 按打开顺序管理 |
 
-浅色/深色/跟随系统为主题选项。减少透明度或 blur 不可用时，导航用 background、浮层用 raised 的实色；高对比用实色、明确边界，forced-colors 尊重系统色。减少动态时取消位移、缩放、弹性与非必要过渡，进度仍可读。降级效果须由用户设置或已验证的检测触发，不宣称尚未实测的自动性能判断。
+浅/深/跟随系统为主题选项。控件可透出窗口环境，不叠加 blur。透明度减少或 blur 不可用时，导航和控件回退实色；高对比用实色边界，forced-colors 尊重系统色。减少动态时取消非必要动画，进度仍可读。降级由用户设置或已验证检测触发，不宣称未实测的自动判断。
 
 ## UI-03 页面骨架与密度
 

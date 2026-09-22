@@ -27,7 +27,7 @@ export const appRegistry: RegisteredApp[] = [
   { id: 'file-manager', label: '文件管理', title: '文件管理', icon: APP_ICON_PATHS.fileManager, component: FileManagerApp, status: 'stable' },
   { id: 'fetcher', label: '下载', title: '下载', icon: APP_ICON_PATHS.fetcher, component: DownloaderApp, status: 'stable' },
   { id: 'adblock', label: '广告拦截', title: '广告拦截', icon: APP_ICON_PATHS.adblock, component: AdBlockApp, status: 'beta' },
-  { id: 'music', label: '本地音乐', title: '本地音乐', icon: APP_ICON_PATHS.music, component: MusicApp, status: 'beta' },
+  { id: 'music', label: '音乐解锁', title: '音乐解锁', icon: APP_ICON_PATHS.music, component: MusicApp, status: 'beta' },
   { id: 'settings', label: '设置', title: '设置', icon: APP_ICON_PATHS.settings, component: SettingsApp, status: 'beta', launcherVisible: false },
   { id: 'logs', label: '日志', title: '日志', icon: APP_ICON_PATHS.logs, component: LogViewer, status: 'hidden', launcherVisible: false },
 ]
