@@ -34,7 +34,7 @@
 
 | 项目 | 声明与实际用途 |
 | --- | --- |
-| required permissions | `activeTab`、`scripting`、`clipboardWrite`、`storage`、`alarms`、`tabs`、`declarativeNetRequest`、`downloads` |
+| required permissions | `activeTab`、`scripting`、`clipboardWrite`、`storage`、`alarms`、`tabs`、`declarativeNetRequest`、`downloads`、`system.cpu`、`system.memory` |
 | 固定 host permissions | `portal.unipass.top`、`accounts.feishu.cn`、`jupiter.tec-do.com`、`easylist-downloads.adblockplus.org` 的 HTTPS 来源；分别涉及 Legacy/OAuth/Jupiter 和过滤订阅 |
 | optional host permissions | 声明 `https://*/*`；WebDAV 用户动作请求单个 `${origin}/*`，不是只授权某个 DAV 路径；移除最后一个同源 profile 时尝试撤销 |
 | 自动 content script | cosmetic 脚本匹配全部 HTTP/HTTPS，`allFrames: true`、`document_start`、`ISOLATED`。与 action 才注入的 Vault 浮层/填充脚本须分开说明 |

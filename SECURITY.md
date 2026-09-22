@@ -42,7 +42,7 @@ User file / archive / media    不可信输入
 ## 权限
 
 - required permissions 只包含首发核心功能当下需要的最小集合。
-- 当前 required permissions 为 `activeTab`, `scripting`, `clipboardWrite`, `storage`, `alarms`, `tabs`, `declarativeNetRequest`, `downloads`。其中 `activeTab`/`scripting` 只在用户点击 action 后注入页面浮层或用户点击填充时注入一次性填充脚本；`storage` 保存设置、Link App、Vault profile/加密材料和规则状态；`alarms` 驱动规则/Vault/Jupiter 恢复；`tabs` 用于当前页复核和用户触发的页面操作；`clipboardWrite` 仅用于用户点击复制；`declarativeNetRequest` 执行 baseline/dynamic block 与站点暂停规则；`downloads` 仍仅用于用户明确发起的直链下载。
+- 当前 required permissions 为 `activeTab`, `scripting`, `clipboardWrite`, `storage`, `alarms`, `tabs`, `declarativeNetRequest`, `downloads`, `system.cpu`, `system.memory`。其中 `activeTab`/`scripting` 只在用户点击 action 后注入页面浮层或用户点击填充时注入一次性填充脚本；`storage` 保存设置、Link App、Vault profile/加密材料和规则状态；`alarms` 驱动规则/Vault/Jupiter 恢复；`tabs` 用于当前页复核和用户触发的页面操作；`clipboardWrite` 仅用于用户点击复制；`declarativeNetRequest` 执行 baseline/dynamic block 与站点暂停规则；`downloads` 仍仅用于用户明确发起的直链下载；`system.cpu`/`system.memory` 仅用于右侧运行状态读取系统 CPU 累计时间与物理内存容量，不读取文件、网络内容或用户数据。
 - 固定 host permissions 仅包含 UniPass Portal、Feishu OAuth、Jupiter、EasyList 下载域名和 GitHub Raw 补充规则域；后者仅请求固定仓库 JSON，禁重定向、凭据和 referrer，详见 [ADR 0012](docs/ADR/0012-repository-filter-subscription.md)。`https://*/*` 是 optional host permission，只在用户连接 WebDAV 时请求对应单一 origin。页面 cosmetic content script 只处理规则 CSS/受限 `remove-attr`，不能读取凭据。
 - optional permissions 也不得为未来预留；只在用户触发功能时解释并请求。
 - `downloads` 随下载 App 核心能力声明；扩展只在用户提交 HTTPS 直链文件后使用，不读取本机下载目录或文件内容。m3u8/mpd 播放清单和网页链接不走该路径；可执行文件仍由 Chrome 的安全检查和用户确认控制。

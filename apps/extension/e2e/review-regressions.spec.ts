@@ -1,4 +1,4 @@
-import { test, expect, workspace } from './fixtures'
+import { test, expect } from './fixtures'
 import { checkWindowDraftAndFocus } from './windowChecks'
 
 test('minimized Apps retain drafts and focus follows the visible window', async ({ extension }) => {
@@ -8,47 +8,14 @@ test('minimized Apps retain drafts and focus follows the visible window', async 
   expect(extension.errors).toEqual([])
 })
 
-test('New Tab reads owner updates and external cancellation refreshes the download list', async ({ extension }, testInfo) => {
+test('runtime panel omits GPU capability details and simulated task summary', async ({ extension }) => {
   const tab = await extension.context.newPage()
   await tab.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
   await tab.locator('.rp-edge-trigger').click()
-  const summary = tab.getByRole('region', { name: 'Workspace 任务摘要' })
-  await expect(summary).toContainText('暂无模拟任务')
-  await expect(tab.getByRole('button', { name: '停止', exact: true })).toHaveCount(0)
-  await expect(tab.getByRole('button', { name: '推进模拟步骤' })).toHaveCount(0)
-  const owner = await workspace(extension, 'fetcher')
-  await owner.locator('.rp-edge-trigger').click()
-  const app = owner.locator('[data-app-id="fetcher"]')
-  await app.getByRole('button', { name: '添加任务', exact: true }).click()
-  await app.getByLabel('下载链接').fill('https://example.com/summary-source')
-  await app.getByRole('button', { name: '提交下载任务', exact: true }).click()
-  const row = app.locator('.dl-row').filter({ hasText: 'example.com' })
-  await expect(summary.locator('li').filter({ hasText: 'example.com' })).toContainText('运行中')
-  await owner.locator('.rp-task-group').first().click()
-  await owner.getByRole('button', { name: '停止', exact: true }).click()
-  await expect(row).toContainText('取消')
-  await expect(app.getByRole('button', { name: 'stop-selected-downloads' })).toBeDisabled()
-  await expect(summary.locator('li').filter({ hasText: 'example.com' })).toContainText('已取消')
-
-  await app.getByRole('button', { name: '添加任务', exact: true }).click()
-  await app.getByLabel('下载链接').fill('https://example.org/synchronized')
-  await app.getByRole('button', { name: '提交下载任务', exact: true }).click()
-  const created = app.locator('.dl-row').filter({ hasText: 'example.org' })
-  await expect(created).toContainText('12.0%')
-  await owner.getByRole('button', { name: '推进模拟步骤' }).click()
-  await expect(created).toContainText('68.0%')
-  await owner.getByRole('button', { name: '推进模拟步骤' }).click()
-  await expect(created).toContainText('100.0%')
-  await expect(app.getByRole('button', { name: 'stop-selected-downloads' })).toBeDisabled()
-  await expect(summary.locator('li').filter({ hasText: 'example.org' })).toContainText('模拟完成')
-  await tab.bringToFront()
-  await tab.screenshot({ path: testInfo.outputPath('newtab-owner-summary.png') })
-  const tabCount = extension.context.pages().length
-  await summary.getByRole('button', { name: '在当前页面管理任务' }).click()
-  await expect(tab.locator('[data-app-id="fetcher"]')).toBeVisible()
-  await expect(tab.locator('.dl-row').filter({ hasText: 'example.org' })).toContainText('100.0%')
-  expect(extension.context.pages()).toHaveLength(tabCount)
-  expect(extension.context.pages().filter((page) => page.url().includes('/workspace.html'))).toHaveLength(1)
+  await expect(tab.locator('.rp-uptime')).toContainText('系统运行（估算）')
+  await expect(tab.getByRole('region', { name: 'Workspace 任务摘要' })).toHaveCount(0)
+  await expect(tab.getByText('模拟任务摘要', { exact: true })).toHaveCount(0)
+  await expect(tab.locator('.rp-capability-note')).toHaveCount(0)
   expect(extension.errors).toEqual([])
   expect(extension.remoteRequests).toEqual([])
 })

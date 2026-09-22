@@ -38,7 +38,7 @@ try {
 } catch {
   errors.push('Archive ZIP Worker 未进入扩展包；文件管理不能引用未打包的 Worker。')
 }
-const allowedPermissions = new Set(['activeTab', 'scripting', 'clipboardWrite', 'storage', 'alarms', 'tabs', 'declarativeNetRequest', 'downloads'])
+const allowedPermissions = new Set(['activeTab', 'scripting', 'clipboardWrite', 'storage', 'alarms', 'tabs', 'declarativeNetRequest', 'downloads', 'system.cpu', 'system.memory'])
 for (const permission of manifest.permissions ?? []) if (!allowedPermissions.has(permission)) errors.push(`uNAS 未登记的 permission: ${permission}`)
 const requiredPermissions = [...allowedPermissions]
 for (const permission of requiredPermissions) if (!manifest.permissions?.includes(permission)) errors.push(`uNAS 缺少已审查 permission: ${permission}`)

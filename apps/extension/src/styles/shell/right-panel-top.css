@@ -2,8 +2,8 @@
 .mt-right-panel {
   position: fixed;
   right: 0;
-  top: 12px;
-  bottom: 12px;
+  top: 0;
+  bottom: 0;
   width: 360px;
   z-index: 800;
   transform: translateX(100%);
@@ -19,10 +19,11 @@
 .rp-edge-trigger {
   position: absolute;
   z-index: 2;
-  top: 34%;
-  left: -26px;
-  width: 26px;
-  min-height: 44px;
+  top: 0;
+  bottom: 0;
+  left: -18px;
+  width: 18px;
+  min-height: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -42,7 +43,7 @@
   height: 100%;
   gap: 8px;
   overflow-y: auto;
-  padding: 8px;
+  padding: 20px 8px 8px;
   background: var(--window-glass-floating);
   backdrop-filter: var(--window-floating-filter);
   -webkit-backdrop-filter: var(--window-floating-filter);
@@ -82,11 +83,6 @@
 .rp-preview-controls__actions { display: flex; gap: 8px; }
 .rp-preview-controls__actions button { flex: 1; }
 .rp-preview-controls small { color: rgba(255,255,255,.45); }
-
-.rp-projection { display: grid; gap: 10px; color: rgba(255,255,255,.82); font-size: 12px; }
-.rp-projection p, .rp-projection li { overflow-wrap: anywhere; line-height: 1.6; }
-.rp-projection ul { display: grid; gap: 10px; list-style: none; }
-.rp-projection li { display: grid; gap: 3px; }
 
 @media (max-width: 600px) {
   .mt-right-panel { width: min(360px, calc(100vw - 10px)); }
@@ -317,6 +313,13 @@
 
 .rp-net-up { color: #54FFB7; }
 .rp-net-down { color: #4AA3FF; }
+
+.rp-network-online { color: #54FFB7; }
+.rp-network-offline { color: #ff9f0a; }
+.rp-network-detail {
+  color: rgba(255,255,255,.42);
+  font-size: 10px;
+}
 
 .rp-net-chart {
   height: 36px;

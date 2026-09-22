@@ -1,5 +1,6 @@
 import type { FetchTaskRecord, JobRecord } from '#contracts'
 import type { UnasDemoApi, PathGrantCapabilityResult } from './types'
+import { readBrowserSystemMetrics } from 'unas-src/runtime/systemMetrics'
 import {
   state, now, makeJob, guard, transition, log, filesystem, publish, userJobIds,
   getDemoSnapshot, resetDemoScenario, advanceDemoScenario, subscribeDemo, interruptDemoTasks,
@@ -87,11 +88,12 @@ const implementation = {
   uploadFilebrowserFile: filesystem.uploadFilebrowserFile,
   filebrowserFileDownloadUrl: filesystem.filebrowserFileDownloadUrl,
   async setWorkspace(workspace) { if (workspace !== '/Workspace') throw new Error('Demo 仅包含 /Workspace 模拟目录，不切换真实磁盘。'); return { ok: true, workspace } },
-  async getSystemMetrics() {
+  async getSystemMetrics(signal?: AbortSignal) {
     const active = state.jobs.filter((job) => job.status === 'running')
-    return { runtime: { uptime_seconds: Math.floor(state.step) }, system: { cpu_percent: 24, memory_percent: 42, memory_pressure_percent: 42, memory_pressure_label: '物理占用', memory_used_bytes: 6_800_000_000, memory_total_bytes: 16_000_000_000, memory_free_bytes: 9_200_000_000, gpu_percent: 18, gpu_available: true, gpu_detail: '演示 GPU 数据' }, network: { upload: { text: '1.2 MB/s' }, download: { text: '8.4 MB/s' }, upload_bytes_per_sec: 1_200_000, download_bytes_per_sec: 8_400_000 }, services: [{ id: 'demo-ui', name: '独立前端', online: true, status: '演示中', runtime_status: 'demo', availability_status: 'available', mode: 'demo', mode_label: '演示数据', detail: '无后端连接' }], tasks: active.map((job) => ({ id: job.id, name: job.title, type: job.kind, status: job.status, status_label: '演示中', stage: '浏览器内置数据', progress: job.progress?.current ?? 0, can_cancel: true })), task_summary: { active_downloads: state.tasks.filter((task) => task.status === 'running').length, total_download_records: state.tasks.length, terminal_download_records: state.tasks.filter((task) => task.status === 'completed').length }, log_mode: 'demo' }
+    const hardware = await readBrowserSystemMetrics(signal)
+    return { ...hardware, services: [], tasks: active.map((job) => ({ id: job.id, name: job.title, type: job.kind, status: job.status, status_label: '演示中', stage: '浏览器内置数据', progress: job.progress?.current ?? 0, can_cancel: true })), task_summary: { active_downloads: state.tasks.filter((task) => task.status === 'running').length, total_download_records: state.tasks.length, terminal_download_records: state.tasks.filter((task) => task.status === 'completed').length }, log_mode: 'demo' }
   },
-  async fetchSystemRuntimeMetrics() { return { runtime: { uptime_seconds: Math.floor(state.step) }, network: { upload: { text: '1.2 MB/s' }, download: { text: '8.4 MB/s' }, upload_bytes_per_sec: 1_200_000, download_bytes_per_sec: 8_400_000 } } },
+  async fetchSystemRuntimeMetrics(signal) { const hardware = await readBrowserSystemMetrics(signal); return { executionSource: 'browser' as const, runtime: hardware.runtime, network: hardware.network } },
   async shutdownSystem() { return { ok: false, message: '独立演示版没有可关闭的服务。' } },
 
   async fetchLogs(query) { const filtered = state.logs.filter((entry) => (!query?.level || entry.level === query.level) && (!query?.module || entry.module === query.module)); return { ok: true, total: filtered.length, items: filtered, page: query?.page ?? 1, page_size: query?.page_size ?? 20, levels: ['DEBUG', 'NOTICE', 'WARNING', 'ERROR', 'CRITICAL'] } },
@@ -115,7 +117,9 @@ export const demoApi: UnasDemoApi = Object.fromEntries(Object.entries(implementa
     if (!(result instanceof Promise)) return result
     return result.then(value => {
       if (mutations.has(key as keyof UnasDemoApi)) publish()
-      return value && typeof value === 'object' ? { ...structuredClone(value), executionSource: 'mock' } : value
+      return value && typeof value === 'object'
+        ? { ...structuredClone(value), ...(key === 'getSystemMetrics' || key === 'fetchSystemRuntimeMetrics' ? {} : { executionSource: 'mock' }) }
+        : value
     })
   }]
 })) as unknown as UnasDemoApi

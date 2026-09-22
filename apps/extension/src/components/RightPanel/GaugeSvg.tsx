@@ -7,7 +7,7 @@ export function GaugeSvg({
   title,
   available = true,
 }: {
-  value: number
+  value?: number
   color: string
   label: string
   title?: string
@@ -16,9 +16,9 @@ export function GaugeSvg({
   const r = 24, cx = 28, cy = 28
   const circ = 2 * Math.PI * r
   const offset = circ - (clampPercent(value) / 100) * circ
-  const displayValue = available ? `${Math.round(clampPercent(value))}%` : '未支持'
+  const displayValue = available && typeof value === 'number' ? `${Math.round(clampPercent(value))}%` : '未支持'
   return (
-    <div className="rp-gauge" title={title}>
+    <div className="rp-gauge" title={title} role="img" aria-label={`${label}: ${displayValue}${title ? `，${title}` : ''}`}>
       <svg viewBox="0 0 56 56" style={{ shapeRendering: 'geometricPrecision' }}>
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,.06)" strokeWidth="4" />
         <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round"

@@ -1,6 +1,7 @@
 import type { OkResult } from './core.js'
 
 export type RuntimeMetrics = {
+  executionSource?: 'browser' | 'mock'
   runtime?: { uptime_seconds?: number }
   system?: {
     cpu_percent?: number
@@ -15,6 +16,12 @@ export type RuntimeMetrics = {
     gpu_detail?: string
   }
   network?: {
+    online?: boolean
+    status?: string
+    detail?: string
+    effective_type?: string
+    rtt_ms?: number
+    downlink_mbps?: number
     upload?: { text?: string }
     download?: { text?: string }
     upload_bytes_per_sec?: number

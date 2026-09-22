@@ -6,18 +6,13 @@ import { getErrorMessage } from 'unas-src/utils'
 
 import { DualLineChart } from './DualLineChart'
 import { GaugeSvg } from './GaugeSvg'
-import { PreviewControls } from 'unas-src/components/PreviewControls'
 import { TaskGroupList } from './TaskGroupList'
-import { TaskProjection } from 'unas-src/components/TaskProjection'
 import { EMPTY_METRICS, type RuntimeMetrics } from './types'
 import {
   clampPercent,
   formatBytes,
   formatUptime,
   frontendModeLabel,
-  normalizeServices,
-  serviceName,
-  serviceTitle,
   summarizeGroupStatuses,
 } from './utils'
 
@@ -29,7 +24,6 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
   const [error, setError] = useState('')
   const [lastSampleAt, setLastSampleAt] = useState<Date | null>(null)
   const [expandedTaskType, setExpandedTaskType] = useState<string | null>(null)
-  const [servicesExpanded, setServicesExpanded] = useState(false)
   const systemLifecycle = useSystemStore((state) => state.systemLifecycle)
 
   async function refresh(signal?: AbortSignal) {
@@ -64,7 +58,6 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
 
   const system = metrics.system || EMPTY_METRICS.system!
   const network = metrics.network || EMPTY_METRICS.network!
-  const services = useMemo(() => normalizeServices(metrics.services || []), [metrics.services])
   const tasks = metrics.tasks || []
   const taskSummary = metrics.task_summary
   const groupedTasks = useMemo(() => {
@@ -112,21 +105,20 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
       <div className="rp-card">
         <div className="rp-card-head rp-runtime-head">
           <div className="rp-card-title">运行状态</div>
-          <span className="rp-card-meta">模拟数据 · {sampleTime}</span>
+          <span className="rp-card-meta">{sampleTime}</span>
         </div>
         <div className="rp-gauges">
-          <GaugeSvg value={system.cpu_percent || 0} color="#7CB3FF" label="CPU" />
-          <GaugeSvg value={system.memory_percent || 0} color="#7CB3FF" label="内存" title={`${memoryLabel} · ${memoryDetail}`} />
+          <GaugeSvg value={system.cpu_percent} color="#7CB3FF" label="CPU" />
+          <GaugeSvg value={system.memory_percent} color="#7CB3FF" label="内存" title={`${memoryLabel} · ${memoryDetail}`} />
           <GaugeSvg
-            value={system.gpu_percent || 0}
-            color={system.gpu_available ? '#7CB3FF' : '#64748b'}
+            value={system.gpu_percent}
+            color={typeof system.gpu_percent === 'number' ? '#7CB3FF' : '#64748b'}
             label="GPU"
-            title={system.gpu_detail}
-            available={system.gpu_available !== false}
+            available={typeof system.gpu_percent === 'number'}
           />
         </div>
         <div className="rp-uptime">
-          <span>本次运行 <span>{formatUptime(metrics.runtime?.uptime_seconds || 0)}</span></span>
+          <span>系统运行（估算） <span>{metrics.runtime?.uptime_seconds == null ? '不可用' : formatUptime(metrics.runtime.uptime_seconds)}</span></span>
           {frontendModeLabel(metrics.log_mode) && <span className="rp-runtime-mode">{frontendModeLabel(metrics.log_mode)}</span>}
         </div>
         <div className="rp-sample-detail">
@@ -138,45 +130,22 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
 
       <div className="rp-card">
         <div className="rp-card-head rp-runtime-head">
-          <div className="rp-card-title">模拟流量</div>
-          <span className="rp-card-meta">演示数据</span>
+          <div className="rp-card-title">网速状态</div>
+          <span className={`rp-card-meta ${network.online ? 'rp-network-online' : 'rp-network-offline'}`}>{network.status || '未知'}</span>
         </div>
-        <div className="rp-net" title="模拟任务数据，不代表设备或浏览器的实际网络流量">
+        <div className="rp-net" title={network.detail || '浏览器网络状态'}>
           <div className="rp-net-row">
-            <span className="rp-net-up">↑ {network.upload?.text || '0 B/s'}</span>
-            <span className="rp-net-down">↓ {network.download?.text || '0 B/s'}</span>
+            <span className="rp-net-up">↑ {network.upload?.text || '不可用'}</span>
+            <span className="rp-net-down">↓ {network.download?.text || '不可用'}</span>
           </div>
+          <div className="rp-network-detail">{network.detail || '等待网络采样'}</div>
           <div className="rp-net-chart">
             <DualLineChart dataUp={netUpData} dataDown={netDownData} />
           </div>
         </div>
       </div>
 
-      <div className="rp-card">
-        <button
-          type="button"
-          className="rp-card-head rp-service-toggle"
-          aria-expanded={servicesExpanded}
-          onClick={() => setServicesExpanded((expanded) => !expanded)}
-        >
-          <div className="rp-card-title">模拟服务状态</div>
-          <span className={`rp-service-chevron ${servicesExpanded ? 'rp-service-chevron--open' : ''}`}>›</span>
-        </button>
-        {servicesExpanded && (
-          <div className="rp-service-list">
-            {services.map((service) => (
-              <div key={service.id} className="rp-service-item" title={serviceTitle(service)}>
-                <span className={`rp-service-dot ${service.online && service.availability_status !== 'degraded' ? 'rp-service-dot--online' : ''}`} />
-                <span className="rp-service-name">{serviceName(service)}</span>
-                <small>{service.status}</small>
-              </div>
-            ))}
-            {!services.length && <div className="rp-empty">暂无服务状态</div>}
-          </div>
-        )}
-      </div>
-
-      {workspace ? <TaskGroupList
+      {workspace && <TaskGroupList
         tasks={tasks}
         groupedTasks={groupedTasks}
         expandedGroup={expandedGroup}
@@ -184,8 +153,7 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
         onExpand={setExpandedTaskType}
         onCollapse={() => setExpandedTaskType(null)}
         onCancelTask={handleTaskAction}
-      /> : <TaskProjection />}
-        {workspace && <PreviewControls />}
+      />}
       </div>
     </aside>
   )

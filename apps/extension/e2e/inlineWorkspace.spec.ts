@@ -37,7 +37,7 @@ test('two local desktops share submissions, cancellation and file mutations', as
   await expect.poll(() => client.isClosed()).toBe(true)
   await expect(owner.locator('.dl-row').filter({ hasText: 'example.org' })).toContainText('12.0%')
   await revealRuntimePanel(owner)
-  await expect(owner.getByRole('combobox', { name: '模拟场景' })).toBeVisible()
+  await expect(owner.getByLabel('预览控制')).toHaveCount(0)
   expect(extension.errors).toEqual([])
   expect(extension.remoteRequests).toEqual([])
 })

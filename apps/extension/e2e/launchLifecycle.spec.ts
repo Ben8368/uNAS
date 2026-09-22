@@ -67,7 +67,7 @@ test('cold download launch paints the genuine empty list without changing bounds
   expect(extension.errors).toEqual([])
 })
 
-test('completed user work removes the leave guard', async ({ extension }) => {
+test('canceled user work removes the leave guard', async ({ extension }) => {
   const page = await workspace(extension, 'fetcher')
   const app = page.locator('[data-app-id="fetcher"]')
   await app.getByRole('button', { name: '添加任务', exact: true }).click()
@@ -76,9 +76,8 @@ test('completed user work removes the leave guard', async ({ extension }) => {
   const row = app.locator('.dl-row').filter({ hasText: 'example.com' })
   await expect(row).toContainText('12.0%')
   await revealRuntimePanel(page)
-  await page.getByRole('button', { name: '推进模拟步骤' }).click()
-  await page.getByRole('button', { name: '推进模拟步骤' }).click()
-  await expect(row).toContainText('100.0%')
+  await app.getByRole('button', { name: 'stop-selected-downloads' }).click()
+  await expect(row).toContainText('取消')
   const dialogs: string[] = []
   page.on('dialog', async dialog => { dialogs.push(dialog.type()); await dialog.dismiss() })
   await page.close({ runBeforeUnload: true })

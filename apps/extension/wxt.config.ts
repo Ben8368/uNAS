@@ -17,6 +17,8 @@ export default defineConfig({
       'tabs',
       'declarativeNetRequest',
       'downloads',
+      'system.cpu',
+      'system.memory',
     ],
     host_permissions: [
       'https://portal.unipass.top/*',
