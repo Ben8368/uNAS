@@ -10,7 +10,7 @@ uNAS 计划成为一个以 Manifest V3 浏览器扩展交付的本地优先新�
 - **Workspace**：Files、Image、Media、PDF、Archive 和 Task Center。
 - **System/Tool App**：随扩展打包，通过统一 contract 使用文件和任务能力。
 - **Link App**：用户注册的 HTTPS 网址快捷方式，只负责跳转网页。
-- **密码管家**：WebDAV 加密 Vault 管理页；工具栏 action 仍在当前网页打开既有密码浮窗。
+- **密码管家**：Desktop 内的 WebDAV 加密 Vault 管理；工具栏 action 仍在当前网页打开既有密码浮窗。独立 `manage.html` 仅保留为兼容/恢复入口。
 - **广告拦截**：DNR、订阅规则、Cosmetic filtering、站点暂停与恢复，独立于密码管家运行。
 - **Local-first**：文件默认不上传；能力、临时数据和输出路径可解释。
 
@@ -66,7 +66,7 @@ pnpm build:extension
 
 构建物位于 `apps/extension/.output/chrome-mv3/`。在 Chrome 扩展管理页面开启开发者模式后，选择“加载已解压的扩展程序”，并选择该目录。
 
-首次使用密码库时，在 uNAS Desktop 打开“密码管家”并进入管理页。接入已有 Vault 时，使用原 UniPass 来源的 WebDAV HTTPS 地址、用户名、App Password 和 Vault Key；不要复制旧扩展的 storage/IndexedDB，也不要在迁移验证前卸载旧扩展。连接成功后点击 Chrome 工具栏的 uNAS 图标，当前支持的 HTTPS 网页会打开密码浮窗。
+首次使用密码库时，在 uNAS Desktop 打开“密码管家”并直接完成管理。接入已有 Vault 时，使用原 UniPass 来源的 WebDAV HTTPS 地址、用户名、App Password 和 Vault Key；不要复制旧扩展的 storage/IndexedDB，也不要在迁移验证前卸载旧扩展。连接成功后点击 Chrome 工具栏的 uNAS 图标，当前支持的 HTTPS 网页会打开密码浮窗。`manage.html` 仅用于旧入口、隔离恢复和手工排障。
 
 首次准备自动化浏览器，运行 `pnpm --dir apps/extension exec playwright install chromium`；之后运行 `pnpm test:e2e`。它加载独立配置中的 MV3 构建物，检查跨标签与模拟流程，并保存布局截图；不操作已有浏览器配置。普通 E2E 在所有平台默认使用 Playwright Chromium，以保证 MV3 Service Worker 加载一致；报告在 `apps/extension/playwright-report/`，截图与失败 trace 在 `apps/extension/test-results/`。需要验证已安装的 Google Chrome 时运行 `pnpm --dir apps/extension run test:e2e:chrome`；该命令使用 headless 系统 Chrome，并在报告中标记 `channel: chrome`，不会冒充默认 bundled Chromium 证据。在支持 P3 的环境上，可运行 `pnpm test:e2e:p3` 以已安装的 Google Chrome headed + `display-p3` 模式进行人工视觉验收；P3 命令需要可用桌面会话，且不替代默认 sRGB CI 回归。证据解释见 [本轮验收记录](docs/archive/reviews/2026-09-07-links-startup-toolbar.md)，素材与依赖说明见 [ASSETS.md](docs/ASSETS.md)。
 

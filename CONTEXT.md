@@ -2,7 +2,7 @@
 
 > **最后确认：** 2026-09-22
 > **阶段：** Phase 2 / uNAS native module integration
-> **产品代码：** uNAS 唯一 WXT MV3 包已接入密码管家、广告拦截、WebDAV Vault、Legacy adapter 和原版 closed Shadow DOM 浮窗；密码管家通过 App Registry 提供桌面管理入口。
+> **产品代码：** WXT MV3 已接入密码管家、广告拦截、WebDAV Vault、Legacy adapter 和 closed Shadow DOM 浮窗；Desktop 提供 Vault 管理，`manage.html` 兼容保留。
 
 ## 当前决策
 
@@ -32,8 +32,8 @@
 ## 最近验证
 
 - 2026-09-20：[CI #35](https://github.com/Ben8368/uNAS/actions/runs/35487284796) 文档、Demo 和浏览器回归成功；SP-04 目标 Chrome 与资源证据仍缺，RISK-007 开放，详见 [SP-04](benchmarks/sp-04/README.md)。
-- 2026-09-21：KGM v3 5 样本通过 Node/`ffprobe`/`ffmpeg` 与 bundled E2E（10/5）；Chrome、owner、关页、内存和 KGM v5 未验收，详见 [SP-09](benchmarks/sp-09/README.md)。
 - 2026-09-22：[CI #48](https://github.com/Ben8368/uNAS/actions/runs/35729855959) 的 Browser regression 根因为 `system.display` 导致 bundled Chromium 异常退出；已移除该权限并完成模块解耦，保留显示器探测降级。详见 [ADR 0013](docs/ADR/0013-unas-native-password-manager-adblock.md)。
+- 2026-09-22：Desktop Vault 管理及[兼容/生命周期测试](apps/extension/src/modules/password-manager/background/vault/vault-core.compatibility.test.ts)完成；允许浏览器时 E2E 67 passed/3 skipped，目标 Chrome 仍需人工，macOS 沙箱见 [B-006](docs/lessons/browser.md)。
 
 ## 按需入口
 

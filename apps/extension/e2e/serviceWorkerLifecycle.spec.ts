@@ -40,3 +40,39 @@ test('forced Service Worker termination preserves the runtime rejection boundary
   await cdp.send('ServiceWorker.disable')
   expect(extension.errors).toEqual([])
 })
+
+test('forced Service Worker termination restores password and adblock projections independently', async ({ extension }) => {
+  const page = await extension.context.newPage()
+  await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
+  const readModuleState = () => page.evaluate(async () => {
+    const [vault, blocking] = await Promise.all([
+      browser.runtime.sendMessage({ type: 'listVaultProfiles' }),
+      browser.runtime.sendMessage({ type: 'getBlockingStatus' }),
+    ])
+    return { vault, blocking }
+  })
+  const initial = await readModuleState()
+  expect(initial.vault).toMatchObject({ ok: true, data: [] })
+  expect(initial.blocking).toMatchObject({ ok: true })
+
+  const cdp = await extension.context.newCDPSession(page)
+  let versions: WorkerVersion[] = []
+  cdp.on('ServiceWorker.workerVersionUpdated', event => { versions = (event as { versions?: WorkerVersion[] }).versions ?? versions })
+  await cdp.send('ServiceWorker.enable')
+  // The worker can go idle between the initial projection read and CDP attach.
+  // Send one controlled read after enabling the domain so the test observes a
+  // fresh running version before asking Chrome to terminate it.
+  await readModuleState()
+  await expect.poll(() => versions.find(version => version.scriptURL.includes('background.js') && version.runningStatus === 'running')).toBeTruthy()
+  const worker = versions.find(version => version.scriptURL.includes('background.js') && version.runningStatus === 'running')
+  if (!worker) throw new Error('未观察到运行中的 uNAS Service Worker。')
+  await cdp.send('ServiceWorker.stopWorker', { versionId: worker.versionId })
+  await expect.poll(() => versions.find(version => version.versionId === worker.versionId)?.runningStatus).toBe('stopped')
+
+  await expect.poll(readModuleState).toMatchObject({
+    vault: { ok: true, data: [] },
+    blocking: { ok: true },
+  })
+  await cdp.send('ServiceWorker.disable')
+  expect(extension.errors).toEqual([])
+})

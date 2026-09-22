@@ -5,3 +5,4 @@
 - B-003：OPFS 适合中间文件，但受站点存储配额和清站数据影响；它不是用户可见文件系统，也不是永久备份。
 - B-004：扩展权限、CSP、offscreen 生命周期和 WASM 加载需在解包扩展真机验证，普通 Web 页面成功不能代替。
 - B-005：压缩包、PDF、图片和媒体都可能出现解码后膨胀；入口预算应依据展开后的资源量，而不是只看输入字节数。
+- B-006：macOS 受限执行环境启动 Playwright `chromium.launchPersistentContext` 时，若日志出现 `mach_port_rendezvous ... Permission denied`、进程 `SIGABRT`，根因是沙箱阻断 Chromium 的 Mach bootstrap，不是产品断言失败；默认 headless 也可能触发系统 Chrome 崩溃弹窗。每个 fixture 都会新建持久化上下文，所以同一权限问题会重复弹窗。应改在允许浏览器进程启动的本地/CI 环境运行 `pnpm test:e2e`，先检查浏览器启动日志，再判断测试断言；不要因此放宽断言或修改业务代码。

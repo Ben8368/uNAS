@@ -79,6 +79,7 @@ export type BackgroundRequest = OverlayCapability & (
   | { type: "listVaultProfiles" }
   | { type: "listVaultConnectionStates" }
   | { type: "listVaultSyncStatuses" }
+  | { type: "syncVaults" }
   | { type: "enableLocalUnlock"; vaultId: string; password: string }
   | { type: "unlockVaultLocally"; vaultId: string; password: string }
   | { type: "disableLocalUnlock"; vaultId: string }

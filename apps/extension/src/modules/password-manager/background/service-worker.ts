@@ -100,7 +100,7 @@ const UNIPASS_MESSAGE_TYPES = new Set<string>([
   "startUniPassLogin", "completeUniPassLogin", "getPluginVersionSettings", "setPluginVersionOverride",
   "currentPageCatalog", "accountCatalog", "listApps", "accountsForApp", "appUrl", "credentialAvailability",
   "revealCredential", "getJupiterKeepalive", "setJupiterKeepalive", "listVaultProfiles", "listVaultConnectionStates",
-  "listVaultSyncStatuses", "enableLocalUnlock", "unlockVaultLocally", "disableLocalUnlock", "lockVault",
+  "listVaultSyncStatuses", "syncVaults", "enableLocalUnlock", "unlockVaultLocally", "disableLocalUnlock", "lockVault",
   "testWebDavConnection", "saveWebDavVault", "removeVault", "vaultCatalog", "createVaultApp", "updateVaultApp",
   "deleteVaultApp", "createVaultAccount", "updateVaultAccount", "deleteVaultAccount", "updateVaultCredential",
   "previewBrowserPasswords", "importBrowserPasswords",
@@ -200,6 +200,8 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
       return requireVaultManager(sender, message.overlayToken, listVaultConnectionStates);
     case "listVaultSyncStatuses":
       return requireVaultManager(sender, message.overlayToken, listVaultSyncStatuses);
+    case "syncVaults":
+      return requireVaultManager(sender, message.overlayToken, syncAllVaults);
     case "enableLocalUnlock":
       return requireVaultManager(sender, message.overlayToken, () => enableLocalUnlock(message.vaultId, message.password));
     case "unlockVaultLocally":

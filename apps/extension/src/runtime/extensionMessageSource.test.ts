@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { isUniPassSender } from "./extensionAdapter";
+import { isAdBlockSender, isUniPassSender } from "./extensionAdapter";
 
 const extensionId = "unas-test";
 const page = { id: extensionId, url: "https://ads.example.test/frame", tab: { id: 7 }, frameId: 0 };
 
 describe("UniPass message source boundary", () => {
   it("allows cosmetic rules in a child frame only for the exact cosmetic request", () => {
-    expect(isUniPassSender({ ...page, frameId: 4 }, extensionId, { type: "getCosmeticRules" })).toBe(true);
-    expect(isUniPassSender({ ...page, frameId: 4 }, extensionId, { type: "getCosmeticRules", extra: "no" })).toBe(false);
+    expect(isAdBlockSender({ ...page, frameId: 4 }, extensionId, { type: "getCosmeticRules" })).toBe(true);
+    expect(isAdBlockSender({ ...page, frameId: 4 }, extensionId, { type: "getCosmeticRules", extra: "no" })).toBe(false);
+    expect(isUniPassSender({ ...page, frameId: 4 }, extensionId, { type: "getCosmeticRules" })).toBe(false);
     expect(isUniPassSender({ ...page, frameId: 4 }, extensionId, { type: "getBlockingStatus" })).toBe(false);
     expect(isUniPassSender({ ...page, frameId: 4 }, extensionId, { type: "removeVault", vaultId: "vault" })).toBe(false);
   });

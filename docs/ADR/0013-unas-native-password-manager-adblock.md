@@ -14,7 +14,7 @@
 
 ## 后果
 
-- uNAS 桌面可从 App Registry 打开密码管家管理页，同时工具栏仍提供网页密码浮窗；两者使用同一受控 Vault 服务，不创建第二套密码库。
+- uNAS 桌面可从 App Registry 在当前窗口打开完整密码管家管理页，同时工具栏仍提供网页密码浮窗；两者使用同一受控 Vault 服务，不创建第二套密码库。独立 `manage.html` 仅作为旧入口和恢复/排障兼容面保留。
 - 广告拦截的初始化、订阅刷新和消息处理不再依赖 Vault 是否配置、解锁或同步可用。
 - 目录迁移会产生新的物理模块路径，但 Legacy adapter、兼容标识和数据格式继续保留。
 - `system.display` 不再声明为 required permission；系统详情继续 feature-detect，浏览器不提供时诚实显示不可用。该变更也避免仓库 CI bundled Chromium 因非核心权限启动异常。

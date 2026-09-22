@@ -43,7 +43,7 @@ async function load(): Promise<void> {
 async function testVault(): Promise<void> {
   try {
     const input = vaultInput();
-    await send<void>({ type: "testWebDavConnection", vaultId: selectedVaultId || undefined, ...input });
+    await send<void>({ type: "testWebDavConnection", ...input });
     setStatus("WebDAV 连接和目录权限检查通过");
   } catch (error) { setStatus(errorText(error), true); }
 }
@@ -52,7 +52,7 @@ async function saveVault(): Promise<void> {
   let saved = false;
   try {
     const input = vaultInput();
-    const connection = await send<VaultConnection>({ type: "saveWebDavVault", mode: selectedVaultId ? "reconnect" : "create", vaultId: selectedVaultId || undefined, ...input });
+    const connection = await send<VaultConnection>({ type: "saveWebDavVault", ...input });
     selectedVaultId = connection.profile.id;
     saved = true;
     if (connection.recoveryKey) {
@@ -67,7 +67,9 @@ async function saveVault(): Promise<void> {
 
 function vaultInput() {
   const endpoint = normalizeWebDavUrl(value("endpoint"));
-  return { name: value("vaultName"), endpoint, username: value("username"), appPassword: rawValue("appPassword"), vaultKey: value("vaultKey") || undefined };
+  const vaultKey = value("vaultKey") || undefined;
+  const mode: "create" | "existing" | "reconnect" = selectedVaultId ? "reconnect" : vaultKey ? "existing" : "create";
+  return { mode, vaultId: selectedVaultId || undefined, name: value("vaultName"), endpoint, username: value("username"), appPassword: rawValue("appPassword"), vaultKey };
 }
 
 async function saveApp(): Promise<void> {

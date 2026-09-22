@@ -43,11 +43,19 @@ function isExtensionPage(sender: ExtensionMessageSender, extensionId: string) {
 }
 
 export function isUniPassSender(sender: ExtensionMessageSender, extensionId: string, message?: unknown): boolean {
+  // The password overlay is injected into an HTTPS page and must be able to
+  // complete its own fill handoff. AdBlock is routed separately below.
+  if (isWebPageSender(sender, extensionId)) return true
+  return isExtensionPageSender(sender, extensionId, ['/newtab.html', '/workspace.html', '/popup.html', '/manage.html'])
+}
+
+/** AdBlock has a narrower route: web pages may only request cosmetic rules. */
+export function isAdBlockSender(sender: ExtensionMessageSender, extensionId: string, message?: unknown): boolean {
   const isCosmeticRulesRequest = Boolean(message && typeof message === 'object' && !Array.isArray(message)
     && Object.keys(message).sort().join(',') === 'type'
     && (message as { type?: unknown }).type === 'getCosmeticRules')
   if (isWebPageSender(sender, extensionId, isCosmeticRulesRequest)) return true
-  return isExtensionPageSender(sender, extensionId, ['/newtab.html', '/workspace.html', '/popup.html', '/manage.html'])
+  return isExtensionPageSender(sender, extensionId, ['/newtab.html', '/workspace.html'])
 }
 
 function isBrowserDownloadMessage(message: unknown): message is { kind: 'browser.download'; url: string } | { kind: 'browser.download.get'; downloadId: number } | { kind: 'browser.download.cancel'; downloadId: number } | { kind: 'browser.download.forget'; downloadId: number } | { kind: 'browser.download.list' } | { kind: 'browser.download.show' } {
@@ -140,7 +148,7 @@ export function installWorkspaceRouter() {
       return { ok: true }
     }
     if (isAdBlockMessage(message)) {
-      if (!isUniPassSender(sender, runtime.id, message)) return { ok: false, error: '广告拦截消息来源无效。' }
+      if (!isAdBlockSender(sender, runtime.id, message)) return { ok: false, error: '广告拦截消息来源无效。' }
       return await handleAdBlockMessage(message, sender as chrome.runtime.MessageSender)
     }
     if (isUniPassMessage(message)) {

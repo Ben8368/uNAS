@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures'
 
-test('密码管家桌面入口打开同一 Vault Core 的管理页', async ({ extension }) => {
+test('密码管家在 Desktop 窗口中提供完整管理流程入口', async ({ extension }) => {
   const page = await extension.context.newPage()
   await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
   const app = page.locator('.app-icon--password-manager')
@@ -8,12 +8,20 @@ test('密码管家桌面入口打开同一 Vault Core 的管理页', async ({ ex
   await app.click()
   const passwordManager = page.locator('[data-app-id="password-manager"]')
   await expect(passwordManager.getByRole('heading', { name: '密码管家' })).toBeVisible()
-  await expect(passwordManager.getByText('未配置')).toBeVisible()
+  await expect(passwordManager.getByText('未配置', { exact: true })).toBeVisible()
+  await expect(passwordManager.getByRole('heading', { name: '连接 WebDAV' })).toBeVisible()
+  await expect(passwordManager.getByRole('heading', { name: '添加网站' })).toBeVisible()
+  await expect(passwordManager.getByRole('heading', { name: '保存账号' })).toBeVisible()
+  await expect(passwordManager.getByLabel('WebDAV 地址')).toBeVisible()
+  await expect(passwordManager.getByRole('button', { name: '保存网站' })).toBeDisabled()
+  await expect(passwordManager.getByRole('button', { name: '保存账号' })).toBeDisabled()
+  await expect(page.locator('[data-app-id="password-manager"]')).toHaveCount(1)
+  expect(extension.errors).toEqual([])
+})
 
-  const managePagePromise = extension.context.waitForEvent('page')
-  await passwordManager.getByRole('button', { name: '打开密码管家管理页' }).click()
-  const managePage = await managePagePromise
-  await managePage.waitForLoadState('domcontentloaded')
+test('独立 manage.html 保留为兼容/恢复入口', async ({ extension }) => {
+  const managePage = await extension.context.newPage()
+  await managePage.goto(`chrome-extension://${extension.extensionId}/manage.html`)
   await expect(managePage).toHaveTitle('uNAS 密码管家')
   await expect(managePage.getByText('uNAS · 密码管家')).toBeVisible()
   await expect(managePage.getByRole('heading', { name: '连接 WebDAV' }).first()).toBeVisible()
