@@ -25,6 +25,7 @@ export type RuntimeMetrics = {
       capacity_bytes?: number
     }>
     display_count?: number
+    display_count_is_minimum?: boolean
     display_details?: Array<{
       label: string
       is_primary: boolean

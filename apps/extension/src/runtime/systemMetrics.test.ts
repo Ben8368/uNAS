@@ -46,4 +46,47 @@ describe('browser system metrics', () => {
       ],
     })
   })
+
+  it('summarizes macOS APFS volumes without treating each mount as a hard disk', async () => {
+    vi.stubGlobal('browser', {
+      system: {
+        storage: { getInfo: vi.fn().mockResolvedValue([
+          { type: 'fixed', name: 'Preboot', capacity: 550_000_000 },
+          { type: 'fixed', name: 'Macintosh HD', capacity: 494_384_795_648 },
+          { type: 'fixed', name: 'Data', capacity: 494_384_795_648 },
+          { type: 'fixed', name: 'Recovery', capacity: 550_000_000 },
+        ]) },
+      },
+    })
+    vi.stubGlobal('navigator', { onLine: true, platform: 'MacIntel' })
+    vi.stubGlobal('screen', { width: 1470, height: 956, isExtended: false })
+    vi.stubGlobal('devicePixelRatio', 2)
+
+    const metrics = await readBrowserSystemMetrics()
+
+    expect(metrics.system).toMatchObject({
+      platform: 'macOS',
+      storage_capacity_bytes: 494_384_795_648,
+      storage_details: [{ capacity_bytes: 494_384_795_648 }],
+      display_count: 1,
+      display_count_is_minimum: false,
+      display_details: [{ label: '当前显示器', resolution: '1470×956', is_primary: true }],
+    })
+    expect(metrics.system?.storage_count).toBeUndefined()
+  })
+
+  it('reports a lower bound when Screen API only reveals that multiple displays exist', async () => {
+    vi.stubGlobal('browser', { system: {} })
+    vi.stubGlobal('navigator', { onLine: true, platform: 'MacIntel' })
+    vi.stubGlobal('screen', { width: 1920, height: 1080, isExtended: true })
+    vi.stubGlobal('devicePixelRatio', 1)
+
+    const metrics = await readBrowserSystemMetrics()
+
+    expect(metrics.system).toMatchObject({
+      display_count: 2,
+      display_count_is_minimum: true,
+      display_details: [{ label: '当前显示器', resolution: '1920×1080', is_primary: false }],
+    })
+  })
 })

@@ -92,10 +92,13 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
         : '#FF9999'
   const cpuModel = compactCpuModel(system.cpu_model) || '不可用'
   const cpuTemperature = typeof system.cpu_temperature_c === 'number' ? `${system.cpu_temperature_c.toFixed(1)} °C` : null
-  const storageDetails = system.storage_details || []
-  const displayCount = typeof system.display_count === 'number' ? `${system.display_count} 台` : '不可用'
-  const displayDetails = system.display_details || []
   const systemPlatform = system.platform || '不可用'
+  const storageDetails = system.storage_details || []
+  const storageLabel = systemPlatform === 'macOS' ? '内置存储' : '硬盘'
+  const displayCount = typeof system.display_count === 'number'
+    ? `${system.display_count_is_minimum ? '至少 ' : ''}${system.display_count} 台`
+    : '不可用'
+  const displayDetails = system.display_details || []
   const gpuModel = system.gpu_model || '浏览器未开放'
   const sampleTime = lastSampleAt
     ? lastSampleAt.toLocaleTimeString('zh-CN', { hour12: false })
@@ -175,11 +178,11 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
           {storageDetails.length > 0
             ? storageDetails.map((storage, index) => (
               <div className="rp-system-detail-row" key={`storage-${index}`}>
-                <span>硬盘{index + 1}</span>
+                <span>{storageDetails.length === 1 ? storageLabel : `${storageLabel}${index + 1}`}</span>
                 <strong>{storage.capacity_bytes && storage.capacity_bytes > 0 ? formatBytes(storage.capacity_bytes) : '容量不可用'}</strong>
               </div>
             ))
-            : <div className="rp-system-detail-row"><span>硬盘</span><strong>不可用</strong></div>}
+            : <div className="rp-system-detail-row"><span>{storageLabel}</span><strong>不可用</strong></div>}
           <div className="rp-system-detail-row">
             <span>GPU</span>
             <strong>{gpuModel}</strong>

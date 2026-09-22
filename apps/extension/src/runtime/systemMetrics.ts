@@ -16,6 +16,11 @@ type StorageInfo = {
   type?: 'fixed' | 'removable' | 'unknown'
   name?: string
 }
+type BrowserScreen = {
+  height?: number
+  isExtended?: boolean
+  width?: number
+}
 type DisplayInfo = {
   activeState?: 'active' | 'inactive'
   bounds?: { width?: number; height?: number }
@@ -179,7 +184,7 @@ async function readGpu(signal?: AbortSignal) {
   return result
 }
 
-async function readStorage(signal?: AbortSignal) {
+async function readStorage(platform: string | undefined, signal?: AbortSignal) {
   const system = (extensionApi() as (ReturnType<typeof extensionApi> & { system?: SystemApi }) | undefined)?.system
   const getInfo = system?.storage?.getInfo
   if (!getInfo) return {}
@@ -187,6 +192,17 @@ async function readStorage(signal?: AbortSignal) {
     const info = await getInfo()
     abortIfNeeded(signal)
     const fixed = info.filter((unit) => unit.type === 'fixed')
+    // Chromium's macOS provider enumerates mountable volumes. APFS therefore
+    // exposes Data, Preboot, Recovery and other sibling volumes as if each were
+    // a separate fixed device. The extension API does not expose their parent
+    // physical disk, so present one capacity summary instead of inventing a
+    // physical disk count or adding the shared APFS capacity repeatedly.
+    if (platform === 'macOS') {
+      const capacity = fixed.reduce((largest, unit) => Math.max(largest, Number(unit.capacity || 0)), 0)
+      return capacity > 0
+        ? { storage_capacity_bytes: capacity, storage_details: [{ capacity_bytes: capacity }] }
+        : {}
+    }
     const storageDetails = fixed.map((unit) => ({ capacity_bytes: Number(unit.capacity || 0) }))
     return {
       storage_count: fixed.length,
@@ -227,23 +243,42 @@ function displayLabel(display: DisplayInfo, index: number, deviceScaleFactor?: n
 async function readDisplays(signal?: AbortSignal) {
   const system = (extensionApi() as (ReturnType<typeof extensionApi> & { system?: SystemApi }) | undefined)?.system
   const getInfo = system?.display?.getInfo
-  if (!getInfo) return {}
-  try {
-    const info = await getInfo()
-    abortIfNeeded(signal)
-    const displays = info.filter((display) => display.activeState !== 'inactive' && display.isEnabled !== false)
-    const primary = displays.find((display) => display.isPrimary) || displays[0]
-    const primaryIndex = primary ? displays.indexOf(primary) : -1
-    const deviceScaleFactor = Number((globalThis as typeof globalThis & { devicePixelRatio?: number }).devicePixelRatio)
-    return {
-      display_count: displays.length,
-      display_details: displays.map((display, index) => ({
-        ...displayLabel(display, index, deviceScaleFactor),
-        is_primary: index === primaryIndex,
-      })),
+  if (getInfo) {
+    try {
+      const info = await getInfo()
+      abortIfNeeded(signal)
+      const displays = info.filter((display) => display.activeState !== 'inactive' && display.isEnabled !== false)
+      const primary = displays.find((display) => display.isPrimary) || displays[0]
+      const primaryIndex = primary ? displays.indexOf(primary) : -1
+      const deviceScaleFactor = Number((globalThis as typeof globalThis & { devicePixelRatio?: number }).devicePixelRatio)
+      return {
+        display_count: displays.length,
+        display_details: displays.map((display, index) => ({
+          ...displayLabel(display, index, deviceScaleFactor),
+          is_primary: index === primaryIndex,
+        })),
+      }
+    } catch {
+      // Fall through to the permission-free Screen API summary.
     }
-  } catch {
-    return {}
+  }
+
+  const screen = (globalThis as typeof globalThis & { screen?: BrowserScreen }).screen
+  const width = Number(screen?.width || 0)
+  const height = Number(screen?.height || 0)
+  // screen.width/height are the current logical resolution selected by macOS.
+  // devicePixelRatio is a rendering scale, not a resolution multiplier: using
+  // it here produced values such as 2940×1912 for a 1470×956 desktop mode.
+  const resolution = width > 0 && height > 0 ? `${Math.round(width)}×${Math.round(height)}` : undefined
+  const extended = typeof screen?.isExtended === 'boolean' ? screen.isExtended : undefined
+  return {
+    ...(extended == null ? {} : {
+      display_count: extended ? 2 : 1,
+      display_count_is_minimum: extended,
+    }),
+    ...(resolution ? {
+      display_details: [{ label: '当前显示器', resolution, is_primary: extended === false }],
+    } : {}),
   }
 }
 
@@ -278,14 +313,15 @@ function readNetwork() {
 
 export async function readBrowserSystemMetrics(signal?: AbortSignal): Promise<Pick<RuntimeMetrics, 'runtime' | 'system' | 'network'> & { executionSource: 'browser' }> {
   abortIfNeeded(signal)
-  const [cpu, memory, gpu, storage, displays] = await Promise.all([readCpu(signal), readMemory(signal), readGpu(signal), readStorage(signal), readDisplays(signal)])
+  const platform = readPlatform()
+  const [cpu, memory, gpu, storage, displays] = await Promise.all([readCpu(signal), readMemory(signal), readGpu(signal), readStorage(platform, signal), readDisplays(signal)])
   abortIfNeeded(signal)
   return {
     executionSource: 'browser',
     runtime: cpu?.uptime_seconds == null ? undefined : { uptime_seconds: cpu.uptime_seconds },
     system: {
       ...memory,
-      platform: readPlatform(),
+      platform,
       cpu_percent: cpu?.cpu_percent,
       cpu_model: cpu?.cpu_model,
       cpu_arch: cpu?.cpu_arch,

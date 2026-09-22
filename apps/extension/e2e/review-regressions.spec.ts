@@ -16,7 +16,7 @@ test('runtime panel shows health score and omits GPU capability details and simu
   await expect(tab.locator('.rp-system-details')).not.toContainText('系统运行')
   await expect(tab.locator('.rp-system-details')).toContainText('CPU')
   await expect(tab.locator('.rp-system-details')).toContainText('内存')
-  await expect(tab.locator('.rp-system-details')).toContainText('硬盘1')
+  await expect(tab.locator('.rp-system-details')).toContainText(/内置存储|硬盘/)
   await expect(tab.locator('.rp-system-details')).toContainText('GPU')
   const systemDetails = tab.locator('.rp-system-details')
   await expect(systemDetails).toContainText(/显示器数量/)
