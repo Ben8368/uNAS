@@ -16,8 +16,8 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border-right: 1px solid var(--window-divider);
-  background: var(--window-surface-sidebar);
+  border-right: 1px solid color-mix(in srgb, var(--window-text) 12%, transparent);
+  background: transparent;
   padding: 8px 0 0;
 }
 

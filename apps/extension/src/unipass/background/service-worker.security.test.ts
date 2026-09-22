@@ -13,6 +13,7 @@ describe("UniPass privileged message authorization", () => {
     await expect(handleUniPassMessage({ type: "saveWebDavVault", mode: "create", name: "x", endpoint: "https://dav.example/", username: "u", appPassword: "p" }, pageSender)).resolves.toEqual({ ok: false, error: "Vault 管理请求来源无效" });
     await expect(handleUniPassMessage({ type: "updateVaultCredential", vaultId: "vault", accountId: "account", credential: { password: "p" } }, pageSender)).resolves.toEqual({ ok: false, error: "Vault 管理请求来源无效" });
     await expect(handleUniPassMessage({ type: "fillFromPopup", tabId: 3, accountId: "account", accountRef: { vaultId: "vault", accountId: "account" }, expectedAppUrl: "https://example.test/" }, pageSender)).resolves.toEqual({ ok: false, error: "填充请求来源无效" });
+    await expect(handleUniPassMessage({ type: "refreshBlockingSubscriptions" }, pageSender)).resolves.toEqual({ ok: false, error: "规则更新请求来源无效" });
   });
 
   it("keeps the original overlay fill route distinct from popup fill", async () => {

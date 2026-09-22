@@ -1,6 +1,7 @@
 const BASE = '/static/app/icons/default'
 
 export const APP_ICON_PATHS = {
+  adblock:     `${BASE}/adblock.svg`,
   browser:     `${BASE}/browser.svg`,
   fetcher:     `${BASE}/download.svg`,
   fileManager: `${BASE}/files.svg`,

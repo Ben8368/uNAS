@@ -101,6 +101,11 @@ html, body, #root {
   outline-offset: 2px;
 }
 
+/* Keep the full 48px hit area and its focus ring inside the slimmer Dock. */
+.mt-left-nav :is(.sb-btn, .mt-left-nav__app-btn):focus-visible {
+  outline-offset: -3px;
+}
+
 .sb-btn svg {
   width: 22px;
   height: 22px;
@@ -112,7 +117,7 @@ html, body, #root {
   left: 8px;
   top: 8px;
   bottom: 8px;
-  width: 64px;
+  width: 56px;
   z-index: 200;
   display: flex;
   flex-direction: column;
@@ -329,7 +334,7 @@ html, body, #root {
 .mt-main {
   position: absolute;
   top: 20px;
-  left: 80px;
+  left: 72px;
   right: 370px;
   bottom: 20px;
   z-index: 1;

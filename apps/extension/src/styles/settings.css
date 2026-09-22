@@ -98,18 +98,18 @@
 
 .settings-content {
   display: grid;
-  gap: 0;
+  gap: var(--window-space-4);
   max-width: 760px;
 }
 
 .settings-card {
   display: grid;
   gap: 14px;
-  border: 0;
-  border-top: 1px solid var(--mt-divider);
-  border-radius: 0;
-  background: transparent;
-  padding: 20px 0;
+  border: 1px solid var(--window-content-border);
+  border-radius: var(--window-radius-panel);
+  background: var(--window-surface-readable);
+  box-shadow: inset 0 1px 0 var(--window-content-highlight);
+  padding: var(--window-space-5);
 }
 
 .settings-card h3 {

@@ -1,0 +1,23 @@
+.adblock-app {
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  padding: 22px 24px 16px;
+  color: var(--window-text);
+  background: var(--window-surface);
+  font-size: 14px;
+  line-height: 22px;
+}
+.adblock-content { display: grid; gap: 14px; max-width: 760px; margin-inline: auto; }
+.adblock-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; min-height: 44px; }
+.adblock-app h2 { margin: 0 0 8px; font-size: 20px; line-height: 28px; }
+.adblock-app h3 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 16px; line-height: 24px; }
+.adblock-app p { margin: 0; color: var(--window-text-muted); overflow-wrap: anywhere; }
+.adblock-app [role="alert"] { color: var(--window-danger); }
+.adblock-section { display: grid; gap: 14px; padding-block: 24px; border-top: 1px solid var(--window-divider); }
+.adblock-facts { display: grid; gap: 12px; margin: 0; }
+.adblock-facts > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; }
+.adblock-facts dt { color: var(--window-text-muted); }
+.adblock-facts dd { margin: 0; overflow-wrap: anywhere; }
+.adblock-app .mt-btn { min-width: 124px; }
+@container (max-width: 699px) { .adblock-app { padding: 16px; } }

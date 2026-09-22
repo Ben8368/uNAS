@@ -75,6 +75,17 @@ describe('independent repository updater', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('retries immediately after a failed check when explicitly requested', async () => {
+    fetchMock.mockRejectedValueOnce(new Error('offline'));
+    await updateRepositorySubscription();
+    expect(data[REPOSITORY_UPDATE_STORAGE_KEY]).toHaveProperty('error');
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(next)));
+    await updateRepositorySubscription({ force: true });
+    expect(data[REPOSITORY_FILTER_STORAGE_KEY]).toEqual(next);
+    expect(data[REPOSITORY_UPDATE_STORAGE_KEY]).not.toHaveProperty('error');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it('continues original subscriptions when the repository is unavailable', async () => {
     fetchMock.mockImplementation(async (url: string) => url === REPOSITORY_FILTER_URL
       ? new Response('', { status: 404 })

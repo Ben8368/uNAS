@@ -13,6 +13,13 @@
       "height": 64
     },
     {
+      "path": "apps/extension/public/static/app/icons/default/adblock.svg",
+      "bytes": 342,
+      "sha256": "3a6ea4db07a2a870bd357c2943865bb6da347fe03fa9bbc44176a5d2bb702d92",
+      "width": 64,
+      "height": 64
+    },
+    {
       "path": "apps/extension/public/static/app/icons/default/download.svg",
       "bytes": 307,
       "sha256": "69a6136edc97b1ec3946c33d82bf7ed0a21912da486daccd1cd006cda96343bc",

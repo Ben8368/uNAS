@@ -1,3 +1,5 @@
+import { bilibiliLayoutStyle } from "./bilibili-layout";
+
 export const COSMETIC_STYLE_ID_PREFIX = "unipass-cosmetic-style-";
 const PROTECTED_TARGETS = `:not(input,textarea,select,form,button,[type="password" i],[autocomplete*="password" i],[contenteditable="true" i],[role="button" i],#unipass-page-overlay):not(:has(input,textarea,select,form,button,[type="password" i],[autocomplete*="password" i],[contenteditable="true" i],[role="button" i],#unipass-page-overlay))`;
 const MAX_STYLE_BYTES = 300_000;
@@ -17,7 +19,7 @@ export function buildCosmeticStyle(selectors: string[]): string {
 
 export function installCosmeticStyle(documentRoot: Document, generation: number, selectors: string[]): boolean {
   const styleId = `${COSMETIC_STYLE_ID_PREFIX}${generation}`;
-  const css = selectors.length && generation ? buildCosmeticStyle(selectors) : "";
+  const css = selectors.length && generation ? buildCosmeticStyle(selectors) + "\n" + bilibiliLayoutStyle(documentRoot.location.hostname, selectors) : "";
   const existing = documentRoot.getElementById(styleId);
   if (existing?.tagName === "STYLE" && existing.textContent === css) {
     documentRoot.querySelectorAll(`style[id^="${COSMETIC_STYLE_ID_PREFIX}"]`).forEach((node) => {

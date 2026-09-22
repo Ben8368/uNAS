@@ -118,7 +118,8 @@ test('Browser App uses semantic content surfaces in both themes and reduced tran
       } else {
         expect(surfaces.windowFilter).toContain('blur(')
         expect(surfaces.bodyBackground).toBe('rgba(0, 0, 0, 0)')
-        expect(surfaces.appImage).not.toBe('none')
+        expect(surfaces.appImage).toBe('none')
+        expect(surfaces.appBackground).toBe('rgba(0, 0, 0, 0)')
       }
       evidence.push({ theme, reduced, ...surfaces })
       await page.screenshot({ path: testInfo.outputPath(`browser-app-${theme}${reduced ? '-reduced' : ''}.png`), animations: 'disabled' })

@@ -6,8 +6,8 @@
   padding: 16px;
   border: 1px solid color-mix(in srgb, var(--window-accent) 25%, var(--window-border));
   border-radius: 12px;
-  background: linear-gradient(145deg, var(--window-surface-raised), var(--window-surface-raised) 54%, var(--window-surface-raised));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 12px 28px rgba(0,0,0,.12);
+  background: var(--window-surface-readable);
+  box-shadow: inset 0 1px 0 var(--window-content-highlight), var(--window-content-shadow);
 }
 
 .dl-form-section {

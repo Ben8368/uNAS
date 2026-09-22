@@ -4,7 +4,7 @@
 
 - 唯一规则源：[unas.json](unas.json)。构建直接嵌入同一文件作为离线兜底。
 - 发布目标：`https://raw.githubusercontent.com/Ben8368/uNAS/main/filters/unas.json`。必须经维护者审核并合入远端 `main` 后才可在线获取；本地修改不会自动发布。
-- 更新：扩展启动及现有每小时 alarm 检查，独立于第三方订阅。失败保留上次有效缓存，无缓存使用随包快照；错误进入广告拦截状态。
+- 更新：扩展启动及现有每小时 alarm 检查，独立于第三方订阅。失败保留上次有效缓存，无缓存使用随包快照；错误进入广告拦截状态。已安装扩展的“广告拦截”App 可由用户点击“检查更新”立即重试本仓库源；该受信任页面动作不等待小时节流，也不触发第三方订阅更新。
 - 安全约束与版本撤回语义见 [ADR 0012](../docs/ADR/0012-repository-filter-subscription.md)。
 
 ## 维护规则
@@ -19,3 +19,5 @@
 ## B 站依据
 
 2026-09-21 依据用户标注及在线 DOM 只读检查：视频页 `.ad-report.strip-ad`、`.video-card-ad-small`、`.ad-report.ad-floor-exp` 各命中一个推广容器；首页 8 个推广卡片含 `cm.bilibili.com` 链接，普通 CMOS 视频未命中。首页推广卡在 `.feed-card` 外层包装内时，补充规则同时隐藏该网格项，避免留下空白列。第 3 类含站内活动推广。未保存追踪参数、登录态或页面素材；固定合成结构见 [E2E](../apps/extension/e2e/bilibili-adblock.spec.ts)。这只是当日 DOM 依据，不是目标 Chrome 实站拦截完成证据。
+
+2026-09-22 排版修复依据：公开首页样式 `https://s1.hdslb.com/bfs/static/shanks/laputa-home/assets/index-dbcc077a.css` 对 `.recommended-container_floor-aside .container` 的子项用 `nth-of-type` 分配 0/40/24（窄屏 22）px 顶部间距；隐藏广告后序号不变、网格补位，导致同排错位。随包 `bilibili-layout.ts` 在相应卡片过滤生效且网格含推广链接时清除卡片顶部偏移（包含普通视频、直播/番剧的 `.floor-single-card`、裸视频骨架及加载锚点），保留原网格 gap 与轮播跨度；暂停/撤回过滤同步移除。此修复不改变远程规则语法，需要重新加载扩展。回归入口为 `apps/extension/e2e/bilibili-layout.spec.ts`，混合卡片夹具验证封面顶部坐标并复现旧补丁漏掉直播/番剧的 40px 偏移；登录态实站仍待确认。

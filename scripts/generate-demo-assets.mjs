@@ -9,6 +9,7 @@ const assetManifestPath = resolve(root, 'assets/demo-assets.json')
 const existingManifest = JSON.parse(await readFile(assetManifestPath, 'utf8'))
 const shapes = {
   browser: ['#3975a8', '<circle cx="32" cy="32" r="17"/><path d="M15 32h34M32 15c-12 10-12 24 0 34 12-10 12-24 0-34Z"/>'],
+  adblock: ['#437a66', '<path d="M32 13 49 20v12c0 12-17 20-17 20S15 44 15 32V20Z"/><path d="m23 32 6 6 13-14"/>'],
   download: ['#437a66', '<path d="M32 14v25m-10-9 10 10 10-10M16 42v7h32v-7"/>'],
   files: ['#487d9d', '<path d="M13 23h15l5 5h18v20H13ZM13 23v-5h16l5 5h17v5"/>'],
   media: ['#7774a8', '<rect x="13" y="16" width="38" height="32" rx="5"/><path d="m27 24 13 8-13 8Z"/>'],

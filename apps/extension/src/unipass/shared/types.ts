@@ -69,6 +69,7 @@ export type BackgroundRequest = OverlayCapability & (
   | { type: "getPluginVersionSettings" }
   | { type: "setPluginVersionOverride"; version: string }
   | { type: "getBlockingStatus" }
+  | { type: "refreshBlockingSubscriptions" }
   | { type: "getBlockingSiteState" }
   | { type: "pauseBlockingForSite"; tabId?: number }
   | { type: "resumeBlockingForSite"; tabId?: number }

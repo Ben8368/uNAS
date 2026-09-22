@@ -59,6 +59,7 @@ import { COSMETIC_STORAGE_KEY, createCosmeticStore, pageRulesForHost, validateCo
 import type { BackgroundRequest, BackgroundResponse } from "../shared/types";
 
 import { updateFilterSubscriptions } from "./blocking/filter-updater";
+import { updateRepositorySubscription } from "./blocking/repository-updater";
 import { REPOSITORY_FILTER_STORAGE_KEY } from "./blocking/repository-rules";
 import { FILTER_GENERATION, FILTER_UPDATE_ALARM } from "./blocking/subscriptions";
 import { BLOCKING_RECONCILE_ALARM } from "../shared/blocking";
@@ -118,7 +119,7 @@ export function installUniPassBackground(): void {
 const UNIPASS_MESSAGE_TYPES = new Set<string>([
   "session", "pageContext", "pageTheme", "openApp", "fillFromOverlay", "fillFromPopup",
   "startUniPassLogin", "completeUniPassLogin", "getPluginVersionSettings", "setPluginVersionOverride",
-  "getBlockingStatus", "getBlockingSiteState", "pauseBlockingForSite", "resumeBlockingForSite", "getCosmeticRules",
+  "getBlockingStatus", "refreshBlockingSubscriptions", "getBlockingSiteState", "pauseBlockingForSite", "resumeBlockingForSite", "getCosmeticRules",
   "currentPageCatalog", "accountCatalog", "listApps", "accountsForApp", "appUrl", "credentialAvailability",
   "revealCredential", "getJupiterKeepalive", "setJupiterKeepalive", "listVaultProfiles", "listVaultConnectionStates",
   "listVaultSyncStatuses", "enableLocalUnlock", "unlockVaultLocally", "disableLocalUnlock", "lockVault",
@@ -168,6 +169,8 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
       return setPluginVersionOverride(message.version);
     case "getBlockingStatus":
       return getBlockingStatus();
+    case "refreshBlockingSubscriptions":
+      return refreshRepositorySubscription(sender);
     case "getBlockingSiteState":
       return currentSiteState(sender);
     case "pauseBlockingForSite":
@@ -295,6 +298,14 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
     default:
       return Promise.reject(new Error("不支持的扩展请求"));
   }
+}
+
+async function refreshRepositorySubscription(sender: chrome.runtime.MessageSender): Promise<Awaited<ReturnType<typeof getBlockingStatus>>> {
+  if (!isExtensionPageSender(sender, chrome.runtime.id, ["/newtab.html", "/workspace.html"])) {
+    throw new Error("规则更新请求来源无效");
+  }
+  await updateRepositorySubscription({ force: true });
+  return getBlockingStatus();
 }
 
 function requireVaultManager<T>(sender: chrome.runtime.MessageSender, overlayToken: string | undefined, operation: () => Promise<T>): Promise<T> {

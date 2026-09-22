@@ -8,17 +8,17 @@ import { FILTER_UPDATE_INTERVAL_MS } from './subscriptions';
 export const REPOSITORY_UPDATE_STORAGE_KEY = 'unas_repository_filter_update';
 let pending: Promise<void> | undefined;
 
-export function updateRepositorySubscription(): Promise<void> {
-  pending ??= update().finally(() => { pending = undefined; });
+export function updateRepositorySubscription(options: { force?: boolean } = {}): Promise<void> {
+  pending ??= update(options.force === true).finally(() => { pending = undefined; });
   return pending;
 }
 
-async function update(): Promise<void> {
+async function update(force: boolean): Promise<void> {
   const stored = await chrome.storage.local.get([REPOSITORY_FILTER_STORAGE_KEY, REPOSITORY_UPDATE_STORAGE_KEY]);
   const current = effectiveRepositoryRules(stored[REPOSITORY_FILTER_STORAGE_KEY]);
   const state = stored[REPOSITORY_UPDATE_STORAGE_KEY] as { checkedAt?: number; updatedAt?: number } | undefined;
   const age = Date.now() - (state?.checkedAt ?? 0);
-  if (age >= 0 && age < FILTER_UPDATE_INTERVAL_MS) return;
+  if (!force && age >= 0 && age < FILTER_UPDATE_INTERVAL_MS) return;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 20_000);
   try {
