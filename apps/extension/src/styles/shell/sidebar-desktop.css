@@ -107,8 +107,8 @@ html, body, #root {
 }
 
 .sb-btn svg {
-  width: 22px;
-  height: 22px;
+  width: 17.6px;
+  height: 17.6px;
 }
 
 /* ===== Floating Left Nav (LeftNavbar.tsx) ===== */
@@ -196,7 +196,7 @@ html, body, #root {
 
 .mt-left-nav__app-btn--active {
   /* Keep the active window discernible without competing with the App icon. */
-  background: color-mix(in srgb, var(--window-accent) 12%, transparent);
+  background: color-mix(in srgb, var(--window-accent) 8%, transparent);
 }
 
 .mt-left-nav__app-btn img {
@@ -350,7 +350,7 @@ html, body, #root {
   display: grid;
   height: 100%;
   grid-template-rows: repeat(var(--desktop-icon-rows, 6), auto);
-  grid-auto-columns: 116px;
+  grid-auto-columns: 104px;
   grid-auto-flow: column;
   gap: var(--window-space-4) var(--window-space-5);
   align-content: start;
@@ -361,7 +361,7 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 116px;
+  width: 104px;
   padding: var(--window-space-1);
   border: 0;
   border-radius: var(--window-radius-panel);
@@ -389,8 +389,8 @@ html, body, #root {
 
 .app-icon-img {
   position: relative;
-  width: 72px;
-  height: 72px;
+  width: 60px;
+  height: 60px;
   margin-bottom: var(--window-space-2);
   display: flex;
   align-items: center;

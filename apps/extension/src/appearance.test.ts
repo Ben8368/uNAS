@@ -30,7 +30,9 @@ describe('desktop application affordances', () => {
     const stylesheet = await readFile(new URL('./styles/shell/sidebar-desktop.css', import.meta.url), 'utf8')
 
     expect(stylesheet).toMatch(/\.app-icon--music \.app-icon-img\s*\{\s*border-radius: 50%;\s*\}/)
-    expect(stylesheet).toMatch(/\.mt-left-nav__app-btn--active\s*\{[^}]*background: color-mix\(in srgb, var\(--window-accent\) 12%, transparent\);/)
+    expect(stylesheet).toMatch(/\.mt-left-nav__app-btn--active\s*\{[^}]*background: color-mix\(in srgb, var\(--window-accent\) 8%, transparent\);/)
+    expect(stylesheet).toMatch(/\.sb-btn svg\s*\{[^}]*width: 17\.6px;[^}]*height: 17\.6px;/)
+    expect(stylesheet).toMatch(/\.mt-left-nav__app-btn img\s*\{[^}]*width: 32px;[^}]*height: 32px;/)
   })
 })
 
