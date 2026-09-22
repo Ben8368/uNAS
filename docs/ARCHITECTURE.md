@@ -192,16 +192,16 @@ OpenIntent
 - 用字符串拼接 ffmpeg/native 命令，用 localStorage 保存大文件，或无界复制 ArrayBuffer。
 - 以 UA、文件扩展名或 mock 结果代替运行时能力和格式探测。
 
-## 13. UniPass 能力融合边界
+## 13. uNAS 密码管家与广告拦截模块边界
 
-uNAS 的唯一 WXT Background Entry 同时初始化 uNAS Workspace 与 UniPass capability services：
+uNAS 的唯一 WXT Background Entry 同时初始化 Workspace、密码管家与广告拦截服务：
 
 ```text
 New Tab / Workspace / page overlay
                  ↓
       unified extension message router
           ┌──────┴─────────┐
-       adblock          vault services
+       adblock          password-manager services
           ↓                  ↓
       DNR + CSS       WebDAV + encrypted cache
                              ↓
@@ -210,6 +210,6 @@ New Tab / Workspace / page overlay
 
 - `entrypoints/adblock.content.ts` 只处理 cosmetic rules；`content-script.js` 和 `page-overlay.js` 是用户触发的 unlisted scripts，分别用于一次性填充和页面浮层。
 - 自维护补充规则按 [ADR 0012](ADR/0012-repository-filter-subscription.md) 独立于第三方订阅更新；仓库 JSON 同时为随包快照，缓存通过校验后按 host 精确合并到页面规则，不引入远程代码。
-- `installUniPassBackground()` 不注册第二个 `runtime.onMessage` listener；消息由 `installWorkspaceRouter()` 做来源/页面/动作分流。密码消息不能由普通网页触发，AdBlock content script 不能调用 Vault 操作。
-- `apps/extension/src/unipass/background/vault/vault-core.ts`、WebDAV backend、encrypted cache 和 sync engine 不依赖 Legacy；`legacy-credential-source.ts` 只作为可删除的兼容 adapter。
-- 不再新增独立 `passwords.html` 管理页或 `passwords` System App；WebDAV Vault 管理只通过用户主动打开的原 UniPass closed Shadow DOM 浮层完成。
+- `installPasswordManagerBackground()` 与 `installAdBlockBackground()` 各自只注册自己的生命周期/消息处理器，统一路由在扩展 adapter 中做来源、页面与动作分流。密码消息不能由普通网页触发，广告 content script 不能调用 Vault 操作。
+- `apps/extension/src/modules/password-manager/background/vault/` 的 Vault core、WebDAV backend、encrypted cache 和 sync engine 不依赖广告模块；`legacy-credential-source.ts` 只作为兼容 adapter 保留。`apps/extension/src/modules/adblock/` 只依赖 DNR、规则存储和 cosmetic content bridge。
+- 密码管家通过 App Registry 提供 uNAS Desktop 管理页，同时保留用户主动打开的既有 closed Shadow DOM 密码浮窗；两者共享 Vault Core，不共享明文状态或 CSS 运行时。

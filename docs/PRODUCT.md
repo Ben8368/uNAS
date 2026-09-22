@@ -24,6 +24,7 @@ uNAS 是一个以 Manifest V3 浏览器扩展交付的本地优先新标签页�
 - Workspace 是扩展内可复用的工具页面，承载文件授权、复杂参数和长任务。
 - Service Worker 只处理安装、点击、菜单、消息和 Workspace 复用，不承担长时间计算。
 - 内置 App 随扩展打包；自定义 App 在 V1 中只是声明式 HTTPS 网址快捷方式。
+- 密码管家与广告拦截是 uNAS 内置的两个独立业务模块：密码管家提供 Vault 管理、网页浮窗和填充；广告拦截提供 DNR、订阅、Cosmetic filtering 与站点暂停。两者共用扩展基础设施，但不互相读取业务数据。
 
 详细运行边界见 [ARCHITECTURE.md](ARCHITECTURE.md)，App 语义见 [APP_CONTRACT.md](APP_CONTRACT.md)。
 
@@ -81,6 +82,8 @@ Demo 流程不读取真实文件、不执行真实转换、不申请宽权限；
 | Media | 音频提取、缩略图、GIF、短片段与少量常见容器转换 | 不承诺任意 codec、长视频、4K、DRM 或后台续跑 |
 | Music（计划研究） | 对用户明确有权处理的 KGM/QMC/NCM 本地文件进行容器解密、输出验证和必要的元数据处理 | 不提供在线链接、账号、密钥获取、远程服务或在线 DRM/付费墙绕过；须独立通过 Music Module Gate |
 | Tasks | 队列、进度、取消、失败原因、结果验证和历史摘要 | 页面关闭后的真实任务不保证继续 |
+| 密码管家 | WebDAV 加密 Vault、桌面管理页、网页密码浮窗与用户触发填充 | 不提供新的云密码服务；明文不进入 Desktop Store 或广告模块 |
+| 广告拦截 | DNR、过滤订阅、Cosmetic filtering、站点暂停/恢复 | 不读取 Vault、凭据缓存或 WebDAV 连接材料 |
 
 真实接入顺序默认是 Files → Image → ZIP → PDF → Media；每个模块有独立能力 Gate，不让高风险媒体阻塞基础工作区。
 

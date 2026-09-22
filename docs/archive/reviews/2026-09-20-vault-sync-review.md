@@ -9,8 +9,8 @@
 
 ## 可复现测试
 
-- [sync-readiness.test.ts](../../../apps/extension/src/unipass/background/vault/sync-readiness.test.ts)：并发 mark、clear/mark 交错、同 Vault 顺序、存储写失败后恢复。
-- [sync-engine.test.ts](../../../apps/extension/src/unipass/background/vault/sync-engine.test.ts)：新增与已有对象 GET 丢失、不完整拉取不提交、上传/下载部分成功计数、下载中本地编辑保护、远端版本冲突保护、失败后重试。
+- [sync-readiness.test.ts](../../../apps/extension/src/modules/password-manager/background/vault/sync-readiness.test.ts)：并发 mark、clear/mark 交错、同 Vault 顺序、存储写失败后恢复。
+- [sync-engine.test.ts](../../../apps/extension/src/modules/password-manager/background/vault/sync-engine.test.ts)：新增与已有对象 GET 丢失、不完整拉取不提交、上传/下载部分成功计数、下载中本地编辑保护、远端版本冲突保护、失败后重试。
 - 修改前首批 9 项测试中 7 项失败；修复后扩展为 12 项，全部通过。
 - 定向命令：`pnpm --dir apps/extension exec vitest run src/unipass/background/vault/sync-readiness.test.ts src/unipass/background/vault/sync-engine.test.ts`。
 

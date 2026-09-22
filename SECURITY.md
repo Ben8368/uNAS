@@ -4,7 +4,7 @@ uNAS 是承载新标签页、本地文件、媒体/PDF/ZIP 处理和浏览器权
 
 ## 当前支持状态
 
-当前阶段与已验证范围以 [CONTEXT.md](CONTEXT.md) 为准。uNAS 的 UniPass AdBlock/Vault/浮层属于真实扩展能力；其他仍为 mock 的工具不因此获得真实格式、性能或浏览器支持承诺。
+当前阶段与已验证范围以 [CONTEXT.md](CONTEXT.md) 为准。uNAS 的广告拦截、密码管家 Vault/浮窗属于真实扩展能力；其他仍为 mock 的工具不因此获得真实格式、性能或浏览器支持承诺。
 
 ## 信任边界
 
@@ -42,8 +42,8 @@ User file / archive / media    不可信输入
 ## 权限
 
 - required permissions 只包含首发核心功能当下需要的最小集合。
-- 当前 required permissions 为 `activeTab`, `scripting`, `clipboardWrite`, `storage`, `alarms`, `tabs`, `declarativeNetRequest`, `downloads`, `system.cpu`, `system.memory`, `system.storage`, `system.display`。其中 `activeTab`/`scripting` 只在用户点击 action 后注入页面浮层或用户点击填充时注入一次性填充脚本；`storage` 保存设置、Link App、Vault profile/加密材料和规则状态；`alarms` 驱动规则/Vault/Jupiter 恢复；`tabs` 用于当前页复核和用户触发的页面操作；`clipboardWrite` 仅用于用户点击复制；`declarativeNetRequest` 执行 baseline/dynamic block 与站点暂停规则；`downloads` 仍仅用于用户明确发起的直链下载；`system.cpu`/`system.memory`/`system.storage`/`system.display` 仅用于右侧系统详情读取 CPU 元数据、物理内存、固定存储容量和显示器元数据，不读取文件内容、网络内容或用户数据。CPU 温度仅在浏览器实际提供时显示，GPU 型号仅在 WebGPU 适配器暴露信息时显示。
-- 固定 host permissions 仅包含 UniPass Portal、Feishu OAuth、Jupiter、EasyList 下载域名和 GitHub Raw 补充规则域；后者仅请求固定仓库 JSON，禁重定向、凭据和 referrer，详见 [ADR 0012](docs/ADR/0012-repository-filter-subscription.md)。`https://*/*` 是 optional host permission，只在用户连接 WebDAV 时请求对应单一 origin。页面 cosmetic content script 只处理规则 CSS/受限 `remove-attr`，不能读取凭据。
+- 当前 required permissions 为 `activeTab`, `scripting`, `clipboardWrite`, `storage`, `alarms`, `tabs`, `declarativeNetRequest`, `downloads`, `system.cpu`, `system.memory`, `system.storage`。其中 `activeTab`/`scripting` 只在用户点击 action 后注入页面浮层或用户点击填充时注入一次性填充脚本；`storage` 保存设置、Link App、Vault profile/加密材料和规则状态；`alarms` 驱动规则/Vault/Jupiter 恢复；`tabs` 用于当前页复核和用户触发的页面操作；`clipboardWrite` 仅用于用户点击复制；`declarativeNetRequest` 执行 baseline/dynamic block 与站点暂停规则；`downloads` 仍仅用于用户明确发起的直链下载；`system.cpu`/`system.memory`/`system.storage` 仅用于右侧系统详情读取 CPU 元数据、物理内存和固定存储容量，不读取文件内容、网络内容或用户数据。显示器信息只在浏览器实际开放 `system.display` 时读取，否则显示不可用；CPU 温度仅在浏览器实际提供时显示，GPU 型号仅在 WebGPU 适配器暴露信息时显示。
+- 固定 host permissions 仅包含密码管家兼容服务、Feishu OAuth、Jupiter、EasyList 下载域名和 GitHub Raw 补充规则域；后者仅请求固定仓库 JSON，禁重定向、凭据和 referrer，详见 [ADR 0012](docs/ADR/0012-repository-filter-subscription.md)。`https://*/*` 是 optional host permission，只在用户连接 WebDAV 时请求对应单一 origin。页面 cosmetic content script 只处理规则 CSS/受限 `remove-attr`，不能读取凭据。
 - optional permissions 也不得为未来预留；只在用户触发功能时解释并请求。
 - `downloads` 随下载 App 核心能力声明；扩展只在用户提交 HTTPS 直链文件后使用，不读取本机下载目录或文件内容。m3u8/mpd 播放清单和网页链接不走该路径；可执行文件仍由 Chrome 的安全检查和用户确认控制。
 - host permissions 默认不全域开放；网页资源导入优先使用 `activeTab` 或更窄的用户触发能力。
@@ -58,12 +58,12 @@ User file / archive / media    不可信输入
 - 测试样本必须是维护者明确有权处理的固定夹具；仓库只保存 manifest、来源、许可证、大小和 SHA-256，不保存真实用户媒体或解密音频。
 - 本地容器解密不授予访问在线内容、破解账号授权或分发第三方内容的权利；产品集成仍受 Music Module Gate 约束。
 
-### UniPass Vault 与浮层边界
+### 密码管家 Vault 与浮窗边界
 
 - Vault 使用 UniPass 现有 AES-256-GCM envelope、Vault Key、PBKDF2 本地解锁、加密 IndexedDB cache、dirty queue、ETag 冲突和 tombstone；明文密码只在后台短暂获取，并在填充/复制路径清理，不进入 uNAS Desktop store、BroadcastChannel、日志或持久化普通 JSON。
 - `CredentialSource` 将 WebDAV Vault 与 `legacy-unipass` 分开；Legacy API/Jupiter/旧 AES 解密/WASM 只在 adapter 中注册。禁用 Legacy 不改变 WebDAV Vault、AdBlock、New Tab、Workspace 或浮层的核心构建路径。
-- 工具栏 action 没有 `default_popup`；它只针对当前用户点击的 HTTPS tab 注入原 UniPass DOM/CSS 浮层，保持 closed Shadow DOM、外部点击/Escape 关闭和页面主题采样。密码库管理也只在这个用户主动打开的浮层中完成，不再维护独立 `passwords.html` 页面。
-- 消息路由只为经过严格校验的 `getCosmeticRules` 请求开放非顶层 frame；其他 UniPass 消息仍要求顶层来源。`removeVault`、`saveWebDavVault`、`updateVaultCredential` 和 `fillFromPopup` 不能由广告 Content Script 调用。
+- 工具栏 action 没有 `default_popup`；它只针对当前用户点击的 HTTPS tab 注入既有密码 DOM/CSS 浮窗，保持 closed Shadow DOM、外部点击/Escape 关闭和页面主题采样。密码库管理也可从 uNAS Desktop 的密码管家入口进入管理页。
+- 消息路由只为经过严格校验的 `getCosmeticRules` 请求开放非顶层 frame；密码管家消息仍要求顶层来源。`removeVault`、`saveWebDavVault`、`updateVaultCredential` 和 `fillFromPopup` 不能由广告 Content Script 调用。
 - 原版浮层由 action 注入绑定 `sender.tabId`、`sender.documentId` 的 session capability token；只有持有该 token 的用户浮层可以完成 WebDAV Vault 管理读写，普通网页/广告 Content Script 没有该 token。`fillFromPopup` 仍只接受受信任扩展 UI，浮层填充继续走单独的用户触发路径。
 - 两个扩展 ID 不共享本地 storage、IndexedDB 或设备密钥。迁移必须通过用户提供的 WebDAV 连接材料和 Vault Key；uNAS 验证前不删除旧扩展、旧本地数据或远端对象。当前 uNAS 尚未提交维护者签名 key，最终固定扩展 ID 是发布前阻断项。
 

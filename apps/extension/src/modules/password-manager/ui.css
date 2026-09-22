@@ -1,0 +1,13 @@
+.password-manager-app { display: grid; gap: 20px; max-width: 820px; padding: 24px; color: var(--window-text); }
+.password-manager-app__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.password-manager-app__header h2 { margin: 0 0 8px; font-size: 24px; }
+.password-manager-app__header p { max-width: 640px; margin: 0; color: var(--window-text-muted); line-height: 1.6; }
+.password-manager-app__eyebrow { margin-bottom: 6px !important; color: var(--window-accent) !important; font-size: 11px; letter-spacing: .12em; }
+.password-manager-app__badge { flex: none; padding: 6px 10px; border: 1px solid var(--window-accent); border-radius: 999px; color: var(--window-accent); font-size: 12px; }
+.password-manager-app__card { display: grid; gap: 12px; padding: 18px; border: 1px solid var(--window-border); border-radius: 14px; background: var(--window-surface-readable); }
+.password-manager-app__card h3, .password-manager-app__card p { margin: 0; }
+.password-manager-app__card p, .password-manager-app__note { color: var(--window-text-muted); line-height: 1.6; }
+.password-manager-app__card ul { display: grid; gap: 6px; margin: 0; padding-left: 20px; }
+.password-manager-app__error { color: var(--window-danger) !important; }
+.password-manager-app__note { margin: 0; font-size: 12px; }
+@container (max-width: 699px) { .password-manager-app { padding: 16px; } .password-manager-app__header { display: block; } .password-manager-app__badge { display: inline-block; margin-top: 12px; } }

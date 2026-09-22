@@ -1,6 +1,6 @@
 import { defineContentScript } from 'wxt/utils/define-content-script'
 
-import 'unas-src/unipass/content/blocking/cosmetic-content'
+import 'unas-src/modules/adblock/content/cosmetic-content'
 
 export default defineContentScript({
   matches: ['http://*/*', 'https://*/*'],

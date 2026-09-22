@@ -1,4 +1,4 @@
-import type { BlockingStatus } from 'unas-src/unipass/shared/blocking'
+import type { BlockingStatus } from 'unas-src/modules/adblock/contracts'
 import { hasExtensionMessageRuntime, sendExtensionMessage } from './extensionPlatform'
 
 export type { BlockingStatus }

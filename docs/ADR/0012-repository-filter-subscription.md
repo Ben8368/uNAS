@@ -17,7 +17,7 @@
 
 权限及数据流参考 2026-09-21 核对的 [Chrome 跨源请求文档](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests)，本轮 WXT 0.21.4。此变更无依赖增加、无远程脚本、无上传；仓库控制权和站点 DOM 变化仍是外部风险。HTTPS 与固定来源不等于签名；维护者需审查每次合入的规则和 revision。
 
-schema/更新失败/独立事务由 `repository-*.test.ts` 验证，解包扩展 DOM 路径由 `bilibili-adblock.spec.ts` 验证。仓库文件尚未由本轮发布，远端首次获取及目标 Chrome 实站验收缺口登记在 [RISK-014](../RISK_REGISTER.md#risk-014p0unipass-融合的真实凭据路径与发布身份尚未全部验收)，不以本地构建替代线上结论。
+schema/更新失败/独立事务由 `repository-*.test.ts` 验证，解包扩展 DOM 路径由 `bilibili-adblock.spec.ts` 验证。仓库文件尚未由本轮发布，远端首次获取及目标 Chrome 实站验收缺口登记在 [RISK-014](../RISK_REGISTER.md#risk-014p0密码管家融合的真实凭据路径与发布身份尚未全部验收)，不以本地构建替代线上结论。
 
 ## 替代方案
 

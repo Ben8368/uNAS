@@ -1,7 +1,7 @@
 import 'unas-src/styles/material-lab.css'
 
 const materials = [
-  { id: 'unipass', label: 'UniPass 参考', detail: 'rgba(.42) · blur 18 · saturate 155%' },
+  { id: 'unipass', label: '密码浮窗参考', detail: 'rgba(.42) · blur 18 · saturate 155%' },
   { id: 'current', label: '原 uNAS', detail: 'navigation rgba(.88) · blur 16' },
   { id: 'candidate', label: 'Liquid Glass 候选', detail: '独立 window / navigation / dialog token' },
 ] as const

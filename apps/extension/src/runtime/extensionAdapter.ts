@@ -2,8 +2,9 @@ import { validateLaunchMessage } from './workspaceRouter'
 import { applyLinkMutation, isLinkMutation, parseLinks } from './linkApps'
 import { extensionApi, getExtensionLocalValue, type ExtensionMessageSender, setExtensionLocalValue } from './extensionPlatform'
 import { isDirectDownloadUrl } from './browserDownloads'
-import { handleUniPassMessage, isUniPassMessage } from 'unas-src/unipass/background/service-worker'
-import { isExtensionPageSender, isWebPageSender } from 'unas-src/unipass/background/sender-guard'
+import { handleUniPassMessage, isUniPassMessage } from 'unas-src/modules/password-manager/background/service-worker'
+import { handleAdBlockMessage, isAdBlockMessage } from 'unas-src/modules/adblock/background/service-worker'
+import { isExtensionPageSender, isWebPageSender } from 'unas-src/shared/sender-guard'
 
 const LINK_STORAGE_KEY = 'unas-link-apps-v1'
 type RuntimeResponse = { ok: false; error: string } | { ok: true; links?: unknown; downloadId?: number; download?: unknown; downloads?: unknown[] }
@@ -130,8 +131,20 @@ export function installWorkspaceRouter() {
   const runtime = browser?.runtime
   if (!runtime?.id) return
   runtime.onMessage.addListener(async (message, sender) => {
+    if (message && typeof message === 'object' && !Array.isArray(message)
+      && (message as { kind?: unknown }).kind === 'password-manager.open') {
+      if (!isExtensionPage(sender, runtime.id)) return { ok: false, error: '密码管家入口来源无效。' }
+      const tabs = extensionApi()?.tabs
+      if (!tabs || !runtime.getURL) return { ok: false, error: 'uNAS 无法打开密码管家管理页。' }
+      await tabs.create({ url: runtime.getURL('manage.html'), active: true })
+      return { ok: true }
+    }
+    if (isAdBlockMessage(message)) {
+      if (!isUniPassSender(sender, runtime.id, message)) return { ok: false, error: '广告拦截消息来源无效。' }
+      return await handleAdBlockMessage(message, sender as chrome.runtime.MessageSender)
+    }
     if (isUniPassMessage(message)) {
-      if (!isUniPassSender(sender, runtime.id, message)) return { ok: false, error: 'UniPass 消息来源无效。' }
+      if (!isUniPassSender(sender, runtime.id, message)) return { ok: false, error: '密码管家消息来源无效。' }
       return await handleUniPassMessage(message, sender as chrome.runtime.MessageSender)
     }
     if (isLinkMutation(message) && isExtensionPage(sender, runtime.id)) return await mutateLinks(message)

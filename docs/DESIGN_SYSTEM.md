@@ -17,9 +17,9 @@
 
 仅透明度、边缘高光和静态阴影表现材料，不做实时折射或鼠标追光。不在内容卡片嵌套玻璃。壁纸影响可读性时用实色面，不加重文字阴影。
 
-UniPass 薄荷绿映射 `window-theme.css` 的 `--window-vault-accent{,-strong,-text}`；其余复用窗口 Token，不重复定义主题值。
+密码浮窗的薄荷绿映射 `window-theme.css` 的 `--window-vault-accent{,-strong,-text}`；其余复用窗口 Token，不重复定义主题值。浮窗保留自身主题映射与视觉基线，不被 Desktop 组件强制替换。
 
-New Tab / Workspace 及 App 固定深色，无主题选项；Light Token 仅供 UniPass 网页浮层独立切换。App 图标以广告拦截、音乐解锁为亮度参照，保留色相与白色图形对比，不加全局滤镜。
+New Tab / Workspace 及 App 固定深色，无主题选项；Light Token 仅供密码浮窗独立切换。App 图标以广告拦截、音乐解锁为亮度参照，保留色相与白色图形对比，不加全局滤镜。
 
 ## UI-02 语义 Token
 

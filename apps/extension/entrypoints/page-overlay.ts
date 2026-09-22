@@ -1,5 +1,5 @@
 import { defineUnlistedScript } from 'wxt/utils/define-unlisted-script'
 
-import 'unas-src/unipass/content/page-overlay'
+import 'unas-src/modules/password-manager/content/page-overlay'
 
 export default defineUnlistedScript(() => undefined)

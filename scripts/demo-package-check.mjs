@@ -40,7 +40,7 @@ try {
 }
 const allowedPermissions = new Set(['activeTab', 'scripting', 'clipboardWrite', 'storage', 'alarms', 'tabs', 'declarativeNetRequest', 'downloads', 'system.cpu', 'system.memory', 'system.storage', 'system.display'])
 for (const permission of manifest.permissions ?? []) if (!allowedPermissions.has(permission)) errors.push(`uNAS 未登记的 permission: ${permission}`)
-const requiredPermissions = [...allowedPermissions]
+const requiredPermissions = [...allowedPermissions].filter((permission) => permission !== 'system.display')
 for (const permission of requiredPermissions) if (!manifest.permissions?.includes(permission)) errors.push(`uNAS 缺少已审查 permission: ${permission}`)
 const brandIcons = { 16: 'icons/icon16.png', 48: 'icons/icon48.png', 128: 'icons/icon128.png' }
 if (JSON.stringify(manifest.icons) !== JSON.stringify(brandIcons)) errors.push('扩展管理页图标未使用已登记的 uNAS 品牌 PNG。')

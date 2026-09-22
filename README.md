@@ -1,6 +1,6 @@
 # uNAS
 
-> 正式产品名：uNAS。当前阶段与验证范围见 [CONTEXT.md](CONTEXT.md)。uNAS 现在同时打包 UniPass 的广告拦截、WebDAV 加密密码库和原版页面浮层；文件/媒体等其他工具仍按各自探针状态区分 mock/real。
+> 正式产品名：uNAS。当前阶段与验证范围见 [CONTEXT.md](CONTEXT.md)。uNAS 现在同时提供广告拦截、密码管家和既有密码浮窗；文件/媒体等其他工具仍按各自探针状态区分 mock/real。
 
 uNAS 计划成为一个以 Manifest V3 浏览器扩展交付的本地优先新标签页工作区：用桌面级交互组织网址、本地文件和内置工具，在浏览器内完成常见图片、媒体、PDF 与 ZIP 任务。扩展是唯一产品，不另建面向用户的托管 Web 应用或传统桌面程序。
 
@@ -10,7 +10,8 @@ uNAS 计划成为一个以 Manifest V3 浏览器扩展交付的本地优先新�
 - **Workspace**：Files、Image、Media、PDF、Archive 和 Task Center。
 - **System/Tool App**：随扩展打包，通过统一 contract 使用文件和任务能力。
 - **Link App**：用户注册的 HTTPS 网址快捷方式，只负责跳转网页。
-- **Password Manager**：WebDAV 加密 Vault 管理页；工具栏 action 仍在当前网页打开原版 UniPass 浮层。
+- **密码管家**：WebDAV 加密 Vault 管理页；工具栏 action 仍在当前网页打开既有密码浮窗。
+- **广告拦截**：DNR、订阅规则、Cosmetic filtering、站点暂停与恢复，独立于密码管家运行。
 - **Local-first**：文件默认不上传；能力、临时数据和输出路径可解释。
 
 ## 当前方案
@@ -65,7 +66,7 @@ pnpm build:extension
 
 构建物位于 `apps/extension/.output/chrome-mv3/`。在 Chrome 扩展管理页面开启开发者模式后，选择“加载已解压的扩展程序”，并选择该目录。
 
-首次使用密码库时，在 uNAS Desktop 打开“密码管理”，或直接打开构建目录中的 `passwords.html`。用原 UniPass 的 WebDAV HTTPS 地址、用户名、App Password 和 Vault Key 重新连接已有 Vault；不要复制 UniPass 的本地 storage/IndexedDB，也不要在迁移验证前卸载旧扩展。连接成功后点击 Chrome 工具栏的 uNAS 图标，当前支持的 HTTPS 网页会打开原版页面浮层。
+首次使用密码库时，在 uNAS Desktop 打开“密码管家”并进入管理页。接入已有 Vault 时，使用原 UniPass 来源的 WebDAV HTTPS 地址、用户名、App Password 和 Vault Key；不要复制旧扩展的 storage/IndexedDB，也不要在迁移验证前卸载旧扩展。连接成功后点击 Chrome 工具栏的 uNAS 图标，当前支持的 HTTPS 网页会打开密码浮窗。
 
 首次准备自动化浏览器，运行 `pnpm --dir apps/extension exec playwright install chromium`；之后运行 `pnpm test:e2e`。它加载独立配置中的 MV3 构建物，检查跨标签与模拟流程，并保存布局截图；不操作已有浏览器配置。普通 E2E 在所有平台默认使用 Playwright Chromium，以保证 MV3 Service Worker 加载一致；报告在 `apps/extension/playwright-report/`，截图与失败 trace 在 `apps/extension/test-results/`。需要验证已安装的 Google Chrome 时运行 `pnpm --dir apps/extension run test:e2e:chrome`；该命令使用 headless 系统 Chrome，并在报告中标记 `channel: chrome`，不会冒充默认 bundled Chromium 证据。在支持 P3 的环境上，可运行 `pnpm test:e2e:p3` 以已安装的 Google Chrome headed + `display-p3` 模式进行人工视觉验收；P3 命令需要可用桌面会话，且不替代默认 sRGB CI 回归。证据解释见 [本轮验收记录](docs/archive/reviews/2026-09-07-links-startup-toolbar.md)，素材与依赖说明见 [ASSETS.md](docs/ASSETS.md)。
 

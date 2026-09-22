@@ -1,4 +1,4 @@
-export type WorkbenchAppId = 'browser' | 'file-manager' | 'fetcher' | 'adblock' | 'music' | 'settings' | 'logs'
+export type WorkbenchAppId = 'browser' | 'file-manager' | 'fetcher' | 'password-manager' | 'adblock' | 'music' | 'settings' | 'logs'
 
 export type OkResult = {
   executionSource?: 'mock' | 'real'

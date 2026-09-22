@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures'
-import { compileCosmeticFilters } from '../src/unipass/background/blocking/cosmetic-compiler'
-import { BLOCKING_PAUSE_STORAGE_KEY } from '../src/unipass/shared/blocking'
+import { compileCosmeticFilters } from '../src/modules/adblock/engine/cosmetic-compiler'
+import { BLOCKING_PAUSE_STORAGE_KEY } from '../src/modules/adblock/contracts'
 
 const COSMETIC_STORAGE_KEY = 'unipass_cosmetic_store'
 

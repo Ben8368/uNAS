@@ -2,6 +2,7 @@ const BASE = '/static/app/icons/default'
 
 export const APP_ICON_PATHS = {
   adblock:     `${BASE}/adblock.svg`,
+  'password-manager': `${BASE}/password.svg`,
   browser:     `${BASE}/browser.svg`,
   fetcher:     `${BASE}/download.svg`,
   fileManager: `${BASE}/files.svg`,

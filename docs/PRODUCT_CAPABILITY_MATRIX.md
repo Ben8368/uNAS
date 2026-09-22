@@ -18,23 +18,23 @@
 | 媒体播放 | 未实现 | 无真实播放器；媒体条目只有文件 metadata 或 mock 资产 | 双击播放、音视频解码、HLS/DASH 播放、codec 支持 |
 | 视频转码 | mock；真实引擎未实现 | 残留 Transcode 组件和固定模拟任务，未注册当前 App 入口 | FFmpeg/WebCodecs 转码、remux、VMAF、硬件加速、真实输出 |
 | 下载器 | 部分实现 | 符合 URL 后缀白名单的直链交给 Chrome；查询、取消、恢复小型记录 | 网页解析、yt-dlp、资源捕获、HLS/DASH 分片下载/合并、断点恢复承诺 |
-| UniPass Vault | 部分实现 | 加密 Vault core/cache、连接管理、当前页新增账号、CSV 导入、目录与填充 | 完整可达的账号 CRUD 管理界面、浮层查看/复制密码、端到端冲突解决、跨重启永久锁定 |
+| 密码管家 | 部分实现 | 加密 Vault core/cache、桌面管理页、连接管理、当前页新增账号、CSV 导入、目录与填充 | 完整端到端冲突解决、跨重启永久锁定和真实 WebDAV 兼容性 |
 | 广告拦截 | 已实现（受限规则子集） | 静态 baseline、动态订阅 DNR、cosmetic CSS/受限 remove-attr、临时站点暂停 | 全量 ABP/uBO 兼容、任意 scriptlet、全站零误拦截或拦截率保证 |
 | WebDAV | 部分实现 | Vault 专用 HTTPS 对象后端与 ETag 同步 | 通用网盘挂载、文件管理器远程目录、任意文件上传下载、服务器全兼容 |
 
 ## 2. 实际运行面、权限与证据边界
 
 - 产品只有一个 WXT MV3 扩展。实际代码集中在 `apps/extension`；Architecture 中顶层 `packages/`、`workers/` 是目标结构，当前未创建。真实 ZIP Worker 位于扩展内部。
-- [App Registry](../apps/extension/src/appRegistry.tsx) 只注册添加 App、文件管理、下载、设置和日志；`stable`/`beta` 是注册标签，不是能力验收结论。没有 Media、Transcode、独立 Archive 或 Password Manager 的可启动 App。
-- [bootstrap](../apps/extension/src/api/bootstrap.ts) 将通用 API 接到 `demoApi`。真实文件通过独立 File Workspace port，下载通过扩展消息 adapter，UniPass 通过独立 background services 接入；不能用全局 `isRealApiRuntime() === false` 推断所有功能都是 mock。
+- [App Registry](../apps/extension/src/appRegistry.tsx) 注册添加 App、文件管理、下载、设置、日志、密码管家和广告拦截；`stable`/`beta` 是注册标签，不是能力验收结论。没有 Media、Transcode 或独立 Archive 的可启动 App。
+- [bootstrap](../apps/extension/src/api/bootstrap.ts) 将通用 API 接到 `demoApi`。真实文件通过独立 File Workspace port，下载通过扩展消息 adapter，密码管家和广告拦截通过独立 background services 接入；不能用全局 `isRealApiRuntime() === false` 推断所有功能都是 mock。
 - [inlineWorkspace](../apps/extension/src/runtime/inlineWorkspace.ts) 使用 Web Lock/BroadcastChannel 确定 owner；真实目录写入只允许 owner，其他页只读投影。它的任务快照及 `beforeunload` 判断仍来自 mock；不是覆盖 ZIP/Vault/下载的统一真实 Task Core。
-- [background entry](../apps/extension/entrypoints/background.ts) 安装 UniPass hooks 与唯一 [消息路由](../apps/extension/src/runtime/extensionAdapter.ts)。文件/ZIP 不在 Service Worker 中计算，Vault Crypto/同步及广告规则编译则实际在 Service Worker 内执行。无 offscreen、Native Helper、服务端转码或浏览器外常驻任务进程。
+- [background entry](../apps/extension/entrypoints/background.ts) 安装密码管家、广告拦截 hooks 与唯一 [消息路由](../apps/extension/src/runtime/extensionAdapter.ts)。文件/ZIP 不在 Service Worker 中计算，Vault Crypto/同步及广告规则编译则实际在 Service Worker 内执行。无 offscreen、Native Helper、服务端转码或浏览器外常驻任务进程。
 
 权限以 [wxt.config.ts](../apps/extension/wxt.config.ts) 与 [adblock.content.ts](../apps/extension/entrypoints/adblock.content.ts) 为源码事实：
 
 | 项目 | 声明与实际用途 |
 | --- | --- |
-| required permissions | `activeTab`、`scripting`、`clipboardWrite`、`storage`、`alarms`、`tabs`、`declarativeNetRequest`、`downloads`、`system.cpu`、`system.memory`、`system.storage`、`system.display` |
+| required permissions | `activeTab`、`scripting`、`clipboardWrite`、`storage`、`alarms`、`tabs`、`declarativeNetRequest`、`downloads`、`system.cpu`、`system.memory`、`system.storage`；`system.display` 仅运行时探测，不声明为 required |
 | 固定 host permissions | `portal.unipass.top`、`accounts.feishu.cn`、`jupiter.tec-do.com`、`easylist-downloads.adblockplus.org` 的 HTTPS 来源；分别涉及 Legacy/OAuth/Jupiter 和过滤订阅 |
 | optional host permissions | 声明 `https://*/*`；WebDAV 用户动作请求单个 `${origin}/*`，不是只授权某个 DAV 路径；移除最后一个同源 profile 时尝试撤销 |
 | 自动 content script | cosmetic 脚本匹配全部 HTTP/HTTPS，`allFrames: true`、`document_start`、`ISOLATED`。与 action 才注入的 Vault 浮层/填充脚本须分开说明 |
@@ -111,12 +111,12 @@
 
 源码：[URL 与前端 adapter](../apps/extension/src/runtime/browserDownloads.ts)、[后台实现](../apps/extension/src/runtime/extensionAdapter.ts)、[任务恢复/轮询](../apps/extension/src/apps/downloader/useDownloaderTaskData.ts)、[UI](../apps/extension/src/apps/DownloaderApp.tsx)。证据：[单测](../apps/extension/src/runtime/browserDownloads.test.ts)、[直链 E2E](../apps/extension/e2e/extension.spec.ts)。
 
-## 8. UniPass Vault 矩阵
+## 8. 密码管家 Vault 矩阵
 
 | 项目 | 审计事实 |
 | --- | --- |
-| 已实现 / mock / 缺口 | 真 core：manifest/app/account/credential AES-GCM 对象、增删改、tombstone、加密本地 cache/dirty/conflict。当前可达浮层：新建/接入/重连/移除 Vault、目录/账号选择、当前页新增账号、手动 CSV 导入、账号复制与填充。完整管理 CRUD 代码有残留 `manage.ts`，但无对应 WXT 管理页入口；浮层显式禁止 reveal，因此不能宣称查看/复制密码已可用 |
-| 执行位置 | action 点击后在当前 HTTPS 页注入 closed Shadow DOM UI；管理/查询/填充请求进入统一 Service Worker。Web Crypto、Vault Core、IDB 与 WebDAV 同步实际在后台；CSV `file.text()`/解析在浮层上下文，未移入 Worker |
+| 已实现 / mock / 缺口 | 真 core：manifest/app/account/credential AES-GCM 对象、增删改、tombstone、加密本地 cache/dirty/conflict。当前可达桌面管理页与浮层：新建/接入/重连/移除 Vault、目录/账号选择、当前页新增账号、手动 CSV 导入、账号复制与填充。完整真实 WebDAV 冲突解决与跨重启永久锁定仍未验收 |
+| 执行位置 | uNAS Desktop 管理页或 action 点击后当前 HTTPS 页的 closed Shadow DOM UI；管理/查询/填充请求进入统一 Service Worker。Web Crypto、Vault Core、IDB 与 WebDAV 同步实际在后台；CSV `file.text()`/解析在浮层上下文，未移入 Worker |
 | 生命周期 | 浮层关闭/Escape/外点/页面销毁时清理 UI 敏感字段；cache/profile 持久存在。Vault 每 5 分钟 alarm、后台安装初始化/浏览器启动、目录访问及写操作触发同步；不是常驻进程或可靠 5 分钟 SLA。每库同步与配置变更在当前 Service Worker 内串行，队列本身非持久事务 |
 | 加密与持久化 | 对象为 AES-256-GCM，随机 12-byte nonce，AAD 绑定 id/kind/keyVersion；Vault Key 为 32-byte。profile/endpoint 明文在 storage.local；连接材料以设备密钥加密后存 local，设备 CryptoKey 在独立 IDB（不可导出），当前会话材料在 storage.session。PBKDF2-SHA-256 310,000 次、16-byte salt 的本地解锁路径为兼容实现，非当前连接必经步骤 |
 | 锁定边界 | `lockVault` 删除 session map 中的材料，保留持久化 envelope；session map 存在时阻止自动恢复，缺失时从设备加密材料恢复。因此不能承诺每次浏览器重启都要求主密码。无 IndexedDB 环境还有把 raw 设备 key 的 Base64 放 storage.local 的 fallback；不能把整个源码描述成硬件/OS 密钥库保护 |
@@ -125,9 +125,9 @@
 | 验证等级 | 配置串行化、同步/cache、来源校验有合成 backend/storage 单元测试；配置测试 mock 了 VaultCore、加密和持久密钥，未找到真实 Core/crypto 往返的专项测试。历史浮层 E2E 用 HTTPS 拦截页、直接注入脚本/合成凭据验证 DOM 填充和关闭，绕过真实 action 手势与取密链。不能推导“真实 Vault → 用户 action → 匹配页面填充”的完整链已验收；RISK-014 仍开放 |
 | 下一步最小交付 / 阻断 | 建议用合成 Vault/账号补真实 action 手势到受控 HTTPS 表单的完整填充及导航中止证据，再决定管理 CRUD 入口的收敛方式。依赖可运行的隔离目标 Chrome、手势/可选权限与远端冲突证据；公开发布另受资源许可和固定扩展 ID 阻断 |
 
-源码：[Vault service](../apps/extension/src/unipass/background/vault/vault-service.ts)、[Core](../apps/extension/src/unipass/background/vault/vault-core.ts)、[对象加密](../apps/extension/src/unipass/shared/vault-crypto.ts)、[持久连接材料](../apps/extension/src/unipass/background/vault/persistent-secrets.ts)、[本地解锁](../apps/extension/src/unipass/background/vault/local-unlock.ts)、[浮层与填充](../apps/extension/src/unipass/background/page-overlay.ts)、[权限路由](../apps/extension/src/unipass/background/service-worker.ts)、[reveal 限制](../apps/extension/src/unipass/popup/credentials.ts)、[CSV 导入](../apps/extension/src/unipass/popup/import-passwords.ts)。
+源码：[Vault service](../apps/extension/src/modules/password-manager/background/vault/vault-service.ts)、[Core](../apps/extension/src/modules/password-manager/background/vault/vault-core.ts)、[对象加密](../apps/extension/src/modules/password-manager/shared/vault-crypto.ts)、[持久连接材料](../apps/extension/src/modules/password-manager/background/vault/persistent-secrets.ts)、[本地解锁](../apps/extension/src/modules/password-manager/background/vault/local-unlock.ts)、[浮层与填充](../apps/extension/src/modules/password-manager/background/page-overlay.ts)、[权限路由](../apps/extension/src/modules/password-manager/background/service-worker.ts)、[reveal 限制](../apps/extension/src/modules/password-manager/popup/credentials.ts)、[CSV 导入](../apps/extension/src/modules/password-manager/popup/import-passwords.ts)。
 
-证据：[Vault 同步审查](archive/reviews/2026-09-20-vault-sync-review.md)、[配置测试](../apps/extension/src/unipass/background/vault/vault-configuration.test.ts)、[浮层 E2E](../apps/extension/e2e/unipass-integration.spec.ts)、[安全单测](../apps/extension/src/unipass/background/service-worker.security.test.ts)。移除 Vault 会删本地 profile/连接材料并尝试清理 cache、撤销未使用权限，不删除远端密码库；cache 清理失败是 best effort。Legacy adapter 目前在后台启动时默认注册；“可删除/可分离”不等于当前已禁用。它涉及 Portal/Feishu/Jupiter 与随包 WASM，不能把其登录态、远端 API 或保活数据流混入纯 WebDAV 离线声明。
+证据：[Vault 同步审查](archive/reviews/2026-09-20-vault-sync-review.md)、[配置测试](../apps/extension/src/modules/password-manager/background/vault/vault-configuration.test.ts)、[浮层 E2E](../apps/extension/e2e/unipass-integration.spec.ts)、[安全单测](../apps/extension/src/modules/password-manager/background/service-worker.security.test.ts)。移除 Vault 会删本地 profile/连接材料并尝试清理 cache、撤销未使用权限，不删除远端密码库；cache 清理失败是 best effort。Legacy adapter 目前在后台启动时默认注册；“可删除/可分离”不等于当前已禁用。它涉及 Portal/Feishu/Jupiter 与随包 WASM，不能把其登录态、远端 API 或保活数据流混入纯 WebDAV 离线声明。
 
 ## 9. 广告拦截矩阵
 
@@ -141,7 +141,7 @@
 | 验证等级 | 真实运行链存在，构建与整合测试有历史通过记录；未找到独立的 DNR 网络阻断/cosmetic 全链效果与重启/订阅回滚专项 benchmark。不能用 manifest 声明或整套 UI E2E 通过替代拦截效果验收 |
 | 下一步最小交付 / 阻断 | 建议建立隔离固定规则的 HTTPS 合成页，验证命中/例外、frame、站点暂停恢复、订阅失败保留旧规则与 worker 重启；不依赖真实用户网页或 Vault。目标 Chrome、固定可再分发规则夹具与 RISK-009/014 的发布项仍需证据 |
 
-源码：[静态规则](../apps/extension/public/rules/baseline.json)、[订阅及限额](../apps/extension/src/unipass/background/blocking/subscriptions.ts)、[更新器](../apps/extension/src/unipass/background/blocking/filter-updater.ts)、[转换器](../apps/extension/src/unipass/background/blocking/filter-converter.ts)、[cosmetic 编译器](../apps/extension/src/unipass/background/blocking/cosmetic-compiler.ts)、[content 生命周期](../apps/extension/src/unipass/content/blocking/cosmetic-content.ts)、[站点暂停](../apps/extension/src/unipass/background/blocking/site-pauses.ts)。
+源码：[静态规则](../apps/extension/public/rules/baseline.json)、[订阅及限额](../apps/extension/src/modules/adblock/engine/subscriptions.ts)、[更新器](../apps/extension/src/modules/adblock/engine/filter-updater.ts)、[转换器](../apps/extension/src/modules/adblock/engine/filter-converter.ts)、[cosmetic 编译器](../apps/extension/src/modules/adblock/engine/cosmetic-compiler.ts)、[content 生命周期](../apps/extension/src/modules/adblock/content/cosmetic-content.ts)、[站点暂停](../apps/extension/src/modules/adblock/engine/site-pauses.ts)。
 
 ## 10. WebDAV 矩阵
 
@@ -155,7 +155,7 @@
 | 验证等级 | 合成 backend/cache 单测覆盖丢失对象、部分计数、revision 冲突、并发编辑保护与重试；真实 WebDavBackend 加 mock fetch 的单测覆盖 GET/list 响应体超时、401、返回字节/ETag 保留。不是实际服务器 HTTP/认证/ETag 兼容性证据。真实服务的 401/403/405/409/412、权限手势、重定向、慢响应、多端冲突和中断恢复尚缺完整验收 |
 | 下一步最小交付 / 阻断 | 建议实现可复现的合成 HTTPS DAV 服务器 fixture，驱动真实 WebDavBackend 验证 ETag/条件写/缺项与断网恢复，随后再设计对象/列表/导入预算。RISK-014 仍开放；通用 WebDAV 文件管理是新增范围，不能当作现有 backend 的界面包装直接交付 |
 
-源码：[WebDavBackend](../apps/extension/src/unipass/background/vault/webdav-backend.ts)、[URL/target 边界](../apps/extension/src/unipass/shared/url.ts)、[fetch 超时](../apps/extension/src/unipass/shared/fetch.ts)、[同步引擎](../apps/extension/src/unipass/background/vault/sync-engine.ts)、[加密缓存](../apps/extension/src/unipass/background/vault/local-cache.ts)。测试：[同步测试](../apps/extension/src/unipass/background/vault/sync-engine.test.ts)、[fetch/Backend 测试](../apps/extension/src/unipass/shared/fetch.test.ts)。
+源码：[WebDavBackend](../apps/extension/src/modules/password-manager/background/vault/webdav-backend.ts)、[URL/target 边界](../apps/extension/src/modules/password-manager/shared/url.ts)、[fetch 超时](../apps/extension/src/modules/password-manager/shared/fetch.ts)、[同步引擎](../apps/extension/src/modules/password-manager/background/vault/sync-engine.ts)、[加密缓存](../apps/extension/src/modules/password-manager/background/vault/local-cache.ts)。测试：[同步测试](../apps/extension/src/modules/password-manager/background/vault/sync-engine.test.ts)、[fetch/Backend 测试](../apps/extension/src/modules/password-manager/shared/fetch.test.ts)。
 
 特别说明：UI 的“测试 WebDAV 连接”会调用 `connect()`，必要时创建远端根目录及 objects 目录，并非纯只读探测。本轮没有调用该功能，没有连接真实 DAV，也未读取/修改任何密码库。
 
@@ -176,7 +176,7 @@
 需要在后续工作中保持可见的差异：
 
 1. **通用真实任务治理尚未闭环。** ZIP 是 port/Worker 切片，下载归 Chrome，Vault 归 SW；不能套用设计中的统一 Task Core、staged commit、lease 和终态恢复来描述全部实现。
-2. **校验强度因消息分支而异。** 下载有 URL/ID/sender 校验，cosmetic 有严格请求限制，Vault mutation 有来源 capability；`isUniPassMessage` 本身只检查对象与 type 白名单，没有通用 schemaVersion、payload 大小和所有字段 schema。不是 Security 中理想消息模型的全面实现证明。
+2. **校验强度因消息分支而异。** 下载有 URL/ID/sender 校验，cosmetic 有严格请求限制，Vault mutation 有来源 capability；密码管家兼容消息识别器本身只检查对象与 type 白名单，没有通用 schemaVersion、payload 大小和所有字段 schema。不是 Security 中理想消息模型的全面实现证明。
 3. **存在已实现但缺消费入口的代码。** 转码组件、旧管理页、密码 reveal/复制路径不能按“源码函数存在”计为当前用户可达能力；PBKDF2 兼容本地解锁也不能遮蔽设备密钥自动恢复路径。
 4. **“本地优先”不等于全产品无网络。** 本地文件/ZIP 留本机；直链下载、广告订阅、授权后的加密 DAV 同步、Legacy/OAuth/Jupiter 有不同网络与身份边界。权限、数据流披露须按这些路径区分。
 5. **资源常量不是性能证据。** ZIP 预算没有覆盖完整进程内存；Vault/DAV/CSV 尚缺输入和总量预算；mock 仪表盘中的 CPU/GPU/网速完全排除出性能结论。

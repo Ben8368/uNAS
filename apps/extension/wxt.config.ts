@@ -20,7 +20,6 @@ export default defineConfig({
       'system.cpu',
       'system.memory',
       'system.storage',
-      'system.display',
     ],
     host_permissions: [
       'https://portal.unipass.top/*',

@@ -20,6 +20,13 @@
       "height": 64
     },
     {
+      "path": "apps/extension/public/static/app/icons/default/password.svg",
+      "bytes": 434,
+      "sha256": "85cd6df061ae85b56ea1d52944f742d3fc4eeb37e0841165e8e972fcaf58382a",
+      "width": 64,
+      "height": 64
+    },
+    {
       "path": "apps/extension/public/static/app/icons/default/download.svg",
       "bytes": 307,
       "sha256": "59915576be1ba10a8fe36f4871dbde9be39277ea18c9e9b7a0ae5d3af0ee9714",

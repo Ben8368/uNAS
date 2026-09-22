@@ -38,7 +38,7 @@
   --window-warning: #f2c66d;
   --window-danger: #ff9999;
   --window-focus-ring: #b6dcff;
-  /* UniPass retains its mint identity through the shared theme source. */
+  /* 密码浮窗 retains its mint identity through the shared theme source. */
   --window-vault-accent: #41d39b;
   --window-vault-accent-strong: #23b983;
   --window-vault-accent-text: #a8f5d7;

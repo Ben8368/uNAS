@@ -10,7 +10,7 @@
 
 ## 回归证据
 
-- 新增测试：[Vault 配置并发测试](../../../apps/extension/src/unipass/background/vault/vault-configuration.test.ts)、[响应体超时测试](../../../apps/extension/src/unipass/shared/fetch.test.ts)。
+- 新增测试：[Vault 配置并发测试](../../../apps/extension/src/modules/password-manager/background/vault/vault-configuration.test.ts)、[响应体超时测试](../../../apps/extension/src/modules/password-manager/shared/fetch.test.ts)。
 - 配置测试在修复前运行首批 8 项，7 项失败：并发删除/保存恢复记录、锁定恢复会话、解锁失败次数漏计均可复现。修复后新增定向测试共 19 项通过。
 - `pnpm verify`：通过；29 个测试文件、139 个测试，治理/Lint/边界/依赖/类型/Web 和 MV3 构建/包体检查均通过。
 - `pnpm test:e2e`：42/42 通过，0 skipped；修复前为 41 通过、1 个 Browser App 材质断言失败。

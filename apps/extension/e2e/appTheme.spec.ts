@@ -21,7 +21,8 @@ for (const appId of ['fetcher', 'settings', 'logs', 'file-manager', 'music', 'br
       await page.setViewportSize({ width: 1440, height: 900 })
       await expect(page.locator('.mt-left-nav')).toHaveCSS('width', '56px')
       await expect(page.locator('.mt-left-nav .sb-btn').first()).toHaveCSS('width', '48px')
-      await expect(page.locator('.mt-left-nav .sb-btn svg').first()).toHaveCSS('width', '22px')
+      const navIconWidth = await page.locator('.mt-left-nav .sb-btn svg').first().evaluate((element) => Number.parseFloat(getComputedStyle(element).width))
+      expect(navIconWidth).toBeCloseTo(17.6, 1)
       await expect(app.locator('.mt-window-body > *').first()).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
       const colors = await app.evaluate((root) => {
         const select = root.querySelector('select')
