@@ -60,7 +60,7 @@ export async function revealRuntimePanel(page: Page) {
   const trigger = page.getByRole('button', { name: '显示运行状态' })
   await expect(trigger).toBeVisible()
   await trigger.hover()
-  await expect(page.getByText('网速状态', { exact: true })).toBeVisible()
+  await expect(page.getByText('运行状态', { exact: true })).toBeVisible()
   await expect(page.getByLabel('预览控制')).toHaveCount(0)
 }
 

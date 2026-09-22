@@ -4,7 +4,6 @@ import { useVisibilityPolling } from 'unas-src/hooks/useVisibilityPolling'
 import { useSystemStore } from 'unas-src/store'
 import { getErrorMessage } from 'unas-src/utils'
 
-import { DualLineChart } from './DualLineChart'
 import { GaugeSvg } from './GaugeSvg'
 import { TaskGroupList } from './TaskGroupList'
 import { EMPTY_METRICS, type RuntimeMetrics } from './types'
@@ -13,14 +12,14 @@ import {
   formatBytes,
   formatUptime,
   frontendModeLabel,
+  healthScore,
+  healthStatus,
   summarizeGroupStatuses,
 } from './utils'
 
 export function RightPanel({ workspace }: { workspace: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
   const [metrics, setMetrics] = useState<RuntimeMetrics>(EMPTY_METRICS)
-  const [netUpData, setNetUpData] = useState<number[]>(Array.from({ length: 40 }, () => 0))
-  const [netDownData, setNetDownData] = useState<number[]>(Array.from({ length: 40 }, () => 0))
   const [error, setError] = useState('')
   const [lastSampleAt, setLastSampleAt] = useState<Date | null>(null)
   const [expandedTaskType, setExpandedTaskType] = useState<string | null>(null)
@@ -35,8 +34,6 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
       setMetrics(data)
       setLastSampleAt(new Date())
       setError('')
-      setNetUpData((items) => [...items.slice(1), Number(data.network?.upload_bytes_per_sec || 0)])
-      setNetDownData((items) => [...items.slice(1), Number(data.network?.download_bytes_per_sec || 0)])
     } catch (err: unknown) {
       if (signal?.aborted || useSystemStore.getState().systemLifecycle !== 'running') return
       setError(getErrorMessage(err) || '监控数据读取失败')
@@ -57,7 +54,6 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
   useVisibilityPolling(refresh, 1000, systemLifecycle === 'running')
 
   const system = metrics.system || EMPTY_METRICS.system!
-  const network = metrics.network || EMPTY_METRICS.network!
   const tasks = metrics.tasks || []
   const taskSummary = metrics.task_summary
   const groupedTasks = useMemo(() => {
@@ -83,6 +79,15 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
   const memoryDetail = system.memory_total_bytes
     ? `${formatBytes(system.memory_used_bytes)} / ${formatBytes(system.memory_total_bytes)}`
     : '等待采样'
+  const health = healthScore(system.cpu_percent, system.memory_percent)
+  const healthLabel = healthStatus(health)
+  const healthColor = health == null
+    ? '#64748b'
+    : health >= 80
+      ? '#54FFB7'
+      : health >= 60
+        ? '#F2C66D'
+        : '#FF9999'
   const sampleTime = lastSampleAt
     ? lastSampleAt.toLocaleTimeString('zh-CN', { hour12: false })
     : '未采样'
@@ -111,38 +116,26 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
           <GaugeSvg value={system.cpu_percent} color="#7CB3FF" label="CPU" />
           <GaugeSvg value={system.memory_percent} color="#7CB3FF" label="内存" title={`${memoryLabel} · ${memoryDetail}`} />
           <GaugeSvg
-            value={system.gpu_percent}
-            color={typeof system.gpu_percent === 'number' ? '#7CB3FF' : '#64748b'}
-            label="GPU"
-            available={typeof system.gpu_percent === 'number'}
+            value={health}
+            color={healthColor}
+            label="健康"
+            title={health == null ? 'CPU/内存数据不可用' : `状态：${healthLabel} · CPU 35% · 内存 45%`}
+            available={health != null}
+            valueSuffix=""
           />
         </div>
         <div className="rp-uptime">
-          <span>系统运行（估算） <span>{metrics.runtime?.uptime_seconds == null ? '不可用' : formatUptime(metrics.runtime.uptime_seconds)}</span></span>
-          {frontendModeLabel(metrics.log_mode) && <span className="rp-runtime-mode">{frontendModeLabel(metrics.log_mode)}</span>}
+          <span>系统运行</span>
+          <span className="rp-uptime-value">
+            <strong>{metrics.runtime?.uptime_seconds == null ? '不可用' : formatUptime(metrics.runtime.uptime_seconds)}</strong>
+            {frontendModeLabel(metrics.log_mode) && <span className="rp-runtime-mode">{frontendModeLabel(metrics.log_mode)}</span>}
+          </span>
         </div>
         <div className="rp-sample-detail">
           <span>内存{memoryLabel === '物理占用' ? '' : ` · ${memoryLabel}`}</span>
           <strong>{memoryDetail}</strong>
         </div>
         {error && <div className="rp-error">{error}</div>}
-      </div>
-
-      <div className="rp-card">
-        <div className="rp-card-head rp-runtime-head">
-          <div className="rp-card-title">网速状态</div>
-          <span className={`rp-card-meta ${network.online ? 'rp-network-online' : 'rp-network-offline'}`}>{network.status || '未知'}</span>
-        </div>
-        <div className="rp-net" title={network.detail || '浏览器网络状态'}>
-          <div className="rp-net-row">
-            <span className="rp-net-up">↑ {network.upload?.text || '不可用'}</span>
-            <span className="rp-net-down">↓ {network.download?.text || '不可用'}</span>
-          </div>
-          <div className="rp-network-detail">{network.detail || '等待网络采样'}</div>
-          <div className="rp-net-chart">
-            <DualLineChart dataUp={netUpData} dataDown={netDownData} />
-          </div>
-        </div>
       </div>
 
       {workspace && <TaskGroupList

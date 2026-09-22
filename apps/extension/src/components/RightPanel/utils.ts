@@ -4,6 +4,18 @@ export function clampPercent(value: number | undefined) {
   return Math.max(0, Math.min(Number(value || 0), 100))
 }
 
+export function healthScore(cpuPercent?: number, memoryPercent?: number) {
+  if (typeof cpuPercent !== 'number' || typeof memoryPercent !== 'number') return undefined
+  return Math.round(clampPercent(100 - cpuPercent * 0.35 - memoryPercent * 0.45))
+}
+
+export function healthStatus(score?: number) {
+  if (typeof score !== 'number') return '未支持'
+  if (score >= 80) return '正常'
+  if (score >= 60) return '关注'
+  return '偏高'
+}
+
 export function formatUptime(totalSeconds = 0) {
   const d = Math.floor(totalSeconds / 86400)
   const h = Math.floor((totalSeconds % 86400) / 3600)
