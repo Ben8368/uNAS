@@ -1,4 +1,4 @@
-export type VaultBackendType = "legacy-unipass" | "webdav" | "cloudflare" | "github";
+export type VaultBackendType = "webdav";
 export type RevisionToken = string;
 export type VaultObjectKind = "manifest" | "app" | "account" | "credential";
 

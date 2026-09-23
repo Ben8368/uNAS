@@ -211,5 +211,5 @@ New Tab / Workspace / page overlay
 - `entrypoints/adblock.content.ts` 只处理 cosmetic rules；`content-script.js` 和 `page-overlay.js` 是用户触发的 unlisted scripts，分别用于一次性填充和页面浮层。
 - 自维护补充规则按 [ADR 0012](ADR/0012-repository-filter-subscription.md) 独立于第三方订阅更新；仓库 JSON 同时为随包快照，缓存通过校验后按 host 精确合并到页面规则，不引入远程代码。
 - `installPasswordManagerBackground()` 与 `installAdBlockBackground()` 各自只注册自己的生命周期/消息处理器，统一路由在扩展 adapter 中做来源、页面与动作分流。密码消息不能由普通网页触发，广告 content script 不能调用 Vault 操作。
-- `apps/extension/src/modules/password-manager/background/vault/` 的 Vault core、WebDAV backend、encrypted cache 和 sync engine 不依赖广告模块；`legacy-credential-source.ts` 只作为兼容 adapter 保留。`apps/extension/src/modules/adblock/` 只依赖 DNR、规则存储和 cosmetic content bridge。
+- `apps/extension/src/modules/password-manager/background/vault/` 的 Vault core、encrypted cache 和 sync engine 不依赖广告模块；WebDAV backend 通过 `runtime/webdav/client.ts` 复用独立传输层（[ADR 0014](ADR/0014-shared-webdav-transport.md)）；`legacy-credential-source.ts` 只作为兼容 adapter 保留。`apps/extension/src/modules/adblock/` 只依赖 DNR、规则存储和 cosmetic content bridge。
 - 密码管家通过 App Registry 在 uNAS Desktop 窗口内提供 Vault 管理页，同时保留用户主动打开的既有 closed Shadow DOM 密码浮窗；独立 `manage.html` 只承担旧入口和恢复/排障兼容职责。两者共享 Vault Core，不共享明文状态或 CSS 运行时。

@@ -4,6 +4,8 @@
 - 日期：2026-09-22
 - **背景：** 原 UniPass 能力已经随 uNAS 单扩展交付，但密码、Vault、网页浮窗、DNR 和 cosmetic filtering 仍位于混合目录与部分共用路由中。继续以 UniPass 作为用户可见产品名会造成第二产品身份，也会使权限边界和回归责任不清。
 
+> WebDAV 传输代码归属部分由 [ADR 0014](0014-shared-webdav-transport.md) 替代；其他决定保留。
+
 ## 决策
 
 1. **保留单扩展架构。** uNAS 继续使用一个 WXT + Manifest V3 扩展、一个 Service Worker 和统一 App Registry。密码管家与广告拦截分别位于 `modules/password-manager` 与 `modules/adblock`，由统一 extension adapter 做消息分发，不拆成需要分别安装的扩展，也不引入 Electron、Native Helper 或常驻服务。
@@ -17,7 +19,7 @@
 - uNAS 桌面可从 App Registry 在当前窗口打开完整密码管家管理页，同时工具栏仍提供网页密码浮窗；两者使用同一受控 Vault 服务，不创建第二套密码库。独立 `manage.html` 仅作为旧入口和恢复/排障兼容面保留。
 - 广告拦截的初始化、订阅刷新和消息处理不再依赖 Vault 是否配置、解锁或同步可用。
 - 目录迁移会产生新的物理模块路径，但 Legacy adapter、兼容标识和数据格式继续保留。
-- `system.display` 不再声明为 required permission；系统详情继续 feature-detect，浏览器不提供时诚实显示不可用。该变更也避免仓库 CI bundled Chromium 因非核心权限启动异常。
+- `system.display` 不再声明为 required permission；系统详情继续 feature-detect，浏览器不提供时诚实显示不可用。本地启动观察不等同于 CI 根因；远端失败来自图标宽度旧断言，证据见[更正后的审查记录](../archive/reviews/2026-09-22-unas-brand-module-rework.md)。
 
 ## 已完成与待验证
 

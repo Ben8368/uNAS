@@ -1,6 +1,6 @@
 # 当前状态
 
-> **最后确认：** 2026-09-22
+> **最后确认：** 2026-09-23
 > **阶段：** Phase 2 / uNAS native module integration
 > **产品代码：** WXT MV3 已接入密码管家、广告拦截、WebDAV Vault、Legacy adapter 和 closed Shadow DOM 浮窗；Desktop 提供 Vault 管理，`manage.html` 兼容保留。
 
@@ -15,6 +15,8 @@
 - 视觉采用原创的 macOS/iPadOS 启发式桌面层级与 Liquid Glass 原则，玻璃限于导航/控制层，并提供无障碍和性能降级。
 - uNAS Glass 工作包 A–C 已实现：`window-theme.css` 是主题与材质唯一来源；窗口根承担 blur，正文为实色面；Desktop/Dock/启动器/文件管理器已消费共享 Token。后续 D–E 见 [Development Blueprint](docs/DEVELOPMENT_BLUEPRINT.md#uNAS-glass-后续迁移顺序)。
 - 密码管家/广告拦截来源基线为 `ee749982cc31efbcf912866b854afbf5f1b36c1c`；历史融合分支为 `codex/unipass-integration`，uNAS 起点为 `fef41ae0ba49ad5a043de22b18feafb495d3deab`。`UniPass` 仅作兼容标识保留。
+
+- 密码库后端仅保留 WebDAV，共享传输已下沉（[ADR 0014](docs/ADR/0014-shared-webdav-transport.md)）；Legacy 应用级撤除仍受 [TD-003](docs/TECH_DEBT.md#td-003legacy-密码能力尚未完成应用级解耦) 约束。
 
 ## 近期优先级
 
@@ -31,8 +33,7 @@
 
 ## 最近验证
 
-- 2026-09-20：[CI #35](https://github.com/Ben8368/uNAS/actions/runs/35487284796) 文档、Demo 和浏览器回归成功；SP-04 目标 Chrome 与资源证据仍缺，RISK-007 开放，详见 [SP-04](benchmarks/sp-04/README.md)。
-- 2026-09-22：[CI #48](https://github.com/Ben8368/uNAS/actions/runs/35729855959) 的 Browser regression 根因为 `system.display` 导致 bundled Chromium 异常退出；已移除该权限并完成模块解耦，保留显示器探测降级。详见 [ADR 0013](docs/ADR/0013-unas-native-password-manager-adblock.md)。
+- 2026-09-23：[密码管家/WebDAV 审查](docs/archive/reviews/2026-09-23-password-webdav.md)：`pnpm verify` 通过（261 passed/1 skipped）；MV3 E2E 67 passed/3 skipped、Web 8 passed，真实 NAS 与目标 Chrome 人工待验收。
 - 2026-09-22：Desktop Vault 管理及[兼容/生命周期测试](apps/extension/src/modules/password-manager/background/vault/vault-core.compatibility.test.ts)完成；允许浏览器时 E2E 67 passed/3 skipped，目标 Chrome 仍需人工，macOS 沙箱见 [B-006](docs/lessons/browser.md)。
 
 ## 按需入口

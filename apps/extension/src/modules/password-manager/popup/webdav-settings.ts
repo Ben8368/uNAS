@@ -1,6 +1,6 @@
 import type { VaultConnection, VaultProfile } from "../shared/vault";
 import type { VaultSyncStatusResult } from "../shared/types";
-import { normalizeWebDavUrl } from "../shared/url";
+import { normalizeWebDavUrl } from "../../../shared/webdav-url";
 import { send } from "./bridge";
 import { errorText, get, getDomRoot } from "./dom";
 

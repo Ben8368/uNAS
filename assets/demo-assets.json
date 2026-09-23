@@ -13,16 +13,16 @@
       "height": 64
     },
     {
-      "path": "apps/extension/public/static/app/icons/default/adblock.svg",
-      "bytes": 342,
-      "sha256": "a0dcc7e1161ce73a9d2a5e4cb4fd10b85368528247410b5aafb1720bb84a9130",
+      "path": "apps/extension/public/static/app/icons/default/password.svg",
+      "bytes": 396,
+      "sha256": "e2dab04262f7d3696316bcfb39082a557e77200ec96f7bd30349511870931728",
       "width": 64,
       "height": 64
     },
     {
-      "path": "apps/extension/public/static/app/icons/default/password.svg",
-      "bytes": 434,
-      "sha256": "85cd6df061ae85b56ea1d52944f742d3fc4eeb37e0841165e8e972fcaf58382a",
+      "path": "apps/extension/public/static/app/icons/default/adblock.svg",
+      "bytes": 342,
+      "sha256": "a0dcc7e1161ce73a9d2a5e4cb4fd10b85368528247410b5aafb1720bb84a9130",
       "width": 64,
       "height": 64
     },

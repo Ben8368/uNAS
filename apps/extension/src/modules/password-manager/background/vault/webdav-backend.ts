@@ -1,29 +1,25 @@
-import { fetchWithTimeout } from "../../shared/fetch";
-import { normalizeWebDavUrl } from "../../shared/url";
+import { WebDavClient, type WebDavMethod } from "../../../../runtime/webdav/client";
 import { VaultConflictError, WebDavCompatibilityError, type RevisionToken, type StoredObject, type StoredObjectMeta, type VaultBackend } from "../../shared/vault";
 
 const OBJECTS_DIRECTORY = "objects/";
 
 export class WebDavBackend implements VaultBackend {
   readonly endpoint: string;
-  private readonly username: string;
-  private readonly appPassword: string;
+  private readonly client: WebDavClient;
   constructor(endpoint: string, username: string, appPassword: string) {
-    this.endpoint = normalizeWebDavUrl(endpoint);
-    this.username = username.trim();
-    this.appPassword = appPassword;
-    if (!this.username || !this.appPassword) throw new Error("WebDAV 用户名和 App Password 不能为空");
+    this.client = new WebDavClient(endpoint, username, appPassword);
+    this.endpoint = this.client.endpoint;
   }
 
   async connect(): Promise<void> {
-    let root = await this.request("PROPFIND", this.endpoint, { Depth: "0" });
+    let root = await this.request("PROPFIND", "", { Depth: "0" });
     if (root.status === 404) {
-      const created = await this.request("MKCOL", this.endpoint);
+      const created = await this.request("MKCOL", "");
       if (![201, 405, 409].includes(created.status)) throw this.errorForStatus(created.status);
-      root = await this.request("PROPFIND", this.endpoint, { Depth: "0" });
+      root = await this.request("PROPFIND", "", { Depth: "0" });
     }
     if (![200, 207].includes(root.status)) throw this.errorForStatus(root.status);
-    const objectsUrl = new URL(OBJECTS_DIRECTORY, this.endpoint).toString();
+    const objectsUrl = OBJECTS_DIRECTORY;
     const check = await this.request("PROPFIND", objectsUrl, { Depth: "0" });
     if (check.status === 404) {
       const created = await this.request("MKCOL", objectsUrl);
@@ -41,7 +37,7 @@ export class WebDavBackend implements VaultBackend {
     return manifest ? this.get("manifest") : null;
   }
   async list(): Promise<StoredObjectMeta[]> {
-    const response = await this.request("PROPFIND", new URL(OBJECTS_DIRECTORY, this.endpoint).toString(), { Depth: "1" });
+    const response = await this.request("PROPFIND", OBJECTS_DIRECTORY, { Depth: "1" });
     if (response.status === 404) return [];
     if (![200, 207].includes(response.status)) throw this.errorForStatus(response.status);
     return parsePropfind(new TextDecoder().decode(response.data), this.endpoint);
@@ -73,25 +69,10 @@ export class WebDavBackend implements VaultBackend {
   }
   private objectUrl(id: string): string {
     if (id !== "manifest" && !/^[A-Za-z0-9_-]{16,160}$/.test(id)) throw new Error("Vault 对象 ID 无效");
-    return new URL(`${OBJECTS_DIRECTORY}${encodeURIComponent(id)}.json`, this.endpoint).toString();
+    return `${OBJECTS_DIRECTORY}${id}.json`;
   }
-  private async request(method: string, input: string, headers: Record<string, string> = {}, body?: Uint8Array): Promise<{ status: number; ok: boolean; headers: Headers; data: Uint8Array }> {
-    const requestHeaders = { ...headers, Authorization: this.authorizationHeader(), Accept: "application/json, application/xml" };
-    const response = await fetchWithTimeout(input, {
-      method, headers: requestHeaders, body: body ? body.slice().buffer as ArrayBuffer : undefined,
-    }, async (response) => {
-      const needsBody = response.ok && (method === "GET" || (method === "PROPFIND" && headers.Depth === "1"));
-      const data = needsBody ? new Uint8Array(await response.arrayBuffer()) : new Uint8Array();
-      return { status: response.status, ok: response.ok, headers: response.headers, data };
-    });
-    if (response.status === 401) throw new Error("WebDAV 认证失败（HTTP 401），请确认地址和 App Password");
-    if (response.status === 403) throw new Error("WebDAV 权限不足，请检查目标目录权限");
-    return response;
-  }
-  private authorizationHeader(): string {
-    const bytes = new TextEncoder().encode(`${this.username}:${this.appPassword}`);
-    let binary = ""; for (const byte of bytes) binary += String.fromCharCode(byte);
-    return `Basic ${btoa(binary)}`;
+  private request(method: WebDavMethod, path: string, headers: Record<string, string> = {}, body?: Uint8Array) {
+    return this.client.request(method, path, { headers, body, readBody: method === "GET" || (method === "PROPFIND" && headers.Depth === "1") });
   }
   private errorForStatus(status: number): Error {
     if (status >= 500) return new Error("WebDAV 服务器暂时不可用，请稍后重试");

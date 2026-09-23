@@ -1,5 +1,5 @@
 import { importVaultKey, exportVaultKey, generateVaultKey } from "../../shared/vault-crypto";
-import { normalizeWebDavUrl, webDavPermissionOrigin } from "../../shared/url";
+import { normalizeWebDavUrl, webDavPermissionOrigin } from "../../../../shared/webdav-url";
 import type { AccountListResult, UniPassAccount } from "../../shared/types";
 import { type AccountRef, type VaultAccount, type VaultAccountUpdate, type VaultApp, type VaultConnection, type VaultConnectionState, type VaultCredential, type VaultProfile } from "../../shared/vault";
 import { openLocalUnlockMaterial, sealLocalUnlockMaterial, type LocalUnlockEnvelope } from "./local-unlock";

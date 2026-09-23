@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { RefreshCw, ShieldCheck } from 'lucide-react'
-import { normalizeWebDavUrl } from 'unas-src/modules/password-manager/shared/url'
+import { normalizeWebDavUrl } from 'unas-src/shared/webdav-url'
 import type { VaultAccount, VaultApp, VaultConnection, VaultProfile } from 'unas-src/modules/password-manager/shared/vault'
 import type { VaultSyncStatusResult } from 'unas-src/modules/password-manager/shared/types'
 import { send } from 'unas-src/modules/password-manager/popup/bridge'

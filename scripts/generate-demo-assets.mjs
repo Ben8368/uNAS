@@ -10,6 +10,7 @@ const assetManifestPath = resolve(root, 'assets/demo-assets.json')
 const existingManifest = JSON.parse(await readFile(assetManifestPath, 'utf8'))
 const shapes = {
   browser: ['#438fc6', '<circle cx="32" cy="32" r="17"/><path d="M15 32h34M32 15c-12 10-12 24 0 34 12-10 12-24 0-34Z"/>'],
+  password: ['#279caf', '<rect x="18" y="28" width="28" height="23" rx="5"/><path d="M23 28v-7a9 9 0 0 1 18 0v7"/><circle cx="32" cy="38" r="2.5"/><path d="M32 41v4"/>'],
   adblock: ['#58a887', '<path d="M32 13 49 20v12c0 12-17 20-17 20S15 44 15 32V20Z"/><path d="m23 32 6 6 13-14"/>'],
   download: ['#519b7c', '<path d="M32 14v25m-10-9 10 10 10-10M16 42v7h32v-7"/>'],
   files: ['#509ac0', '<path d="M13 23h15l5 5h18v20H13ZM13 23v-5h16l5 5h17v5"/>'],

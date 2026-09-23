@@ -1,10 +1,14 @@
 import { test, expect } from './fixtures'
 
-test('密码管家在 Desktop 窗口中提供完整管理流程入口', async ({ extension }) => {
+test('密码管家在 Desktop 窗口中提供完整管理流程入口', async ({ extension }, testInfo) => {
   const page = await extension.context.newPage()
   await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
   const app = page.locator('.app-icon--password-manager')
   await expect(app).toBeVisible()
+  const icon = app.locator('img').first()
+  await expect(icon).toHaveAttribute('src', /password\.svg$/)
+  await expect.poll(() => icon.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBe(64)
+  await testInfo.attach('desktop-password-icon', { body: await page.screenshot(), contentType: 'image/png' })
   await app.click()
   const passwordManager = page.locator('[data-app-id="password-manager"]')
   await expect(passwordManager.getByRole('heading', { name: '密码管家' })).toBeVisible()
@@ -16,6 +20,7 @@ test('密码管家在 Desktop 窗口中提供完整管理流程入口', async ({
   await expect(passwordManager.getByRole('button', { name: '保存网站' })).toBeDisabled()
   await expect(passwordManager.getByRole('button', { name: '保存账号' })).toBeDisabled()
   await expect(page.locator('[data-app-id="password-manager"]')).toHaveCount(1)
+  await testInfo.attach('password-manager', { body: await page.screenshot(), contentType: 'image/png' })
   expect(extension.errors).toEqual([])
 })
 

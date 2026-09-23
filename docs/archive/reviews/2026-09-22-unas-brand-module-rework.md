@@ -4,7 +4,9 @@
 
 ## CI 根因
 
-GitHub Actions [CI #48](https://github.com/Ben8368/uNAS/actions/runs/35729855959) 的 `Browser regression` 在 Chromium 启动阶段失败。隔离验证显示，生成 manifest 仅移除 `system.display` 后同一条 `extension.spec.ts` 即通过；因此从 required permissions 移除该非核心权限，`systemMetrics.readDisplays()` 保留运行时 feature detection。包体审计脚本同步区分“允许登记”与“当前 required”。
+2026-09-23 复核远端原始日志后更正：GitHub Actions [CI #48](https://github.com/Ben8368/uNAS/actions/runs/35729855959) 的 Browser regression 并非在 Chromium 启动阶段失败，而是 appTheme.spec.ts 的侧栏 SVG 宽度断言仍期望 22px，实际为 17.5938px，导致 7 failed、57 passed、3 skipped。[更早的失败](https://github.com/Ben8368/uNAS/actions/runs/35712685512) 同样由该断言触发。提交 faab2ef 已把断言对齐为约 17.6px；其后的 [CI](https://github.com/Ben8368/uNAS/actions/runs/35736032270) 和 [最新基线 CI](https://github.com/Ben8368/uNAS/actions/runs/35747274969) 的治理、验证及浏览器回归均通过。
+
+原记录还包含本地移除 system.display 后 extension.spec.ts 可启动的观察；它不能作为上述远端 CI 的根因证据。该非核心权限仍保持移除，systemMetrics.readDisplays() 继续 feature-detect，包体审计区分允许登记与当前 required。
 
 ## 浮窗视觉基准
 

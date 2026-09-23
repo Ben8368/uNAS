@@ -60,8 +60,10 @@ User file / archive / media    不可信输入
 
 ### 密码管家 Vault 与浮窗边界
 
+- 共享 WebDAV 传输遵循 [ADR 0014](docs/ADR/0014-shared-webdav-transport.md)：限定 HTTPS endpoint 内相对路径、禁止重定向/Cookie/缓存、请求和响应有字节预算及取消/超时；主机授权与用户同意仍由各调用方负责。不得把其他 App 的文件自动上传或复用 Vault Key。
+
 - Vault 使用 UniPass 现有 AES-256-GCM envelope、Vault Key、PBKDF2 本地解锁、加密 IndexedDB cache、dirty queue、ETag 冲突和 tombstone；明文密码只在后台短暂获取，并在填充/复制路径清理，不进入 uNAS Desktop store、BroadcastChannel、日志或持久化普通 JSON。
-- `CredentialSource` 将 WebDAV Vault 与 `legacy-unipass` 分开；Legacy API/Jupiter/旧 AES 解密/WASM 只在 adapter 中注册。禁用 Legacy 不改变 WebDAV Vault、AdBlock、New Tab、Workspace 或浮层的核心构建路径。
+- `CredentialSource` 将 WebDAV Vault 与 `legacy-unipass` 分开；Legacy API/Jupiter/旧 AES 解密/WASM 只在 adapter 中注册。Vault core 不导入 Legacy API/WASM；应用级启动、目录和浮窗仍有 Legacy 依赖，撤除门槛见 [TD-003](docs/TECH_DEBT.md#td-003legacy-密码能力尚未完成应用级解耦)。
 - 工具栏 action 没有 `default_popup`；它只针对当前用户点击的 HTTPS tab 注入既有密码 DOM/CSS 浮窗，保持 closed Shadow DOM、外部点击/Escape 关闭和页面主题采样。密码库管理也可从 uNAS Desktop 的密码管家入口进入管理页。
 - 消息路由只为经过严格校验的 `getCosmeticRules` 请求开放非顶层 frame；密码管家消息仍要求顶层来源。`removeVault`、`saveWebDavVault`、`updateVaultCredential` 和 `fillFromPopup` 不能由广告 Content Script 调用。
 - 原版浮层由 action 注入绑定 `sender.tabId`、`sender.documentId` 的 session capability token；只有持有该 token 的用户浮层可以完成 WebDAV Vault 管理读写，普通网页/广告 Content Script 没有该 token。`fillFromPopup` 仍只接受受信任扩展 UI，浮层填充继续走单独的用户触发路径。
