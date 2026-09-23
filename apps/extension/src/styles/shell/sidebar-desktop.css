@@ -39,7 +39,7 @@ html, body, #root {
   position: fixed;
   left: 0; top: 0; bottom: 0;
   width: 48px;
-  z-index: 1000;
+  z-index: 200;
   display: flex;
   flex-direction: column;
   align-items: center;

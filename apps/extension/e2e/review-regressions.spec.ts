@@ -11,7 +11,9 @@ test('minimized Apps retain drafts and focus follows the visible window', async 
 test('runtime panel shows resource status and omits GPU capability details and simulated task summary', async ({ extension }) => {
   const tab = await extension.context.newPage()
   await tab.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
-  await tab.locator('.rp-edge-trigger').hover()
+  const trigger = tab.locator('.rp-edge-trigger')
+  await trigger.hover()
+  await expect(trigger).toHaveAttribute('aria-expanded', 'true')
   await expect(tab.getByRole('button', { name: '展开系统详情' })).toBeVisible()
   await expect(tab.locator('.rp-system-details')).toHaveCount(0)
   await tab.getByRole('button', { name: '展开系统详情' }).click()
@@ -48,6 +50,67 @@ test('runtime panel shows resource status and omits GPU capability details and s
   await expect(tab.getByRole('region', { name: 'Workspace 任务摘要' })).toHaveCount(0)
   await expect(tab.getByText('模拟任务摘要', { exact: true })).toHaveCount(0)
   await expect(tab.locator('.rp-capability-note')).toHaveCount(0)
+  expect(extension.errors).toEqual([])
+  expect(extension.remoteRequests).toEqual([])
+})
+
+test('runtime panel stays interactive above normal and maximized App windows', async ({ extension }) => {
+  const page = await extension.context.newPage()
+  await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
+  await page.locator('.app-icon--fetcher').click()
+  const app = page.locator('[data-app-id="fetcher"]')
+  await expect(app).toBeVisible()
+
+  const layers = await page.evaluate(() => ({
+    window: Number.parseInt(getComputedStyle(document.querySelector('.mt-window')!).zIndex, 10),
+    panel: Number.parseInt(getComputedStyle(document.querySelector('.mt-right-panel')!).zIndex, 10),
+  }))
+  expect(layers.panel).toBeGreaterThan(layers.window)
+
+  const trigger = page.locator('.rp-edge-trigger')
+  await trigger.hover()
+  await expect(page.getByRole('button', { name: '展开系统详情' })).toBeVisible()
+  await page.getByRole('button', { name: '展开系统详情' }).click()
+  await expect(page.locator('.rp-system-details')).toBeVisible()
+  await page.mouse.move(400, 400)
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+
+  await app.getByRole('button', { name: /^最大化/ }).click()
+  await expect(app).toHaveClass(/mt-window--maximized/)
+  await trigger.hover()
+  await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+  const detailsToggle = page.getByRole('button', { name: '收拢系统详情' })
+  await expect(detailsToggle).toBeVisible()
+  await detailsToggle.click()
+  await expect(page.locator('.rp-system-details')).toHaveCount(0)
+  expect(extension.errors).toEqual([])
+  expect(extension.remoteRequests).toEqual([])
+})
+
+test('top and bottom edge actions report that their features are not open', async ({ extension }) => {
+  const page = await extension.context.newPage()
+  await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
+  const logs: string[] = []
+  page.on('console', (message) => { if (message.type() === 'log') logs.push(message.text()) })
+  await page.locator('.rp-edge-action--top').click()
+  await page.locator('.rp-edge-action--bottom').click()
+  expect(logs).toContain('顶部功能还未开放')
+  expect(logs).toContain('底部功能还未开放')
+  expect(extension.errors).toEqual([])
+})
+
+test('runtime panel opens with the keyboard and Escape restores trigger focus', async ({ extension }) => {
+  const page = await extension.context.newPage()
+  await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
+  const trigger = page.locator('.rp-edge-trigger')
+  await trigger.focus()
+  await expect(trigger).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+  await expect(trigger).toHaveAttribute('aria-label', '收起运行状态')
+  await page.keyboard.press('Escape')
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  await expect(trigger).toBeFocused()
   expect(extension.errors).toEqual([])
   expect(extension.remoteRequests).toEqual([])
 })

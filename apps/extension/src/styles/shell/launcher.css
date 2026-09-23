@@ -1,5 +1,6 @@
 ﻿/* ===== Launcher ===== */
 .mt-launcher {
+  /* showModal() places the launcher in the browser's native top layer. */
   position: fixed;
   inset: auto 50% 40px auto;
   transform: translateX(50%);

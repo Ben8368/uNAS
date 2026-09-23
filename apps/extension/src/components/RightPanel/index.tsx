@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { cancelJob, getSystemMetrics } from 'unas-src/api'
 import { useVisibilityPolling } from 'unas-src/hooks/useVisibilityPolling'
 import { useSystemStore } from 'unas-src/store'
@@ -19,12 +19,30 @@ import {
 } from './utils'
 
 export function RightPanel({ workspace }: { workspace: boolean }) {
+  const [isOpen, setIsOpen] = useState(false)
   const [metrics, setMetrics] = useState<RuntimeMetrics>(EMPTY_METRICS)
   const [error, setError] = useState('')
   const [lastSampleAt, setLastSampleAt] = useState<Date | null>(null)
   const [expandedTaskType, setExpandedTaskType] = useState<string | null>(null)
   const [isRuntimeDetailsOpen, setIsRuntimeDetailsOpen] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const systemLifecycle = useSystemStore((state) => state.systemLifecycle)
+
+  const closePanel = () => {
+    setIsOpen(false)
+    triggerRef.current?.focus()
+  }
+
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      event.preventDefault()
+      closePanel()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen])
 
   async function refresh(signal?: AbortSignal) {
     if (useSystemStore.getState().systemLifecycle !== 'running') return
@@ -105,19 +123,45 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
     : '未采样'
 
   return (
-    <aside className="mt-right-panel" aria-label="运行状态">
+    <>
       <button
         type="button"
-        className="rp-edge-trigger"
-        aria-label="显示运行状态"
-        aria-controls="runtime-status-panel"
-        title="将鼠标移到右侧边缘以展开运行状态"
+        className="rp-edge-action rp-edge-action--top"
+        aria-label="顶部功能"
+        title="顶部功能"
+        onClick={() => console.log('顶部功能还未开放')}
       />
-      <div id="runtime-status-panel" className="rp-panel-content">
+      <button
+        type="button"
+        className="rp-edge-action rp-edge-action--bottom"
+        aria-label="底部功能"
+        title="底部功能"
+        onClick={() => console.log('底部功能还未开放')}
+      />
+      <aside
+        className={`mt-right-panel${isOpen ? ' mt-right-panel--open' : ''}`}
+        aria-label="运行状态"
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+      >
+      <button
+        ref={triggerRef}
+        type="button"
+        className="rp-edge-trigger"
+        aria-expanded={isOpen}
+        aria-label={isOpen ? '收起运行状态' : '显示运行状态'}
+        aria-controls="runtime-status-panel"
+        title={isOpen ? '收起运行状态' : '显示运行状态'}
+        onClick={() => setIsOpen((open) => !open)}
+      />
+      <div id="runtime-status-panel" className="rp-panel-content" aria-hidden={!isOpen}>
       <div className="rp-card">
         <div className="rp-card-head rp-runtime-head">
           <div className="rp-card-title">运行状态</div>
-          <span className="rp-card-meta">{sampleTime}</span>
+          <div className="rp-runtime-head__actions">
+            <span className="rp-card-meta">{sampleTime}</span>
+            <button type="button" className="rp-panel-close" aria-label="收起运行状态" title="收起运行状态" onClick={closePanel}>×</button>
+          </div>
         </div>
         <div className="rp-gauges">
           <GaugeSvg value={system.cpu_percent} color="var(--window-accent)" label="CPU" />
@@ -205,7 +249,8 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
         onCancelTask={handleTaskAction}
       />}
       </div>
-    </aside>
+      </aside>
+    </>
   )
 }
 

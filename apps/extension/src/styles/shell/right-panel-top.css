@@ -11,8 +11,13 @@
 }
 
 .mt-right-panel:hover,
-.mt-right-panel:focus-within {
+.mt-right-panel--open {
   transform: translateX(0);
+}
+
+.mt-right-panel:not(.mt-right-panel--open) .rp-panel-content {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .rp-edge-trigger {
@@ -22,19 +27,56 @@
   bottom: 0;
   left: -44px;
   width: 44px;
-  min-height: 0;
+  min-height: 44px;
   border: 0;
   border-radius: 0;
   background: transparent;
   color: transparent;
   font: inherit;
-  cursor: default;
+  cursor: pointer;
 }
+
+.rp-edge-trigger:hover { background: color-mix(in srgb, var(--window-text) 5%, transparent); }
 
 .rp-edge-trigger:focus-visible {
   outline: 3px solid var(--window-focus-ring);
   outline-offset: -3px;
 }
+
+.rp-edge-action {
+  position: fixed;
+  z-index: 300;
+  left: 50%;
+  width: min(180px, 42vw);
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  cursor: pointer;
+  transform: translateX(-50%);
+}
+
+.rp-edge-action::after {
+  position: absolute;
+  left: 50%;
+  width: min(120px, 28vw);
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--window-text) 42%, transparent);
+  content: '';
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity var(--window-motion-fast) var(--window-motion-ease), background-color var(--window-motion-fast) var(--window-motion-ease);
+}
+
+.rp-edge-action--top { top: 0; }
+.rp-edge-action--top::after { top: 8px; }
+.rp-edge-action--bottom { bottom: 0; }
+.rp-edge-action--bottom::after { bottom: 8px; }
+.rp-edge-action:hover::after,
+.rp-edge-action:focus-visible::after { background: var(--window-accent); opacity: 1; }
+.rp-edge-action:focus-visible { outline: 3px solid var(--window-focus-ring); outline-offset: -3px; }
 
 .rp-panel-content {
   display: flex;
@@ -110,6 +152,26 @@
 }
 
 .rp-card-head .rp-card-title { margin-bottom: 0; }
+.rp-runtime-head__actions { display: flex; align-items: center; gap: var(--window-space-2); }
+.rp-panel-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--window-radius-control);
+  background: transparent;
+  color: var(--window-text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+.rp-panel-close:hover { background: color-mix(in srgb, var(--window-text) 6%, transparent); color: var(--window-text); }
+.rp-panel-close:focus-visible { border-color: var(--window-focus-ring); }
 .rp-collapsible-card {
   padding: 0;
   overflow: hidden;
