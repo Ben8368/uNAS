@@ -15,12 +15,7 @@
     grid-template-columns: var(--app-sidebar-width) minmax(0, 1fr);
   }
 
-  .fm-nav {
-    padding: 10px 8px;
-    gap: 2px;
-  }
 
-  .fm-nav-item,
   .fm-settings {
     min-height: 30px;
     gap: 8px;
@@ -143,14 +138,6 @@
   stroke-linejoin: round;
 }
 
-.fm-sidebar {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  border-right: 1px solid var(--window-divider);
-  background: var(--window-surface-sidebar);
-  padding-top: 8px;
-}
 
 .fm-brand {
   display: flex;
@@ -185,51 +172,14 @@
   height: 24px;
 }
 
-.fm-nav {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  flex-direction: column;
-  gap: 2px;
-  overflow: auto;
-  padding: 8px 10px 10px;
-}
 
-.fm-nav-item,
-.fm-disk,
-.fm-settings {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  min-height: var(--app-sidebar-row-height);
-  border: 0;
-  border-radius: var(--app-sidebar-row-radius);
-  background: transparent;
-  color: var(--window-text-muted);
-  cursor: pointer;
-  gap: var(--app-sidebar-row-gap);
-  padding: 0 var(--app-sidebar-row-padding-x);
-  text-align: left;
-  font-size: var(--app-sidebar-font-size);
-  font-weight: 600;
-}
 
 .fm-disk {
   display: grid;
   grid-template-columns: 18px minmax(0, 1fr) auto;
 }
 
-.fm-nav-item:hover,
-.fm-disk:hover,
-.fm-settings:hover {
-  background: var(--window-surface-control);
-  color: var(--window-text);
-}
 
-.fm-nav-item--active {
-  background: color-mix(in srgb, var(--window-accent) 18%, var(--window-surface-sidebar));
-  color: var(--window-accent);
-}
 
 .fm-nav-item--active svg,
 .fm-disk--active svg {
@@ -259,10 +209,6 @@
   margin-top: 2px;
 }
 
-.fm-disk--active {
-  background: color-mix(in srgb, var(--window-accent) 18%, var(--window-surface-sidebar));
-  color: var(--window-accent);
-}
 
 .fm-disk small {
   color: var(--window-text-muted);
@@ -273,6 +219,14 @@
 }
 
 .fm-settings {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: transparent;
+  color: var(--window-text-muted);
+  border: 0;
+  cursor: pointer;
   min-height: var(--app-sidebar-row-height);
   border-top: 1px solid var(--window-divider);
   border-radius: 0;
@@ -284,7 +238,8 @@
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   min-width: 0;
   min-height: 0;
-  padding: var(--window-space-5) var(--window-space-6) 0;
+  padding: var(--app-content-padding);
+  padding-bottom: 0;
   background: transparent;
   scrollbar-width: auto;
   scrollbar-color: var(--window-border) var(--window-surface-raised);

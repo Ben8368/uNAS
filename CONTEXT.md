@@ -2,7 +2,7 @@
 
 > **最后确认：** 2026-09-23
 > **阶段：** Phase 2 / uNAS native module integration
-> **产品代码：** WXT MV3 已接入密码管家、广告拦截、WebDAV Vault、Legacy adapter 和 closed Shadow DOM 浮窗；Desktop 提供 Vault 管理，`manage.html` 兼容保留。
+> **产品代码：** WXT MV3 已接入密码管家、广告拦截、WebDAV Vault、Legacy adapter 和 closed Shadow DOM 浮窗；桌面 App 共用下载外观基线，外观在 Dock 循环切换，WebDAV 配置在分栏设置中，`manage.html` 兼容保留。
 
 ## 当前决策
 
@@ -13,7 +13,7 @@
 - 维护者已确认进入 Frontend Demo 阶段；Demo 以 mock adapter 验证桌面、App、文件和任务流程，并提供 WXT Manifest V3 壳；系统面板使用浏览器能力探针，GPU 不可用时明确降级。
 - 维护者已授权前端打磨：优先收敛桌面层级、App 启动入口、状态抽屉、响应式与无障碍；不改变 mock/真实边界。
 - 视觉采用原创的 macOS/iPadOS 启发式桌面层级与 Liquid Glass 原则，玻璃限于导航/控制层，并提供无障碍和性能降级。
-- uNAS Glass 工作包 A–C 已实现：`window-theme.css` 是主题与材质唯一来源；窗口根承担 blur，正文为实色面；Desktop/Dock/启动器/文件管理器已消费共享 Token。后续 D–E 见 [Development Blueprint](docs/DEVELOPMENT_BLUEPRINT.md#uNAS-glass-后续迁移顺序)。
+- uNAS Glass 工作包 A–C 已实现：`window-theme.css` 是主题与材质唯一来源；窗口根承担 blur，正文按内容分组使用可读面；Desktop/Dock/启动器/文件管理器已消费共享 Token。后续 D–E 见 [Development Blueprint](docs/DEVELOPMENT_BLUEPRINT.md#uNAS-glass-后续迁移顺序)。
 - 密码管家/广告拦截来源基线为 `ee749982cc31efbcf912866b854afbf5f1b36c1c`；历史融合分支为 `codex/unipass-integration`，uNAS 起点为 `fef41ae0ba49ad5a043de22b18feafb495d3deab`。`UniPass` 仅作兼容标识保留。
 
 - 密码库后端仅保留 WebDAV，共享传输已下沉（[ADR 0014](docs/ADR/0014-shared-webdav-transport.md)）；Legacy 应用级撤除仍受 [TD-003](docs/TECH_DEBT.md#td-003legacy-密码能力尚未完成应用级解耦) 约束。
@@ -33,8 +33,8 @@
 
 ## 最近验证
 
+- 2026-09-23：[桌面 App 下载母版](apps/extension/e2e/appTheme.spec.ts)：`pnpm verify` 通过；MV3 72 passed/3 skipped，对照用例修正后单独通过；8 个 App、三种视口、底色/选中态已自动验证，目标 Chrome 人工未验。
 - 2026-09-23：[密码管家/WebDAV 审查](docs/archive/reviews/2026-09-23-password-webdav.md)：`pnpm verify` 通过（261 passed/1 skipped）；MV3 E2E 67 passed/3 skipped、Web 8 passed，真实 NAS 与目标 Chrome 人工待验收。
-- 2026-09-22：Desktop Vault 管理及[兼容/生命周期测试](apps/extension/src/modules/password-manager/background/vault/vault-core.compatibility.test.ts)完成；允许浏览器时 E2E 67 passed/3 skipped，目标 Chrome 仍需人工，macOS 沙箱见 [B-006](docs/lessons/browser.md)。
 
 ## 按需入口
 

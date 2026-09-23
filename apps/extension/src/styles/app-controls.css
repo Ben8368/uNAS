@@ -1,15 +1,12 @@
 ﻿/* Shared application chrome: sizes and control rhythm used inside app windows. */
 :root {
-  --app-control-height: var(--window-control-height);
-  --app-input-height: var(--window-control-height);
-  --app-control-radius: var(--window-radius-control);
   --app-control-font-size: 12px;
   --app-control-padding-x: 12px;
   --app-sidebar-width: 200px;
   --app-sidebar-row-height: 32px;
-  --app-sidebar-row-radius: var(--window-radius-control);
-  --app-sidebar-row-gap: var(--window-space-2);
-  --app-sidebar-row-padding-x: var(--window-space-3);
+  --app-sidebar-row-radius: var(--app-control-radius);
+  --app-sidebar-row-gap: 10px;
+  --app-sidebar-row-padding-x: 11px;
   --app-sidebar-font-size: 12.5px;
   --app-list-header-height: 44px;
   --app-list-row-height: 44px;
@@ -67,14 +64,14 @@
 
 .app-surface__header {
   flex: 0 0 auto;
-  padding: 20px 24px 12px;
+  padding: var(--app-content-padding);
   border-bottom: 1px solid var(--mt-divider);
 }
 
 .app-surface__header h2 {
   margin: 0;
   color: var(--mt-text-0);
-  font-size: 20px;
+  font-size: var(--app-title-size);
   font-weight: 600;
 }
 
@@ -92,7 +89,7 @@
   gap: 6px;
   border: 1px solid var(--mt-border);
   border-radius: var(--app-control-radius);
-  background: var(--mt-fill);
+  background: var(--window-surface-control);
   color: var(--mt-text-0);
   padding: 0 var(--app-control-padding-x);
   cursor: pointer;
@@ -108,7 +105,7 @@
 }
 
 .mt-btn--primary {
-  border-color: var(--window-primary);
+  border-color: color-mix(in srgb, var(--window-accent) 35%, var(--window-border));
   background: var(--window-primary);
   color: var(--window-on-primary);
 }
@@ -171,3 +168,8 @@ select option:hover {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
 }
+
+.mt-btn--primary:hover:not(:disabled) { color: var(--window-on-primary); background: color-mix(in srgb, var(--window-primary) 88%, black); }
+.mt-btn:focus-visible { outline: 3px solid var(--window-focus-ring); outline-offset: 2px; }
+.mt-btn--danger { color: var(--window-danger); }
+@media (pointer: coarse) { .mt-btn { min-height: 44px; } }

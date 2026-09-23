@@ -17,7 +17,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 12.6px;
-  font-weight: 760;
+  font-weight: 600;
 }
 
 .fm-search {
@@ -65,17 +65,17 @@
 .fm-icon-btn {
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: var(--app-control-radius);
 }
 
 .fm-action-btn {
   min-width: 90px;
-  min-height: 29px;
+  min-height: var(--app-control-height);
   gap: 7px;
-  border-radius: 6px;
+  border-radius: var(--app-control-radius);
   padding: 0 11px;
   font-size: 11px;
-  font-weight: 760;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -97,15 +97,15 @@
   justify-content: center;
   gap: 7px;
   min-width: 90px;
-  min-height: 29px;
+  min-height: var(--app-control-height);
   border: 1px solid var(--window-content-border);
   background: var(--window-surface-control);
   color: var(--window-text);
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: var(--app-control-radius);
   padding: 0 11px;
   font-size: 11px;
-  font-weight: 760;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -140,7 +140,7 @@
   border-bottom: 1px solid var(--window-divider);
   color: var(--window-text-muted);
   font-size: 12px;
-  font-weight: 760;
+  font-weight: 600;
 }
 
 .fm-list {

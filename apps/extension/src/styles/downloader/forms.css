@@ -3,11 +3,11 @@
   display: grid;
   gap: 12px;
   margin-bottom: 12px;
-  padding: 16px;
-  border: 1px solid color-mix(in srgb, var(--window-accent) 25%, var(--window-border));
-  border-radius: 12px;
+  padding: var(--app-card-padding);
+  border: 1px solid var(--app-card-border);
+  border-radius: var(--app-card-radius);
   background: var(--window-surface-readable);
-  box-shadow: inset 0 1px 0 var(--window-content-highlight), var(--window-content-shadow);
+  box-shadow: var(--app-card-shadow);
 }
 
 .dl-form-section {
@@ -57,9 +57,9 @@
 .dl-field input,
 .dl-field select,
 .dl-field textarea {
-  min-height: 34px;
+  min-height: var(--app-input-height);
   border: 1px solid var(--window-border);
-  border-radius: 6px;
+  border-radius: var(--app-control-radius);
   background: var(--window-surface-raised);
   color: var(--window-text);
   padding: 0 10px;

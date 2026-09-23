@@ -26,10 +26,12 @@
 | AppWindow / DesktopWindow | 共用加载/错误边界、标题栏、窗口控制、拖动缩放和焦点；只接收通用元数据、内容和可选 headerStatus |
 | appPresentation / windowStore / windowGeometry | 单一尺寸预设、实例状态与可视区约束；不按 App 复制默认值，CSS 与几何计算必须对齐 |
 | AppLayout（待抽取） | 组合 sidebar、navigation、actions、filters、notice、content、inspector、footer 槽位；拥有网格、间距、收缩及滚动规则 |
-| 公共控件 | 复用 Toolbar、SearchField、FilterBar、EmptyState、StatusBar、Button 等；侧栏优先复用 ResizableAppSidebar |
+| 公共控件 | 侧栏复用 ResizableAppSidebar + app-sidebar/app-nav/app-nav-item；按钮复用 mt-btn，视觉参数使用共享 app-* Token |
 | App 业务层 | 提供槽位内容和回调；文件授权、任务订阅、字段校验留在各自 controller/port，不进入通用布局 |
 
-Files 的接入参照为 [LocalDirectoryPane](../apps/extension/src/apps/file-manager/LocalDirectoryPane.tsx)，不是旧 MockFileManagerPane。先在原页面提取公共布局，再由其他 App 消费；不得让其他 App import 文件管理私有组件或复制 fm-* CSS。
+所有现有和新桌面 App 的外观以下载母版为准，规则只查 Design System UI-03。`app-navigation.css` 统一 default/hover/selected/focus；App 私有 CSS 不再声明导航选中色或覆盖共享控件尺寸。
+
+Files 的功能接入参照为 [LocalDirectoryPane](../apps/extension/src/apps/file-manager/LocalDirectoryPane.tsx)，不是旧 MockFileManagerPane。先在原页面提取公共布局，再由其他 App 消费；不得让其他 App import 文件管理私有组件或复制 fm-* CSS。
 
 [Window.tsx](../apps/extension/src/Window.tsx) 中按 appType 选择的写入模式/色域状态应由 App 集成层通过 headerStatus 注入；公共壳不直接订阅文件 port，不因新增 App 增加业务分支。槽位使用组合而非大量布尔开关；搜索、筛选或 footer 缺省时由布局统一收起。视觉参数只查 Design System UI-03。
 

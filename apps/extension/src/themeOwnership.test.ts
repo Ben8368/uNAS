@@ -43,3 +43,15 @@ describe('tab / overlay theme boundary', () => {
     expect(overlay).toContain('overlayRoot.dataset.themeScope = "overlay"')
   })
 })
+
+
+describe('desktop App visual baseline', () => {
+  it('keeps selected navigation styling in the shared primitive instead of per-App overrides', () => {
+    for (const file of ['settings.css', 'downloader/base.css', 'file-manager/base.css']) {
+      expect(readFileSync(path.join(styles, file), 'utf8'), file).not.toMatch(/\.(?:settings|dl|fm)-nav-item--active\s*\{/)
+    }
+    for (const file of ['apps/SettingsApp.tsx', 'apps/downloader/DownloaderSidebar.tsx', 'apps/file-manager/controls.tsx']) {
+      expect(readFileSync(path.resolve('src', file), 'utf8'), file).toContain('app-nav-item--active')
+    }
+  })
+})

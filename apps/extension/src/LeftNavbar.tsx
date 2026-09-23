@@ -1,11 +1,13 @@
 import { useState } from 'react'
+import { Palette } from 'lucide-react'
+import { WALLPAPERS } from 'unas-src/appearance'
 import { getAppIcon } from 'unas-src/icon-library'
 import { IconBell, IconGear, IconGrid, IconMonitor, IconUser } from 'unas-src/LeftNavbarIcons'
 import { useSystemStore } from 'unas-src/store'
 import { useWindowStore } from 'unas-src/windowStore'
 
 export function LeftNavbar() {
-  const { showLauncher, toggleLauncher } = useSystemStore()
+  const { showLauncher, toggleLauncher, wallpaper, setWallpaper } = useSystemStore()
   const { windows, openWindow, minimizeWindow, focusWindow } = useWindowStore()
   const [showAccount, setShowAccount] = useState(false)
   const topZ = Math.max(0, ...windows.filter((item) => !item.isMinimized).map((item) => item.zIndex))
@@ -29,6 +31,7 @@ export function LeftNavbar() {
       <div className="mt-left-nav__section mt-left-nav__section--bottom">
         <NavButton icon={<IconBell />} label="演示日志" onClick={() => openWindow('logs')} />
         <NavButton icon={<IconUser />} label="账号" active={showAccount} onClick={() => setShowAccount(!showAccount)} />
+        <NavButton icon={<Palette aria-hidden="true" />} label={`切换外观：当前${WALLPAPERS[wallpaper].name}，下一款${WALLPAPERS[(wallpaper + 1) % WALLPAPERS.length].name}`} onClick={() => setWallpaper((wallpaper + 1) % WALLPAPERS.length)} />
         <NavButton icon={<IconGear />} label="设置" onClick={() => openWindow('settings')} />
       </div>
       {showAccount && <div className="mt-left-nav__account-menu" role="status"><p>账号服务尚未接入；当前不会读取或上传任何账号信息。</p><button type="button" className="mt-btn" onClick={() => setShowAccount(false)}>知道了</button></div>}

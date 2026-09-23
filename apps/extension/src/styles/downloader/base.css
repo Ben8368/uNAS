@@ -12,25 +12,6 @@
   --dl-footer-h: 48px;
 }
 
-.dl-sidebar {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  border-right: 1px solid color-mix(in srgb, var(--window-text) 12%, transparent);
-  background: transparent;
-  padding: 8px 0 0;
-}
-
-.dl-nav {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
 .dl-nav::-webkit-scrollbar { display: none; }
 
 .dl-sidebar-bottom {
@@ -45,55 +26,6 @@
   justify-content: center;
 }
 
-.dl-nav-item {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  min-height: 32px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--window-text-muted);
-  cursor: pointer;
-  gap: 10px;
-  padding: 0 11px;
-  text-align: left;
-  font-size: 12.5px;
-  font-weight: 600;
-  transition: background .1s;
-}
-
-.dl-nav-item:hover {
-  background: var(--window-surface-control);
-  color: var(--window-text);
-}
-
-.dl-nav-item--active {
-  background: color-mix(in srgb, var(--window-accent) 14%, var(--window-surface-raised));
-  color: var(--window-accent);
-}
-
-.dl-nav-item span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dl-nav-item small {
-  margin-left: auto;
-  color: var(--window-text-muted);
-  font-size: 11px;
-  font-weight: 400;
-  flex-shrink: 0;
-}
-
-.dl-nav-item svg {
-  width: 15px;
-  height: 15px;
-  flex-shrink: 0;
-}
-
 .dl-panel {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -101,7 +33,8 @@
   min-height: 0;
   overflow: hidden;
   position: relative;
-  padding: 14px 16px calc(var(--dl-footer-h) + 6px);
+  padding: var(--app-content-padding);
+  padding-bottom: calc(var(--dl-footer-h) + 6px);
   background: transparent;
 }
 
@@ -136,10 +69,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 32px;
+  min-height: var(--app-control-height);
   gap: 6px;
   border: 1px solid var(--window-border);
-  border-radius: 6px;
+  border-radius: var(--app-control-radius);
   background: var(--window-surface-control);
   color: var(--window-text);
   cursor: pointer;
@@ -184,9 +117,9 @@
 .dl-search {
   display: flex;
   align-items: center;
-  min-height: 32px;
+  min-height: var(--app-control-height);
   border: 1px solid var(--window-border);
-  border-radius: 6px;
+  border-radius: var(--app-control-radius);
   background: var(--window-surface-control);
   color: var(--window-text-muted);
   gap: 8px;

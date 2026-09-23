@@ -1,22 +1,23 @@
-import { WALLPAPERS } from 'unas-src/appearance'
-import { useSystemStore } from 'unas-src/store'
+import { lazy, Suspense } from 'react'
+import { Server } from 'lucide-react'
+import { ResizableAppSidebar } from 'unas-src/components/ResizableAppSidebar'
+
+const WebDavSettings = lazy(() => import('unas-src/apps/settings/WebDavSettings').then((module) => ({ default: module.WebDavSettings })))
 
 export function SettingsApp() {
-  const state = useSystemStore()
   return (
-    <div className="settings-app settings-app--single">
+    <div className="settings-app">
+      <ResizableAppSidebar className="settings-sidebar app-sidebar" storageKey="settings">
+        <nav className="settings-nav app-nav" aria-label="设置分类">
+          <button type="button" className="settings-nav-item app-nav-item app-nav-item--active" aria-current="page">
+            <Server aria-hidden="true" /><span>WebDAV</span>
+          </button>
+        </nav>
+      </ResizableAppSidebar>
       <main className="settings-panel">
-        <div className="settings-toolbar"><div><h2>外观与辅助功能</h2></div></div>
-        <div className="settings-content">
-          <section className="settings-card">
-            <h3>桌面背景</h3>
-            <div className="settings-wallpapers" role="group" aria-label="原创背景">
-              {WALLPAPERS.map((item, index) => <button key={item.name} type="button" aria-label={item.name} aria-pressed={state.wallpaper === index}
-                className={`settings-wallpaper ${state.wallpaper === index ? 'settings-wallpaper--active' : ''}`}
-                style={{ backgroundImage: item.gradientSrgb }} onClick={() => state.setWallpaper(index)}><span>{item.name}</span></button>)}
-              </div>
-          </section>
-          <p role="status">{state.preferenceNotice}</p>
+        <header className="settings-toolbar"><div><h2>WebDAV</h2><p>管理密码库的 WebDAV 连接与认证信息。</p></div></header>
+        <div className="settings-stage">
+          <Suspense fallback={<p role="status">正在加载 WebDAV 设置…</p>}><WebDavSettings /></Suspense>
         </div>
       </main>
     </div>

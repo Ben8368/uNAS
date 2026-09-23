@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 export function SidebarButton({ active, icon, label, onClick }: { active?: boolean; icon: ReactNode; label: string; onClick: () => void }) {
-  return <button className={`fm-nav-item ${active ? 'fm-nav-item--active' : ''}`} onClick={onClick}>{icon}<span>{label}</span></button>
+  return <button className={`fm-nav-item app-nav-item ${active ? 'fm-nav-item--active app-nav-item--active' : ''}`} onClick={onClick}>{icon}<span>{label}</span></button>
 }
 
 export function IconButton({ children, disabled, title, onClick }: { children: ReactNode; disabled?: boolean; title: string; onClick?: () => void }) {

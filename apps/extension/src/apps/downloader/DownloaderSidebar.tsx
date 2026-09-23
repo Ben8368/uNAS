@@ -19,12 +19,12 @@ export function DownloaderSidebar({
   onToggleMiniAi,
 }: DownloaderSidebarProps) {
   return (
-    <ResizableAppSidebar className="dl-sidebar" storageKey="downloader">
-      <nav className="dl-nav">
+    <ResizableAppSidebar className="dl-sidebar app-sidebar" storageKey="downloader">
+      <nav className="dl-nav app-nav">
         {Object.entries(CATEGORY_MAP).map(([key, category]) => (
           <button
             key={key}
-            className={`dl-nav-item ${selectedCategory === key ? 'dl-nav-item--active' : ''}`}
+            className={`dl-nav-item app-nav-item ${selectedCategory === key ? 'dl-nav-item--active app-nav-item--active' : ''}`}
             onClick={() => onSelectCategory(key as CategoryKey)}
           >
             <CategoryIcon name={category.icon} />
@@ -36,7 +36,7 @@ export function DownloaderSidebar({
       <div className="dl-sidebar-bottom">
         <button
           type="button"
-          className={`dl-nav-item ${miniAiOpen ? 'dl-nav-item--active' : ''}`}
+          className={`dl-nav-item app-nav-item ${miniAiOpen ? 'dl-nav-item--active app-nav-item--active' : ''}`}
           aria-pressed={miniAiOpen}
           onClick={onToggleMiniAi}
         >

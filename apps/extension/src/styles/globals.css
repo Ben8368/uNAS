@@ -1,6 +1,7 @@
 @import './window-theme.css';
 @import './app-window.css';
 @import './app-controls.css';
+@import './app-navigation.css';
 @import './shell.css';
 @import './file-manager.css';
 @import './file-manager/local-directory.css';

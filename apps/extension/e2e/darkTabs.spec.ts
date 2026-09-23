@@ -22,7 +22,7 @@ for (const entry of ['newtab.html', 'workspace.html#settings']) {
     await page.getByRole('button', { name: '设置', exact: true }).click()
     const settings = page.locator('[data-app-id="settings"]')
     await expect(settings.getByRole('combobox', { name: '主题', exact: true })).toHaveCount(0)
-    await settings.getByRole('button', { name: '暮光', exact: true }).click()
+    await page.getByRole('button', { name: /^切换外观/ }).click()
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem('unas.appearance.v1')!))).not.toHaveProperty('themeMode')
     await page.reload()
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')

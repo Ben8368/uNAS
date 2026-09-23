@@ -22,7 +22,7 @@
 .transcode-sidebar {
   min-width: 0;
   border-right: 1px solid var(--window-divider);
-  background: var(--window-surface-raised);
+  background: transparent;
   padding: 16px 10px;
 }
 
@@ -42,9 +42,9 @@
 }
 
 .transcode-nav--active {
-  border-color: color-mix(in srgb, var(--window-success) 25%, var(--window-border));
-  background: color-mix(in srgb, var(--window-success) 8%, var(--window-surface-raised));
-  color: var(--window-text);
+  border-color: transparent;
+  background: var(--app-nav-selected);
+  color: var(--window-accent);
 }
 
 .transcode-nav__icon {

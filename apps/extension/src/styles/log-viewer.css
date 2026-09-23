@@ -32,15 +32,15 @@
   align-items: center;
   gap: 16px;
   min-width: 0;
-  padding: 16px 20px 14px;
+  padding: var(--app-content-padding);
   border-bottom: 1px solid var(--window-divider);
 }
 
 .lv-toolbar h2 {
   margin: 0 0 4px;
   color: var(--window-text);
-  font-size: 18px;
-  font-weight: 850;
+  font-size: var(--app-title-size);
+  font-weight: 600;
 }
 
 .lv-toolbar p {
@@ -68,13 +68,13 @@
   cursor: pointer;
   padding: 0 12px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .lv-tab--active {
-  background: color-mix(in srgb, var(--window-accent) 22%, var(--window-surface-raised));
-  color: var(--window-text);
+  background: var(--app-nav-selected);
+  color: var(--window-accent);
 }
 
 .lv-filters {
@@ -82,7 +82,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  padding: 14px 20px;
+  padding: var(--app-content-padding);
   border-bottom: 1px solid var(--window-divider);
 }
 
@@ -92,7 +92,7 @@
   gap: 10px;
   color: var(--window-text);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .lv-filter select,
@@ -144,7 +144,7 @@
   cursor: pointer;
   padding: 0 12px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -176,7 +176,7 @@
   border-bottom: 1px solid var(--window-divider);
   color: var(--window-text-muted);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .lv-body {
@@ -208,7 +208,7 @@
 
 .lv-row strong {
   color: var(--window-text);
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .lv-row p {
@@ -288,7 +288,7 @@
   width: 32px;
   height: 32px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .lv-page--active {

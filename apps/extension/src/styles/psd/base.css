@@ -13,7 +13,7 @@
   flex-direction: column;
   gap: 2px;
   padding: 8px;
-  background: var(--window-surface-raised);
+  background: transparent;
   border-right: 1px solid var(--mt-border);
   overflow-y: auto;
 }
@@ -45,9 +45,9 @@
 }
 
 .psd-nav--active {
-  background: color-mix(in srgb, var(--window-danger) 8%, var(--window-surface-raised));
-  border-color: color-mix(in srgb, var(--window-danger) 25%, var(--window-border));
-  color: var(--mt-text-0);
+  background: var(--app-nav-selected);
+  border-color: transparent;
+  color: var(--window-accent);
 }
 
 .psd-nav__icon {

@@ -11,7 +11,7 @@ test('Settings reports the current display color gamut', async ({ extension }) =
   await expect(status).toHaveText(expected)
   await expect(status).toHaveAttribute('aria-label', `当前渲染色域：${expected}`)
   await expect(settings.getByText('可读性与动态效果', { exact: true })).toHaveCount(0)
-  await expect(settings.locator('.settings-panel')).toHaveCSS('overflow-y', 'auto')
+  await expect(settings.locator('.settings-stage')).toHaveCSS('overflow-y', 'auto')
   expect(extension.errors).toEqual([])
 })
 
@@ -20,7 +20,7 @@ test('Settings fills the window with one contour at desktop and compact sizes', 
   await page.goto('chrome-extension://' + extension.extensionId + '/newtab.html')
   await page.getByRole('button', { name: '设置', exact: true }).click()
   const settings = page.locator('[data-app-id="settings"]')
-  await expect(settings.locator('.settings-card')).toBeVisible()
+  await expect(settings.locator('.settings-card').first()).toBeVisible()
   for (const width of [1440, 1024, 390]) {
     await page.setViewportSize({ width, height: 900 })
     await expect.poll(() => settings.evaluate(root => {

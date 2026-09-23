@@ -279,20 +279,6 @@
   background: transparent;
 }
 
-/* Shared App navigation is a quiet extension of the glass scene—not a separate
- * black slab. Downloader navigation instead shares the transparent task canvas. */
-.mt-window-body :is(.fm-sidebar, .settings-sidebar, .transcode-sidebar, .psd-sidebar) {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--window-surface-sidebar) 92%, var(--window-glass-highlight)), var(--window-surface-sidebar));
-  border-right-color: color-mix(in srgb, var(--window-text) 12%, transparent);
-  box-shadow: inset -1px 0 0 color-mix(in srgb, var(--window-glass-highlight) 28%, transparent);
-}
-
-html[data-reduce-transparency='true'] .mt-window-body :is(.fm-sidebar, .settings-sidebar, .transcode-sidebar, .psd-sidebar) {
-  background: var(--window-surface-sidebar);
-  box-shadow: none;
-}
-
 html[data-reduce-transparency='true'] .mt-window-body {
   background: var(--window-surface);
 }

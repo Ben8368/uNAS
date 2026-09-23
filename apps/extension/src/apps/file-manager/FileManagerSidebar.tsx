@@ -32,8 +32,8 @@ export function FileManagerSidebar({
   onSelectDisk,
 }: FileManagerSidebarProps) {
   return (
-    <ResizableAppSidebar className="fm-sidebar" storageKey="file-manager">
-      <nav className="fm-nav">
+    <ResizableAppSidebar className="fm-sidebar app-sidebar" storageKey="file-manager">
+      <nav className="fm-nav app-nav">
         <SidebarButton active={activeSection === 'local'} icon={<ChevronIcon />} label="我的文件" onClick={onOpenLocal} />
         {assets.length > 0 && (
           <div className="fm-asset-summary">
@@ -47,7 +47,7 @@ export function FileManagerSidebar({
               <button
                 key={disk.root || disk.path}
                 type="button"
-                className={`fm-disk ${disk.browsable === false ? 'fm-disk--readonly' : ''} ${activeDiskPath === disk.path || isPathOnDisk(currentPath, disk.path) ? 'fm-disk--active' : ''}`}
+                className={`fm-disk app-nav-item ${disk.browsable === false ? 'fm-disk--readonly' : ''} ${activeDiskPath === disk.path || isPathOnDisk(currentPath, disk.path) ? 'fm-disk--active app-nav-item--active' : ''}`}
                 onClick={() => onSelectDisk(disk.path)}
                 title={disk.browsable === false ? '仅展示容量，当前工作区未映射到此磁盘' : undefined}
               >
@@ -61,7 +61,7 @@ export function FileManagerSidebar({
         <div className="fm-nav-gap" />
         <SidebarButton active={activeSection === 'trash'} icon={<TrashIcon />} label="回收站" onClick={onOpenTrash} />
       </nav>
-      <button type="button" className="fm-settings"><SettingsIcon />设置</button>
+      <button type="button" className="fm-settings app-nav-item"><SettingsIcon />设置</button>
     </ResizableAppSidebar>
   )
 }
