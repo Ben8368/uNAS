@@ -22,12 +22,12 @@ export function GaugeSvg({
   return (
     <div className="rp-gauge" role="img" aria-label={`${label}: ${displayValue}${title ? `，${title}` : ''}`}>
       <svg viewBox="0 0 56 56" style={{ shapeRendering: 'geometricPrecision' }}>
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,.06)" strokeWidth="4" />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--window-surface-control)" strokeWidth="4" />
         <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round"
           strokeDasharray={circ} strokeDashoffset={offset} transform={`rotate(-90 ${cx} ${cy})`}
           style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.4,0,0.2,1)', paintOrder: 'stroke' }} />
-        <text x={cx} y={cy - 4} textAnchor="middle" fill="rgba(255,255,255,.55)" fontSize="8.5" fontWeight="500">{label}</text>
-        <text x={cx} y={cy + 7} textAnchor="middle" fill="rgba(255,255,255,.92)" fontSize="9" fontWeight="600">{displayValue}</text>
+        <text x={cx} y={cy - 4} textAnchor="middle" fill="var(--window-text-muted)" fontSize="8.5" fontWeight="500">{label}</text>
+        <text x={cx} y={cy + 7} textAnchor="middle" fill="var(--window-text)" fontSize="9" fontWeight="600">{displayValue}</text>
       </svg>
     </div>
   )

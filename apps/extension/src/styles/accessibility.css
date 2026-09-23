@@ -21,8 +21,6 @@ button:disabled { cursor: not-allowed; }
 .demo-projection { top: var(--desktop-top); }
 .mt-left-nav__section--apps { overflow-y: auto; min-height: 0; width: 100%; align-items: center; }
 .mt-left-nav__power-menu { width: 250px; color: #eff4fa; line-height: 1.6; }
-.icon-grid { display: grid; width: 92px; height: auto; grid-template-columns: 92px; grid-auto-flow: row; gap: var(--window-space-4); align-content: start; }
-.app-icon { width: 92px; }
 .demo-tool, .psd-panel, .transcode-main { overflow: auto; }
 .fm-actions, .fm-topbar, .psd-form { flex-wrap: wrap; }
 .fm-table { overflow-x: auto; }

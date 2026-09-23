@@ -8,10 +8,13 @@ test('minimized Apps retain drafts and focus follows the visible window', async 
   expect(extension.errors).toEqual([])
 })
 
-test('runtime panel shows health score and omits GPU capability details and simulated task summary', async ({ extension }) => {
+test('runtime panel shows resource status and omits GPU capability details and simulated task summary', async ({ extension }) => {
   const tab = await extension.context.newPage()
   await tab.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
-  await tab.locator('.rp-edge-trigger').click()
+  await tab.locator('.rp-edge-trigger').hover()
+  await expect(tab.getByRole('button', { name: '展开系统详情' })).toBeVisible()
+  await expect(tab.locator('.rp-system-details')).toHaveCount(0)
+  await tab.getByRole('button', { name: '展开系统详情' }).click()
   await expect(tab.locator('.rp-system-details')).toContainText('运行')
   await expect(tab.locator('.rp-system-details')).not.toContainText('系统运行')
   await expect(tab.locator('.rp-system-details')).toContainText('CPU')
@@ -30,6 +33,7 @@ test('runtime panel shows health score and omits GPU capability details and simu
   await expect(detailRows.nth(2).locator(':scope > span').first()).toHaveText('CPU')
   await expect(detailRows.nth(3).locator(':scope > span').first()).toHaveText('内存')
   await expect(tab.locator('.rp-runtime-detail-value strong')).toBeVisible()
+  await expect(detailRows.nth(0).locator('strong')).toContainText('·')
   const runtimeDetailsToggle = tab.getByRole('button', { name: '收拢系统详情' })
   await expect(runtimeDetailsToggle).toBeVisible()
   await runtimeDetailsToggle.click()
@@ -38,7 +42,7 @@ test('runtime panel shows health score and omits GPU capability details and simu
   await tab.getByRole('button', { name: '展开系统详情' }).click()
   await expect(tab.locator('.rp-system-details')).toBeVisible()
   await expect(tab.getByText('网速状态', { exact: true })).toHaveCount(0)
-  await expect(tab.getByRole('img', { name: /^健康:/ })).toHaveCount(1)
+  await expect(tab.getByRole('img', { name: /^资源状态:/ })).toHaveCount(1)
   await expect(tab.getByRole('img', { name: /^GPU:/ })).toHaveCount(0)
   await expect(tab.locator('.rp-gauge[title]')).toHaveCount(0)
   await expect(tab.getByRole('region', { name: 'Workspace 任务摘要' })).toHaveCount(0)

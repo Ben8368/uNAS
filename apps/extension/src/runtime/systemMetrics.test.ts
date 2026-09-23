@@ -41,8 +41,8 @@ describe('browser system metrics', () => {
       display_count: 2,
       storage_details: [{ capacity_bytes: 2_000_000_000_000 }],
       display_details: [
-        { label: 'Primary', resolution: '4K', refresh_rate_hz: 144, is_primary: true },
-        { label: 'Secondary', resolution: '1080P', is_primary: false },
+        { label: 'Primary', resolution: '3840×2160', refresh_rate_hz: 144, is_primary: true },
+        { label: 'Secondary', resolution: '1920×1080', is_primary: false },
       ],
     })
   })
@@ -73,6 +73,73 @@ describe('browser system metrics', () => {
       display_details: [{ label: '当前显示器', resolution: '1470×956', is_primary: true }],
     })
     expect(metrics.system?.storage_count).toBeUndefined()
+  })
+
+  it('restores Windows physical panel resolution from scaled Screen API pixels', async () => {
+    vi.stubGlobal('browser', { system: {} })
+    vi.stubGlobal('navigator', { onLine: true, platform: 'Win32' })
+    vi.stubGlobal('screen', { width: 2262, height: 1273, isExtended: false })
+    vi.stubGlobal('devicePixelRatio', 1.697)
+
+    const metrics = await readBrowserSystemMetrics()
+
+    expect(metrics.system).toMatchObject({
+      platform: 'Windows',
+      display_count: 1,
+      display_count_is_minimum: false,
+      display_details: [{ label: '当前显示器', resolution: '3840×2160', is_primary: true }],
+    })
+  })
+
+  it('normalizes scaled display API bounds on Windows without scaling macOS logical bounds', async () => {
+    vi.stubGlobal('browser', {
+      system: {
+        display: { getInfo: vi.fn().mockResolvedValue([{ name: 'Primary', isPrimary: true, bounds: { width: 2262, height: 1273 } }]) },
+      },
+    })
+    vi.stubGlobal('navigator', { onLine: true, platform: 'Win32' })
+    vi.stubGlobal('devicePixelRatio', 1.697)
+
+    const windowsMetrics = await readBrowserSystemMetrics()
+
+    expect(windowsMetrics.system?.display_details).toEqual([
+      { label: 'Primary', resolution: '3840×2160', is_primary: true },
+    ])
+
+    vi.stubGlobal('browser', {
+      system: {
+        display: { getInfo: vi.fn().mockResolvedValue([{ name: 'Built-in Display', isPrimary: true, bounds: { width: 1470, height: 956 } }]) },
+      },
+    })
+    vi.stubGlobal('navigator', { onLine: true, platform: 'MacIntel' })
+    vi.stubGlobal('devicePixelRatio', 2)
+
+    const macMetrics = await readBrowserSystemMetrics()
+
+    expect(macMetrics.system?.display_details).toEqual([
+      { label: 'Built-in Display', resolution: '1470×956', is_primary: true },
+    ])
+  })
+
+  it('removes browser zoom from Windows display scaling before restoring panel pixels', async () => {
+    vi.stubGlobal('browser', {
+      tabs: {
+        create: vi.fn(),
+        getCurrent: vi.fn().mockResolvedValue({ id: 1 }),
+        getZoom: vi.fn().mockResolvedValue(2),
+      },
+      system: {
+        display: { getInfo: vi.fn().mockResolvedValue([{ name: 'Primary', isPrimary: true, bounds: { width: 2262, height: 1273 } }]) },
+      },
+    })
+    vi.stubGlobal('navigator', { onLine: true, platform: 'Win32' })
+    vi.stubGlobal('devicePixelRatio', 3.394)
+
+    const metrics = await readBrowserSystemMetrics()
+
+    expect(metrics.system?.display_details).toEqual([
+      { label: 'Primary', resolution: '3840×2160', is_primary: true },
+    ])
   })
 
   it('reports a lower bound when Screen API only reveals that multiple displays exist', async () => {

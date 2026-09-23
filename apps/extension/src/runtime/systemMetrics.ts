@@ -75,6 +75,18 @@ function percent(value: number) {
   return Math.max(0, Math.min(100, Math.round(value * 10) / 10))
 }
 
+async function readBrowserZoom() {
+  const tabs = extensionApi()?.tabs
+  if (!tabs?.getZoom) return 1
+  try {
+    const current = await tabs.getCurrent?.()
+    const zoom = await tabs.getZoom(current?.id)
+    return Number.isFinite(zoom) && zoom > 0 ? zoom : 1
+  } catch {
+    return 1
+  }
+}
+
 function inferCpuCounterScale(rawDelta: number, elapsedMs: number) {
   if (!Number.isFinite(rawDelta) || !Number.isFinite(elapsedMs) || rawDelta <= 0 || elapsedMs < 500 || elapsedMs > 10_000) return undefined
   const rawUnitsPerMs = rawDelta / elapsedMs
@@ -214,23 +226,21 @@ async function readStorage(platform: string | undefined, signal?: AbortSignal) {
   }
 }
 
-function displayLabel(display: DisplayInfo, index: number, deviceScaleFactor?: number) {
+function displayLabel(display: DisplayInfo, index: number, platform: string | undefined, deviceScaleFactor?: number, browserZoom = 1) {
   const name = display.name || `显示器 ${index + 1}`
   const nativeMode = display.modes?.find((candidate) => candidate.isNative) || display.modes?.find((candidate) => candidate.isSelected)
   const nativeWidth = Number(nativeMode?.widthInNativePixels || 0)
   const nativeHeight = Number(nativeMode?.heightInNativePixels || 0)
-  const scale = typeof deviceScaleFactor === 'number' && Number.isFinite(deviceScaleFactor) && deviceScaleFactor > 1 ? deviceScaleFactor : 1
+  // Chromium reports Windows bounds in scaled CSS pixels when native mode
+  // dimensions are unavailable. macOS bounds remain the selected logical mode;
+  // do not turn Retina rendering scale into a different desktop resolution.
+  const scale = platform === 'Windows' && typeof deviceScaleFactor === 'number' && Number.isFinite(deviceScaleFactor) && deviceScaleFactor > 1
+    ? deviceScaleFactor / browserZoom
+    : 1
   const width = nativeWidth > 0 ? nativeWidth : Math.round(Number(display.bounds?.width || 0) * scale)
   const height = nativeHeight > 0 ? nativeHeight : Math.round(Number(display.bounds?.height || 0) * scale)
-  const resolution = width >= 3800 && height >= 2100
-    ? '4K'
-    : width >= 2500 && height >= 1400
-      ? '2K'
-      : width >= 1900 && height >= 1000
-        ? '1080P'
-        : width >= 1200 && height >= 700
-          ? '720P'
-          : width > 0 && height > 0 ? `${width}×${height}` : undefined
+  const [displayWidth, displayHeight] = normalizeDisplayResolution(platform, width, height)
+  const resolution = displayWidth > 0 && displayHeight > 0 ? `${displayWidth}×${displayHeight}` : undefined
   const selectedMode = display.modes?.find((candidate) => candidate.isSelected) || nativeMode
   const refreshRate = Number(selectedMode?.refreshRate || display.refreshRate || 0)
   return {
@@ -240,9 +250,18 @@ function displayLabel(display: DisplayInfo, index: number, deviceScaleFactor?: n
   }
 }
 
-async function readDisplays(signal?: AbortSignal) {
+function normalizeDisplayResolution(platform: string | undefined, width: number, height: number): [number, number] {
+  if (platform !== 'Windows') return [width, height]
+  const panel = [
+    [3840, 2160], [2560, 1440], [1920, 1080], [1280, 720],
+  ].find(([candidateWidth, candidateHeight]) => Math.abs(width - candidateWidth) <= 8 && Math.abs(height - candidateHeight) <= 8)
+  return panel ? [panel[0], panel[1]] : [width, height]
+}
+
+async function readDisplays(platform: string | undefined, signal?: AbortSignal) {
   const system = (extensionApi() as (ReturnType<typeof extensionApi> & { system?: SystemApi }) | undefined)?.system
   const getInfo = system?.display?.getInfo
+  const browserZoom = await readBrowserZoom()
   if (getInfo) {
     try {
       const info = await getInfo()
@@ -254,7 +273,7 @@ async function readDisplays(signal?: AbortSignal) {
       return {
         display_count: displays.length,
         display_details: displays.map((display, index) => ({
-          ...displayLabel(display, index, deviceScaleFactor),
+          ...displayLabel(display, index, platform, deviceScaleFactor, browserZoom),
           is_primary: index === primaryIndex,
         })),
       }
@@ -264,12 +283,25 @@ async function readDisplays(signal?: AbortSignal) {
   }
 
   const screen = (globalThis as typeof globalThis & { screen?: BrowserScreen }).screen
-  const width = Number(screen?.width || 0)
-  const height = Number(screen?.height || 0)
-  // screen.width/height are the current logical resolution selected by macOS.
-  // devicePixelRatio is a rendering scale, not a resolution multiplier: using
-  // it here produced values such as 2940×1912 for a 1470×956 desktop mode.
-  const resolution = width > 0 && height > 0 ? `${Math.round(width)}×${Math.round(height)}` : undefined
+  const logicalWidth = Number(screen?.width || 0)
+  const logicalHeight = Number(screen?.height || 0)
+  const deviceScaleFactor = Number((globalThis as typeof globalThis & { devicePixelRatio?: number }).devicePixelRatio)
+  // In the Windows Screen API fallback, screen.width/height are CSS pixels after
+  // display scaling (for example 2262×1273 at 170% on a 4K panel). Browser zoom
+  // is also included in devicePixelRatio, so remove it before restoring physical
+  // pixels. macOS uses
+  // the selected logical desktop mode instead, so multiplying there would revive
+  // the prior Retina/macOS regression.
+  const scale = platform === 'Windows' && Number.isFinite(deviceScaleFactor) && deviceScaleFactor > 1
+    ? deviceScaleFactor / browserZoom
+    : 1
+  const width = Math.round(logicalWidth * scale)
+  const height = Math.round(logicalHeight * scale)
+  // Preserve macOS's selected desktop-mode dimensions verbatim. Windows has a
+  // physical-pixel estimate after scale restoration; snap common panels to their
+  // canonical dimensions to absorb fractional devicePixelRatio rounding.
+  const [displayWidth, displayHeight] = normalizeDisplayResolution(platform, width, height)
+  const resolution = displayWidth > 0 && displayHeight > 0 ? `${displayWidth}×${displayHeight}` : undefined
   const extended = typeof screen?.isExtended === 'boolean' ? screen.isExtended : undefined
   return {
     ...(extended == null ? {} : {
@@ -314,7 +346,7 @@ function readNetwork() {
 export async function readBrowserSystemMetrics(signal?: AbortSignal): Promise<Pick<RuntimeMetrics, 'runtime' | 'system' | 'network'> & { executionSource: 'browser' }> {
   abortIfNeeded(signal)
   const platform = readPlatform()
-  const [cpu, memory, gpu, storage, displays] = await Promise.all([readCpu(signal), readMemory(signal), readGpu(signal), readStorage(platform, signal), readDisplays(signal)])
+  const [cpu, memory, gpu, storage, displays] = await Promise.all([readCpu(signal), readMemory(signal), readGpu(signal), readStorage(platform, signal), readDisplays(platform, signal)])
   abortIfNeeded(signal)
   return {
     executionSource: 'browser',

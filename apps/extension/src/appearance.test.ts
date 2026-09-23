@@ -33,6 +33,11 @@ describe('desktop application affordances', () => {
     expect(stylesheet).toMatch(/\.mt-left-nav__app-btn--active\s*\{[^}]*background: color-mix\(in srgb, var\(--window-accent\) 8%, transparent\);/)
     expect(stylesheet).toMatch(/\.sb-btn svg\s*\{[^}]*width: 17\.6px;[^}]*height: 17\.6px;/)
     expect(stylesheet).toMatch(/\.mt-left-nav__app-btn img\s*\{[^}]*width: 32px;[^}]*height: 32px;/)
+    expect(stylesheet).toMatch(/\.app-icon\s*\{[^}]*contain: layout;/)
+    expect(stylesheet).not.toMatch(/\.app-icon\s*\{[^}]*contain: layout paint;/)
+    expect(stylesheet).toMatch(/\.app-icon-label\s*\{[^}]*min-height: 20px;[^}]*line-height: 20px;/)
+    expect(stylesheet).toMatch(/\.icon-grid\s*\{[^}]*grid-template-rows: repeat\(var\(--desktop-icon-rows\), max-content\);/)
+    expect(stylesheet).toMatch(/\.app-icon-img\s*\{[^}]*flex: 0 0 48px;/)
   })
 })
 

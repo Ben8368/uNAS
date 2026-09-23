@@ -5,7 +5,11 @@ type ExtensionApi = {
     sendMessage(message: unknown): Promise<unknown>
     onMessage: { addListener(listener: (message: unknown, sender: ExtensionMessageSender) => Promise<unknown>): void }
   }
-  tabs?: { create(options: { url: string; active?: boolean }): Promise<unknown> }
+  tabs?: {
+    create(options: { url: string; active?: boolean }): Promise<unknown>
+    getCurrent?: () => Promise<{ id?: number } | undefined>
+    getZoom?: (tabId?: number) => Promise<number>
+  }
   downloads?: {
     download(options: { url: string; conflictAction?: 'uniquify' | 'overwrite' | 'prompt'; saveAs?: boolean }): Promise<number>
     search(query: { id: number }): Promise<Array<{ id: number; state: 'in_progress' | 'complete' | 'interrupted'; bytesReceived: number; totalBytes: number; filename?: string; error?: string }>>

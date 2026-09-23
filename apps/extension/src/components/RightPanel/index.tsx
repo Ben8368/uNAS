@@ -19,12 +19,11 @@ import {
 } from './utils'
 
 export function RightPanel({ workspace }: { workspace: boolean }) {
-  const [isOpen, setIsOpen] = useState(false)
   const [metrics, setMetrics] = useState<RuntimeMetrics>(EMPTY_METRICS)
   const [error, setError] = useState('')
   const [lastSampleAt, setLastSampleAt] = useState<Date | null>(null)
   const [expandedTaskType, setExpandedTaskType] = useState<string | null>(null)
-  const [isRuntimeDetailsOpen, setIsRuntimeDetailsOpen] = useState(true)
+  const [isRuntimeDetailsOpen, setIsRuntimeDetailsOpen] = useState(false)
   const systemLifecycle = useSystemStore((state) => state.systemLifecycle)
 
   async function refresh(signal?: AbortSignal) {
@@ -84,15 +83,16 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
   const health = healthScore(system.cpu_percent, system.memory_percent)
   const healthLabel = healthStatus(health)
   const healthColor = health == null
-    ? '#64748b'
+    ? 'var(--window-text-muted)'
     : health >= 80
-      ? '#54FFB7'
+      ? 'var(--window-success)'
       : health >= 60
-        ? '#F2C66D'
-        : '#FF9999'
+        ? 'var(--window-warning)'
+        : 'var(--window-danger)'
   const cpuModel = compactCpuModel(system.cpu_model) || '不可用'
   const cpuTemperature = typeof system.cpu_temperature_c === 'number' ? `${system.cpu_temperature_c.toFixed(1)} °C` : null
   const systemPlatform = system.platform || '不可用'
+  const browserName = getBrowserName()
   const storageDetails = system.storage_details || []
   const storageLabel = systemPlatform === 'macOS' ? '内置存储' : '硬盘'
   const displayCount = typeof system.display_count === 'number'
@@ -105,18 +105,13 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
     : '未采样'
 
   return (
-    <aside className={`mt-right-panel${isOpen ? ' mt-right-panel--open' : ''}`} aria-label="运行状态">
+    <aside className="mt-right-panel" aria-label="运行状态">
       <button
         type="button"
         className="rp-edge-trigger"
-        aria-label={isOpen ? '收起运行状态' : '显示运行状态'}
+        aria-label="显示运行状态"
         aria-controls="runtime-status-panel"
-        aria-expanded={isOpen}
-        title={isOpen ? '隐藏运行状态' : '显示运行状态'}
-        onClick={(event) => {
-          setIsOpen((open) => !open)
-          event.currentTarget.blur()
-        }}
+        title="将鼠标移到右侧边缘以展开运行状态"
       />
       <div id="runtime-status-panel" className="rp-panel-content">
       <div className="rp-card">
@@ -125,13 +120,13 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
           <span className="rp-card-meta">{sampleTime}</span>
         </div>
         <div className="rp-gauges">
-          <GaugeSvg value={system.cpu_percent} color="#7CB3FF" label="CPU" />
-          <GaugeSvg value={system.memory_percent} color="#7CB3FF" label="内存" title={`${memoryLabel} · ${memoryDetail}`} />
+          <GaugeSvg value={system.cpu_percent} color="var(--window-accent)" label="CPU" />
+          <GaugeSvg value={system.memory_percent} color="var(--window-accent)" label="内存" title={`${memoryLabel} · ${memoryDetail}`} />
           <GaugeSvg
             value={health}
             color={healthColor}
-            label="健康"
-            title={health == null ? 'CPU/内存数据不可用' : `状态：${healthLabel} · CPU 35% · 内存 45%`}
+            label="资源状态"
+            title={health == null ? 'CPU/内存数据不可用' : `资源状态：${healthLabel} · CPU ${Math.round(system.cpu_percent ?? 0)}% · 内存 ${Math.round(system.memory_percent ?? 0)}%`}
             available={health != null}
             valueSuffix=""
           />
@@ -154,7 +149,7 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
         {isRuntimeDetailsOpen && <div id="system-details-content" className="rp-system-details">
           <div className="rp-system-detail-row">
             <span>系统</span>
-            <strong>{systemPlatform}</strong>
+            <strong>{systemPlatform} · {browserName}</strong>
           </div>
           <div className="rp-system-detail-row">
             <span>运行</span>
@@ -212,4 +207,15 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
       </div>
     </aside>
   )
+}
+
+function getBrowserName() {
+  if (typeof navigator === 'undefined') return '浏览器'
+  const userAgent = navigator.userAgent
+  if (/Edg\//.test(userAgent)) return 'Edge'
+  if (/OPR\//.test(userAgent)) return 'Opera'
+  if (/Firefox\//.test(userAgent)) return 'Firefox'
+  if (/Chrome\//.test(userAgent)) return 'Chrome'
+  if (/Safari\//.test(userAgent)) return 'Safari'
+  return '浏览器'
 }

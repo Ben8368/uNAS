@@ -44,6 +44,38 @@ for (const sample of cases) {
   })
 }
 
+test('desktop App labels retain their full line box at 200-percent layout simulation', async ({ extension }) => {
+  const page = await extension.context.newPage()
+  await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
+  await page.setViewportSize({ width: 720, height: 450 })
+
+  const label = page.locator('.app-icon--password-manager .app-icon-label')
+  const icon = page.locator('.app-icon--password-manager .app-icon-img')
+  const firstApp = page.locator('.app-icon--browser')
+  const lastApp = page.locator('.app-icon--music')
+  await expect(label).toBeVisible()
+  await expect(icon).toBeVisible()
+  const metrics = await label.evaluate((element) => {
+    const style = getComputedStyle(element)
+    return {
+      clientHeight: element.clientHeight,
+      lineHeight: Number.parseFloat(style.lineHeight),
+      overflow: style.overflow,
+    }
+  })
+
+  expect(metrics.overflow).toBe('hidden')
+  expect(metrics.lineHeight).toBeGreaterThanOrEqual(20)
+  expect(metrics.clientHeight).toBeGreaterThanOrEqual(metrics.lineHeight)
+  const iconBounds = await icon.boundingBox()
+  expect(iconBounds?.width).toBeGreaterThanOrEqual(48)
+  expect(iconBounds?.height).toBeGreaterThanOrEqual(48)
+  expect(Math.abs((iconBounds?.width || 0) - (iconBounds?.height || 0))).toBeLessThanOrEqual(1)
+  const [firstBounds, lastBounds] = await Promise.all([firstApp.boundingBox(), lastApp.boundingBox()])
+  expect(lastBounds?.x).toBeGreaterThan(firstBounds?.x || 0)
+  expect(extension.errors).toEqual([])
+})
+
 for (const appId of ['fetcher', 'file-manager', 'browser']) {
   for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }]) {
     test(`existing App layout: ${appId} ${viewport.width}`, async ({ extension }, testInfo) => {

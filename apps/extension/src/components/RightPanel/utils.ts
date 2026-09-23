@@ -11,9 +11,9 @@ export function healthScore(cpuPercent?: number, memoryPercent?: number) {
 
 export function healthStatus(score?: number) {
   if (typeof score !== 'number') return '未支持'
-  if (score >= 80) return '正常'
-  if (score >= 60) return '关注'
-  return '偏高'
+  if (score >= 80) return '资源充足'
+  if (score >= 60) return '资源可用'
+  return '资源紧张'
 }
 
 export function formatUptime(totalSeconds = 0) {
@@ -29,8 +29,13 @@ export function formatCompactUptime(totalSeconds = 0) {
   const h = Math.floor((totalSeconds % 86400) / 3600)
   const m = Math.floor((totalSeconds % 3600) / 60)
   const s = Math.floor(totalSeconds % 60)
-  const clock = [h, m, s].map((value) => String(value).padStart(2, '0')).join(':')
-  return d > 0 ? `${d}天${clock}` : clock
+  const units = [
+    d > 0 ? `${d} 天` : '',
+    h > 0 || d > 0 ? `${h} 小时` : '',
+    `${m} 分`,
+    `${s} 秒`,
+  ].filter(Boolean)
+  return units.join(' ')
 }
 
 export function compactCpuModel(model?: string) {

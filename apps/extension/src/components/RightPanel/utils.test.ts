@@ -10,9 +10,9 @@ describe('health score', () => {
   it('clamps the score and maps the status bands', () => {
     expect(healthScore(0, 0)).toBe(100)
     expect(healthScore(100, 100)).toBe(20)
-    expect(healthStatus(80)).toBe('正常')
-    expect(healthStatus(60)).toBe('关注')
-    expect(healthStatus(59)).toBe('偏高')
+    expect(healthStatus(80)).toBe('资源充足')
+    expect(healthStatus(60)).toBe('资源可用')
+    expect(healthStatus(59)).toBe('资源紧张')
   })
 
   it('returns unavailable when either sample is missing', () => {
@@ -23,8 +23,8 @@ describe('health score', () => {
 
 describe('compact system detail formatting', () => {
   it('keeps uptime details on one short line', () => {
-    expect(formatCompactUptime(7 * 86400 + 16 * 3600 + 21 * 60)).toBe('7天16:21:00')
-    expect(formatCompactUptime(2 * 3600 + 3 * 60 + 4)).toBe('02:03:04')
+    expect(formatCompactUptime(7 * 86400 + 16 * 3600 + 21 * 60)).toBe('7 天 16 小时 21 分 0 秒')
+    expect(formatCompactUptime(2 * 3600 + 3 * 60 + 4)).toBe('2 小时 3 分 4 秒')
   })
 
   it('removes noisy CPU branding suffixes', () => {
