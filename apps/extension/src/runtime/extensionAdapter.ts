@@ -7,7 +7,7 @@ import { handleAdBlockMessage, isAdBlockMessage } from 'unas-src/modules/adblock
 import { isExtensionPageSender, isWebPageSender } from 'unas-src/shared/sender-guard'
 
 const LINK_STORAGE_KEY = 'unas-link-apps-v1'
-type RuntimeResponse = { ok: false; error: string } | { ok: true; links?: unknown; downloadId?: number; download?: unknown; downloads?: unknown[] }
+type RuntimeResponse = { ok: false; error: string } | { ok: true; links?: unknown; downloadId?: number; trackingWarning?: string; download?: unknown; downloads?: unknown[] }
 let linkMutationTail = Promise.resolve()
 const BROWSER_DOWNLOAD_STORAGE_KEY = 'unas-browser-downloads-v1'
 const MAX_BROWSER_DOWNLOAD_RECORDS = 200
@@ -76,9 +76,20 @@ async function handleBrowserDownload(message: { kind: 'browser.download'; url: s
     if (message.kind === 'browser.download') {
       return await enqueueBrowserDownloadMutation(async () => {
         const url = message.url.trim()
-        const downloadId = await downloads.download({ url, conflictAction: 'uniquify', saveAs: false })
+        // Fail before the external side effect when local tracking is already unavailable.
         const records = await readBrowserDownloadRecords()
-        await setExtensionLocalValue(BROWSER_DOWNLOAD_STORAGE_KEY, [...records, { downloadId, url, createdAt: Date.now() }].slice(-MAX_BROWSER_DOWNLOAD_RECORDS))
+        const downloadId = await downloads.download({ url, conflictAction: 'uniquify', saveAs: false })
+        try {
+          await setExtensionLocalValue(BROWSER_DOWNLOAD_STORAGE_KEY, [...records, { downloadId, url, createdAt: Date.now() }].slice(-MAX_BROWSER_DOWNLOAD_RECORDS))
+        } catch {
+          // Chrome has already accepted the download. Report its real ID instead
+          // of inviting a retry that could create a duplicate transfer.
+          return {
+            ok: true,
+            downloadId,
+            trackingWarning: `Chrome 已启动下载（ID ${downloadId}），但 uNAS 未能保存记录。请到 Chrome 下载页面查看进度或取消；关闭此下载窗口后，uNAS 无法恢复该任务。`,
+          }
+        }
         return { ok: true, downloadId }
       })
     }

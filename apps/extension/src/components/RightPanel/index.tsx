@@ -25,13 +25,21 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
   const [lastSampleAt, setLastSampleAt] = useState<Date | null>(null)
   const [expandedTaskType, setExpandedTaskType] = useState<string | null>(null)
   const [isRuntimeDetailsOpen, setIsRuntimeDetailsOpen] = useState(false)
-  const triggerRef = useRef<HTMLButtonElement>(null)
+  const [edgeNotice, setEdgeNotice] = useState<'top' | 'bottom' | null>(null)
+  const panelRef = useRef<HTMLElement>(null)
   const systemLifecycle = useSystemStore((state) => state.systemLifecycle)
 
   const closePanel = () => {
     setIsOpen(false)
-    triggerRef.current?.focus()
+    const active = document.activeElement
+    if (active instanceof HTMLElement && panelRef.current?.contains(active)) active.blur()
   }
+
+  useEffect(() => {
+    if (!edgeNotice) return
+    const timer = window.setTimeout(() => setEdgeNotice(null), 3000)
+    return () => window.clearTimeout(timer)
+  }, [edgeNotice])
 
   useEffect(() => {
     if (!isOpen) return
@@ -129,39 +137,32 @@ export function RightPanel({ workspace }: { workspace: boolean }) {
         className="rp-edge-action rp-edge-action--top"
         aria-label="顶部功能"
         title="顶部功能"
-        onClick={() => console.log('顶部功能还未开放')}
+        onClick={() => setEdgeNotice('top')}
       />
       <button
         type="button"
         className="rp-edge-action rp-edge-action--bottom"
         aria-label="底部功能"
         title="底部功能"
-        onClick={() => console.log('底部功能还未开放')}
+        onClick={() => setEdgeNotice('bottom')}
       />
+      {edgeNotice && <p className={`rp-edge-notice rp-edge-notice--${edgeNotice}`} role="status">功能开发中</p>}
       <aside
+        ref={panelRef}
         className={`mt-right-panel${isOpen ? ' mt-right-panel--open' : ''}`}
         aria-label="运行状态"
+        tabIndex={0}
         onMouseEnter={() => setIsOpen(true)}
-        onMouseLeave={() => setIsOpen(false)}
+        onMouseLeave={closePanel}
+        onFocus={() => setIsOpen(true)}
+        onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setIsOpen(false) }}
       >
-      <button
-        ref={triggerRef}
-        type="button"
-        className="rp-edge-trigger"
-        aria-expanded={isOpen}
-        aria-label={isOpen ? '收起运行状态' : '显示运行状态'}
-        aria-controls="runtime-status-panel"
-        title={isOpen ? '收起运行状态' : '显示运行状态'}
-        onClick={() => setIsOpen((open) => !open)}
-      />
+      <div className="rp-edge-trigger" aria-hidden="true" />
       <div id="runtime-status-panel" className="rp-panel-content" aria-hidden={!isOpen}>
       <div className="rp-card">
         <div className="rp-card-head rp-runtime-head">
           <div className="rp-card-title">运行状态</div>
-          <div className="rp-runtime-head__actions">
-            <span className="rp-card-meta">{sampleTime}</span>
-            <button type="button" className="rp-panel-close" aria-label="收起运行状态" title="收起运行状态" onClick={closePanel}>×</button>
-          </div>
+          <span className="rp-card-meta">{sampleTime}</span>
         </div>
         <div className="rp-gauges">
           <GaugeSvg value={system.cpu_percent} color="var(--window-accent)" label="CPU" />

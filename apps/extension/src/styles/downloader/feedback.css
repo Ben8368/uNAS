@@ -28,6 +28,20 @@
   box-shadow: 0 10px 26px rgba(0,0,0,.22);
 }
 
+.dl-action-error__action {
+  display: block;
+  min-height: var(--window-control-height);
+  margin-top: 8px;
+  padding: 0 10px;
+  border: 1px solid var(--window-border);
+  border-radius: var(--window-radius-control);
+  background: var(--window-surface-control);
+  color: var(--window-text);
+  font: inherit;
+  cursor: pointer;
+}
+.dl-action-error__action:focus-visible { outline: 3px solid var(--window-focus-ring); outline-offset: 2px; }
+
 .dl-btn--ghost {
   min-width: 68px;
   flex: 0 0 auto;

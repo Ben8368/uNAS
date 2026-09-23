@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { submitFetch } from 'unas-src/api'
 import { hasExtensionMessageRuntime } from 'unas-src/runtime/extensionPlatform'
-import { isDirectDownloadUrl, isMediaPlaylistUrl, startBrowserDownload } from 'unas-src/runtime/browserDownloads'
+import { isDirectDownloadUrl, isMediaPlaylistUrl, openBrowserDownloads, startBrowserDownload } from 'unas-src/runtime/browserDownloads'
 import { describeBatch, runBatch } from 'unas-src/application/batch'
 import { DownloaderAddForm } from 'unas-src/apps/downloader/DownloaderAddForm'
 import { DownloaderDetailDrawer } from 'unas-src/apps/downloader/DownloaderDetailDrawer'
@@ -25,6 +25,7 @@ import type { FetchTaskDraft } from '#contracts'
 
 export function DownloaderApp() {
   const { historyTasks, queueTasks, mergedTasks, pollError, refreshLists, setOptimisticTasks } = useDownloaderTaskData()
+  const [downloadNotice, setDownloadNotice] = useState('')
 
   const form = useDownloaderForm()
   const selection = useDownloaderSelection({ mergedTasks, historyTasks, queueTasks })
@@ -43,10 +44,14 @@ export function DownloaderApp() {
       if (urls.some(isMediaPlaylistUrl)) throw new Error('HLS/DASH 播放清单需要分片下载与媒体合并引擎，当前尚未接入。')
       if (hasExtensionMessageRuntime() && directUrls.length === urls.length && directUrls.length > 0) {
         for (const url of directUrls) {
-          const downloadId = await startBrowserDownload(url)
-          if (downloadId === null) throw new Error('此链接不是可直接交给 Chrome 的媒体文件 URL。m3u8/mpd 播放清单暂不下载。')
-          const result = { ok: true, task_id: `browser-download-${downloadId}`, task_ids: [`browser-download-${downloadId}`], status: 'running' as const, executionSource: 'real' as const, browser_download_id: downloadId }
-          const task = createOptimisticTask(url, { url, urls: [url], mode: 'video', output_dir: 'browser-default-downloads', route: 'browser', browser_download_id: downloadId }, result)
+          const started = await startBrowserDownload(url)
+          if (started === null) throw new Error('此链接不是可直接交给 Chrome 的媒体文件 URL。m3u8/mpd 播放清单暂不下载。')
+          const result = { ok: true, task_id: `browser-download-${started.downloadId}`, task_ids: [`browser-download-${started.downloadId}`], status: 'running' as const, executionSource: 'real' as const, browser_download_id: started.downloadId }
+          const task = createOptimisticTask(url, { url, urls: [url], mode: 'video', output_dir: 'browser-default-downloads', route: 'browser', browser_download_id: started.downloadId, browser_download_tracked: started.tracked }, result)
+          if (started.warning) {
+            task.stage = '请到 Chrome 下载页面查看状态'
+            setDownloadNotice(started.warning)
+          }
           setOptimisticTasks(prev => mergeTasks([task], prev))
           selection.setSelectedTaskId(task.id)
         }
@@ -80,6 +85,7 @@ export function DownloaderApp() {
     if (!form.taskUrl.trim() || form.addingTask) return
     form.setAddingTask(true)
     form.setSubmitError('')
+    setDownloadNotice('')
     actions.setActionError('')
     try {
       const urls = form.taskUrl
@@ -182,9 +188,12 @@ export function DownloaderApp() {
             onRowMenuAction={actions.handleRowMenuAction}
           />
 
-          {(actions.actionError || pollError) && (
-            <div role="status" className="dl-action-error">{actions.actionError || pollError}</div>
-          )}
+          {downloadNotice ? <div role="status" className="dl-action-error">
+            {downloadNotice}
+            <button type="button" className="dl-action-error__action" onClick={() => {
+              void openBrowserDownloads().catch((error: unknown) => setDownloadNotice(`${downloadNotice} 打开 Chrome 下载失败：${error instanceof Error ? error.message : '请手动打开 chrome://downloads/。'}`))
+            }}>打开 Chrome 下载</button>
+          </div> : (actions.actionError || pollError) && <div role="status" className="dl-action-error">{actions.actionError || pollError}</div>}
         </div>
 
         <DownloaderStatusBar detailOpen={detailOpen} onToggleDetail={() => setDetailOpen((prev) => !prev)} />

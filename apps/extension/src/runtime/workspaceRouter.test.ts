@@ -79,4 +79,37 @@ describe('legacy Workspace routing boundary', () => {
       await expect(listener({ kind: 'browser.download', url: 'https://example.test/page' }, sender)).resolves.toEqual({ ok: false, error: '消息来源、版本或动作无效。' })
     } finally { vi.unstubAllGlobals() }
   })
+
+  it('does not start a download when tracking storage cannot be read', async () => {
+    let listener: (...args: any[]) => unknown = () => {}
+    const download = vi.fn()
+    vi.stubGlobal('browser', {
+      runtime: { id: 'unas', onMessage: { addListener: (fn: typeof listener) => { listener = fn } } },
+      downloads: { download, cancel: vi.fn(), search: vi.fn() },
+      storage: { local: { get: async () => { throw new Error('storage unavailable') }, set: vi.fn() } },
+    })
+    try {
+      installWorkspaceRouter()
+      await expect(listener({ kind: 'browser.download', url: 'https://example.test/file.zip' }, sender)).resolves.toEqual({ ok: false, error: 'storage unavailable' })
+      expect(download).not.toHaveBeenCalled()
+    } finally { vi.unstubAllGlobals() }
+  })
+
+  it('reports the real download ID when recording fails after Chrome starts', async () => {
+    let listener: (...args: any[]) => unknown = () => {}
+    const download = vi.fn(async () => 42)
+    const cancel = vi.fn()
+    vi.stubGlobal('browser', {
+      runtime: { id: 'unas', onMessage: { addListener: (fn: typeof listener) => { listener = fn } } },
+      downloads: { download, cancel, search: vi.fn() },
+      storage: { local: { get: async () => ({}), set: async () => { throw new Error('quota exceeded') } } },
+    })
+    try {
+      installWorkspaceRouter()
+      await expect(listener({ kind: 'browser.download', url: 'https://example.test/file.zip' }, sender)).resolves.toMatchObject({ ok: true, downloadId: 42, trackingWarning: expect.stringContaining('Chrome 已启动下载') })
+      await expect(listener({ kind: 'browser.download.cancel', downloadId: 42 }, sender)).resolves.toMatchObject({ ok: false })
+      expect(download).toHaveBeenCalledTimes(1)
+      expect(cancel).not.toHaveBeenCalled()
+    } finally { vi.unstubAllGlobals() }
+  })
 })

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildRetryPayload,
   getTaskDownloadFilePath,
+  isTaskCancellable,
   isTaskRetryable,
 } from 'unas-src/apps/downloader/helpers'
 import type { DownloadTask } from 'unas-src/apps/downloader/types'
@@ -19,6 +20,11 @@ function task(overrides: Partial<DownloadTask>): DownloadTask {
     ...overrides,
   }
 }
+
+it('does not offer in-app cancellation for a browser download without a saved record', () => {
+  expect(isTaskCancellable(task({ executionSource: 'real', status: 'running', params: { browser_download_tracked: false } }))).toBe(false)
+  expect(isTaskCancellable(task({ executionSource: 'real', status: 'running', params: { browser_download_tracked: true } }))).toBe(true)
+})
 
 describe('buildRetryPayload', () => {
   it('normalizes url into urls for retry submissions', () => {

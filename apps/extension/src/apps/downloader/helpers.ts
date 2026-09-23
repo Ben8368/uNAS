@@ -21,8 +21,9 @@ export function getCategoryForTask(task: DownloadTask): CategoryKey {
   }
 }
 
-export function isTaskCancellable(task: Pick<DownloadTask, 'status'>): boolean {
-  return task.status === 'pending' || task.status === 'running'
+export function isTaskCancellable(task: Pick<DownloadTask, 'status' | 'executionSource' | 'params'>): boolean {
+  return (task.status === 'pending' || task.status === 'running') &&
+    !(task.executionSource === 'real' && task.params?.browser_download_tracked === false)
 }
 
 export function isTaskRetryable(task: Pick<DownloadTask, 'status' | 'params' | 'executionSource'>): boolean {

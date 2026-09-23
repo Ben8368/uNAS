@@ -10,7 +10,6 @@
   transition: transform var(--window-motion-normal) var(--window-motion-ease);
 }
 
-.mt-right-panel:hover,
 .mt-right-panel--open {
   transform: translateX(0);
 }
@@ -25,20 +24,14 @@
   z-index: 2;
   top: 0;
   bottom: 0;
-  left: -44px;
-  width: 44px;
-  min-height: 44px;
-  border: 0;
-  border-radius: 0;
+  left: -16px;
+  width: 16px;
   background: transparent;
-  color: transparent;
-  font: inherit;
-  cursor: pointer;
 }
 
 .rp-edge-trigger:hover { background: color-mix(in srgb, var(--window-text) 5%, transparent); }
 
-.rp-edge-trigger:focus-visible {
+.mt-right-panel:focus-visible {
   outline: 3px solid var(--window-focus-ring);
   outline-offset: -3px;
 }
@@ -77,6 +70,23 @@
 .rp-edge-action:hover::after,
 .rp-edge-action:focus-visible::after { background: var(--window-accent); opacity: 1; }
 .rp-edge-action:focus-visible { outline: 3px solid var(--window-focus-ring); outline-offset: -3px; }
+
+.rp-edge-notice {
+  position: fixed;
+  left: 50%;
+  z-index: 600;
+  margin: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--window-border);
+  border-radius: var(--window-radius-control);
+  background: var(--window-surface-readable);
+  color: var(--window-text);
+  box-shadow: var(--window-shadow-floating);
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+.rp-edge-notice--top { top: 52px; }
+.rp-edge-notice--bottom { bottom: 52px; }
 
 .rp-panel-content {
   display: flex;
@@ -152,26 +162,6 @@
 }
 
 .rp-card-head .rp-card-title { margin-bottom: 0; }
-.rp-runtime-head__actions { display: flex; align-items: center; gap: var(--window-space-2); }
-.rp-panel-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  min-width: 28px;
-  height: 28px;
-  min-height: 28px;
-  padding: 0;
-  border: 1px solid transparent;
-  border-radius: var(--window-radius-control);
-  background: transparent;
-  color: var(--window-text-muted);
-  cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
-}
-.rp-panel-close:hover { background: color-mix(in srgb, var(--window-text) 6%, transparent); color: var(--window-text); }
-.rp-panel-close:focus-visible { border-color: var(--window-focus-ring); }
 .rp-collapsible-card {
   padding: 0;
   overflow: hidden;

@@ -57,11 +57,10 @@ export const test = base.extend<{ extension: Extension }>({
 export { expect }
 
 export async function revealRuntimePanel(page: Page) {
-  const trigger = page.getByRole('button', { name: '显示运行状态' })
+  const trigger = page.locator('.rp-edge-trigger')
   await expect(trigger).toBeVisible()
   await trigger.hover()
-  await expect(trigger).toHaveAttribute('aria-expanded', 'true')
-  await expect(trigger).toHaveAttribute('aria-label', '收起运行状态')
+  await expect(page.locator('.mt-right-panel')).toHaveClass(/mt-right-panel--open/)
   await expect(page.getByText('运行状态', { exact: true })).toBeVisible()
   await expect(page.getByLabel('预览控制')).toHaveCount(0)
 }

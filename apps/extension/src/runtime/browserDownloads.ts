@@ -11,7 +11,8 @@ export type BrowserDownloadInfo = {
 }
 export type BrowserDownloadRecord = { downloadId: number; url: string; createdAt: number }
 
-type BrowserDownloadResponse = { ok: false; error: string } | { ok: true; downloadId: number }
+type BrowserDownloadResponse = { ok: false; error: string } | { ok: true; downloadId: number; trackingWarning?: string }
+export type BrowserDownloadStart = { downloadId: number; tracked: boolean; warning?: string }
 type BrowserDownloadInfoResponse = { ok: false; error: string } | { ok: true; download?: BrowserDownloadInfo }
 type BrowserDownloadListResponse = { ok: false; error: string } | { ok: true; downloads: BrowserDownloadRecord[] }
 
@@ -53,12 +54,14 @@ export function isDirectDownloadUrl(value: string): boolean {
   }
 }
 
-export async function startBrowserDownload(url: string): Promise<number | null> {
+export async function startBrowserDownload(url: string): Promise<BrowserDownloadStart | null> {
   if (!isDirectDownloadUrl(url)) return null
   if (!hasExtensionMessageRuntime()) return null
   const response = await sendExtensionMessage({ kind: 'browser.download', url: url.trim() }) as BrowserDownloadResponse
   if (!response?.ok) throw new Error(response?.error || 'Chrome 下载未能启动。')
-  return response.downloadId
+  if (!Number.isSafeInteger(response.downloadId) || response.downloadId < 0) throw new Error('Chrome 已响应，但未返回有效的下载 ID；请到 Chrome 下载页面确认状态。')
+  const warning = typeof response.trackingWarning === 'string' && response.trackingWarning ? response.trackingWarning : undefined
+  return { downloadId: response.downloadId, tracked: !warning, warning }
 }
 
 export async function getBrowserDownload(downloadId: number): Promise<BrowserDownloadInfo | null> {
