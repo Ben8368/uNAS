@@ -29,7 +29,7 @@
 ### RISK-014（P0）：密码管家融合的真实凭据路径与发布身份尚未全部验收
 
 - **阻断 Gate：** uNAS 公开发布 Gate；不阻断当前本地解包构建。
-- **问题：** 单一 MV3 构建、广告拦截/密码管家代码和默认 MV3 E2E 仍需在本次模块拆分后重新跑完；工具栏 `action.onClicked` 的真实系统手势、原有密码浮窗人工视觉对照、真实 WebDAV 冲突恢复、历史 UniPass 资源再分发许可和 uNAS 维护者签名 key/固定扩展 ID尚未完成。
+- **问题：** 单一 MV3 构建与模块拆分自动回归已补充，见 [2026-09-24 自动验收](archive/reviews/2026-09-24-review-remediation.md)；工具栏 `action.onClicked` 的真实系统手势、原有密码浮窗人工视觉对照、真实 WebDAV 冲突恢复、历史 UniPass 资源再分发许可和 uNAS 维护者签名 key/固定扩展 ID尚未完成。
 - **控制：** 保留原 WebDAV 恢复路径和旧扩展回滚来源；不复制 storage/IndexedDB、不自动卸载旧扩展、不使用真实凭据；Playwright 测试明确跳过无法模拟 action 手势的场景。
 - **AdBlock 验收补充：** B 站四类推广位已按页面 DOM 增加本地 cosmetic 规则；目标 Chrome 加载新构建后的实站隐藏、暂停恢复和站点改版兼容性仍需人工验收。首页隐藏卡片后的序号间距错位增加 `bilibili-layout.spec.ts` 布局回归，登录态实站对齐仍待确认。自动化入口为 `apps/extension/e2e/bilibili-adblock.spec.ts`，合成 DOM 回归不替代实站验收，不宣称已阻止广告请求或视频内植入。
 - **补充订阅风险：** [ADR 0012](ADR/0012-repository-filter-subscription.md) 的仓库 JSON 尚未由本轮推送发布，远端首次获取及 Chrome GitHub Raw 权限需验收；仓库控制权/站点 DOM 变化可能造成规则误伤。控制为固定 URL、严格 schema/大小预算、独立失败回退、站点暂停与递增 revision 撤回；维护说明见 [filters](../filters/README.md)。
@@ -90,8 +90,8 @@
 
 - **阻断 Gate：** 不阻断本地前端打磨；由维护者在本轮界面验收时确认，不改变已验收的 G1。
 - **问题：** 目录搜索、排序、路径导航、网址 App、中性窗口表面及精简文案已有自动化验证，但视觉偏好、真实触控与浏览器缩放体验仍待维护者确认。
-- **本轮范围：** “广告拦截”桌面 App 复用共享窗口；主题/响应式回归入口为 `apps/extension/e2e/adblockApp.spec.ts`，bundled Chromium 已通过，系统 Chrome 自动化未等到 Service Worker；目标 Chrome 人工视觉、触控与真实 200% 缩放仍待确认。
-- **外观补充：** 图标提亮、标签页固定深色（浮层保留浅/深）、设置卡片铺满与窗口单边框沿用本项人工验收缺口；旧浅色偏好回归入口为 `startupAppearance.spec.ts`。Dock 收窄至 56px、各 App 透明画布与 readable 卡片共用文件管理器的窗口 blur；回归入口为 `appTheme.spec.ts` 与 `glassVisual.spec.ts`，目标 Chrome 人工视觉、真实触控和 200% 缩放沿用本项待确认。
+- **本轮范围：** “广告拦截”桌面 App 复用共享窗口；主题/响应式回归入口为 `apps/extension/e2e/adblockApp.spec.ts`；系统 Chrome 测试入口与实际 200% 页面缩放自动验证已补齐，见[2026-09-24 自动验收](archive/reviews/2026-09-24-review-remediation.md)；目标 Chrome 常用 Profile 人工视觉、触控与工具栏手势仍待确认。
+- **外观补充：** 图标提亮、标签页固定深色（浮层保留浅/深）、设置卡片铺满与窗口单边框沿用本项人工验收缺口；旧浅色偏好回归入口为 `startupAppearance.spec.ts`。Dock 收窄至 56px、各 App 透明画布与 readable 卡片共用文件管理器的窗口 blur；回归入口为 `appTheme.spec.ts` 与 `glassVisual.spec.ts`，隔离 Profile 的 Chrome 实际 200% 页面缩放已有自动证据；目标 Chrome 常用 Profile 人工视觉与真实触控沿用本项待确认。
 - **负责人：** 项目发起人。
 - **关闭证据：** [本轮验收记录](archive/reviews/2026-09-08-ui.md)列出深浅主题、长名称和窄窗口截图场景；生成产物位于被 Git 忽略的 `apps/extension/test-results/extension-e2e/`。维护者结合截图与解包扩展人工走查给出确认。真实文件处理不在当前 UI 风险范围内。
 

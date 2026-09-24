@@ -42,13 +42,20 @@ for (const width of [1100, 1440, 2100]) {
     // The previous patch aligned videos but omitted floor/live/anime and skeleton slots.
     const style = page.locator('style[id^="unipass-cosmetic-style-"]')
     const patchedCss = await style.textContent()
-    await style.evaluate(el => { el.textContent = el.textContent!.replace('.feed-card,.bili-feed-card,.floor-single-card,.bili-video-card,.load-more-anchor', '.feed-card,.bili-feed-card') })
-    const misaligned = await page.locator('[data-card]:visible').evaluateAll(cards => {
-      const boxes = cards.map(card => card.getBoundingClientRect())
-      return boxes.some((box, i) => i > 0 && box.x > boxes[i - 1].x && Math.abs(box.y - boxes[i - 1].y) > 1)
+    // Keep mutation and measurement in one page task: the runtime may resync
+    // cosmetic CSS after DOMContentLoaded and restore it between evaluate calls.
+    const negativeControl = await style.evaluate(el => {
+      const original = el.textContent!
+      const legacy = original.replace('.feed-card,.bili-feed-card,.floor-single-card,.bili-video-card,.load-more-anchor', '.feed-card,.bili-feed-card')
+      try {
+        el.textContent = legacy
+        const boxes = Array.from(document.querySelectorAll<HTMLElement>('[data-card]'))
+          .filter(card => getComputedStyle(card).display !== 'none').map(card => card.getBoundingClientRect())
+        return { changed: original !== legacy, misaligned: boxes.some((box, i) => i > 0 && box.x > boxes[i - 1].x && Math.abs(box.y - boxes[i - 1].y) > 1) }
+      } finally { el.textContent = original }
     })
-    expect(misaligned).toBe(true)
-    await page.screenshot({ path: testInfo.outputPath('filtered-before-fix.png'), animations: 'disabled' })
+    expect(negativeControl).toEqual({ changed: true, misaligned: true })
+    await testInfo.attach('negative-layout-control', { body: JSON.stringify(negativeControl), contentType: 'application/json' })
     await style.evaluate((el, css) => { el.textContent = css }, patchedCss)
     await assertAligned()
     await page.locator('#card-1 a').evaluate(a => a.setAttribute('href', 'https://www.bilibili.com/video/'))

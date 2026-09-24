@@ -124,12 +124,15 @@ export function useDownloaderTaskData() {
 
   // Chrome owns the actual transfer for real browser-download tasks. Poll only
   // the small status record here; bytes never enter the extension workspace.
-  const browserDownloadIds = useMemo(() => optimisticTasks
-    .map(task => task.executionSource === 'real' && typeof task.params?.browser_download_id === 'number' ? task.params.browser_download_id : null)
-    .filter((id): id is number => id !== null)
-    .sort((a, b) => a - b), [optimisticTasks])
+  // A stable scalar dependency avoids restarting the immediate poll whenever
+  // a status update creates a new task array. External/terminal tasks do not poll.
+  const browserDownloadKey = optimisticTasks
+    .filter(task => task.executionSource === 'real' && task.params?.browser_download_tracked !== false &&
+      (task.status === 'pending' || task.status === 'running') && typeof task.params?.browser_download_id === 'number')
+    .map(task => task.params!.browser_download_id as number).sort((a, b) => a - b).join(',')
   useEffect(() => {
-    if (browserDownloadIds.length === 0) return
+    if (!browserDownloadKey) return
+    const browserDownloadIds = browserDownloadKey.split(',').map(Number)
     let stopped = false
     const sync = async () => {
       const statuses = await Promise.all(browserDownloadIds.map(async id => [id, await getBrowserDownload(id).catch(() => null)] as const))
@@ -147,7 +150,7 @@ export function useDownloaderTaskData() {
     void sync()
     const timer = window.setInterval(() => { void sync() }, 2000)
     return () => { stopped = true; window.clearInterval(timer) }
-  }, [browserDownloadIds, setOptimisticTasks])
+  }, [browserDownloadKey, setOptimisticTasks])
   useEffect(() => {
     const unsubscribe = subscribeDemo(() => { void refreshLists().catch(() => {}) })
     return () => { unsubscribe(); taskRequestGenerationRef.current++ }

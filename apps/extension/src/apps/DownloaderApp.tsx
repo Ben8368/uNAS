@@ -49,7 +49,6 @@ export function DownloaderApp() {
           const result = { ok: true, task_id: `browser-download-${started.downloadId}`, task_ids: [`browser-download-${started.downloadId}`], status: 'running' as const, executionSource: 'real' as const, browser_download_id: started.downloadId }
           const task = createOptimisticTask(url, { url, urls: [url], mode: 'video', output_dir: 'browser-default-downloads', route: 'browser', browser_download_id: started.downloadId, browser_download_tracked: started.tracked }, result)
           if (started.warning) {
-            task.stage = '请到 Chrome 下载页面查看状态'
             setDownloadNotice(started.warning)
           }
           setOptimisticTasks(prev => mergeTasks([task], prev))
@@ -193,7 +192,8 @@ export function DownloaderApp() {
             <button type="button" className="dl-action-error__action" onClick={() => {
               void openBrowserDownloads().catch((error: unknown) => setDownloadNotice(`${downloadNotice} 打开 Chrome 下载失败：${error instanceof Error ? error.message : '请手动打开 chrome://downloads/。'}`))
             }}>打开 Chrome 下载</button>
-          </div> : (actions.actionError || pollError) && <div role="status" className="dl-action-error">{actions.actionError || pollError}</div>}
+          </div> : null}
+          {(actions.actionError || pollError) && <div role="status" className="dl-action-error">{actions.actionError || pollError}</div>}
         </div>
 
         <DownloaderStatusBar detailOpen={detailOpen} onToggleDetail={() => setDetailOpen((prev) => !prev)} />

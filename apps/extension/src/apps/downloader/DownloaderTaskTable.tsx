@@ -144,13 +144,13 @@ export function DownloaderTaskTable({
                   {task.status !== 'completed' && <small>{task.stage?.trim() || '-'}</small>}
                 </span>
                 <span className="dl-col-progress">
-                  <div className="dl-progress-bar">
+                  {task.status !== 'external' && <div className="dl-progress-bar">
                     <div
                       className="dl-progress-fill"
                       style={{ width: `${Math.min(100, Math.max(0, task.progress || 0))}%` }}
                     />
-                  </div>
-                  <span className="dl-progress-text">{(task.progress || 0).toFixed(1)}%</span>
+                  </div>}
+                  <span className="dl-progress-text" title={task.status === 'external' ? '状态未知，由 Chrome 管理' : undefined}>{task.status === 'external' ? '未知' : `${(task.progress || 0).toFixed(1)}%`}</span>
                 </span>
                 <span className="dl-col-time">{formatRelativeTime(task.created_at)}</span>
                 <span className="dl-col-menu">

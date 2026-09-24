@@ -1,9 +1,9 @@
-import { test, expect, chromium } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { extensionBrowserOptions } from './browserLaunch'
+import { launchExtensionContext } from './browserLaunch'
 
 type Manifest = { version: string }
 const LINK_STORAGE_KEY = 'unas-link-apps-v1'
@@ -50,12 +50,12 @@ test('unpacked extension reload accepts a newer manifest and preserves Link Apps
   const manifestPath = path.join(extensionPath, 'manifest.json')
   await cp(sourcePath, extensionPath, { recursive: true })
 
-  let context: Awaited<ReturnType<typeof chromium.launchPersistentContext>> | undefined
+  let context: Awaited<ReturnType<typeof launchExtensionContext>> | undefined
   const pageErrors: string[] = []
   try {
     const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as Manifest
     const updatedVersion = nextVersion(manifest.version)
-    context = await chromium.launchPersistentContext(profilePath, extensionBrowserOptions(extensionPath))
+    context = await launchExtensionContext(extensionPath, profilePath)
     context.setDefaultTimeout(10_000)
     context.on('page', page => page.on('pageerror', error => pageErrors.push(error.message)))
     const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker')

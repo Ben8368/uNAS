@@ -157,3 +157,19 @@ describe('browser system metrics', () => {
     })
   })
 })
+
+for (const viaDisplayApi of [false, true]) {
+  for (const zoom of [0.5, 0.8, 1, 2]) {
+    it('restores Windows 125% display scaling at zoom ' + zoom + ' via display API: ' + viaDisplayApi, async () => {
+      vi.stubGlobal('browser', {
+        tabs: { getCurrent: async () => ({ id: 1 }), getZoom: async () => zoom },
+        system: viaDisplayApi ? { display: { getInfo: async () => [{ bounds: { width: 1536, height: 864 } }] } } : {},
+      })
+      vi.stubGlobal('navigator', { platform: 'Win32', onLine: true })
+      vi.stubGlobal('screen', { width: 1536, height: 864, isExtended: false })
+      vi.stubGlobal('devicePixelRatio', 1.25 * zoom)
+      const metrics = await readBrowserSystemMetrics()
+      expect(metrics.system?.display_details?.[0].resolution).toBe('1920×1080')
+    })
+  }
+}

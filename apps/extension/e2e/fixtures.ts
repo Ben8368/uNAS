@@ -1,16 +1,16 @@
-import { test as base, expect, chromium, type BrowserContext, type Page } from '@playwright/test'
+import { test as base, expect, type BrowserContext, type Page } from '@playwright/test'
 import { existsSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
 
-import { extensionBrowserEnvironment, extensionBrowserOptions } from './browserLaunch'
+import { extensionBrowserEnvironment, launchExtensionContext } from './browserLaunch'
 
 type Extension = { context: BrowserContext; extensionId: string; errors: string[]; remoteRequests: string[] }
 export const test = base.extend<{ extension: Extension }>({
   extension: async ({ browserName: _browserName }, use, testInfo) => {
     const extensionPath = path.resolve('.output/chrome-mv3')
     if (!existsSync(path.join(extensionPath, 'manifest.json'))) throw new Error('先运行 pnpm build:extension；E2E 必须加载真实 MV3 构建物。')
-    const context = await chromium.launchPersistentContext('', extensionBrowserOptions(extensionPath))
+    const context = await launchExtensionContext(extensionPath)
     // Native OS directory dialogs cannot be driven by Playwright. Most UI
     // regressions therefore exercise the explicit cancel path; the dedicated
     // file-workspace probe installs a controlled directory-handle stub.

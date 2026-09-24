@@ -112,3 +112,22 @@ test('runtime panel opens on keyboard focus and closes on Escape', async ({ exte
   expect(extension.errors).toEqual([])
   expect(extension.remoteRequests).toEqual([])
 })
+
+test('App windows intercept covered edge actions and uncovered edges remain usable', async ({ extension }) => {
+  const page = await extension.context.newPage()
+  await page.goto('chrome-extension://' + extension.extensionId + '/newtab.html')
+  await page.locator('.app-icon--fetcher').click()
+  const app = page.locator('[data-app-id="fetcher"]')
+  await app.getByRole('button', { name: /^最大化/ }).click()
+  // These points overlap both the invisible edge controls and the App.
+  for (const y of [30, 875]) {
+    expect(await page.evaluate((y) => Boolean(document.elementFromPoint(720, y)?.closest('.mt-window')), y)).toBe(true)
+  }
+  await page.mouse.dblclick(720, 30)
+  await expect(app).not.toHaveClass(/mt-window--maximized/)
+  await expect(page.locator('.rp-edge-notice')).toHaveCount(0)
+  await app.getByRole('button', { name: /^最小化/ }).click()
+  await page.locator('.rp-edge-action--top').click()
+  await expect(page.locator('.rp-edge-notice--top')).toHaveText('功能开发中')
+  expect(extension.errors).toEqual([])
+})

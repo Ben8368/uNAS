@@ -42,19 +42,21 @@ export function useDownloaderActions({
     setActionError('')
     const result = await runBatch(selectedClearableTasks, async task => {
       if (task.executionSource === 'real' && typeof task.params?.browser_download_id === 'number') {
-        await forgetBrowserDownload(task.params.browser_download_id)
+        // An untracked transfer has no persisted record. Removing this local
+        // placeholder must work even while storage is unavailable; never cancel it.
+        if (task.params.browser_download_tracked !== false) await forgetBrowserDownload(task.params.browser_download_id)
         setOptimisticTasks(prev => prev.filter(item => item.id !== task.id))
         return
       }
       await deleteTaskRecord(task.id)
     })
     try { await refreshLists() } catch (error) {
-      setActionError(`${describeBatch('清除模拟记录', result, (task) => task.id)} 刷新失败，请刷新列表。`)
+      setActionError(`${describeBatch('移除列表记录', result, (task) => task.id)} 刷新失败，请刷新列表。`)
       return result
     }
-    setActionError(describeBatch('清除模拟记录', result, (task) => task.id))
+    setActionError(describeBatch('移除列表记录', result, (task) => task.id))
     return result
-  }, [refreshLists, selectedClearableTasks])
+  }, [refreshLists, selectedClearableTasks, setOptimisticTasks])
 
   const stopSelected = useCallback(async () => {
     if (!selectedTasks.length) return

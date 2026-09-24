@@ -1,6 +1,6 @@
 # 当前状态
 
-> **最后确认：** 2026-09-23
+> **最后确认：** 2026-09-24
 > **阶段：** Phase 2 / uNAS native module integration
 > **产品代码：** WXT MV3 已接入密码管家、广告拦截、WebDAV Vault、Legacy adapter 和 closed Shadow DOM 浮窗；桌面 App 共用下载外观基线，外观在 Dock 循环切换，WebDAV 配置在分栏设置中，`manage.html` 兼容保留。
 
@@ -22,7 +22,7 @@
 
 1. 验收 uNAS Glass D：密码浮窗展示层已接入共享 Token 并保留薄荷绿强调，补目标 Chrome 浮层深浅主题与控件状态人工证据。
 2. 实施 uNAS Glass E：补齐浅深主题、减少透明度、真实 Chrome 人工走查与可复现证据归档。
-3. 完成 [TD-002](docs/TECH_DEBT.md#td-002全局兼容样式的局部化迁移) 验收：代码迁移已完成，系统 Chrome 自动化未等到 Service Worker；补齐人工确认后归档。
+3. 完成 [TD-002](docs/TECH_DEBT.md#td-002全局兼容样式的局部化迁移) 验收：代码迁移、目标 Chrome 测试入口与主要自动回归已补齐，保留真实手势、触控及视觉人工确认后归档。
 
 ## 当前阻断与风险
 
@@ -33,7 +33,7 @@
 
 ## 最近验证
 
-- 2026-09-23：[桌面 App 下载母版](apps/extension/e2e/appTheme.spec.ts)：`pnpm verify` 通过；MV3 72 passed/3 skipped，对照用例修正后单独通过；8 个 App、三种视口、底色/选中态已自动验证，目标 Chrome 人工未验。
+- 2026-09-24：[Review 修复与技术债自动验收](docs/archive/reviews/2026-09-24-review-remediation.md)：`pnpm verify` 通过（278 passed/1 skipped）；bundled/系统 Chrome MV3 各 81 passed/3 skipped，Web 8 passed；实际 200% 缩放已测，真实手势/触控/NAS 仍待验收。
 - 2026-09-23：[密码管家/WebDAV 审查](docs/archive/reviews/2026-09-23-password-webdav.md)：`pnpm verify` 通过（261 passed/1 skipped）；MV3 E2E 67 passed/3 skipped、Web 8 passed，真实 NAS 与目标 Chrome 人工待验收。
 
 ## 按需入口

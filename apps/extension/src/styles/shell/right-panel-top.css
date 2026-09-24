@@ -38,7 +38,8 @@
 
 .rp-edge-action {
   position: fixed;
-  z-index: 300;
+  /* Below the App window layer (100): covered portions must not intercept input. */
+  z-index: 90;
   left: 50%;
   width: min(180px, 42vw);
   min-height: 44px;

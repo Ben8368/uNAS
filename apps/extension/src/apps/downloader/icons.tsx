@@ -51,6 +51,7 @@ export function CategoryIcon({ name }: { name: string }) {
 export function StatusIcon({ status }: { status: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={`dl-status-icon dl-status-icon--${status}`}>
+      {status === 'external' && <><circle cx="12" cy="12" r="10" /><path d="M9 9a3 3 0 016 0c0 2-3 2-3 4M12 16h.01" /></>}
       {status === 'running' && <path d="M5 3l14 9-14 9V3z" />}
       {status === 'pending' && (
         <>

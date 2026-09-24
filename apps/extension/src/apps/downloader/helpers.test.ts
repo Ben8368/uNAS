@@ -82,3 +82,18 @@ describe('isTaskRetryable', () => {
     expect(isTaskRetryable(task({ status: 'failed', params: {} }))).toBe(false)
   })
 })
+
+// An external transfer is a UI projection, not a successful/failed engine task.
+describe('untracked browser download projection', () => {
+  it('does not claim progress or a terminal outcome and can be removed', async () => {
+    const { createOptimisticTask, computeStats, getCategoryForTask, isTaskClearable } = await import('./helpers')
+    const external = createOptimisticTask('https://example.test/a.zip', { browser_download_id: 42, browser_download_tracked: false }, { task_id: 'browser-download-42', status: 'running', executionSource: 'real' })
+    expect(external.status).toBe('external')
+    expect(external.stage).toContain('状态未知')
+    expect(isTaskCancellable(external)).toBe(false)
+    expect(isTaskRetryable(external)).toBe(false)
+    expect(isTaskClearable(external)).toBe(true)
+    expect(getCategoryForTask(external)).toBe('all')
+    expect(computeStats([external])).toEqual({ all: 1, downloading: 0, completed: 0, paused: 0, error: 0 })
+  })
+})

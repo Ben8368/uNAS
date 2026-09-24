@@ -6,6 +6,7 @@ export type DownloadTaskStatus =
   | 'cancelled'
   | 'paused'
   | 'partial'
+  | 'external' // Browser-owned transfer; uNAS cannot observe its current state.
 
 export type DownloadTask = {
   executionSource?: 'mock' | 'real'

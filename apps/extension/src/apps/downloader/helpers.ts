@@ -4,6 +4,8 @@ import type { CategoryKey, DetailRow, DownloadPlatform, DownloadTask, PlatformOp
 
 export function getCategoryForTask(task: DownloadTask): CategoryKey {
   switch (task.status) {
+    case 'external':
+      return 'all'
     case 'pending':
     case 'running':
       return 'downloading'
@@ -36,7 +38,7 @@ export function isTaskRetryable(task: Pick<DownloadTask, 'status' | 'params' | '
 }
 
 export function isTaskClearable(task: Pick<DownloadTask, 'status'>): boolean {
-  return ['completed', 'failed', 'cancelled', 'paused', 'partial'].includes(task.status)
+  return ['completed', 'failed', 'cancelled', 'paused', 'partial', 'external'].includes(task.status)
 }
 
 export function computeStats(tasks: DownloadTask[]): TaskStats {
@@ -203,9 +205,9 @@ export function createOptimisticTask(url: string, payload: Record<string, unknow
     id: String(result.task_id),
     type: 'download',
     name: url,
-    status: result.status === 'running' ? 'running' : 'pending',
+    status: result.executionSource === 'real' && payload.browser_download_tracked === false ? 'external' : result.status === 'running' ? 'running' : 'pending',
     progress: 0,
-    stage: '等待开始',
+    stage: result.executionSource === 'real' && payload.browser_download_tracked === false ? '状态未知 · 请到 Chrome 下载页面查看；移除记录不会取消下载' : '等待开始',
     created_at: Math.floor(Date.now() / 1000),
     params: payload,
   }
@@ -244,7 +246,7 @@ export function extractTaskDetailRows(task: DownloadTask): DetailRow[] {
   if (task.executionSource === 'real') return [
     { label: '执行来源', value: 'Chrome 浏览器下载' },
     { label: '任务 ID', value: task.id },
-    { label: '当前状态', value: task.status },
+    { label: '当前状态', value: task.status === 'external' ? '状态未知（由 Chrome 管理）' : task.status },
     { label: '当前阶段', value: stage },
     { label: '来源链接', value: (params.url as string) || task.source_url || task.name },
     { label: '下载目的地', value: 'Chrome 默认下载位置' },

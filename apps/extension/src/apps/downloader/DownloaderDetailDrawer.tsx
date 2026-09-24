@@ -35,7 +35,7 @@ export function DownloaderDetailDrawer({
               <small>{selectedTask ? selectedTask.name : '点击一条任务查看详情'}</small>
             </div>
             {selectedTask && (
-              <span className={`dl-detail-badge dl-detail-badge--${selectedTask.status}`}>
+              <span className={`dl-detail-badge dl-detail-badge--${selectedTask.status === 'external' ? '状态未知' : selectedTask.status}`}>
                 {selectedTask.status}
               </span>
             )}

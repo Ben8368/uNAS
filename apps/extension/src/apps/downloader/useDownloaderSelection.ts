@@ -92,6 +92,7 @@ export function useDownloaderSelection({
     if (selectedClearableTasks.length > 0) {
       const n = selectedClearableTasks.length
       const m = selectedTasks.length
+      if (m === n && selectedClearableTasks.every((task) => task.status === 'external')) return '仅移除 uNAS 列表记录，不会取消 Chrome 下载或删除文件'
       if (m === n) {
         return n === 1 ? '删除当前所选记录的下载历史' : `删除所选 ${n} 条记录的下载历史`
       }

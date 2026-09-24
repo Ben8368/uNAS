@@ -234,7 +234,7 @@ function displayLabel(display: DisplayInfo, index: number, platform: string | un
   // Chromium reports Windows bounds in scaled CSS pixels when native mode
   // dimensions are unavailable. macOS bounds remain the selected logical mode;
   // do not turn Retina rendering scale into a different desktop resolution.
-  const scale = platform === 'Windows' && typeof deviceScaleFactor === 'number' && Number.isFinite(deviceScaleFactor) && deviceScaleFactor > 1
+  const scale = platform === 'Windows' && typeof deviceScaleFactor === 'number' && Number.isFinite(deviceScaleFactor) && deviceScaleFactor > 0
     ? deviceScaleFactor / browserZoom
     : 1
   const width = nativeWidth > 0 ? nativeWidth : Math.round(Number(display.bounds?.width || 0) * scale)
@@ -292,7 +292,7 @@ async function readDisplays(platform: string | undefined, signal?: AbortSignal) 
   // pixels. macOS uses
   // the selected logical desktop mode instead, so multiplying there would revive
   // the prior Retina/macOS regression.
-  const scale = platform === 'Windows' && Number.isFinite(deviceScaleFactor) && deviceScaleFactor > 1
+  const scale = platform === 'Windows' && Number.isFinite(deviceScaleFactor) && deviceScaleFactor > 0
     ? deviceScaleFactor / browserZoom
     : 1
   const width = Math.round(logicalWidth * scale)

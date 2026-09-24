@@ -1,9 +1,9 @@
-import { test, expect, chromium } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { mkdtemp, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { existsSync } from 'node:fs'
-import { extensionBrowserOptions } from './browserLaunch'
+import { extensionBrowserEnvironment, launchExtensionContext } from './browserLaunch'
 
 test('browser restart preserves extension-local Link App configuration', async ({ browserName: _browserName }, testInfo) => {
   const extensionPath = path.resolve('.output/chrome-mv3')
@@ -14,7 +14,7 @@ test('browser restart preserves extension-local Link App configuration', async (
   const resolvedUserDataDir = path.resolve(userDataDir)
   if (!resolvedUserDataDir.startsWith(`${tempRoot}${path.sep}`)) throw new Error('测试 profile 路径不在临时目录内。')
 
-  const launch = () => chromium.launchPersistentContext(userDataDir, extensionBrowserOptions(extensionPath))
+  const launch = () => launchExtensionContext(extensionPath, userDataDir)
 
   let first: Awaited<ReturnType<typeof launch>> | undefined
   let second: Awaited<ReturnType<typeof launch>> | undefined
@@ -56,7 +56,8 @@ test('browser restart preserves extension-local Link App configuration', async (
         browser: second.browser()?.version() ?? firstBrowserVersion,
         extensionPath,
         profileRestarted: true,
-        evidence: 'Two separate persistent Chromium contexts reused one profile; this is not system Chrome certification.',
+        ...extensionBrowserEnvironment(),
+        evidence: 'Two separate browser processes reused one isolated test profile; not a user-profile or no-debugger lifecycle acceptance.',
       }, null, 2),
       contentType: 'application/json',
     })

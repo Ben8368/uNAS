@@ -6,3 +6,4 @@
 - B-004：扩展权限、CSP、offscreen 生命周期和 WASM 加载需在解包扩展真机验证，普通 Web 页面成功不能代替。
 - B-005：压缩包、PDF、图片和媒体都可能出现解码后膨胀；入口预算应依据展开后的资源量，而不是只看输入字节数。
 - B-006：macOS 受限执行环境启动 Playwright `chromium.launchPersistentContext` 时，若日志出现 `mach_port_rendezvous ... Permission denied`、进程 `SIGABRT`，根因是沙箱阻断 Chromium 的 Mach bootstrap，不是产品断言失败；默认 headless 也可能触发系统 Chrome 崩溃弹窗。每个 fixture 都会新建持久化上下文，所以同一权限问题会重复弹窗。应改在允许浏览器进程启动的本地/CI 环境运行 `pnpm test:e2e`，先检查浏览器启动日志，再判断测试断言；不要因此放宽断言或修改业务代码。
+- B-007：系统 Chrome 扩展自动化不能只等待 Service Worker；先确认解包加载方式和 Playwright 默认禁用扩展参数。当前测试使用隔离 Profile + browser-level `Extensions.loadUnpacked`，加载后断开额外 CDP 会话；不得预热 New Tab 掩盖冷启动，不能当作真实工具栏或无调试器休眠证据。
