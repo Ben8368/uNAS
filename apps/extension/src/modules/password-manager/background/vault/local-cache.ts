@@ -61,7 +61,7 @@ export class EncryptedVaultCache implements VaultBackend {
   async markUploaded(id: string, uploadedLocalRevision: RevisionToken, remoteRevision: RevisionToken): Promise<void> {
     await this.store.update(this.vaultId, id, (current) => {
       if (!current) throw new Error("Local Vault cache object is missing");
-      if (current.syncState !== "dirty") return null;
+      if (current.syncState !== "dirty" && !(current.syncState === "conflict" && current.localRevision === uploadedLocalRevision)) return null;
       return { ...current, remoteRevision,
         syncState: current.localRevision === uploadedLocalRevision ? "clean" : "dirty", updatedAt: Date.now() };
     });

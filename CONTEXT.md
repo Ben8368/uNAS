@@ -1,6 +1,6 @@
 # 当前状态
 
-> **最后确认：** 2026-09-24
+> **最后确认：** 2026-09-29
 > **阶段：** Phase 2 / uNAS native module integration
 > **产品代码：** WXT MV3 已接入密码管家、广告拦截、WebDAV Vault、Legacy adapter 和 closed Shadow DOM 浮窗；桌面 App 共用下载外观基线，外观在 Dock 循环切换，WebDAV 配置在分栏设置中，`manage.html` 兼容保留。
 
@@ -33,8 +33,8 @@
 
 ## 最近验证
 
+- 2026-09-29：[创建恢复与并发修复](docs/archive/reviews/2026-09-29-recovery-concurrency.md)：`pnpm verify` 通过（300 passed/1 skipped）；相关 MV3 E2E 7 passed；真实 NAS/多设备仍待验收。
 - 2026-09-24：[Review 修复与技术债自动验收](docs/archive/reviews/2026-09-24-review-remediation.md)：`pnpm verify` 通过（278 passed/1 skipped）；bundled/系统 Chrome MV3 各 81 passed/3 skipped，Web 8 passed；实际 200% 缩放已测，真实手势/触控/NAS 仍待验收。
-- 2026-09-23：[密码管家/WebDAV 审查](docs/archive/reviews/2026-09-23-password-webdav.md)：`pnpm verify` 通过（261 passed/1 skipped）；MV3 E2E 67 passed/3 skipped、Web 8 passed，真实 NAS 与目标 Chrome 人工待验收。
 
 ## 按需入口
 

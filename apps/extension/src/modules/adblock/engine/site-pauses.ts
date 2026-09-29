@@ -10,18 +10,38 @@ const hostPattern = /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/i;
 export interface PausedSite { host: string; expiresAt: number; }
 export interface BlockingSiteState { host?: string; paused: boolean; expiresAt?: number; }
 
-export async function reconcileSitePauses(): Promise<void> {
+// All read/modify/write operations, including alarm reconciliation and rollback,
+// share one queue in the background runtime. Rejections never poison the queue.
+let pauseMutationTail: Promise<void> = Promise.resolve();
+function mutatePauses<T>(operation: () => Promise<T>): Promise<T> {
+  const task = pauseMutationTail.then(operation);
+  pauseMutationTail = task.then(() => undefined, () => undefined);
+  return task;
+}
+
+export function reconcileSitePauses(): Promise<void> {
+  return mutatePauses(reconcileSitePausesExclusive);
+}
+export function pauseCurrentSite(sender: chrome.runtime.MessageSender, tabId?: number): Promise<BlockingSiteState> {
+  return mutatePauses(() => pauseCurrentSiteExclusive(sender, tabId));
+}
+export function resumeCurrentSite(sender: chrome.runtime.MessageSender, tabId?: number): Promise<BlockingSiteState> {
+  return mutatePauses(() => resumeCurrentSiteExclusive(sender, tabId));
+}
+
+async function reconcileSitePausesExclusive(): Promise<void> {
   const current = await readPausedSites();
   const active = current.filter((site) => site.expiresAt > Date.now());
   const existing = (await chrome.declarativeNetRequest.getDynamicRules()).some((rule) => rule.id >= BLOCKING_PAUSE_RULE_ID_BASE && rule.id < BLOCKING_PAUSE_RULE_ID_LIMIT);
   if (active.length || existing) await replacePauseRules(active);
   if (active.length !== current.length) {
-    await chrome.storage.local.set({ [BLOCKING_PAUSE_STORAGE_KEY]: active });
+    try { await chrome.storage.local.set({ [BLOCKING_PAUSE_STORAGE_KEY]: active }); }
+    catch (error) { await replacePauseRules(current).catch(() => {}); throw error; }
     await notifyCosmeticForHosts(current.filter((site) => site.expiresAt <= Date.now()).map((site) => site.host), "refreshCosmeticEffects");
   }
 }
 
-export async function pauseCurrentSite(sender: chrome.runtime.MessageSender, tabId?: number): Promise<BlockingSiteState> {
+async function pauseCurrentSiteExclusive(sender: chrome.runtime.MessageSender, tabId?: number): Promise<BlockingSiteState> {
   const tab = await currentTab(sender, tabId);
   const host = tab.url ? pageHost(tab.url) : null;
   if (!host) throw new Error("当前页面不是可暂停保护的 HTTP(S) 网站");
@@ -34,7 +54,7 @@ export async function pauseCurrentSite(sender: chrome.runtime.MessageSender, tab
   return { host, paused: true, expiresAt: next.find((site) => site.host === host)?.expiresAt };
 }
 
-export async function resumeCurrentSite(sender: chrome.runtime.MessageSender, tabId?: number): Promise<BlockingSiteState> {
+async function resumeCurrentSiteExclusive(sender: chrome.runtime.MessageSender, tabId?: number): Promise<BlockingSiteState> {
   const tab = await currentTab(sender, tabId);
   const host = tab.url ? pageHost(tab.url) : null;
   if (!host) throw new Error("当前页面不是可恢复保护的 HTTP(S) 网站");

@@ -30,13 +30,19 @@ export class VaultSyncEngine {
     try {
       await this.remote.connect();
       for (const record of await this.cache.records()) {
-        if (record.syncState !== "dirty") continue;
+        if (record.syncState === "clean") continue;
+        if (record.syncState === "conflict") {
+          await this.confirmCommittedUpload(record);
+          continue;
+        }
         try {
           const stored = await this.remote.put(record.id, record.data, record.remoteRevision);
           await this.cache.markUploaded(record.id, record.localRevision, stored.revision);
           progress.uploaded += 1;
         } catch (error) {
-          if (error instanceof VaultConflictError || isConflict(error)) await this.cache.markConflict(record.id, record.localRevision, record.remoteRevision);
+          if (error instanceof VaultConflictError || isConflict(error)) {
+            if (!await this.confirmCommittedUpload(record)) await this.cache.markConflict(record.id, record.localRevision, record.remoteRevision);
+          }
           else throw error;
         }
       }
@@ -45,6 +51,15 @@ export class VaultSyncEngine {
     } catch {
       return { ...(await this.status()), state: "offline", ...progress };
     }
+  }
+
+  // A lost PUT response (or failed local acknowledgement) can leave the exact
+  // encrypted bytes already committed remotely. Read only; never retry blindly.
+  private async confirmCommittedUpload(record: Awaited<ReturnType<EncryptedVaultCache["records"]>>[number]): Promise<boolean> {
+    const remote = await this.remote.get(record.id);
+    if (!remote || remote.data.length !== record.data.length || !remote.data.every((byte, index) => byte === record.data[index])) return false;
+    await this.cache.markUploaded(record.id, record.localRevision, remote.revision);
+    return true;
   }
 
   pull(): Promise<number> { return this.exclusive(() => this.runPull()); }

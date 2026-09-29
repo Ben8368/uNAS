@@ -99,9 +99,11 @@ function readKey(database: IDBDatabase): Promise<CryptoKey | undefined> {
 
 function writeKey(database: IDBDatabase, key: CryptoKey): Promise<void> {
   return new Promise((resolve, reject) => {
-    const request = database.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).put(key, DEVICE_KEY_ID);
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error ?? new Error("无法保存本地设备密钥"));
+    const transaction = database.transaction(STORE_NAME, "readwrite");
+    transaction.objectStore(STORE_NAME).put(key, DEVICE_KEY_ID);
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error ?? new Error("无法保存本地设备密钥"));
+    transaction.onabort = () => reject(transaction.error ?? new Error("本地设备密钥保存已中止"));
   });
 }
 

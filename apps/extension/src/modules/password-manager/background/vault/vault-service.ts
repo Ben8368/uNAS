@@ -1,10 +1,11 @@
-import { importVaultKey, exportVaultKey, generateVaultKey } from "../../shared/vault-crypto";
+import { importVaultKey } from "../../shared/vault-crypto";
 import { normalizeWebDavUrl, webDavPermissionOrigin } from "../../../../shared/webdav-url";
 import type { AccountListResult, UniPassAccount } from "../../shared/types";
 import { type AccountRef, type VaultAccount, type VaultAccountUpdate, type VaultApp, type VaultConnection, type VaultConnectionState, type VaultCredential, type VaultProfile } from "../../shared/vault";
 import { openLocalUnlockMaterial, sealLocalUnlockMaterial, type LocalUnlockEnvelope } from "./local-unlock";
 import { openPersistentMaterial, sealPersistentMaterial, type PersistentSecretEnvelope } from "./persistent-secrets";
 import { WebDavBackend } from "./webdav-backend";
+import { createRecoverableVault, finishPendingCreation } from "./pending-creation";
 import { VaultCore } from "./vault-core";
 import { EncryptedVaultCache } from "./local-cache";
 import { VaultSyncEngine, type VaultSyncStatus } from "./sync-engine";
@@ -95,45 +96,52 @@ async function saveWebDavVaultExclusive(input: WebDavVaultInput): Promise<VaultC
   let core: VaultCore;
   let recoveryKey: string | undefined;
   if (input.mode === "create") {
-    vaultKey = await exportVaultKey(await generateVaultKey()); recoveryKey = vaultKey;
-    const vaultId = crypto.randomUUID();
-    core = await VaultCore.create(vaultId, backend, await importVaultKey(vaultKey));
+    ({ core, vaultKey } = await createRecoverableVault(backend, endpoint, resolvedUsername, resolvedAppPassword));
+    recoveryKey = vaultKey;
   } else {
     vaultKey = input.vaultKey?.trim() || previous?.vaultKey || "";
     if (!vaultKey) throw new Error("请粘贴 Vault Key 后重新连接");
     core = await VaultCore.open(backend, await importVaultKey(vaultKey));
     if (input.mode === "reconnect" && existingProfile && profiles.some((profile) => profile.id === core.vaultId && profile.id !== existingProfile.id)) throw new Error("远端 Vault 已对应另一个本地密码库");
   }
-  const profile: VaultProfile = { id: core.vaultId, name, backend: "webdav", enabled: true, endpoint };
-  const nextProfiles = profiles.filter((candidate) => candidate.id !== profile.id && candidate.id !== existingProfile?.id);
-  const material = { username: resolvedUsername, appPassword: resolvedAppPassword, vaultKey };
-  const persistent = await readPersistentEnvelopes();
-  if (existingProfile && existingProfile.id !== profile.id) delete persistent[existingProfile.id];
-  persistent[profile.id] = await sealPersistentMaterial(material);
-  // Profiles and their durable connection material describe one local state.
-  // chrome.storage.local is not a database transaction, but one set minimizes
-  // observable half-written states and gives failures a single recovery point.
-  await chrome.storage.local.set({
-    [PROFILES_KEY]: [...nextProfiles, profile],
-    [PERSISTENT_CONNECTIONS_KEY]: persistent,
-  });
-  if (existingProfile) await clearVaultSyncReady(existingProfile.id);
-  if (profile.id !== existingProfile?.id) await clearVaultSyncReady(profile.id);
-  if (existingProfile?.endpoint && webDavPermissionOrigin(existingProfile.endpoint) !== webDavPermissionOrigin(endpoint)) {
-    await releaseWebDavPermissionIfUnused(existingProfile.endpoint, [...nextProfiles, profile]);
-  }
-  const nextSecrets = { ...secrets };
-  if (existingProfile && existingProfile.id !== profile.id) delete nextSecrets[existingProfile.id];
-  nextSecrets[profile.id] = material satisfies SessionSecret;
-  await chrome.storage.session.set({ [SESSION_SECRETS_KEY]: nextSecrets });
-  // Cache population is local and best effort here: the remote Vault and its
-  // connection state are already committed, so a cache failure remains
-  // recoverable through the existing online path on the next read.
   try {
-    const sync = await new VaultSyncEngine(new EncryptedVaultCache(core.vaultId), backend).synchronize();
-    if (sync.state === "synced") await markVaultSyncReady(core.vaultId);
-  } catch { /* reconnect remains available */ }
-  return { profile, ...(recoveryKey && { recoveryKey }) };
+    const profile: VaultProfile = { id: core.vaultId, name, backend: "webdav", enabled: true, endpoint };
+    const nextProfiles = profiles.filter((candidate) => candidate.id !== profile.id && candidate.id !== existingProfile?.id);
+    const material = { username: resolvedUsername, appPassword: resolvedAppPassword, vaultKey };
+    const persistent = await readPersistentEnvelopes();
+    if (existingProfile && existingProfile.id !== profile.id) delete persistent[existingProfile.id];
+    persistent[profile.id] = await sealPersistentMaterial(material);
+    // Profiles and their durable connection material describe one local state.
+    // chrome.storage.local is not a database transaction, but one set minimizes
+    // observable half-written states and gives failures a single recovery point.
+    await chrome.storage.local.set({
+      [PROFILES_KEY]: [...nextProfiles, profile],
+      [PERSISTENT_CONNECTIONS_KEY]: persistent,
+    });
+    if (existingProfile) await clearVaultSyncReady(existingProfile.id);
+    if (profile.id !== existingProfile?.id) await clearVaultSyncReady(profile.id);
+    if (existingProfile?.endpoint && webDavPermissionOrigin(existingProfile.endpoint) !== webDavPermissionOrigin(endpoint)) {
+      await releaseWebDavPermissionIfUnused(existingProfile.endpoint, [...nextProfiles, profile]);
+    }
+    const nextSecrets = { ...secrets };
+    if (existingProfile && existingProfile.id !== profile.id) delete nextSecrets[existingProfile.id];
+    nextSecrets[profile.id] = material satisfies SessionSecret;
+    await chrome.storage.session.set({ [SESSION_SECRETS_KEY]: nextSecrets });
+    // Cache population is local and best effort here: the remote Vault and its
+    // connection state are already committed, so a cache failure remains
+    // recoverable through the existing online path on the next read.
+    try {
+      const sync = await new VaultSyncEngine(new EncryptedVaultCache(core.vaultId), backend).synchronize();
+      if (sync.state === "synced") await markVaultSyncReady(core.vaultId);
+    } catch { /* reconnect remains available */ }
+    // The connection and key are now durable. Cleanup failure must not hide the
+    // recovery key; a later successful save/removal can retire the journal.
+    try { await finishPendingCreation(endpoint, core.vaultId); } catch { /* retain recoverable journal */ }
+    return { profile, ...(recoveryKey && { recoveryKey }) };
+  } catch (error) {
+    if (recoveryKey) throw new Error("远端密码库已创建，但本地连接尚未保存完成。加密恢复记录已保留，请使用同一 WebDAV 地址再次新建以恢复。", { cause: error });
+    throw error;
+  }
 }
 
 /** Legacy local-unlock messages remain supported for profiles created by older builds. */
@@ -207,6 +215,7 @@ async function removeVaultExclusive(vaultId: string): Promise<void> {
   await chrome.storage.session.set({ [SESSION_SECRETS_KEY]: secrets });
   try { await new EncryptedVaultCache(vaultId).clear(); } catch { /* cache cleanup is best effort after local removal */ }
   await clearVaultSyncReady(vaultId);
+  if (target.endpoint) await finishPendingCreation(target.endpoint, vaultId);
   if (target.endpoint) await releaseWebDavPermissionIfUnused(target.endpoint, remaining);
 }
 export async function vaultCatalog(): Promise<WebDavVaultCatalogResult> {

@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { VaultCore } from './vault-core'
 import { WebDavBackend } from './webdav-backend'
 import { disableLocalUnlock, enableLocalUnlock, lockVault, removeVault, saveWebDavVault, unlockVaultLocally } from './vault-service'
 
-vi.mock('./webdav-backend', () => ({ WebDavBackend: class { async connect() {} } }))
+vi.mock('./webdav-backend', () => ({ WebDavBackend: class { async connect() {} async getManifest() { return null } } }))
 vi.mock('./vault-core', () => ({ VaultCore: class {
   static async open() { return { vaultId: 'B' } }
   static async create(vaultId: string) { return { vaultId } }
@@ -12,7 +13,7 @@ vi.mock('./sync-engine', () => ({ VaultSyncEngine: class {
   async synchronize() { return { state: 'synced', dirty: 0, conflicts: 0 } }
 } }))
 vi.mock('../../shared/vault-crypto', () => ({ importVaultKey: vi.fn(async () => ({})), generateVaultKey: vi.fn(async () => ({})), exportVaultKey: vi.fn(async () => 'test-key') }))
-vi.mock('./persistent-secrets', () => ({ sealPersistentMaterial: vi.fn(async (material: unknown) => ({ sealed: material })) }))
+vi.mock('./persistent-secrets', () => ({ sealPersistentMaterial: vi.fn(async (material: unknown) => ({ sealed: material })), openPersistentMaterial: vi.fn(async (envelope: { sealed: unknown }) => envelope.sealed) }))
 vi.mock('./local-unlock', () => ({
   sealLocalUnlockMaterial: vi.fn(async (_password: string, material: unknown) => ({ sealed: material })),
   openLocalUnlockMaterial: vi.fn(async () => { throw new Error('wrong password') }),
@@ -36,6 +37,7 @@ function storage(data: Record<string, unknown>) {
 const save = () => saveWebDavVault({ mode: 'existing', name: 'B updated', endpoint: 'https://b.example/', ...secret })
 
 beforeEach(() => {
+  vi.restoreAllMocks()
   local = { [profilesKey]: [profile('A'), profile('B')], [persistentKey]: { A: {}, B: {} }, [unlocksKey]: { A: {}, B: {} } }
   session = { [secretsKey]: { A: secret, B: secret } }
   vi.stubGlobal('chrome', { storage: { local: storage(local), session: storage(session) }, permissions: { remove: vi.fn(async () => true) } })
@@ -103,5 +105,34 @@ describe('Vault configuration mutations', () => {
     const results = await Promise.allSettled([removeVault('A'), removeVault('B')])
     expect(results.map(result => result.status)).toEqual(['rejected', 'fulfilled'])
     expect(local[profilesKey]).toEqual([profile('A')])
+  })
+})
+
+describe('recoverable Vault creation service', () => {
+  const create = () => saveWebDavVault({ mode: 'create', name: 'New', endpoint: 'https://new.example/', ...secret })
+  it('does not create a remote manifest when the recovery journal cannot be saved', async () => {
+    const remoteCreate = vi.spyOn(VaultCore, 'create')
+    vi.mocked(chrome.storage.local.set).mockRejectedValueOnce(new Error('storage unavailable'))
+    await expect(create()).rejects.toThrow('storage unavailable')
+    expect(remoteCreate).not.toHaveBeenCalled()
+  })
+
+  it('recovers after the remote manifest was created but profile persistence failed', async () => {
+    const set = chrome.storage.local.set
+    vi.mocked(set).mockImplementationOnce(async value => { Object.assign(local, structuredClone(value)) })
+      .mockRejectedValueOnce(new Error('profile write failed'))
+    const remoteCreate = vi.spyOn(VaultCore, 'create')
+    await expect(create()).rejects.toThrow('加密恢复记录已保留')
+    const id = remoteCreate.mock.calls[0][0]
+    expect(local['unipass-vault-pending-creations']).toHaveProperty('https://new.example/')
+    // A new service-worker instance only needs persisted state to resume.
+    vi.spyOn(WebDavBackend.prototype, 'getManifest').mockResolvedValue({ id: 'manifest', revision: 'v1', data: new Uint8Array([1]) })
+    vi.spyOn(VaultCore, 'open').mockResolvedValue({ vaultId: id } as VaultCore)
+    const connection = await create()
+    expect(connection.recoveryKey).toBe('test-key')
+    expect(connection.profile.id).toBe(id)
+    expect(remoteCreate).toHaveBeenCalledTimes(1)
+    expect(local['unipass-vault-pending-creations']).toEqual({})
+    expect((local[persistentKey] as Record<string, unknown>)[id]).toBeDefined()
   })
 })
