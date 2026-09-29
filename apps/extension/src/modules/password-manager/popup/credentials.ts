@@ -112,7 +112,7 @@ export class CredentialController {
   }
 
   private updateCountdown(): void {
-    this.countdown.textContent = `${Math.max(0, Math.ceil((this.clearAt - Date.now()) / 1000))} 秒后清除`;
+    this.countdown.textContent = `${Math.max(0, Math.ceil((this.clearAt - Date.now()) / 1000))} 秒后清除展示`;
   }
 
   private async copy(field: keyof Credential): Promise<void> {
@@ -120,7 +120,7 @@ export class CredentialController {
     if (!value) return;
     try {
       await navigator.clipboard.writeText(value);
-      this.reportStatus(field === "password" ? "密码已复制" : "账号已复制");
+      this.reportStatus(field === "password" ? "密码已复制；剪贴板不会随展示倒计时清除" : "账号已复制");
     } catch {
       this.reportStatus("浏览器拒绝写入剪贴板", true);
     }

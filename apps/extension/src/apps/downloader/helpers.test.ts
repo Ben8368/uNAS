@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildRetryPayload,
+  mergeTasks,
   getTaskDownloadFilePath,
   isTaskCancellable,
   isTaskRetryable,
@@ -96,4 +97,13 @@ describe('untracked browser download projection', () => {
     expect(getCategoryForTask(external)).toBe('all')
     expect(computeStats([external])).toEqual({ all: 1, downloading: 0, completed: 0, paused: 0, error: 0 })
   })
+})
+
+it('merges a late recovery snapshot without replacing a newer current download state', () => {
+  const current = task({ executionSource: 'real', status: 'completed', progress: 100 })
+  const restored = task({ executionSource: 'real', status: 'running', progress: 25 })
+  const other = task({ id: 'other', executionSource: 'real' })
+  const merged = mergeTasks([current], [restored, other])
+  expect(merged.find(value => value.id === current.id)).toEqual(current)
+  expect(merged.find(value => value.id === other.id)).toEqual(other)
 })

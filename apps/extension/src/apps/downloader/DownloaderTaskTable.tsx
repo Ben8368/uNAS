@@ -1,5 +1,6 @@
 import { type CSSProperties, type KeyboardEvent, type MouseEvent, useCallback, useId, useRef, useState } from 'react'
 
+import { canRecheckDownload } from './browserDownloadState'
 import { StatusIcon } from 'unas-src/apps/downloader/icons'
 import {
   formatRelativeTime,
@@ -207,6 +208,11 @@ export function DownloaderTaskTable({
                     >
                       重试
                     </button>
+                    {canRecheckDownload(task) && <button
+                      type="button" role="menuitem" className="dl-row-menu-item"
+                      title="重新查询已有下载，不会重新下载文件"
+                      onClick={() => runAction('recheck', task, menuId)}
+                    >重新检查</button>}
                   </div>
                 </span>
               </div>

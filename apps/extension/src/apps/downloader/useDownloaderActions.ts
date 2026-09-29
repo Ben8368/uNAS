@@ -15,6 +15,7 @@ interface UseDownloaderActionsOpts {
   selectedTasks: DownloadTask[]
   selectedClearableTasks: DownloadTask[]
   refreshLists: () => Promise<void>
+  recheckDownload: (task: DownloadTask) => void
   setOptimisticTasks: React.Dispatch<React.SetStateAction<DownloadTask[]>>
   onOptimisticTaskCreated?: (task: DownloadTask) => void
 }
@@ -32,6 +33,7 @@ export function useDownloaderActions({
   selectedTasks,
   selectedClearableTasks,
   refreshLists,
+  recheckDownload,
   setOptimisticTasks,
   onOptimisticTaskCreated,
 }: UseDownloaderActionsOpts) {
@@ -100,6 +102,7 @@ export function useDownloaderActions({
   const handleRowMenuAction = useCallback(
     async (action: DownloaderRowMenuAction, task: DownloadTask) => {
       setActionError('')
+      if (action === 'recheck') { recheckDownload(task); return }
       if (action === 'copy_url') {
         const url = getTaskSourceUrl(task)
         if (!url) {
@@ -136,7 +139,7 @@ export function useDownloaderActions({
         }
       }
     },
-    [onOptimisticTaskCreated, refreshLists, setOptimisticTasks],
+    [onOptimisticTaskCreated, refreshLists, recheckDownload, setOptimisticTasks],
   )
 
   return {

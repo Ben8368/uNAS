@@ -3,7 +3,6 @@ import type { LocalUnlockMaterial } from "./local-unlock";
 const DB_NAME = "unipass-vault-device-secrets-v1";
 const STORE_NAME = "keys";
 const DEVICE_KEY_ID = "device-key";
-const FALLBACK_KEY = "unipass-vault-device-key-fallback";
 const NONCE_BYTES = 12;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -66,18 +65,7 @@ async function deviceKey(create: boolean): Promise<CryptoKey | undefined> {
       database.close();
     }
   }
-  const stored = (await chrome.storage.local.get(FALLBACK_KEY))[FALLBACK_KEY];
-  if (typeof stored === "string" && stored) {
-    return crypto.subtle.importKey("raw", asBufferSource(fromBase64(stored)), { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
-  }
-  if (!create) return undefined;
-  const raw = crypto.getRandomValues(new Uint8Array(32));
-  await chrome.storage.local.set({ [FALLBACK_KEY]: base64(raw) });
-  try {
-    return await crypto.subtle.importKey("raw", asBufferSource(raw), { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
-  } finally {
-    raw.fill(0);
-  }
+  throw new Error("当前环境缺少 IndexedDB，无法安全保存或读取本地 WebDAV 设备密钥");
 }
 
 function openDatabase(): Promise<IDBDatabase> {

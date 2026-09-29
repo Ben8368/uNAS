@@ -33,6 +33,10 @@ self.addEventListener('message', (event: MessageEvent<MusicWorkerRequest>) => {
     post({ type: 'error', id: request.id, code: 'busy', message: '已有本地音乐任务正在执行。' })
     return
   }
+  if (request.type === 'hash') {
+    void hashOutput(request)
+    return
+  }
   void decrypt(request)
 })
 
@@ -156,4 +160,16 @@ function concat(...parts: Uint8Array[]) {
 
 function outputFormatFor(value: string | undefined): MusicOutputFormat {
   return outputFormat(value)
+}
+
+/** Hash the committed OPFS snapshot in the Worker, never allocate its full buffer in the UI realm. */
+async function hashOutput(request: Extract<MusicWorkerRequest, { type: 'hash' }>) {
+  active = { id: request.id, controller: new AbortController() }
+  try {
+    if (request.file.size > MUSIC_LIMITS.maxOutputBytes) throw new Error('音乐输出超过校验预算。')
+    const digest = await crypto.subtle.digest('SHA-256', await request.file.arrayBuffer())
+    post({ type: 'hashed', id: request.id, sha256: Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2, '0')).join('') })
+  } catch {
+    post({ type: 'error', id: request.id, code: 'hash-failed', message: '音乐输出一致性校验失败。' })
+  } finally { active = undefined }
 }

@@ -9,6 +9,23 @@ const endpoint = 'https://dav.example/vault/'
 let local: Record<string, unknown>
 beforeEach(() => {
   local = {}
+  let deviceKey: CryptoKey | undefined
+  vi.stubGlobal('indexedDB', { open: () => {
+    const database = { close() {}, transaction: (_store: string, mode: string) => {
+      const transaction: any = { objectStore: () => ({
+        get: () => {
+          const request: any = { result: deviceKey }
+          queueMicrotask(() => request.onsuccess())
+          return request
+        },
+        put: (key: CryptoKey) => { deviceKey = structuredClone(key); queueMicrotask(() => transaction.oncomplete()) },
+      }) }
+      return transaction
+    } }
+    const request: any = { result: database }
+    queueMicrotask(() => request.onsuccess())
+    return request
+  } })
   vi.stubGlobal('chrome', { storage: { local: {
     get: vi.fn(async (key: string) => structuredClone({ [key]: local[key] })),
     set: vi.fn(async (value: Record<string, unknown>) => { Object.assign(local, structuredClone(value)) }),
@@ -100,7 +117,11 @@ describe('durable encrypted creation journal', () => {
 
   it('never writes remotely if sealing the device material fails', async () => {
     const remote = backend()
-    vi.mocked(chrome.storage.local.set).mockRejectedValueOnce(new Error('device key write failed'))
+    vi.stubGlobal('indexedDB', { open: () => {
+      const request: any = { error: new Error('device key write failed') }
+      queueMicrotask(() => request.onerror())
+      return request
+    } })
     await expect(create(remote)).rejects.toThrow('device key write failed')
     expect(remote.put).not.toHaveBeenCalled()
   })

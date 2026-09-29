@@ -24,7 +24,7 @@ import { useDownloaderTaskData } from 'unas-src/apps/downloader/useDownloaderTas
 import type { FetchTaskDraft } from '#contracts'
 
 export function DownloaderApp() {
-  const { historyTasks, queueTasks, mergedTasks, pollError, refreshLists, setOptimisticTasks } = useDownloaderTaskData()
+  const { historyTasks, queueTasks, mergedTasks, pollError, refreshLists, recheckDownload, setOptimisticTasks } = useDownloaderTaskData()
   const [downloadNotice, setDownloadNotice] = useState('')
 
   const form = useDownloaderForm()
@@ -33,6 +33,7 @@ export function DownloaderApp() {
     selectedTasks: selection.selectedTasks,
     selectedClearableTasks: selection.selectedClearableTasks,
     refreshLists,
+    recheckDownload,
     setOptimisticTasks,
     onOptimisticTaskCreated: (task) => selection.setSelectedTaskId(task.id),
   })

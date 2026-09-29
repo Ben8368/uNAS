@@ -12,11 +12,13 @@ export type MusicOutputFormat = 'flac' | 'mp3' | 'ogg' | 'wav' | 'unknown'
 export type MusicValidationDepth = 'audio-signature'
 
 export type MusicWorkerRequest =
+  | { type: 'hash'; id: string; file: File }
   | { type: 'decrypt'; id: string; file: File }
   | { type: 'cancel'; id: string }
   | { type: 'ack'; id: string }
 
 export type MusicWorkerMessage =
+  | { type: 'hashed'; id: string; sha256: string }
   | { type: 'started'; id: string; format: MusicFormat; outputFormat: MusicOutputFormat; inputBytes: number; audioBytes: number; cipher?: string }
   | { type: 'chunk'; id: string; buffer: ArrayBuffer; bytes: number }
   | { type: 'complete'; id: string; outputBytes: number; outputFormat: Exclude<MusicOutputFormat, 'unknown'>; validationDepth: MusicValidationDepth }

@@ -33,8 +33,8 @@
 
 ## 最近验证
 
+- 2026-09-29：[下载、ZIP 与音乐暂存修复](docs/archive/reviews/2026-09-29-download-archive-music.md)：`pnpm verify` 通过（319 passed/1 skipped）；系统 Chrome 154 相关 MV3 E2E 21 passed，原生目录/真实媒体/峰值内存仍待专项验收。
 - 2026-09-29：[创建恢复与并发修复](docs/archive/reviews/2026-09-29-recovery-concurrency.md)：`pnpm verify` 通过（300 passed/1 skipped）；相关 MV3 E2E 7 passed；真实 NAS/多设备仍待验收。
-- 2026-09-24：[Review 修复与技术债自动验收](docs/archive/reviews/2026-09-24-review-remediation.md)：`pnpm verify` 通过（278 passed/1 skipped）；bundled/系统 Chrome MV3 各 81 passed/3 skipped，Web 8 passed；实际 200% 缩放已测，真实手势/触控/NAS 仍待验收。
 
 ## 按需入口
 

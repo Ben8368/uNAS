@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { getActiveTasks, getWeeklyHistory, getDemoSnapshot, subscribeDemo } from 'unas-src/api'
 import { getBrowserDownload, listBrowserDownloads } from 'unas-src/runtime/browserDownloads'
+import { abortableRequest } from 'unas-src/application/pollJob'
+import { applyDownloadObservation, canRecheckDownload, type DownloadObservation } from './browserDownloadState'
 import { mergeTasks } from 'unas-src/apps/downloader/helpers'
 import type { DownloadTask } from 'unas-src/apps/downloader/types'
 import { useVisibilityPolling } from 'unas-src/hooks/useVisibilityPolling'
@@ -94,63 +96,62 @@ export function useDownloaderTaskData() {
   }, [])
 
   useEffect(() => {
-    let stopped = false
+    const controller = new AbortController()
     void listBrowserDownloads().then(async records => {
-      const tasks = await Promise.all(records.map(async record => {
-        const info = await getBrowserDownload(record.downloadId).catch(() => null)
-        if (!info) return null
-        const status = info.state === 'complete' ? 'completed' : info.error === 'USER_CANCELED' ? 'cancelled' : info.state === 'interrupted' ? 'failed' : 'running'
-        return {
-          executionSource: 'real' as const,
-          id: `browser-download-${record.downloadId}`,
-          type: 'download',
-          name: record.url,
-          source_url: record.url,
-          status,
-          progress: info.totalBytes > 0 ? Math.min(100, info.bytesReceived / info.totalBytes * 100) : status === 'completed' ? 100 : 0,
-          stage: status === 'completed' ? '浏览器下载完成' : status === 'cancelled' ? '浏览器下载已取消' : status === 'failed' ? '浏览器下载中断' : '浏览器下载中',
+      const restored = await Promise.all(records.map(async record => {
+        const task: DownloadTask = {
+          executionSource: 'real', id: `browser-download-${record.downloadId}`, type: 'download',
+          name: record.url, source_url: record.url, status: 'running', progress: 0, stage: '正在读取浏览器下载状态',
           created_at: Math.floor(record.createdAt / 1000),
           params: { url: record.url, urls: [record.url], route: 'browser', browser_download_id: record.downloadId },
-          error: info.error,
-        } satisfies DownloadTask
+        }
+        const observation = await observeDownload(record.downloadId, controller.signal)
+        return applyDownloadObservation(task, observation)
       }))
-      const restored = tasks.filter((task): task is NonNullable<typeof task> => task !== null)
-      if (!stopped) setOptimisticTasks(prev => mergeTasks(restored, prev))
+      // Recovery is an older snapshot: preserve any state already observed/created in this page.
+      if (!controller.signal.aborted) setOptimisticTasks(prev => mergeTasks(prev, restored))
     }).catch(() => {})
-    return () => { stopped = true }
+    return () => controller.abort()
   }, [])
 
   useVisibilityPolling(refreshLists, 2000)
 
-  // Chrome owns the actual transfer for real browser-download tasks. Poll only
-  // the small status record here; bytes never enter the extension workspace.
-  // A stable scalar dependency avoids restarting the immediate poll whenever
-  // a status update creates a new task array. External/terminal tasks do not poll.
   const browserDownloadKey = optimisticTasks
     .filter(task => task.executionSource === 'real' && task.params?.browser_download_tracked !== false &&
       (task.status === 'pending' || task.status === 'running') && typeof task.params?.browser_download_id === 'number')
     .map(task => task.params!.browser_download_id as number).sort((a, b) => a - b).join(',')
+  const observationFailures = useRef(new Map<number, number>())
   useEffect(() => {
-    if (!browserDownloadKey) return
-    const browserDownloadIds = browserDownloadKey.split(',').map(Number)
-    let stopped = false
+    if (!browserDownloadKey) { observationFailures.current.clear(); return }
+    const ids = browserDownloadKey.split(',').map(Number)
+    const failures = observationFailures.current
+    for (const id of failures.keys()) if (!ids.includes(id)) failures.delete(id)
+    const controller = new AbortController()
+    let timer: ReturnType<typeof setTimeout> | undefined
     const sync = async () => {
-      const statuses = await Promise.all(browserDownloadIds.map(async id => [id, await getBrowserDownload(id).catch(() => null)] as const))
-      if (stopped) return
-      setOptimisticTasks(prev => prev.map(task => {
-        const id = task.params?.browser_download_id
-        if (typeof id !== 'number') return task
-        const info = statuses.find(([downloadId]) => downloadId === id)?.[1]
-        if (!info) return task
-        const progress = info.totalBytes > 0 ? Math.min(100, info.bytesReceived / info.totalBytes * 100) : task.progress
-        const status = info.state === 'complete' ? 'completed' : info.error === 'USER_CANCELED' ? 'cancelled' : info.state === 'interrupted' ? 'failed' : 'running'
-        return { ...task, status, progress, stage: status === 'completed' ? '浏览器下载完成' : status === 'cancelled' ? '浏览器下载已取消' : status === 'failed' ? '浏览器下载中断' : '浏览器下载中', error: info.error }
+      const observations = await Promise.all(ids.map(async id => {
+        const observation = await observeDownload(id, controller.signal)
+        const count = observation.error !== undefined ? (failures.get(id) ?? 0) + 1 : 0
+        if (!controller.signal.aborted) failures.set(id, count)
+        return [id, observation, count] as const
       }))
+      if (controller.signal.aborted) return
+      setOptimisticTasks(prev => prev.map(task => {
+        if (task.status !== 'running' && task.status !== 'pending') return task
+        const observed = observations.find(([id]) => id === task.params?.browser_download_id)
+        return observed ? applyDownloadObservation(task, observed[1], observed[2]) : task
+      }))
+      timer = setTimeout(() => { void sync() }, 2000)
     }
     void sync()
-    const timer = window.setInterval(() => { void sync() }, 2000)
-    return () => { stopped = true; window.clearInterval(timer) }
+    return () => { controller.abort(); clearTimeout(timer) }
   }, [browserDownloadKey, setOptimisticTasks])
+  const recheckDownload = useCallback((task: DownloadTask) => {
+    if (!canRecheckDownload(task)) return
+    observationFailures.current.delete(task.params!.browser_download_id as number)
+    setOptimisticTasks(prev => prev.map(current => current.id === task.id && canRecheckDownload(current)
+      ? { ...current, status: 'pending', stage: '正在重新检查浏览器下载状态', error: undefined } : current))
+  }, [])
   useEffect(() => {
     const unsubscribe = subscribeDemo(() => { void refreshLists().catch(() => {}) })
     return () => { unsubscribe(); taskRequestGenerationRef.current++ }
@@ -175,6 +176,12 @@ export function useDownloaderTaskData() {
     mergedTasks,
     pollError,
     refreshLists,
+    recheckDownload,
     setOptimisticTasks,
   }
+}
+
+async function observeDownload(id: number, signal: AbortSignal): Promise<DownloadObservation> {
+  try { return { info: await abortableRequest(() => getBrowserDownload(id), signal, 10_000) } }
+  catch (error) { return { error: getErrorMessage(error) || '无法读取 Chrome 下载状态。' } }
 }

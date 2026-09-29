@@ -436,23 +436,36 @@ export async function createAuthorizedMarkdownFile(path: string, requestedName: 
 
 /** Extracts one verified ZIP into a new sibling directory; prepared data is never committed before CRC validation completes. */
 export async function extractAuthorizedZip(path: string, requestedName: string) {
-  await requireWritableDirectory()
   if (activeExtraction) throw new Error('已有 ZIP 解压正在进行，请先完成或取消。')
-  const route = routeFor(path)
-  const { name, file } = await readDirectFile(route.handle, requestedName)
-  if (!name.toLowerCase().endsWith('.zip')) throw new Error('当前仅支持 ZIP 文件。')
-  if (file.size > ZIP_EXTRACTION_LIMITS.maxInputBytes) throw new Error('ZIP 输入超过当前 50 MiB 上限。')
-  if (!await looksLikeZip(file)) throw new Error('所选文件不是可识别的 ZIP；不会只依据扩展名解压。')
-
-  const run = prepareZipExtraction(file)
-  activeExtraction = run
+  let cancelled = false
+  let committing = false
+  let run: ReturnType<typeof prepareZipExtraction> | undefined
+  const operation = { cancel: () => { if (!committing) { cancelled = true; run?.cancel() } } }
+  activeExtraction = operation
+  const checkCancelled = () => { if (cancelled) throw new Error('已取消解压；未向目录写入任何文件。') }
   try {
-    const prepared = await run.result
-    activeExtraction = undefined
-    const outputName = await nextExtractionDirectoryName(route.handle, name)
-    return await commitPreparedArchive(route.handle, outputName, prepared)
+    if (typeof navigator.locks?.request !== 'function') throw new Error('当前浏览器没有安全隔离并发解压的锁能力。')
+    // One origin-wide commit owner also covers different pages with the same directory grant.
+    return await navigator.locks.request('unas-zip-extraction', { ifAvailable: true }, async lock => {
+      if (!lock) throw new Error('其他页面已有 ZIP 解压正在进行，请稍后重试。')
+      checkCancelled()
+      await requireWritableDirectory()
+      const route = routeFor(path)
+      const { name, file } = await readDirectFile(route.handle, requestedName)
+      if (!name.toLowerCase().endsWith('.zip')) throw new Error('当前仅支持 ZIP 文件。')
+      if (file.size > ZIP_EXTRACTION_LIMITS.maxInputBytes) throw new Error('ZIP 输入超过当前 50 MiB 上限。')
+      if (!await looksLikeZip(file)) throw new Error('所选文件不是可识别的 ZIP；不会只依据扩展名解压。')
+      checkCancelled()
+      run = prepareZipExtraction(file)
+      const prepared = await run.result
+      checkCancelled()
+      const outputName = await nextExtractionDirectoryName(route.handle, name)
+      checkCancelled()
+      committing = true
+      return await commitPreparedArchive(route.handle, outputName, prepared)
+    })
   } finally {
-    if (activeExtraction === run) activeExtraction = undefined
+    if (activeExtraction === operation) activeExtraction = undefined
   }
 }
 

@@ -44,3 +44,11 @@ describe('device key transaction durability', () => {
     expect(database.close).toHaveBeenCalledOnce()
   })
 })
+
+it('fails closed without IndexedDB instead of writing a raw key to local storage', async () => {
+  vi.stubGlobal('indexedDB', undefined)
+  const set = vi.fn()
+  vi.stubGlobal('chrome', { storage: { local: { get: vi.fn(), set } } })
+  await expect(sealPersistentMaterial({ username: 'test', appPassword: 'synthetic', vaultKey: 'synthetic-key' })).rejects.toThrow('缺少 IndexedDB')
+  expect(set).not.toHaveBeenCalled()
+})

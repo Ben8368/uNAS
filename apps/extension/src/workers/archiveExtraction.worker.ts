@@ -2,7 +2,7 @@
 
 import { BlobReader, BlobWriter, configure, ZipReader } from '@zip.js/zip.js'
 
-import { safeArchivePath, validateArchiveEntries } from 'unas-src/archive/zipSafety'
+import { ZIP_EXTRACTION_LIMITS, safeArchivePath, validateArchiveEntries } from 'unas-src/archive/zipSafety'
 
 configure({ useWebWorkers: false })
 
@@ -42,7 +42,12 @@ async function extract(request: ExtractRequest) {
   active = { id: request.id, controller }
   const reader = new ZipReader(new BlobReader(request.file))
   try {
-    const entries = await reader.getEntries({ strictness: 'strict', filenameValidation: 'strict' })
+    const entries = []
+    for await (const entry of reader.getEntriesGenerator({ strictness: 'strict', filenameValidation: 'strict' })) {
+      if (controller.signal.aborted) throw new DOMException('已取消解压。', 'AbortError')
+      if (entries.length >= ZIP_EXTRACTION_LIMITS.maxEntries) throw new Error('ZIP_TOO_MANY_ENTRIES')
+      entries.push(entry)
+    }
     const planned = validateArchiveEntries(entries.map((entry) => ({
       path: entry.filename,
       directory: entry.directory,
