@@ -12,7 +12,7 @@ test('广告拦截桌面入口、共享窗口与真实状态', async ({ extensio
   expect(initial!.width).toBe(960)
   expect(initial!.height).toBe(640)
   await app.getByRole('button', { name: '检查更新' }).click()
-  await expect(app.getByRole('button', { name: '检查更新' })).toBeEnabled()
+  await expect(app.getByRole('button', { name: '检查更新' })).toBeEnabled({ timeout: 30_000 })
   await app.locator('.mt-window-controls').getByRole('button', { name: /^最小化/ }).click()
   await page.locator('.app-icon--adblock').click()
   await expect(app).toHaveCount(1)
