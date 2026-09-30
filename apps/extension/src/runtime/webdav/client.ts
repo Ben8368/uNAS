@@ -6,6 +6,7 @@ export interface WebDavRequest {
   body?: Uint8Array
   signal?: AbortSignal
   readBody?: boolean
+  maxResponseBytes?: number
 }
 export interface WebDavResponse { status: number; ok: boolean; headers: Headers; data: Uint8Array }
 export type WebDavErrorCode = 'invalid-path' | 'resource-limit' | 'timeout' | 'cancelled' | 'network' | 'authentication' | 'permission'
@@ -37,6 +38,8 @@ export class WebDavClient {
   async request(method: WebDavMethod, path = '', options: WebDavRequest = {}): Promise<WebDavResponse> {
     const url = this.resolvePath(path)
     if (options.body && options.body.byteLength > this.maxBytes) throw new WebDavError('resource-limit', 'WebDAV 请求超过大小限制')
+    const responseBudget = options.maxResponseBytes ?? this.maxBytes
+    if (!Number.isSafeInteger(responseBudget) || responseBudget < 1 || responseBudget > this.maxBytes) throw new WebDavError('resource-limit', 'WebDAV 响应预算无效')
     const controller = new AbortController()
     const signal = options.signal ? AbortSignal.any([options.signal, controller.signal]) : controller.signal
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs)
@@ -52,7 +55,7 @@ export class WebDavClient {
       })
       if (response.status === 401) throw new WebDavError('authentication', 'WebDAV 认证失败（HTTP 401），请确认地址和 App Password')
       if (response.status === 403) throw new WebDavError('permission', 'WebDAV 权限不足，请检查目标目录权限')
-      const data = response.ok && options.readBody ? await readBounded(response, this.maxBytes) : new Uint8Array()
+      const data = response.ok && options.readBody ? await readBounded(response, responseBudget) : new Uint8Array()
       return { status: response.status, ok: response.ok, headers: response.headers, data }
     } catch (error) {
       if (options.signal?.aborted) throw new WebDavError('cancelled', 'WebDAV 请求已取消')

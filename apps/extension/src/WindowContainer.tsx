@@ -1,5 +1,5 @@
 import { getRegisteredApp } from 'unas-src/appRegistry'
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { Suspense, useEffect, useLayoutEffect, useRef } from 'react'
 
 import { AppWindow } from 'unas-src/components/AppWindow'
 import { WorkspaceAppContent } from 'unas-src/components/WorkspaceAppContent'
@@ -52,6 +52,7 @@ export function WindowContainer() {
         const registeredApp = getRegisteredApp(w.appType)
         if (!registeredApp) return null
         const C = registeredApp.component
+        const HeaderStatus = registeredApp.headerStatus
         return (
           <AppWindow
             key={w.id}
@@ -66,6 +67,7 @@ export function WindowContainer() {
             isActive={!w.isMinimized && w.zIndex === maxZ}
             zIndex={w.zIndex}
             appType={w.appType}
+            headerStatus={HeaderStatus ? <Suspense fallback={null}><HeaderStatus /></Suspense> : undefined}
             onClose={closeWindow}
             onMinimize={minimizeWindow}
             onMaximize={maximizeWindow}

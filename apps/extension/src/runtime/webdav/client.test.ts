@@ -51,6 +51,15 @@ describe('shared WebDAV transport', () => {
     await expect(create().request('GET', 'x')).rejects.toMatchObject({ code: 'network', message: '网络请求失败，请稍后重试' })
   })
 
+  it('enforces a smaller per-request listing budget without changing file transfer limits', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(new Uint8Array(3))))
+    await expect(create(16).request('PROPFIND', '', { readBody: true, maxResponseBytes: 2 })).rejects.toMatchObject({ code: 'resource-limit' })
+    expect((await create(16).request('GET', 'x', { readBody: true })).data).toHaveLength(3)
+    const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher)
+    await expect(create(16).request('GET', 'x', { maxResponseBytes: 17 })).rejects.toMatchObject({ code: 'resource-limit' })
+    expect(fetcher).not.toHaveBeenCalled()
+  })
+
   it('honors cancellation and releases pending response-body reads', async () => {
     const controller = new AbortController()
     vi.stubGlobal('fetch', vi.fn(async (_url, init: RequestInit) => new Response(new ReadableStream({ start(c) {

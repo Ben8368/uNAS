@@ -1,0 +1,188 @@
+import { test, expect } from './fixtures'
+
+test('file locations share download navigation and cache files survive reopen, trash and restore', async ({ extension }, testInfo) => {
+  const page = await extension.context.newPage()
+  await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
+  await page.locator('.app-icon--file-manager').click()
+  const app = page.locator('[data-app-id="file-manager"]')
+  const navigation = app.getByRole('navigation', { name: '文件位置' })
+  await expect(navigation.getByRole('button')).toHaveText(['WebDAV', '本地文件', '下载', '回收站', '临时缓存'])
+  const sidebar = app.locator('.app-sidebar')
+  await expect(sidebar).toHaveCSS('width', '200px')
+  await navigation.getByRole('button', { name: '下载', exact: true }).click()
+  await expect(app.getByRole('heading', { name: '浏览器下载' })).toBeVisible()
+  await expect(app).toContainText('文件保存在浏览器设置的位置')
+  await expect(app).toContainText('这里不需要选择文件夹')
+  await expect(app.getByRole('button', { name: '打开 Chrome 下载页面' })).toBeVisible()
+  await navigation.getByRole('button', { name: '临时缓存', exact: true }).click()
+  await expect(app.getByRole('button', { name: '添加缓存文件' })).toBeEnabled()
+  const fileChooser = page.waitForEvent('filechooser')
+  await app.getByRole('button', { name: '添加缓存文件' }).click()
+  await (await fileChooser).setFiles({ name: '缓存 proof.txt', mimeType: 'text/plain', buffer: Buffer.from('uNAS file cache evidence v1') })
+  await expect(app.getByRole('button', { name: '移入回收站 缓存 proof.txt' })).toBeVisible()
+  const download = page.waitForEvent('download')
+  await app.getByRole('button', { name: '导出 缓存 proof.txt' }).click()
+  expect((await download).suggestedFilename()).toBe('缓存 proof.txt')
+  await expect(app.getByRole('status')).toContainText('浏览器导出')
+  const payload = await page.evaluate(async () => {
+    const root = await navigator.storage.getDirectory()
+    const cache = await root.getDirectoryHandle('unas-file-manager-cache-v1') as FileSystemDirectoryHandle & { entries(): AsyncIterableIterator<[string, FileSystemHandle]> }
+    for await (const [id] of cache.entries()) {
+      const item = await cache.getDirectoryHandle(id)
+      const record = JSON.parse(await (await (await item.getFileHandle('record.json')).getFile()).text())
+      if (record.name === '缓存 proof.txt') return { text: await (await (await item.getFileHandle('payload')).getFile()).text(), expiresAt: record.expiresAt }
+    }
+    throw new Error('cache payload absent')
+  })
+  expect(payload.text).toBe('uNAS file cache evidence v1')
+  await app.getByRole('button', { name: '移入回收站 缓存 proof.txt' }).click()
+  await expect(app.getByRole('button', { name: '移入回收站 缓存 proof.txt' })).toHaveCount(0)
+  await navigation.getByRole('button', { name: '回收站', exact: true }).click()
+  await app.getByRole('button', { name: '恢复 缓存 proof.txt' }).click()
+  await expect(app.getByRole('button', { name: '恢复 缓存 proof.txt' })).toHaveCount(0)
+  await app.getByRole('button', { name: '关闭文件管理' }).click()
+  await page.locator('.app-icon--file-manager').click()
+  await navigation.getByRole('button', { name: '临时缓存', exact: true }).click()
+  await expect(app.getByRole('button', { name: '导出 缓存 proof.txt' })).toBeVisible()
+  const persistence = app.getByRole('button', { name: '申请持久存储', exact: true })
+  if (await persistence.count()) {
+    await persistence.click()
+    await expect.poll(() => app.getByRole('alert').count().then(count => count || app.getByRole('button', { name: '存储已保护', exact: true }).count())).toBeGreaterThan(0)
+    const persisted = await page.evaluate(async () => await navigator.storage.persisted())
+    await testInfo.attach('persistence-outcome', { body: JSON.stringify({ persisted, mechanism: 'actual navigator.storage.persist()', optionalUnlimitedStorage: false }), contentType: 'application/json' })
+    if (persisted) await expect(app.getByRole('button', { name: '存储已保护', exact: true })).toBeDisabled()
+    else {
+      await expect(app.getByRole('alert')).toContainText('未批准')
+      await expect(app.getByRole('button', { name: '申请持久存储', exact: true })).toBeEnabled()
+      await expect(app.getByRole('button', { name: '导出 缓存 proof.txt' })).toBeVisible()
+    }
+  }
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport)
+    expect(await app.locator('.fm-workspace').evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1)
+    const shot = testInfo.outputPath(`cache-${viewport.width}.png`)
+    await page.screenshot({ path: shot, animations: 'disabled' })
+    await testInfo.attach(`cache-${viewport.width}`, { path: shot, contentType: 'image/png' })
+  }
+  await page.setViewportSize({ width: 1440, height: 900 })
+  const initialZoom = await page.evaluate(async () => {
+    const tab = await browser.tabs.getCurrent()
+    if (tab?.id == null) throw new Error('Missing cache probe tab')
+    return { id: tab.id, zoom: await browser.tabs.getZoom(tab.id) }
+  })
+  try {
+    await page.evaluate(async id => browser.tabs.setZoom(id, 2), initialZoom.id)
+    expect(await page.evaluate(async id => browser.tabs.getZoom(id), initialZoom.id)).toBe(2)
+    const exportButton = app.getByRole('button', { name: '导出 缓存 proof.txt' })
+    await exportButton.scrollIntoViewIfNeeded(); await exportButton.focus()
+    await expect(exportButton).toBeFocused()
+    expect(await exportButton.evaluate(element => { const bounds = element.getBoundingClientRect(); return bounds.top >= 0 && bounds.bottom <= innerHeight })).toBe(true)
+    await page.screenshot({ path: testInfo.outputPath('cache-actual-zoom-200.png'), animations: 'disabled' })
+  } finally { await page.evaluate(async value => browser.tabs.setZoom(value.id, value.zoom), initialZoom) }
+  await page.evaluate(() => { document.documentElement.dataset.highContrast = 'true'; document.documentElement.dataset.reduceTransparency = 'true' })
+  await expect(app).toHaveCSS('backdrop-filter', 'none')
+  await page.screenshot({ path: testInfo.outputPath('cache-reduced-high-contrast.png'), animations: 'disabled' })
+  await page.evaluate(() => { document.documentElement.dataset.highContrast = 'false'; document.documentElement.dataset.reduceTransparency = 'false' })
+  await app.getByRole('button', { name: '移入回收站 缓存 proof.txt' }).click()
+  await navigation.getByRole('button', { name: '回收站', exact: true }).click()
+  page.once('dialog', dialog => dialog.accept())
+  await app.getByRole('button', { name: '彻底删除 缓存 proof.txt' }).click()
+  await expect(app).toContainText('回收站为空')
+  expect(extension.errors).toEqual([])
+  expect(extension.remoteRequests).toEqual([])
+})
+
+test('WebDAV file UI enforces consent, bounded operations, conflicts, cancellation and href isolation', async ({ extension }, testInfo) => {
+  const page = await extension.context.newPage()
+  await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
+  await page.evaluate(() => {
+    const state = { mode: 'valid', deleted: false, uploaded: false, folder: false, requests: [] as Array<{ method: string; path: string; depth: string | null; match: string | null; none: string | null; bytes: number }> }
+    Object.assign(globalThis, { davFileProbe: state })
+    browser.permissions.request = (async () => state.mode !== 'denied') as typeof browser.permissions.request
+    browser.permissions.contains = (async () => true) as typeof browser.permissions.contains
+    const originalFetch = globalThis.fetch.bind(globalThis)
+    globalThis.fetch = async (input, options) => {
+      if (!String(input).startsWith('https://dav-files.example/selected/')) return await originalFetch(input, options)
+      const path = new URL(String(input)).pathname
+      const method = options?.method ?? 'GET'
+      const headers = new Headers(options?.headers)
+      state.requests.push({ method, path, depth: headers.get('Depth'), match: headers.get('If-Match'), none: headers.get('If-None-Match'), bytes: options?.body instanceof ArrayBuffer ? options.body.byteLength : 0 })
+      if (state.mode === 'pending') return await new Promise<Response>((_resolve, reject) => options?.signal?.addEventListener('abort', () => reject(new DOMException('cancelled', 'AbortError')), { once: true }))
+      if (state.mode === 'conflict' && method === 'DELETE') return new Response(null, { status: 412 })
+      if (method === 'MKCOL') { state.folder = true; return new Response(null, { status: 201 }) }
+      if (method === 'PUT') { state.uploaded = true; return new Response(null, { status: 201 }) }
+      if (method === 'DELETE') { state.deleted = true; return new Response(null, { status: 204 }) }
+      if (method === 'GET') return new Response('DAV file evidence')
+      const entry = (href: string, dir: boolean, etag = '&quot;v1&quot;') => `<d:response><d:href>${href}</d:href><d:propstat><d:prop><d:resourcetype>${dir ? '<d:collection/>' : ''}</d:resourcetype><d:getcontentlength>17</d:getcontentlength><d:getetag>${etag}</d:getetag></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response>`
+      let body = entry(path, true)
+      if (path === '/selected/') {
+        if (!state.deleted) body += entry('/selected/proof.txt', false)
+        body += entry('/selected/nested/', true)
+        if (state.uploaded) body += entry('/selected/upload.txt', false)
+        if (state.folder) body += entry('/selected/new-folder/', true)
+      }
+      if (state.mode === 'outside') body += entry('https://other.example/secret.txt', false)
+      if (state.mode === 'encoded') body += entry('/selected/%2e%2e%2Foutside.txt', false)
+      if (state.mode === 'failed-property') body = `<d:response><d:href>${path}</d:href><d:propstat><d:prop><d:resourcetype><d:collection/></d:resourcetype></d:prop><d:status>HTTP/1.1 403 Forbidden</d:status></d:propstat></d:response>`
+      return new Response(`<d:multistatus xmlns:d="DAV:">${body}</d:multistatus>`, { status: 207 })
+    }
+  })
+  await page.locator('.app-icon--file-manager').click()
+  const app = page.locator('[data-app-id="file-manager"]')
+  await app.getByRole('navigation', { name: '文件位置' }).getByRole('button', { name: 'WebDAV', exact: true }).click()
+  await app.getByLabel('WebDAV 地址').fill('https://dav-files.example/selected/')
+  await app.getByLabel('用户名', { exact: true }).fill('synthetic-user')
+  await app.getByLabel('App Password', { exact: true }).fill('synthetic-test-password')
+  await expect(app.getByRole('button', { name: '连接文件服务器' })).toBeDisabled()
+  await app.getByRole('checkbox').check()
+  const mode = (value: string) => page.evaluate(value => { (globalThis as any).davFileProbe.mode = value }, value)
+  await mode('denied')
+  await app.getByRole('button', { name: '连接文件服务器' }).click()
+  await expect(app.getByRole('alert')).toContainText('未授予')
+  expect(await page.evaluate(() => (globalThis as any).davFileProbe.requests.length)).toBe(0)
+  for (const [scenario, message] of [['outside', '授权目录之外'], ['encoded', '文件名无效'], ['failed-property', '无法确认目标']]) {
+    await mode(scenario)
+    await app.getByRole('button', { name: '连接文件服务器' }).click()
+    await expect(app.getByRole('alert')).toContainText(message)
+    await expect(app.getByRole('button', { name: '断开连接' })).toHaveCount(0)
+  }
+  await mode('valid')
+  await app.getByRole('button', { name: '连接文件服务器' }).click()
+  await expect(app.getByRole('button', { name: '下载 proof.txt' })).toBeVisible()
+  await app.getByRole('button', { name: '打开文件夹 nested' }).click()
+  await expect(app).toContainText('此目录为空')
+  await app.getByRole('button', { name: '返回 WebDAV 上一级' }).click()
+  const download = page.waitForEvent('download')
+  await app.getByRole('button', { name: '下载 proof.txt' }).click()
+  expect((await download).suggestedFilename()).toBe('proof.txt')
+  await expect(app.getByRole('status')).toContainText('浏览器导出')
+  page.once('dialog', dialog => dialog.accept('new-folder'))
+  await app.getByRole('button', { name: '新建文件夹', exact: true }).click()
+  await expect(app.getByRole('button', { name: '打开文件夹 new-folder' })).toBeVisible()
+  page.once('dialog', dialog => dialog.accept())
+  const chooser = page.waitForEvent('filechooser')
+  await app.getByRole('button', { name: '上传文件' }).click()
+  await (await chooser).setFiles({ name: 'upload.txt', mimeType: 'text/plain', buffer: Buffer.from('upload evidence') })
+  await expect(app.getByRole('button', { name: '下载 upload.txt' })).toBeVisible()
+  await mode('conflict'); page.once('dialog', dialog => dialog.accept())
+  await app.getByRole('button', { name: '删除 WebDAV 文件 proof.txt' }).click()
+  await expect(app.getByRole('alert')).toContainText('冲突')
+  await mode('pending')
+  await app.getByRole('button', { name: '刷新', exact: true }).click()
+  await app.getByRole('button', { name: '取消请求' }).click()
+  await expect(app.getByRole('alert')).toContainText('取消')
+  await mode('valid'); page.once('dialog', dialog => dialog.accept())
+  await app.getByRole('button', { name: '删除 WebDAV 文件 proof.txt' }).click()
+  await expect(app.getByRole('button', { name: '下载 proof.txt' })).toHaveCount(0)
+  const requests = await page.evaluate(() => (globalThis as any).davFileProbe.requests as Array<{ method: string; depth: string; match: string; none: string }>)
+  expect(requests.filter(item => item.method === 'PROPFIND').every(item => item.depth === '1')).toBe(true)
+  expect(requests.find(item => item.method === 'PUT')?.none).toBe('*')
+  expect(requests.filter(item => item.method === 'DELETE').every(item => item.match === '"v1"')).toBe(true)
+  const shot = testInfo.outputPath('webdav-files.png')
+  await page.screenshot({ path: shot, animations: 'disabled' })
+  await testInfo.attach('webdav-files', { path: shot, contentType: 'image/png' })
+  await app.getByRole('button', { name: '断开连接' }).click()
+  await expect(app.getByLabel('App Password', { exact: true })).toHaveValue('')
+  expect(extension.errors).toEqual([])
+  expect(extension.remoteRequests).toEqual([])
+})

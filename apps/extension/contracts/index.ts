@@ -1,6 +1,7 @@
 export * from './core.js'
 export * from './downloads.js'
 export * from './filesystem.js'
+export * from './file-manager.js'
 export * from './jobs.js'
 export * from './path-grants.js'
 export * from './psd.js'

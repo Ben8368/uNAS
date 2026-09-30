@@ -1,8 +1,8 @@
 # 当前状态
 
-> **最后确认：** 2026-09-29
+> **最后确认：** 2026-09-30
 > **阶段：** Phase 2 / uNAS native module integration
-> **产品代码：** WXT MV3 已接入密码管家、广告拦截、WebDAV Vault、Legacy adapter 和 closed Shadow DOM 浮窗；桌面 App 共用下载外观基线，外观在 Dock 循环切换，WebDAV 配置在分栏设置中，`manage.html` 兼容保留。
+> **产品代码：** WXT MV3 已接入密码管家、广告拦截、WebDAV Vault、Legacy adapter 和 closed Shadow DOM 浮窗；桌面 App 共用下载外观基线；Files 有 WebDAV 文件实验切片、Chrome 下载记录面板和 OPFS 临时缓存/回收站，边界见 ADR 0015；`manage.html` 兼容保留。
 
 ## 当前决策
 
@@ -33,8 +33,8 @@
 
 ## 最近验证
 
+- 2026-09-30：[文件管理器 E2E](apps/extension/e2e/fileManagerLocations.spec.ts) 2 passed；`pnpm verify` 通过（351 passed/1 skipped）。Chrome 下载记录、缓存说明和侧栏底部排版已调整；常用 Profile 人工视觉与触控仍待验收。
 - 2026-09-29：[下载、ZIP 与音乐暂存修复](docs/archive/reviews/2026-09-29-download-archive-music.md)：`pnpm verify` 通过（319 passed/1 skipped）；系统 Chrome 154 相关 MV3 E2E 21 passed，原生目录/真实媒体/峰值内存仍待专项验收。
-- 2026-09-29：[创建恢复与并发修复](docs/archive/reviews/2026-09-29-recovery-concurrency.md)：`pnpm verify` 通过（300 passed/1 skipped）；相关 MV3 E2E 7 passed；真实 NAS/多设备仍待验收。
 
 ## 按需入口
 

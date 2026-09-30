@@ -28,6 +28,7 @@ User file / archive / media    不可信输入
 - Mock Demo 不读取真实用户文件；演示素材必须自有、生成或有清晰许可。
 - `chrome.storage` 只保存设置、Link App、布局和小型摘要；大文件与媒体不进入该存储。
 - IndexedDB/OPFS 的数据生命周期、配额、迁移、清理和卸载后果必须向用户说明。
+- Files 的 OPFS 临时缓存仅在用户添加文件时复制，256 MiB/200 项（含回收站）、单文件 32 MiB、24 小时过期；打开/刷新清理，只删专属子目录内引用。持久存储由点击请求，拒绝时保留默认配额；卸载会失去缓存，原文件保持不变，见 [ADR 0015](docs/ADR/0015-file-manager-dav-cache.md)。
 - 输出写入用户明确选择的位置，或在 OPFS 暂存后显式导出；默认不覆盖原文件。当前 File Workspace 的直接子项编辑先要求 App 内确认，再由浏览器单独授予 `readwrite`；只允许不覆盖的新建和非递归删除。
 - 上传、同步、遥测、错误上报、账号、云处理或 Native 能力需独立 ADR、数据流、保留策略和明确同意。
 
@@ -42,10 +43,11 @@ User file / archive / media    不可信输入
 ## 权限
 
 - required permissions 只包含首发核心功能当下需要的最小集合。
-- 当前 required permissions 为 `activeTab`, `scripting`, `clipboardWrite`, `storage`, `alarms`, `tabs`, `declarativeNetRequest`, `downloads`, `system.cpu`, `system.memory`, `system.storage`。其中 `activeTab`/`scripting` 只在用户点击 action 后注入页面浮层或用户点击填充时注入一次性填充脚本；`storage` 保存设置、Link App、Vault profile/加密材料和规则状态；`alarms` 驱动规则/Vault/Jupiter 恢复；`tabs` 用于当前页复核和用户触发的页面操作；`clipboardWrite` 仅用于用户点击复制；`declarativeNetRequest` 执行 baseline/dynamic block 与站点暂停规则；`downloads` 仍仅用于用户明确发起的直链下载；`system.cpu`/`system.memory`/`system.storage` 仅用于右侧系统详情读取 CPU 元数据、物理内存和固定存储容量，不读取文件内容、网络内容或用户数据。显示器信息只在浏览器实际开放 `system.display` 时读取，否则显示不可用；CPU 温度仅在浏览器实际提供时显示，GPU 型号仅在 WebGPU 适配器暴露信息时显示。
+- 当前 required permissions 为 `activeTab`, `scripting`, `clipboardWrite`, `storage`, `alarms`, `tabs`, `declarativeNetRequest`, `downloads`, `system.cpu`, `system.memory`, `system.storage`。其中 `activeTab`/`scripting` 只在用户点击 action 后注入页面浮层或用户点击填充时注入一次性填充脚本；`storage` 保存设置、Link App、Vault profile/加密材料和规则状态；`alarms` 驱动规则/Vault/Jupiter 恢复；`tabs` 用于当前页复核和用户触发的页面操作；`clipboardWrite` 仅用于用户点击复制；`declarativeNetRequest` 执行 baseline/dynamic block 与站点暂停规则；`downloads` 用于用户明确发起的直链下载及文件管理器展示浏览器下载记录；`system.cpu`/`system.memory`/`system.storage` 仅用于右侧系统详情读取 CPU 元数据、物理内存和固定存储容量，不读取文件内容、网络内容或用户数据。显示器信息只在浏览器实际开放 `system.display` 时读取，否则显示不可用；CPU 温度仅在浏览器实际提供时显示，GPU 型号仅在 WebGPU 适配器暴露信息时显示。
 - 固定 host permissions 仅包含密码管家兼容服务、Feishu OAuth、Jupiter、EasyList 下载域名和 GitHub Raw 补充规则域；后者仅请求固定仓库 JSON，禁重定向、凭据和 referrer，详见 [ADR 0012](docs/ADR/0012-repository-filter-subscription.md)。`https://*/*` 是 optional host permission，只在用户连接 WebDAV 时请求对应单一 origin。页面 cosmetic content script 只处理规则 CSS/受限 `remove-attr`，不能读取凭据。
 - optional permissions 也不得为未来预留；只在用户触发功能时解释并请求。
-- `downloads` 随下载 App 核心能力声明；扩展只在用户提交 HTTPS 直链文件后使用，不读取本机下载目录或文件内容。m3u8/mpd 播放清单和网页链接不走该路径；可执行文件仍由 Chrome 的安全检查和用户确认控制。
+- Files WebDAV 连接沿用单一 HTTPS origin 的用户手势授权并检查撤销；须独立连接/上传同意，凭据仅在当前面板内存，上传只发送本次选择文件。传输、ETag 删除、预算、取消和未确认写入按 [ADR 0015](docs/ADR/0015-file-manager-dav-cache.md)，不连接账号/元数据服务、不读取 Vault 材料。
+- `downloads` 权限用于用户明确发起的 HTTPS 直链下载，以及文件管理器最近 200 条 Chrome 下载记录（仅显示名称、状态、大小和时间，并响应用户点击定位文件）。不保存或展示来源 URL、本机绝对路径，不读取下载文件内容或授予下载目录句柄。m3u8/mpd 播放清单和网页链接不走直链路径；可执行文件仍由 Chrome 的安全检查和用户确认控制。
 - host permissions 默认不全域开放；网页资源导入优先使用 `activeTab` 或更窄的用户触发能力。
 - downloads、clipboard、contextMenus、offscreen、content script 等逐项记录用途、触发点、拒绝行为和商店披露。
 - 不获取或绕过在线 DRM、付费墙、登录、CORS、浏览器警告或站点条款。允许的本地音乐例外只处理用户明确选择且确认有权处理的 KGM/QMC/NCM 文件，不联网获取账号、密钥、封面或元数据，不读取任意路径，不上传或分发原始/解密内容。

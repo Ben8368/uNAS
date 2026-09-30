@@ -7,7 +7,7 @@ import { handleAdBlockMessage, isAdBlockMessage } from 'unas-src/modules/adblock
 import { isExtensionPageSender, isWebPageSender } from 'unas-src/shared/sender-guard'
 
 const LINK_STORAGE_KEY = 'unas-link-apps-v1'
-type RuntimeResponse = { ok: false; error: string } | { ok: true; links?: unknown; downloadId?: number; trackingWarning?: string; download?: unknown; downloads?: unknown[] }
+type RuntimeResponse = { ok: false; error: string } | { ok: true; links?: unknown; downloadId?: number; trackingWarning?: string; download?: unknown; downloads?: unknown[]; items?: unknown[] }
 let linkMutationTail = Promise.resolve()
 const BROWSER_DOWNLOAD_STORAGE_KEY = 'unas-browser-downloads-v1'
 const MAX_BROWSER_DOWNLOAD_RECORDS = 200
@@ -58,18 +58,19 @@ export function isAdBlockSender(sender: ExtensionMessageSender, extensionId: str
   return isExtensionPageSender(sender, extensionId, ['/newtab.html', '/workspace.html'])
 }
 
-function isBrowserDownloadMessage(message: unknown): message is { kind: 'browser.download'; url: string } | { kind: 'browser.download.get'; downloadId: number } | { kind: 'browser.download.cancel'; downloadId: number } | { kind: 'browser.download.forget'; downloadId: number } | { kind: 'browser.download.list' } | { kind: 'browser.download.show' } {
+function isBrowserDownloadMessage(message: unknown): message is { kind: 'browser.download'; url: string } | { kind: 'browser.download.get'; downloadId: number } | { kind: 'browser.download.cancel'; downloadId: number } | { kind: 'browser.download.forget'; downloadId: number } | { kind: 'browser.download.list' } | { kind: 'browser.download.show' } | { kind: 'browser.downloads.files.list' } | { kind: 'browser.downloads.files.show'; downloadId: number } {
   if (!message || typeof message !== 'object' || Array.isArray(message)) return false
   const value = message as Record<string, unknown>
   if (value.kind === 'browser.download') {
     if (typeof value.url !== 'string' || value.url.length > 4096) return false
     return isDirectDownloadUrl(value.url)
   }
-  if (value.kind === 'browser.download.list' || value.kind === 'browser.download.show') return true
+  if (value.kind === 'browser.download.list' || value.kind === 'browser.download.show' || value.kind === 'browser.downloads.files.list') return true
+  if (value.kind === 'browser.downloads.files.show') return Number.isSafeInteger(value.downloadId) && Number(value.downloadId) >= 0
   return (value.kind === 'browser.download.get' || value.kind === 'browser.download.cancel' || value.kind === 'browser.download.forget') && Number.isInteger(value.downloadId) && Number(value.downloadId) >= 0
 }
 
-async function handleBrowserDownload(message: { kind: 'browser.download'; url: string } | { kind: 'browser.download.get'; downloadId: number } | { kind: 'browser.download.cancel'; downloadId: number } | { kind: 'browser.download.forget'; downloadId: number } | { kind: 'browser.download.list' } | { kind: 'browser.download.show' }): Promise<RuntimeResponse> {
+async function handleBrowserDownload(message: { kind: 'browser.download'; url: string } | { kind: 'browser.download.get'; downloadId: number } | { kind: 'browser.download.cancel'; downloadId: number } | { kind: 'browser.download.forget'; downloadId: number } | { kind: 'browser.download.list' } | { kind: 'browser.download.show' } | { kind: 'browser.downloads.files.list' } | { kind: 'browser.downloads.files.show'; downloadId: number }): Promise<RuntimeResponse> {
   const downloads = extensionApi()?.downloads
   if (!downloads) return { ok: false, error: 'Chrome downloads API 不可用；请确认扩展已重新加载并启用下载功能。' }
   try {
@@ -100,6 +101,23 @@ async function handleBrowserDownload(message: { kind: 'browser.download'; url: s
       const tabs = extensionApi()?.tabs
       if (!tabs) throw new Error('Chrome 标签页 API 不可用；无法打开下载列表。')
       await tabs.create({ url: 'chrome://downloads/', active: true })
+      return { ok: true }
+    }
+    if (message.kind === 'browser.downloads.files.list') {
+      const items = await downloads.search({ limit: 200, orderBy: ['-startTime'] })
+      return { ok: true, items: items.map(item => ({
+        id: item.id,
+        name: (item.filename || '').split(/[\\/]/).filter(Boolean).at(-1) || '未命名文件',
+        state: item.state,
+        bytesReceived: item.bytesReceived,
+        totalBytes: item.totalBytes,
+        exists: item.exists,
+        startTime: item.startTime,
+      })) }
+    }
+    if (message.kind === 'browser.downloads.files.show') {
+      if (!downloads.show) throw new Error('当前浏览器不支持在文件夹中显示下载文件。')
+      await downloads.show(message.downloadId)
       return { ok: true }
     }
     return await enqueueBrowserDownloadMutation(async () => {

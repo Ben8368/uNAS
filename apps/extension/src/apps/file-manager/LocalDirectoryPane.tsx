@@ -48,7 +48,7 @@ export function LocalDirectoryPane() {
     }
     setAccess(next)
   }), [])
-  useEffect(() => { void fileWorkspacePort.restoreDirectory() }, [])
+  useEffect(() => { void fileWorkspacePort.restoreDirectory().catch((reason: unknown) => setError(getErrorMessage(reason))) }, [])
 
   const currentPath = history[history.length - 1] || '/'
   const canManage = fileWorkspacePort.canManageDirectory()

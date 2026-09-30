@@ -12,6 +12,8 @@ const FileManagerApp = lazy(async () => { await inlineWorkspace.connect(); retur
 const MusicApp = lazy(async () => { await inlineWorkspace.connect(); return import('unas-src/apps/real/MusicApp').then((module) => ({ default: module.MusicApp })) })
 const SettingsApp = lazy(() => import('unas-src/apps/SettingsApp').then((module) => ({ default: module.SettingsApp })))
 const LogViewer = lazy(() => import('unas-src/LogViewer').then((module) => ({ default: module.LogViewer })))
+const FileWorkspaceModeControl = lazy(() => import('unas-src/apps/file-manager/FileWorkspaceModeControl').then(module => ({ default: module.FileWorkspaceModeControl })))
+const ColorGamutStatus = lazy(() => import('unas-src/apps/settings/ColorGamutStatus').then(module => ({ default: module.ColorGamutStatus })))
 
 export type RegisteredApp = {
   id: WorkbenchAppId
@@ -19,18 +21,19 @@ export type RegisteredApp = {
   label: string
   icon: string
   component: ComponentType | LazyExoticComponent<ComponentType>
+  headerStatus?: ComponentType | LazyExoticComponent<ComponentType>
   status: 'stable' | 'beta' | 'hidden'
   launcherVisible?: boolean
 }
 
 export const appRegistry: RegisteredApp[] = [
   { id: 'browser', label: '添加 App', title: '添加 App', icon: APP_ICON_PATHS.browser, component: BrowserApp, status: 'beta' },
-  { id: 'file-manager', label: '文件管理', title: '文件管理', icon: APP_ICON_PATHS.fileManager, component: FileManagerApp, status: 'stable' },
+  { id: 'file-manager', label: '文件管理', title: '文件管理', icon: APP_ICON_PATHS.fileManager, component: FileManagerApp, headerStatus: FileWorkspaceModeControl, status: 'stable' },
   { id: 'fetcher', label: '下载', title: '下载', icon: APP_ICON_PATHS.fetcher, component: DownloaderApp, status: 'stable' },
   { id: 'password-manager', label: '密码管家', title: '密码管家', icon: APP_ICON_PATHS['password-manager'], component: PasswordManagerApp, status: 'stable' },
   { id: 'adblock', label: '广告拦截', title: '广告拦截', icon: APP_ICON_PATHS.adblock, component: AdBlockApp, status: 'beta' },
   { id: 'music', label: '音乐解锁', title: '音乐解锁', icon: APP_ICON_PATHS.music, component: MusicApp, status: 'beta' },
-  { id: 'settings', label: '设置', title: '设置', icon: APP_ICON_PATHS.settings, component: SettingsApp, status: 'beta', launcherVisible: false },
+  { id: 'settings', label: '设置', title: '设置', icon: APP_ICON_PATHS.settings, component: SettingsApp, headerStatus: ColorGamutStatus, status: 'beta', launcherVisible: false },
   { id: 'logs', label: '日志', title: '日志', icon: APP_ICON_PATHS.logs, component: LogViewer, status: 'hidden', launcherVisible: false },
 ]
 

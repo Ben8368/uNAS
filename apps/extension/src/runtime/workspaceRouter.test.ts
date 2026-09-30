@@ -80,6 +80,29 @@ describe('legacy Workspace routing boundary', () => {
     } finally { vi.unstubAllGlobals() }
   })
 
+  it('lists Chrome download records without exposing their absolute paths and can reveal a selected file', async () => {
+    let listener: (...args: any[]) => unknown = () => {}
+    const search = vi.fn(async () => [{ id: 7, filename: 'C:\\\\Users\\\\test\\\\Downloads\\\\report.txt', state: 'complete' as const, bytesReceived: 12, totalBytes: 12, exists: true, startTime: '2026-09-30T00:00:00.000Z' }])
+    const show = vi.fn()
+    vi.stubGlobal('browser', {
+      runtime: { id: 'unas', onMessage: { addListener: (fn: typeof listener) => { listener = fn } } },
+      downloads: { search, show, download: vi.fn(), cancel: vi.fn() },
+      tabs: { create: vi.fn() },
+    })
+    try {
+      installWorkspaceRouter()
+      const response = await listener({ kind: 'browser.downloads.files.list' }, sender)
+      expect(response).toEqual({
+        ok: true,
+        items: [{ id: 7, name: 'report.txt', state: 'complete', bytesReceived: 12, totalBytes: 12, exists: true, startTime: '2026-09-30T00:00:00.000Z' }],
+      })
+      expect(search).toHaveBeenCalledWith({ limit: 200, orderBy: ['-startTime'] })
+      expect(JSON.stringify(response)).not.toContain('C:')
+      await expect(listener({ kind: 'browser.downloads.files.show', downloadId: 7 }, sender)).resolves.toEqual({ ok: true })
+      expect(show).toHaveBeenCalledWith(7)
+    } finally { vi.unstubAllGlobals() }
+  })
+
   it('does not start a download when tracking storage cannot be read', async () => {
     let listener: (...args: any[]) => unknown = () => {}
     const download = vi.fn()

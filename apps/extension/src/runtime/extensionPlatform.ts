@@ -1,4 +1,8 @@
 type ExtensionApi = {
+  permissions?: {
+    contains(permissions: { permissions?: string[]; origins?: string[] }): Promise<boolean>
+    request(permissions: { permissions?: string[]; origins?: string[] }): Promise<boolean>
+  }
   runtime?: {
     id: string
     getURL(path: string): string
@@ -12,8 +16,9 @@ type ExtensionApi = {
   }
   downloads?: {
     download(options: { url: string; conflictAction?: 'uniquify' | 'overwrite' | 'prompt'; saveAs?: boolean }): Promise<number>
-    search(query: { id: number }): Promise<Array<{ id: number; state: 'in_progress' | 'complete' | 'interrupted'; bytesReceived: number; totalBytes: number; filename?: string; error?: string }>>
+    search(query: { id?: number; limit?: number; orderBy?: string[] }): Promise<Array<{ id: number; state: 'in_progress' | 'complete' | 'interrupted'; bytesReceived: number; totalBytes: number; filename?: string; error?: string; exists?: boolean; startTime?: string }>>
     cancel(downloadId: number): Promise<void>
+    show(downloadId: number): void | Promise<void>
   }
   storage?: {
     local: {

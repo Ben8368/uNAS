@@ -19,7 +19,7 @@
 
 ### 共享窗口与内容布局
 
-以下是实现目标，不是已存在的组件 API；复用现有入口，禁止并行建设另一套 Window。
+以下为公共复用边界；AppLayout 仍是待抽取目标。复用现有入口，禁止并行建设另一套 Window。
 
 | 归属 | 复用边界 |
 | --- | --- |
@@ -31,9 +31,9 @@
 
 所有现有和新桌面 App 的外观以下载母版为准，规则只查 Design System UI-03。`app-navigation.css` 统一 default/hover/selected/focus；App 私有 CSS 不再声明导航选中色或覆盖共享控件尺寸。
 
-Files 的功能接入参照为 [LocalDirectoryPane](../apps/extension/src/apps/file-manager/LocalDirectoryPane.tsx)，不是旧 MockFileManagerPane。先在原页面提取公共布局，再由其他 App 消费；不得让其他 App import 文件管理私有组件或复制 fm-* CSS。
+Files 的功能接入参照为 [FileManagerApp](../apps/extension/src/apps/FileManagerApp.tsx) 和 [LocalDirectoryPane](../apps/extension/src/apps/file-manager/LocalDirectoryPane.tsx)，不是旧 MockFileManagerPane。浏览器下载记录由独立 port 提供，不向 App View 暴露扩展 API。先在原页面提取公共布局，再由其他 App 消费；不得让其他 App import 文件管理私有组件或复制 fm-* CSS。
 
-[Window.tsx](../apps/extension/src/Window.tsx) 中按 appType 选择的写入模式/色域状态应由 App 集成层通过 headerStatus 注入；公共壳不直接订阅文件 port，不因新增 App 增加业务分支。槽位使用组合而非大量布尔开关；搜索、筛选或 footer 缺省时由布局统一收起。视觉参数只查 Design System UI-03。
+[Window.tsx](../apps/extension/src/Window.tsx) 的 headerStatus 由 App Registry 声明、WindowContainer 注入；写入模式与色域状态按需加载，公共壳不订阅文件 port，不因新增 App 增加业务分支。槽位使用组合而非大量布尔开关；搜索、筛选或 footer 缺省时由布局统一收起。视觉参数只查 Design System UI-03。
 
 ## 3. 层次与 Surface
 
