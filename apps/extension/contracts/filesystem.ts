@@ -83,3 +83,42 @@ export type TrashListResponse = OkResult & {
 export type SetWorkspaceResponse = OkResult & {
   workspace?: string
 }
+
+/** Opaque, owner-scoped reference to a user-authorized file. */
+export type FileRef = {
+  schemaVersion: 1
+  id: string
+  name: string
+  size: number
+  declaredType?: string
+  source: 'handle' | 'webdav' | 'opfs' | 'mock'
+  authorization: 'available' | 'requires-user' | 'expired' | 'not-applicable'
+}
+
+export type FileCapabilities = {
+  canRead: boolean
+  canStream: boolean
+  canSeek: boolean
+  canWrite: boolean
+  maxReadBytes: number
+}
+
+export type FileReadOptions = {
+  offset?: number
+  length?: number
+  signal?: AbortSignal
+}
+
+/** Owner-bound stream lease. Cancellation releases the reader and transport resource. */
+export type FileReadLease = {
+  stream: ReadableStream<Uint8Array>
+  offset: number
+  length: number
+  etag?: string
+  cancel(reason?: unknown): Promise<void>
+}
+
+export type FileAccessPort = {
+  metadata(ref: FileRef): Promise<{ ref: FileRef; capabilities: FileCapabilities; modified?: string; etag?: string }>
+  openRead(ref: FileRef, options?: FileReadOptions): Promise<FileReadLease>
+}

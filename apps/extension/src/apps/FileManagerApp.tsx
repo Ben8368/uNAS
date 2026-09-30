@@ -42,9 +42,9 @@ export function FileManagerApp() {
       <div className="fm-workspace-sidebar-footer"><HardDrive aria-hidden="true" /><span>本地优先工作区</span></div>
     </ResizableAppSidebar>
     <main className="fm-workspace-main">
-      {section === 'local' && <LocalDirectoryPane />}
+      <div hidden={section !== 'local'}><LocalDirectoryPane active={section === 'local'} /></div>
       {section === 'downloads' && <BrowserDownloadsPane />}
-      {section === 'webdav' && <DavFilesPane />}
+      <div hidden={section !== 'webdav'}><DavFilesPane /></div>
       {(section === 'cache' || section === 'trash') && <TempCachePane key={section} trash={section === 'trash'} />}
     </main>
   </div>

@@ -1,14 +1,27 @@
-import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react'
+import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight, FolderOpen, Home, ShieldCheck, Search, X, ChevronRight } from 'lucide-react'
 
 import { fileWorkspacePort } from 'unas-src/api/fileWorkspace'
-import type { AuthorizedDirectoryListing } from '#contracts'
+import type { AuthorizedDirectoryListing, FileRef } from '#contracts'
 import { BackIcon, DocumentPlusIcon, ExtractIcon, FileIcon, FolderIcon, FolderPlusIcon, RefreshIcon, TrashIcon } from 'unas-src/apps/file-manager/controls'
 import { formatDate, formatSize } from 'unas-src/apps/file-manager/utils'
 import { getErrorMessage } from 'unas-src/utils'
 import { directoryEntries, type DirectorySort } from './directoryView'
+import { FilePreviewPanel } from './FilePreviewPanel'
+import { LocalMediaPlayer } from 'unas-src/apps/real/media/LocalMediaPlayer'
 
-export function LocalDirectoryPane() {
+const MEDIA_EXTENSIONS = new Set(['mp3', 'm4a', 'aac', 'wav', 'flac', 'ogg', 'opus', 'mp4', 'm4v', 'mov', 'webm', 'mkv', 'ogv'])
+function mediaExtension(name: string) { return name.slice(name.lastIndexOf('.') + 1).toLowerCase() }
+async function hasMediaSignature(file: File) {
+  const bytes = new Uint8Array(await file.slice(0, 16).arrayBuffer())
+  const ascii = (start: number, value: string) => value.split('').every((char, index) => bytes[start + index] === char.charCodeAt(0))
+  if (ascii(0, 'ID3') || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0)) return true
+  if (ascii(0, 'fLaC') || ascii(0, 'OggS') || ascii(0, 'RIFF') && ascii(8, 'WAVE')) return true
+  if (bytes[0] === 0x1a && bytes[1] === 0x45 && bytes[2] === 0xdf && bytes[3] === 0xa3) return true
+  return ascii(4, 'ftyp')
+}
+
+export function LocalDirectoryPane({ active = true }: { active?: boolean }) {
   const [access, setAccess] = useState(fileWorkspacePort.getSnapshot)
   const [listing, setListing] = useState<AuthorizedDirectoryListing | null>(null)
   const [loading, setLoading] = useState(false)
@@ -16,6 +29,10 @@ export function LocalDirectoryPane() {
   const [extracting, setExtracting] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [preview, setPreview] = useState<FileRef>()
+  const [mediaFiles, setMediaFiles] = useState<File[]>()
+  const [mediaIndex, setMediaIndex] = useState(0)
+  const [openingMedia, setOpeningMedia] = useState(false)
   const [history, setHistory] = useState<string[]>(['/'])
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<DirectorySort>('name')
@@ -23,6 +40,29 @@ export function LocalDirectoryPane() {
   const previousGrant = useRef(access.grantId)
   const extractionInFlight = useRef(false)
   const mounted = useRef(true)
+  const previewReader = useMemo(() => ({ read: async (ref: FileRef, options: { maxBytes: number; signal: AbortSignal }) => {
+    if (ref.source !== 'handle') throw new Error('此预览器只读取当前授权目录中的文件。')
+    await fileWorkspacePort.fileMetadata(ref)
+    if (ref.size > options.maxBytes) throw new Error('文件超过预览读取上限。')
+    const lease = await fileWorkspacePort.openFileRead(ref, { offset: 0, length: ref.size, signal: options.signal })
+    const reader = lease.stream.getReader()
+    const chunks: Uint8Array[] = []
+    let total = 0
+    try {
+      for (;;) {
+        options.signal.throwIfAborted()
+        const next = await reader.read()
+        if (next.done) break
+        total += next.value.byteLength
+        if (total > options.maxBytes) throw new Error('文件超过预览读取上限。')
+        chunks.push(next.value)
+      }
+    } finally { await lease.cancel(); reader.releaseLock() }
+    const bytes = new Uint8Array(total)
+    let offset = 0
+    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength }
+    return bytes
+  } }), [])
 
   useEffect(() => {
     mounted.current = true
@@ -48,12 +88,12 @@ export function LocalDirectoryPane() {
     }
     setAccess(next)
   }), [])
-  useEffect(() => { void fileWorkspacePort.restoreDirectory().catch((reason: unknown) => setError(getErrorMessage(reason))) }, [])
+  useEffect(() => { if (active) void fileWorkspacePort.restoreDirectory().catch((reason: unknown) => setError(getErrorMessage(reason))) }, [active])
 
   const currentPath = history[history.length - 1] || '/'
   const canManage = fileWorkspacePort.canManageDirectory()
   const load = useCallback(async (path = currentPath, push = false) => {
-    if (fileWorkspacePort.getSnapshot().status !== 'ready') return
+    if (!active || fileWorkspacePort.getSnapshot().status !== 'ready') return
     const id = ++request.current
     setLoading(true)
     setError('')
@@ -67,13 +107,13 @@ export function LocalDirectoryPane() {
       setListing(null)
       setError(getErrorMessage(reason))
     } finally { if (id === request.current) setLoading(false) }
-  }, [currentPath])
+  }, [active, currentPath])
 
   useEffect(() => {
-    if (access.status === 'ready') void load(currentPath)
-    else setListing(null)
+    if (active && access.status === 'ready') void load(currentPath)
+    else if (active) setListing(null)
     return () => { request.current += 1 }
-  }, [access, currentPath, load])
+  }, [active, access, currentPath, load])
 
   useEffect(() => setQuery(''), [currentPath])
 
@@ -108,6 +148,25 @@ export function LocalDirectoryPane() {
     const name = window.prompt('新建 Markdown 文件名称')
     if (name) void write(() => fileWorkspacePort.createMarkdownFile(currentPath, name))
   }, [currentPath, write])
+
+  const openMedia = useCallback(async (selectedPath: string) => {
+    if (!canManage || openingMedia || !listing) return
+    setOpeningMedia(true); setError('')
+    try {
+      const candidates = listing.files.filter(item => MEDIA_EXTENSIONS.has(mediaExtension(item.name))).slice(0, 50)
+      const playable: Array<{ path: string; file: File }> = []
+      for (const item of candidates) {
+        const ref = await fileWorkspacePort.createFileRef(item.path)
+        const file = await fileWorkspacePort.localMediaFile(ref)
+        if (await hasMediaSignature(file)) playable.push({ path: item.path, file })
+      }
+      const initialIndex = playable.findIndex(item => item.path === selectedPath)
+      if (initialIndex < 0) throw new Error('文件签名未匹配已实现的媒体容器；未启动播放器。')
+      setMediaFiles(playable.map(item => item.file)); setMediaIndex(initialIndex)
+      if (candidates.length === 50) setNotice('播放列表最多探测当前目录前 50 个媒体候选项。')
+    } catch (reason) { setError(getErrorMessage(reason)) }
+    finally { setOpeningMedia(false) }
+  }, [canManage, listing, openingMedia])
 
   const deleteEntry = useCallback((name: string, type: 'file' | 'directory') => {
     const label = type === 'directory' ? '空文件夹' : '文件'
@@ -196,6 +255,12 @@ export function LocalDirectoryPane() {
     </div>
     <p className="fm-local-notice" role="status">{notice || `${access.message ? `${access.message} ` : ''}仅显示当前目录的直接子项；解压仅处理你明确选择的 ZIP。`}</p>
     {error && <p className="fm-local-error" role="alert">{error}</p>}
+    {preview && <FilePreviewPanel file={preview} reader={previewReader} onClose={() => setPreview(undefined)} onDownload={async ref => {
+      await fileWorkspacePort.exportFileRef(ref)
+      setNotice('已交给浏览器导出；请在浏览器下载记录中确认保存结果。')
+    }} />}
+    {openingMedia && <p className="fm-local-notice" role="status">正在检查当前目录中的有限媒体候选项…</p>}
+    {mediaFiles && <LocalMediaPlayer files={mediaFiles} initialIndex={mediaIndex} onClose={() => setMediaFiles(undefined)} />}
     <div className="fm-table" aria-busy={busy}>
       <div className="fm-head"><span>文件名</span><span>修改时间</span><span>大小</span><span>类型</span><span /></div>
       <div className="fm-list">
@@ -209,6 +274,8 @@ export function LocalDirectoryPane() {
             <span>{entry.type === 'file' ? formatSize(entry.size) : '-'}</span>
             <span>{entry.type === 'directory' ? '文件夹' : entry.extension?.toUpperCase() || '文件'}</span>
             <span className="fm-local-row-actions">
+              {entry.type === 'file' && <button type="button" className="fm-icon-btn" aria-label="预览文件" title="预览" onClick={() => void fileWorkspacePort.createFileRef(entry.path).then(setPreview, reason => setError(getErrorMessage(reason)))} disabled={busy || !canManage}>预览</button>}
+              {entry.type === 'file' && MEDIA_EXTENSIONS.has(mediaExtension(entry.name)) && <button type="button" className="fm-icon-btn" aria-label="在本地播放器中打开" title="播放" onClick={() => void openMedia(entry.path)} disabled={busy || openingMedia || !canManage}>播放</button>}
               {entry.type === 'file' && entry.name.toLowerCase().endsWith('.zip') && <button type="button" className="fm-icon-btn fm-local-extract" title={editable ? `解压 ${entry.name}` : '请先在窗口顶部开启写入模式'} aria-label={`解压 ${entry.name}`} onClick={() => extractZip(entry.name)} disabled={busy || !editable}><ExtractIcon /></button>}
               <button type="button" className="fm-icon-btn fm-local-delete" title={editable ? `删除 ${entry.name}` : '请先在窗口顶部开启写入模式'} aria-label={`删除 ${entry.name}`} onClick={() => deleteEntry(entry.name, entry.type)} disabled={busy || !editable}><TrashIcon /></button>
             </span>

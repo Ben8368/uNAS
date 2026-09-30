@@ -85,6 +85,10 @@ test('File Manager requires an in-app confirmation before enabling write mode fo
     const directory = await root.getDirectoryHandle(probeDirectory)
     return (await (await directory.getFileHandle('notes.md')).getFile()).text()
   }, { probeDirectory })).toBe('# 新文档\n')
+  const markdownRow = firstApp.locator('.fm-row--local').filter({ hasText: 'notes.md' })
+  await markdownRow.getByRole('button', { name: '预览文件' }).click()
+  await expect(firstApp.locator('.fm-preview')).toContainText('新文档')
+  await firstApp.getByRole('button', { name: '关闭预览' }).click()
   // A second New Tab is a projection-only client: it can read through the
   // owner, but cannot acquire a second handle or mutate the directory.
   const client = await extension.context.newPage()

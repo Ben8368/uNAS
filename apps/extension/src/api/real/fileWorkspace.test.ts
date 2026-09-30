@@ -13,6 +13,8 @@ beforeEach(async () => {
   let signalCommit!: () => void
   commitStarted = new Promise(resolve => { signalCommit = resolve })
   const heldCommit = new Promise<void>(resolve => { releaseCommit = resolve })
+  const inputBytes = new Uint8Array([80, 75, 3, 4, 101, 102, 103, 104])
+  const inputFile = () => new File([inputBytes], 'input.zip', { lastModified: 123 })
   const output = {
     getFileHandle: vi.fn(async (_name, options) => {
       if (!options?.create) return missing()
@@ -21,14 +23,18 @@ beforeEach(async () => {
   }
   root = {
     name: 'test', queryPermission: async () => 'granted', requestPermission: async () => 'granted',
-    getFileHandle: vi.fn(async (name) => name === 'input.zip' ? { getFile: async () => new File([new Uint8Array([80,75,3,4])], name) } : missing()),
+    entries: async function* () { yield ['input.zip', { kind: 'file', getFile: inputFile }] },
+    getFileHandle: vi.fn(async (name) => name === 'input.zip' ? { getFile: inputFile } : missing()),
     getDirectoryHandle: vi.fn(async (_name, options) => options?.create ? output : missing()),
   }
   vi.stubGlobal('indexedDB', { open: () => {
-    const request: any = { result: { close() {}, transaction: () => ({ objectStore: () => ({ get: () => {
-      const read: any = { result: { id: 'test', schemaVersion: 1, createdAt: 0, handle: root } }
-      queueMicrotask(() => read.onsuccess()); return read
-    } }) }) } }
+    const request: any = { result: { close() {}, transaction: () => {
+      const transaction: any = { objectStore: () => ({ get: () => {
+        const read: any = { result: { id: 'test', schemaVersion: 1, createdAt: 0, handle: root } }
+        queueMicrotask(() => read.onsuccess()); return read
+      }, delete: () => { queueMicrotask(() => transaction.oncomplete?.()) } }) }
+      return transaction
+    } } }
     queueMicrotask(() => request.onsuccess()); return request
   } })
   vi.stubGlobal('navigator', { locks: { request: vi.fn(async (_name, _options, callback) => callback(lockAvailable ? {} : null)) } })
@@ -73,5 +79,24 @@ describe('ZIP operation ownership', () => {
     release()
     await expect(pending).rejects.toThrow('已取消')
     expect(prepare).not.toHaveBeenCalled()
+  })
+})
+
+describe('owner-scoped file references', () => {
+  it('reads only an explicit bounded range and invalidates references on forget', async () => {
+    await api.listAuthorizedDirectory('/')
+    const ref = await api.createAuthorizedFileRef('/input.zip')
+    expect(ref).toMatchObject({ schemaVersion: 1, source: 'handle', authorization: 'available', name: 'input.zip' })
+    const lease = await api.openAuthorizedFileRef(ref, { offset: 2, length: 3 })
+    expect([...new Uint8Array(await new Response(lease.stream).arrayBuffer())]).toEqual([3, 4, 101])
+    await api.forgetFileManagerDirectory()
+    await expect(api.openAuthorizedFileRef(ref, { offset: 0, length: 1 })).rejects.toThrow('尚未授权')
+  })
+
+  it('rejects oversized and out-of-range reads without opening a stream', async () => {
+    await api.listAuthorizedDirectory('/')
+    const ref = await api.createAuthorizedFileRef('/input.zip')
+    await expect(api.openAuthorizedFileRef(ref, { offset: 0, length: 8 * 1024 * 1024 + 1 })).rejects.toThrow('8 MiB')
+    await expect(api.openAuthorizedFileRef(ref, { offset: 9, length: 1 })).rejects.toThrow('8 MiB')
   })
 })

@@ -148,6 +148,8 @@ Scenario 属于测试与演示资产，不是产品支持矩阵。
 
 ### SP-02 File Workspace
 
+2026-09-30 实现增量：Owner 文档内存 FileRef 和有界 FSA 读取已接入 Files 图片/文本/Markdown 预览；共享 WebDavClient 上新增强 ETag Range reader、远端小文本 If-Match 保存和本地原生音视频播放器。合成 loopback WebDAV 测试与本地生成 WAV 扩展 E2E 已覆盖。该增量没有关闭 G2-Core 或 PDF/Office/Media Gate，也未实现通用 OpenIntent、跨页资源读取、远程认证媒体播放或完整编辑器；限制见 ADR 0017 与 RISK-016。
+
 - 文件/目录选择、拖入、句柄查询/请求权限、IndexedDB/OPFS、分块、配额、清理和 download fallback。
 - 输出：可恢复/不可恢复说明、临时数据策略和导出提交方案。
 

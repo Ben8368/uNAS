@@ -29,7 +29,7 @@ interface FileRef {
   name: string
   size: number
   declaredType?: string
-  source: 'picker' | 'handle' | 'opfs' | 'mock'
+  source: 'picker' | 'handle' | 'webdav' | 'opfs' | 'mock'
   authorization: 'available' | 'requires-user' | 'expired' | 'not-applicable'
 }
 
@@ -71,6 +71,8 @@ interface ExecutionPlan {
 - 引擎临时路径、WASM 内部文件名和命令参数不进入公开 `TaskSpec`。
 - `ownerId` 绑定 Workspace 任务所有权，New Tab Client 只能查询 projection 或发送命令。
 - Mock 使用 `source: mock` 与 `executionSource: mock`，不能被持久化为真实 FileRef 或能力报告。
+
+当前真实 Files FileRef 只在 Workspace Owner 文档内存中有效；不持久化或经 BroadcastChannel 转发。WebDAV 流式引用额外受 ADR 0017 的分段与强 ETag 限制，不自动成为后台任务。
 
 ## 3. 状态转换
 

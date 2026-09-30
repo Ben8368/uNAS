@@ -1,4 +1,4 @@
-import type { AuthorizedDirectoryListing, FileEntry, FileWorkspaceAccessSnapshot } from '#contracts'
+import type { AuthorizedDirectoryListing, FileEntry, FileRef, FileReadLease, FileReadOptions, FileWorkspaceAccessSnapshot } from '#contracts'
 import { inlineWorkspace } from 'unas-src/runtime/inlineWorkspace'
 import * as directoryAdapter from './real/fileWorkspace'
 
@@ -148,6 +148,11 @@ export const fileWorkspacePort = Object.freeze({
     if (!isClient()) throw workspaceUnavailable()
     return await request({ type: 'list-request', id: `${self}:${++sequence}`, ...(path === undefined ? {} : { path }) }) as AuthorizedDirectoryListing
   },
+  createFileRef: async (path: string) => { if (!isOwner()) throw requiresOwner(); return await directoryAdapter.createAuthorizedFileRef(path) },
+  fileMetadata: async (ref: FileRef) => { if (!isOwner()) throw requiresOwner(); return await directoryAdapter.getAuthorizedFileMetadata(ref) },
+  localMediaFile: async (ref: FileRef) => { if (!isOwner()) throw requiresOwner(); return await directoryAdapter.getAuthorizedMediaFile(ref) },
+  exportFileRef: async (ref: FileRef) => { if (!isOwner()) throw requiresOwner(); return await directoryAdapter.exportAuthorizedFileRef(ref) },
+  openFileRead: async (ref: FileRef, options?: FileReadOptions): Promise<FileReadLease> => { if (!isOwner()) throw requiresOwner(); return await directoryAdapter.openAuthorizedFileRef(ref, options) },
   requestWriteAccess: async () => { if (!isOwner()) throw requiresOwner(); return await directoryAdapter.requestFileManagerDirectoryWriteAccess() },
   restoreDirectory: async () => {
     ensureChannel()

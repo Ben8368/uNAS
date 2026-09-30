@@ -1,5 +1,6 @@
-import type { DavConnectionInput, DavDirectoryListing, DavFileEntry } from '#contracts'
+import type { DavConnectionInput, DavDirectoryListing, DavFileEntry, FileRef, FileReadLease, FileReadOptions } from '#contracts'
 import { WebDavClient } from 'unas-src/runtime/webdav/client'
+import { WebDavRangeReader } from 'unas-src/runtime/webdav/rangeReader'
 import { davName, davPath, parseDavListing } from 'unas-src/runtime/webdav/listing'
 import { normalizeWebDavUrl, webDavPermissionOrigin } from 'unas-src/shared/webdav-url'
 import { extensionApi } from 'unas-src/runtime/extensionPlatform'
@@ -20,6 +21,8 @@ export function createDavFilesPort() {
   let client: WebDavClient | undefined
   let controller: AbortController | undefined
   let listing: DavDirectoryListing | undefined
+  const fileRefs = new Map<string, { ref: FileRef; path: string; etag?: string }>()
+  const readLeases = new Set<{ close(): void }>()
   const knownDirectories = new Set([''])
   let generation = 0
 
@@ -63,6 +66,7 @@ export function createDavFilesPort() {
     return entry
   }
   return Object.freeze({
+    getSessionSnapshot() { return client && listing ? { endpoint: client.endpoint, listing } : undefined },
     async connect(input: DavConnectionInput, signal?: AbortSignal) {
       requireExtensionFiles()
       if (!input.consent) throw new Error('请确认允许连接文件服务器。')
@@ -130,6 +134,82 @@ export function createDavFilesPort() {
         offerFileExport(new Blob([response.data.slice().buffer as ArrayBuffer]), entry.name)
       })
     },
+    async createFileRef(path: string): Promise<FileRef> {
+      const entry = file(path)
+      return await operation(false, async () => {
+        const ref: FileRef = { schemaVersion: 1, id: crypto.randomUUID(), name: entry.name, size: entry.size, source: 'webdav', authorization: 'available' }
+        fileRefs.set(ref.id, { ref, path: entry.path, etag: entry.etag })
+        return ref
+      })
+    },
+    async fileMetadata(ref: FileRef) {
+      const record = fileRefs.get(ref.id)
+      if (!record || JSON.stringify(record.ref) !== JSON.stringify(ref)) throw new Error('WebDAV 文件引用已失效，请从当前列表重新选择。')
+      return await operation(false, async () => ({ ref, capabilities: { canRead: true, canStream: true, canSeek: true, canWrite: false, maxReadBytes: 8 * 1024 * 1024 }, etag: record.etag }))
+    },
+    async openRead(ref: FileRef, options: FileReadOptions = {}): Promise<FileReadLease> {
+      const record = fileRefs.get(ref.id)
+      if (!record || JSON.stringify(record.ref) !== JSON.stringify(ref)) throw new Error('WebDAV 文件引用已失效，请从当前列表重新选择。')
+      const range = await operation(false, async (current, signal) => {
+        const reader = await WebDavRangeReader.open(current, record.path, { maxSegmentBytes: 512 * 1024, requestTimeoutMs: 12_000, maxReads: 8192, signal })
+        if (!reader.metadata.etag) {
+          reader.close()
+          throw new Error('服务器没有提供强 ETag，不能安全地跨请求读取同一文件版本。')
+        }
+        if (reader.metadata.size !== ref.size || (record.etag && reader.metadata.etag && record.etag !== reader.metadata.etag)) {
+          reader.close()
+          throw new Error('WebDAV 文件已变化，请刷新目录后重新打开。')
+        }
+        return reader
+      })
+      const offset = options.offset ?? 0
+      const requestedLength = options.length ?? range.metadata.size - offset
+      const length = Math.min(requestedLength, range.metadata.size - offset)
+      if (!Number.isSafeInteger(offset) || offset < 0 || offset > range.metadata.size || !Number.isSafeInteger(length) || length < 0 || length > 1024 * 1024 * 1024 || offset + length > range.metadata.size) {
+        range.close()
+        throw new Error('WebDAV 读取范围无效或超过单次 1 GiB 预算。')
+      }
+      let closed = false
+      const close = () => { if (closed) return; closed = true; options.signal?.removeEventListener('abort', onAbort); range.close(); readLeases.delete(lease) }
+      const onAbort = () => close()
+      const lease = { close }
+      readLeases.add(lease)
+      options.signal?.addEventListener('abort', onAbort, { once: true })
+      let cursor = offset
+      const stream = new ReadableStream<Uint8Array>({
+        async pull(controller) {
+          if (closed) { controller.close(); return }
+          try {
+            options.signal?.throwIfAborted()
+            if (!await extensionApi()?.permissions?.contains({ origins: [webDavPermissionOrigin(client!.endpoint)] })) throw new Error('WebDAV 主机权限已撤销；读取已停止。')
+            if (cursor >= offset + length) { close(); controller.close(); return }
+            const bytes = await range.read(cursor, Math.min(512 * 1024, offset + length - cursor), options.signal)
+            cursor += bytes.byteLength
+            controller.enqueue(bytes)
+            if (cursor >= offset + length) { close(); controller.close() }
+          } catch (error) { close(); controller.error(error) }
+        },
+        cancel() { close() },
+      }, { highWaterMark: 1, size: chunk => chunk.byteLength })
+      return { stream, offset, length, etag: range.metadata.etag, cancel: async () => close() }
+    },
+    async saveText(ref: FileRef, text: string) {
+      const record = fileRefs.get(ref.id)
+      if (!record || JSON.stringify(record.ref) !== JSON.stringify(ref)) throw new Error('WebDAV 文件引用已失效，请从当前列表重新选择。')
+      if (!record.etag || !/^"[^"\r\n]+"$/.test(record.etag)) throw new Error('服务器未提供强 ETag；为避免覆盖他人更改，当前文件不能安全保存。')
+      const body = new TextEncoder().encode(text)
+      if (body.byteLength > 2 * 1024 * 1024) throw new Error('文本保存超过 2 MiB 安全上限。')
+      await operation(true, async (current, signal) => {
+        const response = await current.request('PUT', record.path, {
+          signal,
+          body,
+          headers: { 'If-Match': record.etag!, 'Content-Type': 'text/plain; charset=utf-8' },
+        })
+        expectStatus(response.status, [200, 204])
+        const nextEtag = response.headers.get('ETag')
+        if (nextEtag && /^"[^"\r\n]+"$/.test(nextEtag)) record.etag = nextEtag
+      })
+    },
     async deleteFile(path: string) {
       const entry = file(path)
       if (!entry.etag || !/^"[^"\r\n]+"$/.test(entry.etag)) throw new Error('服务器未提供强 ETag；为避免删除变化后的文件，本次不允许删除。')
@@ -138,7 +218,7 @@ export function createDavFilesPort() {
         expectStatus(response.status, [200, 204])
       })
     },
-    cancel() { controller?.abort() },
-    disconnect() { generation++; controller?.abort(); client = undefined; listing = undefined; knownDirectories.clear(); knownDirectories.add('') },
+    cancel() { controller?.abort(); for (const lease of [...readLeases]) lease.close() },
+    disconnect() { generation++; controller?.abort(); for (const lease of [...readLeases]) lease.close(); fileRefs.clear(); client = undefined; listing = undefined; knownDirectories.clear(); knownDirectories.add('') },
   })
 }

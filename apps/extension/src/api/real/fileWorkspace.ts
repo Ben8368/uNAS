@@ -1,7 +1,8 @@
-import type { AuthorizedDirectoryListing, FileEntry, FileWorkspaceAccessSnapshot } from '#contracts'
+import type { AuthorizedDirectoryListing, FileEntry, FileRef, FileReadLease, FileReadOptions, FileWorkspaceAccessSnapshot } from '#contracts'
 import type { ResourceGrant } from '#contracts'
 import { ZIP_EXTRACTION_LIMITS } from 'unas-src/archive/zipSafety'
 import { prepareZipExtraction, type PreparedArchiveEntry } from './zipExtraction'
+import { offerFileExport } from './fileManagerIO'
 
 const DATABASE_NAME = 'unas-file-workspace-v1'
 const STORE_NAME = 'directory-grants'
@@ -34,6 +35,9 @@ let routes = new Map<string, Route>()
 let snapshot: FileWorkspaceAccessSnapshot = { status: 'idle' }
 let restoring: Promise<FileWorkspaceAccessSnapshot> | undefined
 let activeExtraction: { cancel: () => void } | undefined
+const fileHandles = new Map<string, { handle: FsaFileHandle; grantId: string; ref: FileRef; lastModified: number }>()
+const filePaths = new Map<string, FsaFileHandle>()
+const MAX_FILE_READ_BYTES = 8 * 1024 * 1024
 const listeners = new Set<() => void>()
 
 function notify() {
@@ -117,6 +121,8 @@ function currentGrant(): ResourceGrant | undefined {
 
 function resetRoutes(handle: FsaDirectoryHandle) {
   routes = new Map([['/', { handle, names: [] }]])
+  fileHandles.clear()
+  filePaths.clear()
 }
 
 async function hasReadPermission(handle: FsaDirectoryHandle) {
@@ -264,6 +270,7 @@ async function entryFor(name: string, handle: FsaHandle, route: Route): Promise<
     return { executionSource: 'real', name, path, size: 0, modified: '', type: 'directory' }
   }
   const file = await (handle as FsaFileHandle).getFile()
+  filePaths.set(path, handle as FsaFileHandle)
   return {
     executionSource: 'real',
     name,
@@ -273,6 +280,85 @@ async function entryFor(name: string, handle: FsaHandle, route: Route): Promise<
     type: 'file',
     extension: extensionOf(name),
   }
+}
+
+/** Creates an ephemeral owner-only reference for a file in the currently listed directory. */
+export async function createAuthorizedFileRef(path: string): Promise<FileRef> {
+  await requireReadableDirectory()
+  const handle = filePaths.get(path)
+  if (!handle || !active) throw new Error('请选择当前已读取目录中的文件。')
+  const file = await handle.getFile()
+  const ref: FileRef = {
+    schemaVersion: 1,
+    id: crypto.randomUUID(),
+    name: file.name,
+    size: file.size,
+    ...(file.type ? { declaredType: file.type } : {}),
+    source: 'handle',
+    authorization: 'available',
+  }
+  fileHandles.set(ref.id, { handle, grantId: active.id, ref, lastModified: file.lastModified })
+  while (fileHandles.size > 256) fileHandles.delete(fileHandles.keys().next().value!)
+  return ref
+}
+
+export async function openAuthorizedFileRef(ref: FileRef, options: FileReadOptions = {}): Promise<FileReadLease> {
+  await requireReadableDirectory()
+  const record = fileHandles.get(ref.id)
+  if (!record || !active || record.grantId !== active.id || JSON.stringify(record.ref) !== JSON.stringify(ref)) throw new Error('文件引用已失效，请从 Files 中重新选择文件。')
+  const file = await record.handle.getFile()
+  if (file.name !== ref.name || file.size !== ref.size || file.lastModified !== record.lastModified) throw new Error('文件已变化，请从 Files 中刷新后重新打开。')
+  const offset = options.offset ?? 0
+  const length = options.length ?? Math.min(file.size - offset, MAX_FILE_READ_BYTES)
+  if (!Number.isSafeInteger(offset) || offset < 0 || offset > file.size || !Number.isSafeInteger(length) || length < 0 || length > MAX_FILE_READ_BYTES || offset + length > file.size) throw new Error('文件读取范围超出 8 MiB 单次预算。')
+  options.signal?.throwIfAborted()
+  const reader = file.slice(offset, offset + length).stream().getReader()
+  let closed = false
+  const cancel = async (reason?: unknown) => {
+    if (closed) return
+    closed = true
+    options.signal?.removeEventListener('abort', onAbort)
+    await reader.cancel(reason).catch(() => undefined)
+    try { reader.releaseLock() } catch { /* The browser may already have released it. */ }
+  }
+  const onAbort = () => { void cancel(options.signal?.reason) }
+  options.signal?.addEventListener('abort', onAbort, { once: true })
+  const stream = new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      try {
+        options.signal?.throwIfAborted()
+        const next = await reader.read()
+        if (next.done) { closed = true; options.signal?.removeEventListener('abort', onAbort); reader.releaseLock(); controller.close() }
+        else controller.enqueue(next.value)
+      } catch (error) { controller.error(error); await cancel(error) }
+    },
+    cancel,
+  })
+  return { stream, offset, length, cancel }
+}
+
+export async function getAuthorizedFileMetadata(ref: FileRef) {
+  await requireReadableDirectory()
+  const record = fileHandles.get(ref.id)
+  if (!record || !active || record.grantId !== active.id || JSON.stringify(record.ref) !== JSON.stringify(ref)) throw new Error('文件引用已失效，请从 Files 中重新选择文件。')
+  const file = await record.handle.getFile()
+  if (file.size !== ref.size || file.name !== ref.name || file.lastModified !== record.lastModified) throw new Error('文件已变化，请从 Files 中刷新后重新打开。')
+  return { ref, capabilities: { canRead: true, canStream: true, canSeek: true, canWrite: false, maxReadBytes: MAX_FILE_READ_BYTES }, modified: new Date(file.lastModified).toISOString() }
+}
+
+/** Returns a browser File object only inside the current owner page for native media playback. */
+export async function getAuthorizedMediaFile(ref: FileRef): Promise<File> {
+  await requireReadableDirectory()
+  const record = fileHandles.get(ref.id)
+  if (!record || !active || record.grantId !== active.id || JSON.stringify(record.ref) !== JSON.stringify(ref)) throw new Error('文件引用已失效，请从 Files 中重新选择文件。')
+  const file = await record.handle.getFile()
+  if (file.size !== ref.size || file.name !== ref.name || file.lastModified !== record.lastModified) throw new Error('文件已变化，请从 Files 中刷新后重新打开。')
+  return file
+}
+
+export async function exportAuthorizedFileRef(ref: FileRef): Promise<void> {
+  const file = await getAuthorizedMediaFile(ref)
+  offerFileExport(file, ref.name)
 }
 
 function isAbort(error: unknown) {
@@ -485,5 +571,7 @@ export async function forgetFileManagerDirectory() {
   await removeStoredGrant()
   active = undefined
   routes = new Map()
+  fileHandles.clear()
+  filePaths.clear()
   setSnapshot({ status: 'idle', message: '已清除保存的目录授权；未删除任何本地文件。' })
 }

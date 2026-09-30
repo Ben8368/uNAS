@@ -71,6 +71,7 @@ interface OpenIntent {
 - `accepts` 只是候选匹配，不证明文件真实格式；引擎仍需探测 magic/container。
 - 用户始终可以看到将打开的 App，并在多个候选之间选择。
 - Link App 不参与本地文件关联。
+- FileRef 可供 Owner 页面内的 Files 预览 adapter 使用；当前文件行按钮仍直接启动受限预览/本地播放器，未建立通用 App Registry 文件关联或跨页面 FileRef 传递。
 
 ## 5. Capability 边界
 

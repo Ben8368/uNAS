@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-const mock = vi.hoisted(() => ({ request: vi.fn(), parse: vi.fn(), permission: vi.fn(), contains: vi.fn(), select: vi.fn(), export: vi.fn() }))
+const mock = vi.hoisted(() => ({ request: vi.fn(), rangeOpen: vi.fn(), parse: vi.fn(), permission: vi.fn(), contains: vi.fn(), select: vi.fn(), export: vi.fn() }))
 vi.mock('./fileManagerIO', () => ({ requireExtensionFiles() {}, selectOneFile: mock.select, offerFileExport: mock.export }))
 vi.mock('unas-src/runtime/extensionPlatform', () => ({ extensionApi: () => ({ permissions: { request: mock.permission, contains: mock.contains } }) }))
 vi.mock('unas-src/runtime/webdav/client', () => ({ WebDavClient: class { constructor(readonly endpoint: string) {} request = mock.request } }))
+vi.mock('unas-src/runtime/webdav/rangeReader', () => ({ WebDavRangeReader: { open: mock.rangeOpen } }))
 vi.mock('unas-src/runtime/webdav/listing', async original => ({ ...await original<typeof import('../../runtime/webdav/listing')>(), parseDavListing: mock.parse }))
 import { createDavFilesPort } from './davFiles'
 
@@ -69,6 +70,31 @@ describe('WebDAV file service', () => {
     mock.request.mockClear().mockRejectedValue(new Error('网络请求失败'))
     await expect(port.createDirectory('', 'new')).rejects.toThrow('结果尚未确认')
     expect(mock.request).toHaveBeenCalledOnce()
+  })
+  it('opens an opaque file reference and saves text only with the listed strong ETag', async () => {
+    const port = createDavFilesPort(); await port.connect(input)
+    const ref = await port.createFileRef('proof.txt')
+    mock.request.mockResolvedValueOnce({ status: 200, headers: new Headers({ ETag: '"version-2"' }), data: new Uint8Array() })
+    await port.saveText(ref, '# edited')
+    expect(mock.request).toHaveBeenLastCalledWith('PUT', 'proof.txt', expect.objectContaining({
+      headers: { 'If-Match': '"version-1"', 'Content-Type': 'text/plain; charset=utf-8' },
+      body: new TextEncoder().encode('# edited'),
+    }))
+    mock.request.mockResolvedValueOnce({ status: 412, headers: new Headers(), data: new Uint8Array() })
+    await expect(port.saveText(ref, '# stale edit')).rejects.toThrow('版本冲突')
+    expect(mock.request).toHaveBeenCalledTimes(3)
+  })
+  it('streams only bounded ranges through the shared authenticated WebDAV reader', async () => {
+    const rangeRead = vi.fn(async (start: number, length: number) => new TextEncoder().encode('abcde').slice(start, start + length))
+    const rangeClose = vi.fn()
+    mock.rangeOpen.mockResolvedValue({ metadata: { size: 5, etag: '"version-1"' }, read: rangeRead, close: rangeClose })
+    const port = createDavFilesPort(); await port.connect(input)
+    const ref = await port.createFileRef('proof.txt')
+    const lease = await port.openRead(ref, { offset: 1, length: 3 })
+    expect(lease.length).toBe(3)
+    expect(await new Response(lease.stream).text()).toBe('bcd')
+    expect(rangeRead).toHaveBeenCalledWith(1, 3, undefined)
+    expect(rangeClose).toHaveBeenCalledOnce()
   })
   it('rejects a cross-page lock before writing', async () => {
     const port = createDavFilesPort(); await port.connect(input)

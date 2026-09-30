@@ -27,14 +27,14 @@
 ## 当前阻断与风险
 
 - G1 已确认；SP-04 仍开放 RISK-007，详见 [SP-04](benchmarks/sp-04/README.md)。
+- G2-Core 和 PDF/Media/Music 各模块 Gate 未因本轮实现而通过；FileRef、媒体与预览仍为受限实验路径。
 - SP-09：KGM v3、NCM、QMC raw-key-footer 已完成 Worker/OPFS Beta 验证；5 个授权 KGM v3 样本通过解码及下载/取消/清理。暂存下载无完成回执；无覆盖或联网。
 - SP-09 仍开放 RISK-015：目标 Chrome、owner lease、关页、峰值内存、KGM v5、QMC MMKV/`cex\0`、可再分发夹具未完成。
 - 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；Chrome Web Store 更新属于未来 Store Gate。
 
 ## 最近验证
 
-- 2026-09-30：[文件管理器 E2E](apps/extension/e2e/fileManagerLocations.spec.ts) 3 passed（含 33 MiB 实写）；`pnpm verify` 通过（351 passed/1 skipped）。缓存单文件 256 MiB / 200 项、无固定总量；256 MiB 压力与常用 Profile 验收待补。
-- 2026-09-29：[下载、ZIP 与音乐暂存修复](docs/archive/reviews/2026-09-29-download-archive-music.md)：`pnpm verify` 通过（319 passed/1 skipped）；系统 Chrome 154 相关 MV3 E2E 21 passed，原生目录/真实媒体/峰值内存仍待专项验收。
+- 2026-09-30：全量 pnpm verify 通过（61 个测试文件，379 passed/1 skipped）；[Files E2E](apps/extension/e2e/fileWorkspaceDirectory.spec.ts)、[位置与 WebDAV E2E](apps/extension/e2e/fileManagerLocations.spec.ts)、[本地媒体 E2E](apps/extension/e2e/localMediaPlayback.spec.ts) 共 5 passed，含生成 WAV 的元数据、播放、seek 与 URL 清理。自动化浏览器不是目标 Chrome Stable 人工验收；缓存 256 MiB 压力与常用 Profile 验收待补。
 
 ## 按需入口
 
