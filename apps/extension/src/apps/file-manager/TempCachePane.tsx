@@ -38,13 +38,13 @@ export function TempCachePane({ trash }: { trash: boolean }) {
   const entries = (snapshot?.entries ?? []).filter(entry => (entry.trashedAt !== undefined) === trash)
   const filtered = entries.filter(entry => entry.name.toLocaleLowerCase().includes(query.toLocaleLowerCase())).sort((left, right) => right.createdAt - left.createdAt)
   return <section className="fm-managed-pane" aria-label={trash ? '临时缓存回收站' : '扩展临时缓存'}>
+    <div className="fm-managed-heading">{trash ? <Trash2 aria-hidden="true" /> : <Database aria-hidden="true" />}<div><h2>{trash ? '回收站' : '临时缓存'}</h2><p>{trash ? '这里只放从临时缓存移除的文件。' : '用于短期保存文件副本，不会改动原文件。'}</p></div></div>
     <div className="fm-managed-toolbar">
       {!trash && <button type="button" className="mt-btn mt-btn--primary" disabled={busy} onClick={() => void run(async () => { if (await tempCachePort.importFile()) setNotice('文件已复制到临时缓存。') })}><Upload />添加缓存文件</button>}
       <button type="button" className="mt-btn" disabled={busy} onClick={() => void run(async () => {})}><RefreshCw />刷新</button>
       {!trash && <button type="button" className="mt-btn" disabled={busy || snapshot?.protected} onClick={() => void run(async () => { await tempCachePort.requestStorage(); setNotice('浏览器已批准持久存储保护；不会增加可用磁盘容量，缓存仍遵守应用上限。') })}><ShieldCheck />{snapshot?.protected ? '存储已保护' : '申请持久存储'}</button>}
       <button type="button" className="mt-btn mt-btn--danger" disabled={busy || entries.length === 0} onClick={() => { if (window.confirm(`${trash ? '清空回收站' : '清空临时缓存'}？这些缓存副本将永久删除，原始文件保持不变。`)) void run(() => tempCachePort.clear(trash)) }}><Trash2 />{trash ? '清空回收站' : '清空缓存'}</button>
     </div>
-    <div className="fm-managed-heading">{trash ? <Trash2 aria-hidden="true" /> : <Database aria-hidden="true" />}<div><h2>{trash ? '回收站' : '临时缓存'}</h2><p>{trash ? '这里只放从临时缓存移除的文件。' : '用于短期保存文件副本，不会改动原文件。'}</p></div></div>
     {!trash && <><p className="fm-managed-notice">点击“添加缓存文件”并选择文件，uNAS 会复制一份到这里。缓存最多保留 24 小时；打开或刷新此页时会清理过期文件。</p><p className="fm-managed-notice">每个文件最多 32 MiB；最多 200 个文件，总量 256 MiB。</p></>}
     {trash && <p className="fm-managed-notice">缓存到期后会自动清理；恢复文件不会延长保留时间。</p>}
     {trash && <p className="fm-managed-notice">本地文件与 WebDAV 的直接删除不进入此回收站。</p>}
