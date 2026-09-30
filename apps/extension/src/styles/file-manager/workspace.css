@@ -65,8 +65,10 @@
 .fm-workspace .fm-local-empty__action strong { font-weight: 600; }
 @container (max-width: 700px) {
   .fm-workspace-main { flex: 1 0 360px; }
-  .fm-workspace .app-nav { flex-direction: column; flex-wrap: nowrap; overflow-y: auto; }
-  .fm-workspace .app-nav-item { width: 100%; flex: 0 0 auto; }
+  .fm-workspace .app-nav { flex-direction: row; flex-wrap: wrap; overflow: visible; gap: 2px; }
+  .fm-workspace .fm-nav-group { display: contents; }
+  .fm-workspace .fm-nav-group__label { display: none; }
+  .fm-workspace .app-nav-item { width: auto; flex: 1 0 100px; }
   .fm-workspace-sidebar-footer { display: none; }
   .fm-managed-table-head, .fm-managed-row { grid-template-columns: minmax(0, 1fr) 64px 88px; gap: var(--window-space-2); }
   .fm-managed-time, .fm-managed-table-head > span:nth-child(3) { display: none; }
