@@ -14,16 +14,16 @@ const sectionGroups = [
   {
     label: '位置',
     sections: [
-      { id: 'local', label: '本地文件', icon: FolderOpen },
       { id: 'webdav', label: 'WebDAV', icon: Server },
+      { id: 'local', label: '本地文件', icon: FolderOpen },
       { id: 'downloads', label: '下载', icon: Download },
     ],
   },
   {
     label: '存储',
     sections: [
-      { id: 'cache', label: '临时缓存', icon: Database },
       { id: 'trash', label: '回收站', icon: Trash2 },
+      { id: 'cache', label: '临时缓存', icon: Database },
     ],
   },
 ] as const
