@@ -35,11 +35,11 @@ export function BrowserDownloadsPane() {
   }))
 
   return <section className="fm-managed-pane" aria-label="浏览器下载">
+    <div className="fm-managed-heading"><Download aria-hidden="true" /><div><h2>浏览器下载</h2><p>显示 Chrome 的下载记录，文件保存在浏览器设置的位置。</p></div></div>
     <div className="fm-managed-toolbar">
       <button type="button" className="mt-btn" disabled={busy} onClick={() => void refresh()}><RefreshCw />刷新</button>
       <button type="button" className="mt-btn" onClick={() => void openBrowserDownloads().catch(reason => setError(getErrorMessage(reason)))}><ExternalLink />打开 Chrome 下载页面</button>
     </div>
-    <div className="fm-managed-heading"><Download aria-hidden="true" /><div><h2>浏览器下载</h2><p>显示 Chrome 的下载记录，文件保存在浏览器设置的位置。</p></div></div>
     <p className="fm-managed-notice">这里不需要选择文件夹。uNAS 只显示文件名和下载状态；需要查看文件时，点击右侧按钮。</p>
     {notice && <p role="status" className="fm-managed-notice">{notice}</p>}
     {error && <p role="alert" className="fm-managed-error">{error}</p>}

@@ -73,6 +73,7 @@ export function DavFilesPane() {
 
   const entries = directoryEntries(listing?.entries ?? [], query, 'name')
   return <section className="fm-managed-pane" aria-label="WebDAV 文件目录">
+    <div className="fm-managed-heading"><Server aria-hidden="true" /><div><h2>WebDAV 文件</h2><p>浏览已连接服务器中的目录和文件。</p></div></div>
     <div className="fm-managed-toolbar">
       <button type="button" className="mt-btn" aria-label="返回 WebDAV 上一级" disabled={busy || history.length < 2} onClick={() => void run(() => load(history.at(-2)!, history.slice(0, -1)))}><ArrowLeft /></button>
       <button type="button" className="mt-btn" disabled={busy} onClick={() => void run(() => load(path))}><RefreshCw />刷新</button>

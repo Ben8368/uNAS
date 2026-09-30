@@ -10,12 +10,22 @@ import { setFileManagerSection, type FileManagerSection } from './file-manager/n
 export { DirectoryPickerDialog } from 'unas-src/apps/file-manager/DirectoryPickerDialog'
 export { FileManagerPane as MockFileManagerPane } from 'unas-src/apps/file-manager/FileManagerPane'
 
-const sections = [
-  { id: 'webdav', label: 'WebDAV', icon: Server },
-  { id: 'local', label: '本地文件', icon: FolderOpen },
-  { id: 'downloads', label: '下载', icon: Download },
-  { id: 'trash', label: '回收站', icon: Trash2 },
-  { id: 'cache', label: '临时缓存', icon: Database },
+const sectionGroups = [
+  {
+    label: '位置',
+    sections: [
+      { id: 'webdav', label: 'WebDAV', icon: Server },
+      { id: 'local', label: '本地文件', icon: FolderOpen },
+      { id: 'downloads', label: '下载', icon: Download },
+    ],
+  },
+  {
+    label: '存储',
+    sections: [
+      { id: 'trash', label: '回收站', icon: Trash2 },
+      { id: 'cache', label: '临时缓存', icon: Database },
+    ],
+  },
 ] as const
 
 export function FileManagerApp() {
@@ -23,8 +33,11 @@ export function FileManagerApp() {
   useLayoutEffect(() => setFileManagerSection(section), [section])
   return <div className="fm-workspace">
     <ResizableAppSidebar className="app-sidebar" storageKey="file-manager">
-      <nav className="app-nav" aria-label="文件位置">
-        {sections.map(({ id, label, icon: Icon }) => <button key={id} type="button" className={`app-nav-item ${section === id ? 'app-nav-item--active' : ''}`} aria-pressed={section === id} onClick={() => setSection(id)}><Icon aria-hidden="true" /><span>{label}</span></button>)}
+      <nav className="app-nav fm-workspace-nav" aria-label="文件位置">
+        {sectionGroups.map(group => <div className="fm-nav-group" key={group.label}>
+          <span className="fm-nav-group__label" aria-hidden="true">{group.label}</span>
+          {group.sections.map(({ id, label, icon: Icon }) => <button key={id} type="button" className={`app-nav-item ${section === id ? 'app-nav-item--active' : ''}`} aria-pressed={section === id} onClick={() => setSection(id)}><Icon aria-hidden="true" /><span>{label}</span></button>)}
+        </div>)}
       </nav>
       <div className="fm-workspace-sidebar-footer"><HardDrive aria-hidden="true" /><span>本地优先工作区</span></div>
     </ResizableAppSidebar>
