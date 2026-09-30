@@ -1,6 +1,6 @@
 .fm-workspace { display: grid; grid-template-columns: var(--app-sidebar-width) minmax(0, 1fr); height: 100%; min-height: 0; min-width: 0; overflow: hidden; color: var(--window-text); background: transparent; }
 .fm-workspace-main { display: flex; min-width: 0; min-height: 0; overflow: hidden; }
-.fm-workspace-sidebar-footer { display: flex; align-items: center; justify-content: center; gap: var(--window-space-2); flex: 0 0 48px; padding: 0 12px; border-top: 1px solid var(--window-divider); color: var(--window-text-muted); font-size: 12px; text-align: center; }
+.fm-workspace-sidebar-footer { display: flex; align-items: center; justify-content: flex-start; gap: var(--window-space-2); flex: 0 0 44px; padding: 0 calc(10px + var(--app-sidebar-row-padding-x)); border-top: 1px solid var(--window-divider); color: var(--window-text-muted); font-size: 11px; text-align: left; }
 .fm-workspace-sidebar-footer svg { width: 15px; height: 15px; flex-shrink: 0; }
 .fm-managed-pane { display: flex; flex: 1; flex-direction: column; gap: var(--window-space-3); padding: var(--app-content-padding); min-width: 0; min-height: 0; overflow: auto; }
 .fm-managed-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--window-space-2); padding-bottom: var(--window-space-3); border-bottom: 1px solid var(--window-divider); }
@@ -32,8 +32,30 @@
 .fm-managed-empty { padding: var(--window-space-4); text-align: center; font-size: 13px; color: var(--window-text-muted); }
 .fm-managed-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--window-space-2); padding-top: var(--window-space-2); margin-top: auto; border-top: 1px solid var(--window-divider); }
 .fm-workspace .fm-local-toolbar__actions { flex-wrap: wrap; }
-.fm-workspace .fm-local-empty { padding: var(--app-content-padding); background: transparent; overflow: auto; }
-.fm-workspace .fm-local-empty__content { box-sizing: border-box; width: min(100%, 480px); padding: var(--window-space-4); border-radius: var(--window-radius-panel); background: var(--window-surface-panel); box-shadow: none; }
+.fm-workspace .fm-local-empty { padding: clamp(24px, 4vw, 48px); background: transparent; overflow: auto; }
+.fm-workspace .fm-local-empty__content {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  grid-template-areas:
+    "icon copy"
+    "action action"
+    "detail detail";
+  align-items: center;
+  column-gap: var(--window-space-4);
+  row-gap: var(--window-space-3);
+  box-sizing: border-box;
+  width: min(100%, 520px);
+  padding: var(--window-space-5);
+  border-radius: var(--window-radius-panel);
+  background: var(--window-surface-panel);
+  box-shadow: none;
+}
+.fm-workspace .fm-local-empty__icon-surface { grid-area: icon; width: 56px; height: 56px; border-radius: var(--window-radius-panel); }
+.fm-workspace .fm-local-empty__icon { width: 30px; height: 30px; }
+.fm-workspace .fm-local-empty__copy { grid-area: copy; align-self: center; }
+.fm-workspace .fm-local-empty__copy p { max-width: 40ch; line-height: 1.5; }
+.fm-workspace .fm-local-empty__action { grid-area: action; min-height: 52px; border-radius: var(--window-radius-panel); }
+.fm-workspace .fm-local-empty__detail { grid-area: detail; }
 .fm-workspace .fm-local-empty__action strong { font-weight: 600; }
 @container (max-width: 700px) {
   .fm-workspace-main { flex: 1 0 360px; }
@@ -42,6 +64,17 @@
   .fm-workspace-sidebar-footer { display: none; }
   .fm-managed-table-head, .fm-managed-row { grid-template-columns: minmax(0, 1fr) 64px 88px; gap: var(--window-space-2); }
   .fm-managed-time, .fm-managed-table-head > span:nth-child(3) { display: none; }
+}
+@container (max-width: 520px) {
+  .fm-workspace .fm-local-empty { padding: var(--window-space-4); }
+  .fm-workspace .fm-local-empty__content {
+    display: flex;
+    width: min(100%, 420px);
+    padding: var(--window-space-4);
+  }
+  .fm-workspace .fm-local-empty__icon-surface { width: 52px; height: 52px; }
+  .fm-workspace .fm-local-empty__icon { width: 28px; height: 28px; }
+  .fm-workspace .fm-local-empty__action { min-height: 52px; }
 }
 @media (pointer: coarse) {
   .fm-managed-row-actions .mt-btn { width: 44px; min-width: 44px; }
