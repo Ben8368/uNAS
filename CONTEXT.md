@@ -33,7 +33,7 @@
 
 ## 最近验证
 
-- 2026-09-30：[文件管理器 E2E](apps/extension/e2e/fileManagerLocations.spec.ts) 2 passed；`pnpm verify` 通过（351 passed/1 skipped）。Chrome 下载记录、缓存说明和侧栏底部排版已调整；常用 Profile 人工视觉与触控仍待验收。
+- 2026-09-30：[文件管理器 E2E](apps/extension/e2e/fileManagerLocations.spec.ts) 3 passed（含 33 MiB 实写）；`pnpm verify` 通过（351 passed/1 skipped）。缓存单文件 256 MiB / 200 项、无固定总量；256 MiB 压力与常用 Profile 验收待补。
 - 2026-09-29：[下载、ZIP 与音乐暂存修复](docs/archive/reviews/2026-09-29-download-archive-music.md)：`pnpm verify` 通过（319 passed/1 skipped）；系统 Chrome 154 相关 MV3 E2E 21 passed，原生目录/真实媒体/峰值内存仍待专项验收。
 
 ## 按需入口

@@ -48,12 +48,13 @@ describe('temporary cache lifecycle', () => {
     await tempCachePort.moveToTrash(original.id); await tempCachePort.purge(original.id)
     expect((await tempCachePort.list()).entries).toEqual([])
   })
-  it('includes trash in the budget and validates metadata references', () => {
+  it('allows totals above 256 MiB while enforcing the per-file and item limits, including trash', () => {
     const record = { id: crypto.randomUUID(), name: 'test', size: CACHE_LIMITS.maxFileBytes, createdAt: 0, expiresAt: CACHE_LIMITS.ttlMs, trashedAt: 1 }
     expect(validCacheRecord(record, record.id)).toBe(true)
     expect(validCacheRecord({ ...record, id: '../outside' }, '../outside')).toBe(false)
-    expect(() => assertCacheBudget(Array(8).fill(record), 1)).toThrow('上限')
-    expect(() => assertCacheBudget([], CACHE_LIMITS.maxFileBytes + 1)).toThrow('32 MiB')
+    expect(validCacheRecord({ ...record, size: CACHE_LIMITS.maxFileBytes + 1 }, record.id)).toBe(false)
+    expect(() => assertCacheBudget([record], CACHE_LIMITS.maxFileBytes)).not.toThrow()
+    expect(() => assertCacheBudget([], CACHE_LIMITS.maxFileBytes + 1)).toThrow('256 MiB')
     expect(() => assertCacheBudget(Array(200).fill({ ...record, size: 0 }), 0)).toThrow('200 项')
   })
   it('cleans expired items and interrupted imports only inside its own directory', async () => {
@@ -74,14 +75,16 @@ describe('temporary cache lifecycle', () => {
     failWrite = false; await tempCachePort.importFile()
     expect((await tempCachePort.list()).entries).toHaveLength(1)
   })
-  it('refuses concurrent mutations and does not claim refused persistence', async () => {
+  it('refuses concurrent mutations and reports refused persistence without blocking the cache', async () => {
     available = false
     await expect(tempCachePort.list()).rejects.toThrow('另一页面')
-    await expect(tempCachePort.requestStorage()).rejects.toThrow('未批准')
+    await expect(tempCachePort.requestStorage()).resolves.toBe('denied')
+    available = true
+    expect((await tempCachePort.list()).protected).toBe(false)
   })
   it('reports storage protection only after the browser actually approves it', async () => {
     Object.assign(navigator.storage, { persist: async () => true, persisted: async () => true })
-    await expect(tempCachePort.requestStorage()).resolves.toBeUndefined()
+    await expect(tempCachePort.requestStorage()).resolves.toBe('granted')
     expect((await tempCachePort.list()).protected).toBe(true)
   })
   it('clears only the requested cache or trash section', async () => {

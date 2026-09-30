@@ -42,10 +42,17 @@ export function TempCachePane({ trash }: { trash: boolean }) {
     <div className="fm-managed-toolbar">
       {!trash && <button type="button" className="mt-btn mt-btn--primary" disabled={busy} onClick={() => void run(async () => { if (await tempCachePort.importFile()) setNotice('文件已复制到临时缓存。') })}><Upload />添加缓存文件</button>}
       <button type="button" className="mt-btn" disabled={busy} onClick={() => void run(async () => {})}><RefreshCw />刷新</button>
-      {!trash && <button type="button" className="mt-btn" disabled={busy || snapshot?.protected} onClick={() => void run(async () => { await tempCachePort.requestStorage(); setNotice('浏览器已批准持久存储保护；不会增加可用磁盘容量，缓存仍遵守应用上限。') })}><ShieldCheck />{snapshot?.protected ? '存储已保护' : '申请持久存储'}</button>}
+      {!trash && <button type="button" className="mt-btn" disabled={busy || snapshot?.protected} onClick={() => void run(async () => {
+        const result = await tempCachePort.requestStorage()
+        setNotice(result === 'granted'
+          ? '浏览器已批准防自动清理保护；不会增加可用磁盘容量。'
+          : result === 'denied'
+            ? '浏览器未批准防自动清理保护；缓存仍可使用当前配额，单文件 256 MiB 上限不变。请保留原文件。'
+            : '浏览器未提供持久存储申请；缓存仍可使用当前配额。请保留原文件。')
+      })}><ShieldCheck />{snapshot?.protected ? '存储已保护' : '申请防自动清理'}</button>}
       <button type="button" className="mt-btn mt-btn--danger" disabled={busy || entries.length === 0} onClick={() => { if (window.confirm(`${trash ? '清空回收站' : '清空临时缓存'}？这些缓存副本将永久删除，原始文件保持不变。`)) void run(() => tempCachePort.clear(trash)) }}><Trash2 />{trash ? '清空回收站' : '清空缓存'}</button>
     </div>
-    {!trash && <><p className="fm-managed-notice">点击“添加缓存文件”并选择文件，uNAS 会复制一份到这里。缓存最多保留 24 小时；打开或刷新此页时会清理过期文件。</p><p className="fm-managed-notice">每个文件最多 32 MiB；最多 200 个文件，总量 256 MiB。</p></>}
+    {!trash && <><p className="fm-managed-notice">点击“添加缓存文件”并选择文件，uNAS 会复制一份到这里。缓存最多保留 24 小时；打开或刷新此页时会清理过期文件。</p><p className="fm-managed-notice">每个文件最多 256 MiB；最多 200 个文件（含回收站）。总量受浏览器配额和磁盘空间约束；防自动清理申请不增加容量。</p></>}
     {trash && <p className="fm-managed-notice">缓存到期后会自动清理；恢复文件不会延长保留时间。</p>}
     {trash && <p className="fm-managed-notice">本地文件与 WebDAV 的直接删除不进入此回收站。</p>}
     <label className="fm-local-search"><Search aria-hidden="true" /><input type="search" aria-label={trash ? '搜索回收站' : '搜索临时缓存'} placeholder="搜索文件" value={query} onChange={event => setQuery(event.target.value)} /></label>
@@ -58,6 +65,6 @@ export function TempCachePane({ trash }: { trash: boolean }) {
       <button type="button" className="mt-btn" aria-label={`导出 ${row.name}`} disabled={busy} onClick={() => void run(async () => { await tempCachePort.exportFile(row.id); setNotice('已交给浏览器导出；请在浏览器下载中确认保存结果。') })}><Download /></button>
       <button type="button" className="mt-btn mt-btn--danger" aria-label={`移入回收站 ${row.name}`} disabled={busy} onClick={() => void run(() => tempCachePort.moveToTrash(row.id))}><Trash2 /></button>
     </>} />
-    <footer className="fm-managed-footer"><span>{filtered.length} 项 · 缓存总占用 {formatSize(snapshot?.usedBytes ?? 0)} / 256 MiB</span><span>{snapshot?.protected ? '存储已保护' : '浏览器默认配额'}{snapshot?.quota ? ` · 扩展配额 ${formatSize(snapshot.quota)}` : ''}</span></footer>
+    <footer className="fm-managed-footer"><span>{filtered.length} 项 · 缓存总占用 {formatSize(snapshot?.usedBytes ?? 0)}</span><span>{snapshot?.protected ? '存储已保护' : '浏览器默认配额'}{snapshot?.quota ? ` · 扩展配额估算 ${formatSize(snapshot.quota)}` : ''}</span></footer>
   </section>
 }

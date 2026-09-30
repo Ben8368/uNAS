@@ -16,6 +16,8 @@ test('file locations share download navigation and cache files survive reopen, t
   await expect(app.getByRole('button', { name: '打开 Chrome 下载页面' })).toBeVisible()
   await navigation.getByRole('button', { name: '临时缓存', exact: true }).click()
   await expect(app.getByRole('button', { name: '添加缓存文件' })).toBeEnabled()
+  await expect(app).toContainText('每个文件最多 256 MiB；最多 200 个文件（含回收站）')
+  await expect(app).toContainText('总量受浏览器配额和磁盘空间约束')
   const fileChooser = page.waitForEvent('filechooser')
   await app.getByRole('button', { name: '添加缓存文件' }).click()
   await (await fileChooser).setFiles({ name: '缓存 proof.txt', mimeType: 'text/plain', buffer: Buffer.from('uNAS file cache evidence v1') })
@@ -44,16 +46,17 @@ test('file locations share download navigation and cache files survive reopen, t
   await page.locator('.app-icon--file-manager').click()
   await navigation.getByRole('button', { name: '临时缓存', exact: true }).click()
   await expect(app.getByRole('button', { name: '导出 缓存 proof.txt' })).toBeVisible()
-  const persistence = app.getByRole('button', { name: '申请持久存储', exact: true })
+  const persistence = app.getByRole('button', { name: '申请防自动清理', exact: true })
   if (await persistence.count()) {
     await persistence.click()
-    await expect.poll(() => app.getByRole('alert').count().then(count => count || app.getByRole('button', { name: '存储已保护', exact: true }).count())).toBeGreaterThan(0)
+    await expect(app.getByRole('status')).toBeVisible()
     const persisted = await page.evaluate(async () => await navigator.storage.persisted())
     await testInfo.attach('persistence-outcome', { body: JSON.stringify({ persisted, mechanism: 'actual navigator.storage.persist()', optionalUnlimitedStorage: false }), contentType: 'application/json' })
     if (persisted) await expect(app.getByRole('button', { name: '存储已保护', exact: true })).toBeDisabled()
     else {
-      await expect(app.getByRole('alert')).toContainText('未批准')
-      await expect(app.getByRole('button', { name: '申请持久存储', exact: true })).toBeEnabled()
+      await expect(app.getByRole('status')).toContainText('缓存仍可使用当前配额')
+      await expect(app.getByRole('alert')).toHaveCount(0)
+      await expect(app.getByRole('button', { name: '申请防自动清理', exact: true })).toBeEnabled()
       await expect(app.getByRole('button', { name: '导出 缓存 proof.txt' })).toBeVisible()
     }
   }
@@ -90,6 +93,31 @@ test('file locations share download navigation and cache files survive reopen, t
   page.once('dialog', dialog => dialog.accept())
   await app.getByRole('button', { name: '彻底删除 缓存 proof.txt' }).click()
   await expect(app).toContainText('回收站为空')
+  expect(extension.errors).toEqual([])
+  expect(extension.remoteRequests).toEqual([])
+})
+
+test('temporary cache accepts a file above the former 32 MiB limit in Chrome', async ({ extension }) => {
+  const page = await extension.context.newPage()
+  await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
+  await page.locator('.app-icon--file-manager').click()
+  const app = page.locator('[data-app-id="file-manager"]')
+  await app.getByRole('navigation', { name: '文件位置' }).getByRole('button', { name: '临时缓存', exact: true }).click()
+  const chooser = page.waitForEvent('filechooser')
+  await app.getByRole('button', { name: '添加缓存文件' }).click()
+  await (await chooser).setFiles({ name: 'large-cache.bin', mimeType: 'application/octet-stream', buffer: Buffer.alloc(33 * 1024 * 1024, 7) })
+  await expect(app.getByRole('button', { name: '导出 large-cache.bin' })).toBeVisible()
+  const size = await page.evaluate(async () => {
+    const root = await navigator.storage.getDirectory()
+    const cache = await root.getDirectoryHandle('unas-file-manager-cache-v1') as FileSystemDirectoryHandle & { entries(): AsyncIterableIterator<[string, FileSystemHandle]> }
+    for await (const [id] of cache.entries()) {
+      const item = await cache.getDirectoryHandle(id)
+      const record = JSON.parse(await (await (await item.getFileHandle('record.json')).getFile()).text())
+      if (record.name === 'large-cache.bin') return (await (await item.getFileHandle('payload')).getFile()).size
+    }
+    throw new Error('large cache payload absent')
+  })
+  expect(size).toBe(33 * 1024 * 1024)
   expect(extension.errors).toEqual([])
   expect(extension.remoteRequests).toEqual([])
 })

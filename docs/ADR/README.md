@@ -31,6 +31,7 @@ ADR 记录影响长期维护的决定及理由。Roadmap 说明“按什么阶�
 | [0012](0012-repository-filter-subscription.md) | 已接受 | 仓库自维护 JSON 补充订阅；独立缓存、受限 CSS 与随包兜底，不替换原有订阅 |
 | [0013](0013-unas-native-password-manager-adblock.md) | 已接受 | uNAS 统一品牌；密码管家与广告拦截解耦，冻结既有密码浮窗并保持 Vault 兼容 |
 | [0014](0014-shared-webdav-transport.md) | 已接受 | 共享受限 WebDAV 传输、密码库仅使用 WebDAV、Legacy 撤除边界 |
-| [0015](0015-file-manager-dav-cache.md) | 已接受 | Files 独立 WebDAV 文件连接、浏览器下载记录、OPFS 缓存与持久存储申请 |
+| [0015](0015-file-manager-dav-cache.md) | 已接受 | Files 独立 WebDAV 文件连接、浏览器下载记录、OPFS 缓存与持久存储申请；缓存容量条款由 0016 替代 |
+| [0016](0016-file-cache-quota.md) | 已接受 | Files 临时缓存单文件 256 MiB、最多 200 项，取消应用层固定总量上限 |
 
 “已接受”表示维护者接受的方案基线，依据见各 ADR；不等于对应源码已实现或 Gate 已通过。若后续阶段改变边界，须以新 ADR 替代。0002 只保留历史，不再约束实现。

@@ -7,7 +7,6 @@ export type CacheEntry = { id: string; name: string; size: number; createdAt: nu
 export type CacheSnapshot = {
   entries: CacheEntry[]
   usedBytes: number
-  maxBytes: number
   maxFileBytes: number
   quota?: number
   originUsage?: number

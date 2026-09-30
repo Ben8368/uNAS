@@ -2,7 +2,7 @@ import type { CacheEntry, CacheSnapshot } from '#contracts'
 import { extensionApi } from 'unas-src/runtime/extensionPlatform'
 import { offerFileExport, requireExtensionFiles, selectOneFile } from './fileManagerIO'
 
-export const CACHE_LIMITS = Object.freeze({ maxBytes: 256 * 1024 * 1024, maxFileBytes: 32 * 1024 * 1024, maxEntries: 200, ttlMs: 24 * 60 * 60 * 1000 })
+export const CACHE_LIMITS = Object.freeze({ maxFileBytes: 256 * 1024 * 1024, maxEntries: 200, ttlMs: 24 * 60 * 60 * 1000 })
 const ROOT = 'unas-file-manager-cache-v1'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 type Directory = FileSystemDirectoryHandle & { entries(): AsyncIterableIterator<[string, FileSystemHandle]> }
@@ -16,8 +16,8 @@ export function validCacheRecord(value: unknown, id: string): value is CacheEntr
     && (entry.trashedAt === undefined || Number.isSafeInteger(entry.trashedAt))
 }
 export function assertCacheBudget(entries: CacheEntry[], bytes: number) {
-  if (bytes > CACHE_LIMITS.maxFileBytes) throw new Error('单个缓存文件超过 32 MiB 上限。')
-  if (entries.length >= CACHE_LIMITS.maxEntries || entries.reduce((total, entry) => total + entry.size, bytes) > CACHE_LIMITS.maxBytes) throw new Error('临时缓存已达到 200 项或 256 MiB 上限，请清理缓存和回收站后重试。')
+  if (bytes > CACHE_LIMITS.maxFileBytes) throw new Error('单个缓存文件超过 256 MiB 上限。')
+  if (entries.length >= CACHE_LIMITS.maxEntries) throw new Error('临时缓存已达到 200 项上限（含回收站），请清理后重试。')
 }
 
 async function root() {
@@ -75,17 +75,17 @@ export const tempCachePort = Object.freeze({
     const permission = extensionApi()?.permissions
     const unlimited = Boolean(permission && await permission.contains({ permissions: ['unlimitedStorage'] }))
     const persisted = typeof navigator.storage.persisted === 'function' && await navigator.storage.persisted()
-    return { entries, usedBytes: entries.reduce((total, entry) => total + entry.size, 0), maxBytes: CACHE_LIMITS.maxBytes, maxFileBytes: CACHE_LIMITS.maxFileBytes, quota: estimate.quota, originUsage: estimate.usage, protected: unlimited || persisted }
+    return { entries, usedBytes: entries.reduce((total, entry) => total + entry.size, 0), maxFileBytes: CACHE_LIMITS.maxFileBytes, quota: estimate.quota, originUsage: estimate.usage, protected: unlimited || persisted }
   },
   async requestStorage() {
     requireExtensionFiles()
-    if (typeof navigator.storage?.persist !== 'function') throw new Error('浏览器未开放持久存储申请；临时缓存仍使用默认配额。')
-    if (!await navigator.storage.persist()) throw new Error('浏览器未批准持久存储；临时缓存仍使用默认配额，请保留原文件。')
+    if (typeof navigator.storage?.persist !== 'function') return 'unsupported' as const
+    return await navigator.storage.persist() ? 'granted' as const : 'denied' as const
   },
   async importFile() {
     const file = await selectOneFile()
     if (!file) return false
-    if (!validCacheRecord({ id: '00000000-0000-0000-0000-000000000000', name: file.name, size: file.size, createdAt: 0, expiresAt: CACHE_LIMITS.ttlMs }, '00000000-0000-0000-0000-000000000000')) throw new Error('文件名无效或文件超过 32 MiB 缓存上限。')
+    if (!validCacheRecord({ id: '00000000-0000-0000-0000-000000000000', name: file.name, size: file.size, createdAt: 0, expiresAt: CACHE_LIMITS.ttlMs }, '00000000-0000-0000-0000-000000000000')) throw new Error('文件名无效或文件超过 256 MiB 缓存上限。')
     await locked(async directory => {
       const records = await scan(directory)
       assertCacheBudget(records, file.size)
