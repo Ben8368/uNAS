@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import type { FileRef } from '#contracts'
-import { detectPreview, PREVIEW_READ_LIMITS } from 'unas-src/apps/file-manager/previewRegistry'
+import { detectPreview } from 'unas-src/apps/file-manager/previewRegistry'
 import { MarkdownSafeView } from 'unas-src/apps/file-manager/MarkdownSafeView'
+import { readPreviewFile, type PreviewReadService } from './previewRead'
+import { useWindowCloseGuard } from 'unas-src/components/WindowCloseScope'
 import 'unas-src/styles/file-manager-preview.css'
 
-export type PreviewReadService = {
-  read(ref: FileRef, options: { maxBytes: number; signal: AbortSignal }): Promise<Uint8Array>
-}
+export type { PreviewReadService } from './previewRead'
+export type FilePreviewHandle = { confirmLeave(): boolean }
 
 export type FilePreviewPanelProps = {
   file: FileRef
@@ -24,7 +25,7 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : '读取文件失败。'
 }
 
-export function FilePreviewPanel({ file, reader, onClose, onDownload, onSaveText }: FilePreviewPanelProps) {
+export const FilePreviewPanel = forwardRef<FilePreviewHandle, FilePreviewPanelProps>(function FilePreviewPanel({ file, reader, onClose, onDownload, onSaveText }, ref) {
   const [readState, setReadState] = useState<ReadState>({ status: 'loading' })
   const [text, setText] = useState('')
   const [originalText, setOriginalText] = useState('')
@@ -33,14 +34,28 @@ export function FilePreviewPanel({ file, reader, onClose, onDownload, onSaveText
   const [saveMessage, setSaveMessage] = useState('')
   const [imageScale, setImageScale] = useState<'fit' | 'actual'>('fit')
   const [actionMessage, setActionMessage] = useState('')
+  const savingInFlight = useRef(false)
+  const dirty = Boolean(onSaveText && text !== originalText)
+  const confirmLeave = useCallback(() => {
+    if (savingInFlight.current) { setActionMessage('正在保存，请等待结果后再关闭或切换文件。'); return false }
+    return !dirty || window.confirm(`放弃“${file.name}”尚未保存的修改？`)
+  }, [dirty, file.name])
+  useImperativeHandle(ref, () => ({ confirmLeave }), [confirmLeave])
+  useWindowCloseGuard(confirmLeave)
+
+  useEffect(() => {
+    if (!dirty && !saving) return
+    const beforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = '' }
+    window.addEventListener('beforeunload', beforeUnload)
+    return () => window.removeEventListener('beforeunload', beforeUnload)
+  }, [dirty, saving])
 
   useEffect(() => {
     const controller = new AbortController()
     let active = true
     setReadState({ status: 'loading' })
-    const maxBytes = file.declaredType?.startsWith('image/') ? PREVIEW_READ_LIMITS.imageBytes : PREVIEW_READ_LIMITS.textBytes
-    void reader.read(file, { maxBytes, signal: controller.signal }).then((bytes) => {
-      if (active) setReadState(bytes.byteLength > maxBytes ? { status: 'error', message: '文件超过预览读取上限。' } : { status: 'ready', bytes })
+    void readPreviewFile(file, reader, controller.signal).then((bytes) => {
+      if (active) setReadState({ status: 'ready', bytes })
     }).catch((error: unknown) => {
       if (active) setReadState({ status: 'error', message: errorMessage(error) })
     })
@@ -70,11 +85,13 @@ export function FilePreviewPanel({ file, reader, onClose, onDownload, onSaveText
   }, [descriptor?.kind, readState])
 
   async function saveText() {
-    if (!onSaveText || saving) return
+    if (!onSaveText || savingInFlight.current) return
+    savingInFlight.current = true
+    const savedText = text
     setSaving(true); setSaveMessage('正在保存…')
-    try { await onSaveText(file, text); setEditing(false); setSaveMessage('保存成功。') }
+    try { await onSaveText(file, savedText); setOriginalText(savedText); setEditing(false); setSaveMessage('保存成功。') }
     catch (error) { setSaveMessage(error instanceof Error ? `保存失败：${error.message}` : '保存结果未知，请重新检查文件内容。') }
-    finally { setSaving(false) }
+    finally { savingInFlight.current = false; setSaving(false) }
   }
 
   async function download() {
@@ -92,20 +109,17 @@ export function FilePreviewPanel({ file, reader, onClose, onDownload, onSaveText
           <button type="button" onClick={() => setImageScale('fit')}>适应窗口</button>
           <button type="button" onClick={() => setImageScale('actual')}>原始大小</button>
         </>}
-        {(descriptor?.kind === 'text' || descriptor?.kind === 'markdown') && onSaveText && <button type="button" onClick={() => {
-          if (editing && text !== originalText && !window.confirm('放弃尚未保存的修改？')) return
-          setEditing(value => !value)
-        }}>{editing ? '预览' : text !== originalText ? '编辑 · 已修改' : '编辑'}</button>}
+        {(descriptor?.kind === 'text' || descriptor?.kind === 'markdown') && onSaveText && <button type="button" disabled={saving} onClick={() => setEditing(value => !value)}>{editing ? '预览' : dirty ? '编辑 · 已修改' : '编辑'}</button>}
         {onDownload && <button type="button" onClick={() => void download()}>下载 / 导出</button>}
-        {onClose && <button type="button" aria-label="关闭预览" onClick={onClose}>关闭</button>}
+        {onClose && <button type="button" aria-label="关闭预览" disabled={saving} onClick={() => { if (confirmLeave()) onClose() }}>关闭</button>}
       </div>
     </header>
     {readState.status === 'loading' && <p className="fm-preview__message" role="status">正在读取文件（有限大小）…</p>}
     {actionMessage && <p className="fm-preview__message fm-preview__message--error" role="alert">{actionMessage}</p>}
-    {readState.status === 'error' && <p className="fm-preview__message fm-preview__message--error" role="alert">{readState.message} {onDownload && <button type="button" onClick={() => void onDownload(file)}>下载文件</button>}</p>}
+    {readState.status === 'error' && <p className="fm-preview__message fm-preview__message--error" role="alert">{readState.message} {onDownload && <button type="button" onClick={() => void download()}>下载文件</button>}</p>}
     {readState.status === 'ready' && descriptor?.kind === 'image' && imageUrl && <div className="fm-preview__canvas"><img className={`fm-preview__image ${imageScale === 'actual' ? 'is-actual' : ''}`} src={imageUrl} alt={file.name} /></div>}
     {readState.status === 'ready' && (descriptor?.kind === 'text' || descriptor?.kind === 'markdown') && <div className="fm-preview__document">
-      {editing ? <textarea aria-label="编辑文本" value={text} onChange={event => setText(event.target.value)} spellCheck={false} />
+      {editing ? <textarea aria-label="编辑文本" disabled={saving} value={text} onChange={event => setText(event.target.value)} spellCheck={false} />
         : descriptor.kind === 'markdown' ? <MarkdownSafeView source={text} /> : <pre>{text}</pre>}
       {saveMessage && <p role="status">{saveMessage}</p>}
       {editing && onSaveText && <button type="button" disabled={saving} onClick={() => void saveText()}>{saving ? '正在保存…' : '保存'}</button>}
@@ -116,4 +130,4 @@ export function FilePreviewPanel({ file, reader, onClose, onDownload, onSaveText
       {onDownload ? <button type="button" onClick={() => void download()}>下载 / 导出</button> : <p>当前来源没有提供下载或导出操作。</p>}
     </div>}
   </section>
-}
+})

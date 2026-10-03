@@ -8,6 +8,7 @@ import { formatDate, formatSize } from 'unas-src/apps/file-manager/utils'
 import { getErrorMessage } from 'unas-src/utils'
 import { directoryEntries, type DirectorySort } from './directoryView'
 import { FilePreviewPanel } from './FilePreviewPanel'
+import { createPreviewReader } from './previewRead'
 import { LocalMediaPlayer } from 'unas-src/apps/real/media/LocalMediaPlayer'
 
 const MEDIA_EXTENSIONS = new Set(['mp3', 'm4a', 'aac', 'wav', 'flac', 'ogg', 'opus', 'mp4', 'm4v', 'mov', 'webm', 'mkv', 'ogv'])
@@ -40,29 +41,7 @@ export function LocalDirectoryPane({ active = true }: { active?: boolean }) {
   const previousGrant = useRef(access.grantId)
   const extractionInFlight = useRef(false)
   const mounted = useRef(true)
-  const previewReader = useMemo(() => ({ read: async (ref: FileRef, options: { maxBytes: number; signal: AbortSignal }) => {
-    if (ref.source !== 'handle') throw new Error('此预览器只读取当前授权目录中的文件。')
-    await fileWorkspacePort.fileMetadata(ref)
-    if (ref.size > options.maxBytes) throw new Error('文件超过预览读取上限。')
-    const lease = await fileWorkspacePort.openFileRead(ref, { offset: 0, length: ref.size, signal: options.signal })
-    const reader = lease.stream.getReader()
-    const chunks: Uint8Array[] = []
-    let total = 0
-    try {
-      for (;;) {
-        options.signal.throwIfAborted()
-        const next = await reader.read()
-        if (next.done) break
-        total += next.value.byteLength
-        if (total > options.maxBytes) throw new Error('文件超过预览读取上限。')
-        chunks.push(next.value)
-      }
-    } finally { await lease.cancel(); reader.releaseLock() }
-    const bytes = new Uint8Array(total)
-    let offset = 0
-    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength }
-    return bytes
-  } }), [])
+  const previewReader = useMemo(() => createPreviewReader('handle', fileWorkspacePort.fileMetadata, fileWorkspacePort.openFileRead), [])
 
   useEffect(() => {
     mounted.current = true
@@ -85,6 +64,8 @@ export function LocalDirectoryPane({ active = true }: { active?: boolean }) {
       setHistory(['/'])
       setQuery('')
       setListing(null)
+      setPreview(undefined)
+      setMediaFiles(undefined)
     }
     setAccess(next)
   }), [])
@@ -255,7 +236,7 @@ export function LocalDirectoryPane({ active = true }: { active?: boolean }) {
     </div>
     <p className="fm-local-notice" role="status">{notice || `${access.message ? `${access.message} ` : ''}仅显示当前目录的直接子项；解压仅处理你明确选择的 ZIP。`}</p>
     {error && <p className="fm-local-error" role="alert">{error}</p>}
-    {preview && <FilePreviewPanel file={preview} reader={previewReader} onClose={() => setPreview(undefined)} onDownload={async ref => {
+    {preview && <FilePreviewPanel key={preview.id} file={preview} reader={previewReader} onClose={() => setPreview(undefined)} onDownload={async ref => {
       await fileWorkspacePort.exportFileRef(ref)
       setNotice('已交给浏览器导出；请在浏览器下载记录中确认保存结果。')
     }} />}

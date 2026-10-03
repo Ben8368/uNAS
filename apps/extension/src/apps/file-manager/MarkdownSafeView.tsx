@@ -1,6 +1,5 @@
 import { Fragment, type ReactNode } from 'react'
-
-const INLINE_TOKEN = /(\[[^\]]+\]\([^)]+\)|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g
+import { markdownInlineTokens, MARKDOWN_LIMITS, MarkdownLimitError } from './markdownInline'
 
 function safeHref(value: string): string | undefined {
   try {
@@ -12,31 +11,17 @@ function safeHref(value: string): string | undefined {
   return undefined
 }
 
-function inlineNodes(text: string): ReactNode[] {
-  const result: ReactNode[] = []
-  let cursor = 0
-  let index = 0
-  for (const match of text.matchAll(INLINE_TOKEN)) {
-    const token = match[0]
-    const start = match.index ?? 0
-    if (start > cursor) result.push(text.slice(cursor, start))
-    let node: ReactNode
-    if (token.startsWith('`')) node = <code key={index}>{token.slice(1, -1)}</code>
-    else if (token.startsWith('**')) node = <strong key={index}>{token.slice(2, -2)}</strong>
-    else if (token.startsWith('*')) node = <em key={index}>{token.slice(1, -1)}</em>
-    else {
-      const link = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/)
-      const href = link ? safeHref(link[2]) : undefined
-      node = link && href
-        ? <a key={index} href={href} target="_blank" rel="noopener noreferrer">{link[1]}</a>
-        : (link?.[1] ?? token)
+function inlineNodes(text: string, budget: { remaining: number }): ReactNode[] {
+  return markdownInlineTokens(text, budget).map((token, index) => {
+    if (token.kind === 'code') return <code key={index}>{token.text}</code>
+    if (token.kind === 'strong') return <strong key={index}>{token.text}</strong>
+    if (token.kind === 'em') return <em key={index}>{token.text}</em>
+    if (token.kind === 'link') {
+      const href = safeHref(token.href)
+      return href ? <a key={index} href={href} target="_blank" rel="noopener noreferrer">{token.text}</a> : token.text
     }
-    result.push(node)
-    cursor = start + token.length
-    index += 1
-  }
-  if (cursor < text.length) result.push(text.slice(cursor))
-  return result
+    return token.text
+  })
 }
 
 type Block = { type: 'paragraph' | 'heading' | 'quote' | 'code' | 'list'; text: string; level?: number; ordered?: boolean }
@@ -45,6 +30,7 @@ function parseBlocks(markdown: string): Block[] {
   const lines = markdown.replace(/\r\n?/g, '\n').split('\n')
   const blocks: Block[] = []
   for (let i = 0; i < lines.length;) {
+    if (blocks.length >= MARKDOWN_LIMITS.maxBlocks) throw new MarkdownLimitError()
     const line = lines[i]
     if (!line.trim()) { i += 1; continue }
     const fence = line.match(/^\s*```/)
@@ -81,21 +67,25 @@ function parseBlocks(markdown: string): Block[] {
 
 /** Small safe Markdown subset. Raw HTML, images and embedded content are displayed as text. */
 export function MarkdownSafeView({ source }: { source: string }) {
-  return <div className="fm-preview-markdown">
+  const plain = () => <div className="fm-preview-markdown"><p role="status">Markdown 内容较大或结构较复杂，已按纯文本显示。</p><pre>{source}</pre></div>
+  if (source.length > MARKDOWN_LIMITS.maxCharacters) return plain()
+  const budget = { remaining: MARKDOWN_LIMITS.maxNodes }
+  try { return <div className="fm-preview-markdown">
     {parseBlocks(source).map((block, index) => {
+      if (--budget.remaining < 0) throw new MarkdownLimitError()
       if (block.type === 'heading') {
         const Tag = `h${block.level}` as keyof JSX.IntrinsicElements
-        return <Tag key={index}>{inlineNodes(block.text)}</Tag>
+        return <Tag key={index}>{inlineNodes(block.text, budget)}</Tag>
       }
-      if (block.type === 'quote') return <blockquote key={index}>{inlineNodes(block.text)}</blockquote>
+      if (block.type === 'quote') return <blockquote key={index}>{inlineNodes(block.text, budget)}</blockquote>
       if (block.type === 'code') return <pre key={index}><code>{block.text}</code></pre>
       if (block.type === 'list') {
         const Tag = block.ordered ? 'ol' : 'ul'
-        return <Tag key={index}>{block.text.split('\n').map((item, itemIndex) => <li key={itemIndex}>{inlineNodes(item)}</li>)}</Tag>
+        return <Tag key={index}>{block.text.split('\n').map((item, itemIndex) => <li key={itemIndex}>{inlineNodes(item, budget)}</li>)}</Tag>
       }
-      return <p key={index}>{inlineNodes(block.text).map((node, nodeIndex) => <Fragment key={nodeIndex}>{node}</Fragment>)}</p>
+      return <p key={index}>{inlineNodes(block.text, budget).map((node, nodeIndex) => <Fragment key={nodeIndex}>{node}</Fragment>)}</p>
     })}
-  </div>
+  </div> } catch (error) { if (error instanceof MarkdownLimitError) return plain(); throw error }
 }
 
 export function markdownLinkTarget(value: string): string | undefined { return safeHref(value) }

@@ -83,6 +83,22 @@ describe('ZIP operation ownership', () => {
 })
 
 describe('owner-scoped file references', () => {
+  it('keeps child routes, file references and explicit write mode when a pane restores the same grant', async () => {
+    const child = { kind: 'directory', name: 'nested', entries: async function* () {} }
+    root.entries = async function* () {
+      yield ['nested', child]
+      yield ['input.zip', { kind: 'file', getFile: async () => new File(['same'], 'input.zip', { lastModified: 123 }) }]
+    }
+    await api.listAuthorizedDirectory('/')
+    await api.listAuthorizedDirectory('/nested')
+    const ref = await api.createAuthorizedFileRef('/input.zip')
+    const snapshot = api.getFileWorkspaceSnapshot()
+    expect(await api.restoreFileManagerDirectory()).toBe(snapshot)
+    expect(api.getFileWorkspaceSnapshot().writeAccess).toBe('granted')
+    await expect(api.listAuthorizedDirectory('/nested')).resolves.toMatchObject({ path: '/nested' })
+    const lease = await api.openAuthorizedFileRef(ref)
+    expect(await new Response(lease.stream).text()).toBe('same')
+  })
   it('reads only an explicit bounded range and invalidates references on forget', async () => {
     await api.listAuthorizedDirectory('/')
     const ref = await api.createAuthorizedFileRef('/input.zip')
@@ -98,5 +114,24 @@ describe('owner-scoped file references', () => {
     const ref = await api.createAuthorizedFileRef('/input.zip')
     await expect(api.openAuthorizedFileRef(ref, { offset: 0, length: 8 * 1024 * 1024 + 1 })).rejects.toThrow('8 MiB')
     await expect(api.openAuthorizedFileRef(ref, { offset: 9, length: 1 })).rejects.toThrow('8 MiB')
+  })
+})
+
+describe('exact existing entry names', () => {
+  it('deletes only the confirmed name, including leading/trailing spaces and long existing names', async () => {
+    const names = new Set([' report.txt ', 'report.txt', 'x'.repeat(150)])
+    root.removeEntry = vi.fn(async name => { names.delete(name) })
+    await api.deleteAuthorizedDirectoryEntry('/', ' report.txt ')
+    expect(names.has('report.txt')).toBe(true)
+    expect(names.has(' report.txt ')).toBe(false)
+    expect(root.removeEntry).toHaveBeenCalledWith(' report.txt ', { recursive: false })
+    await api.deleteAuthorizedDirectoryEntry('/', 'x'.repeat(150))
+    expect(names.has('x'.repeat(150))).toBe(false)
+  })
+
+  it('rejects control characters without performing a deletion', async () => {
+    root.removeEntry = vi.fn()
+    await expect(api.deleteAuthorizedDirectoryEntry('/', 'bad\nname.txt')).rejects.toThrow('控制字符')
+    expect(root.removeEntry).not.toHaveBeenCalled()
   })
 })

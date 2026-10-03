@@ -3,6 +3,7 @@ import { Suspense, useEffect, useLayoutEffect, useRef } from 'react'
 
 import { AppWindow } from 'unas-src/components/AppWindow'
 import { WorkspaceAppContent } from 'unas-src/components/WorkspaceAppContent'
+import { WindowCloseScope } from 'unas-src/components/WindowCloseScope'
 import { isWorkspaceApp } from 'unas-src/runtime/workspaceRouter'
 import { useWindowStore } from 'unas-src/windowStore'
 import { useSystemStore } from 'unas-src/store'
@@ -75,7 +76,9 @@ export function WindowContainer() {
             onDrag={dragWindow}
             onResize={resizeWindow}
           >
-            {isWorkspaceApp(w.appType) ? <WorkspaceAppContent><C /></WorkspaceAppContent> : <C />}
+            <WindowCloseScope.Provider value={w.id}>
+              {isWorkspaceApp(w.appType) ? <WorkspaceAppContent><C /></WorkspaceAppContent> : <C />}
+            </WindowCloseScope.Provider>
           </AppWindow>
         )
       })}

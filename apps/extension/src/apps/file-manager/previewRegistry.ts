@@ -23,7 +23,7 @@ function bytesStart(bytes: Uint8Array, values: number[]): boolean {
   return values.every((value, index) => bytes[index] === value)
 }
 
-function rasterType(bytes: Uint8Array): string | undefined {
+export function rasterType(bytes: Uint8Array): string | undefined {
   if (bytesStart(bytes, [0xff, 0xd8, 0xff])) return 'image/jpeg'
   if (bytesStart(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return 'image/png'
   if (bytesStart(bytes, [0x47, 0x49, 0x46, 0x38, 0x37, 0x61]) || bytesStart(bytes, [0x47, 0x49, 0x46, 0x38, 0x39, 0x61])) return 'image/gif'

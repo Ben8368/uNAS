@@ -6,7 +6,8 @@ import { getErrorMessage } from 'unas-src/utils'
 import { directoryEntries } from './directoryView'
 import { formatDate } from './utils'
 import { ManagedFileTable } from './ManagedFileTable'
-import { FilePreviewPanel } from './FilePreviewPanel'
+import { FilePreviewPanel, type FilePreviewHandle } from './FilePreviewPanel'
+import { createPreviewReader } from './previewRead'
 
 export function DavFilesPane() {
   const port = davFilesSession
@@ -27,33 +28,13 @@ export function DavFilesPane() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [preview, setPreview] = useState<FileRef>()
+  const previewRef = useRef<FilePreviewHandle>(null)
   const mounted = useRef(true)
   const connectController = useRef<AbortController>()
   const inFlight = useRef(false)
   const path = history.at(-1) ?? ''
-  const previewReader = useMemo(() => ({ read: async (ref: FileRef, options: { maxBytes: number; signal: AbortSignal }) => {
-    if (ref.source !== 'webdav') throw new Error('此预览器只读取当前 WebDAV 会话中的文件。')
-    const metadata = await port.fileMetadata(ref)
-    if (metadata.ref.size > options.maxBytes) throw new Error('文件超过预览读取上限；可以下载后使用本地应用打开。')
-    const lease = await port.openRead(ref, { offset: 0, length: ref.size, signal: options.signal })
-    const reader = lease.stream.getReader()
-    const chunks: Uint8Array[] = []
-    let total = 0
-    try {
-      for (;;) {
-        options.signal.throwIfAborted()
-        const next = await reader.read()
-        if (next.done) break
-        total += next.value.byteLength
-        if (total > options.maxBytes) throw new Error('文件超过预览读取上限。')
-        chunks.push(next.value)
-      }
-    } finally { await lease.cancel(); reader.releaseLock() }
-    const bytes = new Uint8Array(total)
-    let offset = 0
-    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength }
-    return bytes
-  } }), [port])
+  const previewReader = useMemo(() => createPreviewReader('webdav', port.fileMetadata, port.openRead), [port])
+
   useEffect(() => {
     mounted.current = true
     const cancel = () => { connectController.current?.abort(); port.disconnect() }
@@ -69,7 +50,13 @@ export function DavFilesPane() {
     finally { inFlight.current = false; if (mounted.current) setBusy(false) }
     if (mutation && mounted.current) setQuery('')
   }
+  function leavePreview() {
+    if (previewRef.current && !previewRef.current.confirmLeave()) return false
+    setPreview(undefined)
+    return true
+  }
   async function load(nextPath: string, nextHistory = history) {
+    if (nextPath !== path && !leavePreview()) return
     const next = await port.list(nextPath)
     if (mounted.current) { setListing(next); setHistory(nextHistory); setQuery('') }
   }
@@ -109,19 +96,19 @@ export function DavFilesPane() {
       <button type="button" className="mt-btn" disabled={busy} onClick={() => void run(() => load(path))}><RefreshCw />刷新</button>
       <button type="button" className="mt-btn mt-btn--primary" disabled={busy} onClick={upload}><Upload />上传文件</button>
       <button type="button" className="mt-btn" disabled={busy} onClick={() => { const name = window.prompt('WebDAV 新建文件夹名称'); if (name) void run(async () => { await port.createDirectory(path, name); await load(path) }, true) }}><FolderPlus />新建文件夹</button>
-      <button type="button" className="mt-btn" disabled={busy} onClick={() => { port.disconnect(); setConnected(''); setListing(null); setConsent(false); setError(''); setNotice('') }}><LogOut />断开连接</button>
+      <button type="button" className="mt-btn" disabled={busy} onClick={() => { if (!leavePreview()) return; port.disconnect(); setConnected(''); setListing(null); setConsent(false); setError(''); setNotice('') }}><LogOut />断开连接</button>
       {busy && <button type="button" className="mt-btn" onClick={() => port.cancel()}><X />取消请求</button>}
     </div>
     <p className="fm-managed-path" title={`${connected}${path}`}>{connected}{path && decodeURIComponent(path)}</p>
     <label className="fm-local-search"><Search aria-hidden="true" /><input type="search" aria-label="搜索 WebDAV 当前目录" placeholder="搜索当前目录" value={query} onChange={event => setQuery(event.target.value)} /></label>
     <p className="fm-managed-notice" role="status">{notice || '仅列出直接子项；上传/下载单文件上限 16 MiB。删除仅限有强 ETag 的文件，不进入回收站。'}{listing?.truncated && ' 当前仅显示前 200 项。'}</p>
     {error && <p role="alert" className="fm-managed-error">{error}</p>}
-    {preview && <FilePreviewPanel file={preview} reader={previewReader} onClose={() => setPreview(undefined)} onSaveText={(ref, value) => port.saveText(ref, value)} onDownload={async ref => {
+    {preview && <FilePreviewPanel key={preview.id} ref={previewRef} file={preview} reader={previewReader} onClose={() => setPreview(undefined)} onSaveText={(ref, value) => port.saveText(ref, value)} onDownload={async ref => {
       if (ref.size > 16 * 1024 * 1024) throw new Error('当前直接下载上限为 16 MiB。')
       await port.download(listing?.entries.find(entry => entry.name === ref.name)?.path ?? '')
     }} />}
     <ManagedFileTable rows={entries.map(entry => ({ id: entry.path, name: entry.name, size: entry.size, directory: entry.type === 'directory', detail: entry.modified ? formatDate(entry.modified) : '—' }))} busy={busy} empty={query ? '没有匹配的项目' : '此目录为空'} open={id => void run(() => load(id, [...history, id]))} actions={row => row.directory ? null : <>
-      <button type="button" className="mt-btn" aria-label={`预览 ${row.name}`} disabled={busy} onClick={() => void run(async () => setPreview(await port.createFileRef(row.id)))}>预览</button>
+      <button type="button" className="mt-btn" aria-label={`预览 ${row.name}`} disabled={busy} onClick={() => { if (leavePreview()) void run(async () => { const next = await port.createFileRef(row.id); if (mounted.current) setPreview(next) }) }}>预览</button>
       <button type="button" className="mt-btn" aria-label={`下载 ${row.name}`} disabled={busy} onClick={() => void run(async () => { await port.download(row.id); if (mounted.current) setNotice('已交给浏览器导出；请在浏览器下载中确认保存结果。') })}><Download /></button>
       <button type="button" className="mt-btn mt-btn--danger" aria-label={`删除 WebDAV 文件 ${row.name}`} title="直接删除，不进入回收站" disabled={busy || !listing?.entries.find(entry => entry.path === row.id)?.etag?.match(/^"[^"\r\n]+"$/)} onClick={() => { if (window.confirm(`直接删除远端文件“${row.name}”？此操作不进入回收站，无法在 uNAS 中恢复。`)) void run(async () => { await port.deleteFile(row.id); await load(path) }, true) }}><Trash2 /></button>
     </>} />

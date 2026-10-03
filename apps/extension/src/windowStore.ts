@@ -3,6 +3,7 @@
 import { getAppMetadata } from 'unas-src/appRegistry'
 import { DEFAULT_WINDOW_PRESET } from 'unas-src/appPresentation'
 import { launchStatus } from 'unas-src/runtime/launchStatus'
+import { canCloseWindow } from 'unas-src/windowCloseGuards'
 
 export interface DesktopWindowState {
   id: string
@@ -70,7 +71,7 @@ export const useWindowStore = create<WindowStore>()((set, get) => ({
     }))
   },
 
-  closeWindow: (id) => set((s) => ({ windows: s.windows.filter((w) => w.id !== id) })),
+  closeWindow: (id) => { if (canCloseWindow(id)) set((s) => ({ windows: s.windows.filter((w) => w.id !== id) })) },
 
   minimizeWindow: (id) => set((s) => ({
     windows: s.windows.map((w) => w.id === id ? { ...w, isMinimized: true } : w),
