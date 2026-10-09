@@ -14,7 +14,7 @@
 - 维护者已授权前端打磨：优先收敛桌面层级、App 启动入口、状态抽屉、响应式与无障碍；不改变 mock/真实边界。
 - 视觉采用原创的 macOS/iPadOS 启发式桌面层级与 Liquid Glass 原则，玻璃限于导航/控制层，并提供无障碍和性能降级。
 - uNAS Glass 工作包 A–C 已实现：`window-theme.css` 是主题与材质唯一来源；窗口根承担 blur，正文按内容分组使用可读面；Desktop/Dock/启动器/文件管理器已消费共享 Token。后续 D–E 见 [Development Blueprint](docs/DEVELOPMENT_BLUEPRINT.md#uNAS-glass-后续迁移顺序)。
-- 密码管家/广告拦截来源基线为 `ee749982cc31efbcf912866b854afbf5f1b36c1c`；历史融合分支为 `codex/unipass-integration`，uNAS 起点为 `fef41ae0ba49ad5a043de22b18feafb495d3deab`。`UniPass` 仅作兼容标识保留。
+- Legacy 源码通过 `sources/UniPass` Git submodule 引用，宿主仅经 `legacy/adapter.ts` 接入；可移植密码改进已同步到子模块本地工作区，提交/推送与新 commit 指针仍待授权，见 [ADR 0018](docs/ADR/0018-unipass-source-submodule.md)。`UniPass` 仅作兼容标识保留。
 
 - 密码库后端仅保留 WebDAV，共享传输已下沉（[ADR 0014](docs/ADR/0014-shared-webdav-transport.md)）；Legacy 应用级撤除仍受 [TD-003](docs/TECH_DEBT.md#td-003legacy-密码能力尚未完成应用级解耦) 约束。
 
@@ -34,7 +34,7 @@
 
 ## 最近验证
 
-- 2026-10-09：全量 pnpm verify 通过（65 个测试文件，391 passed/1 skipped）；Legacy 双块授权结构在 Chromium/系统 Chrome 各 8 项合成 E2E 通过，见[验证记录](docs/archive/reviews/2026-10-09-legacy-login.md)。此前 Files 与窗口回归见[2026-10-03](docs/archive/reviews/2026-10-03-file-preview-safety.md)。真实企业登录及常用 Profile 人工验收仍待补。
+- 2026-10-09：pnpm verify 通过（66 文件，393 passed/1 skipped）；UniPass verify 184 项与 Chrome smoke、Chromium 密码回归 11 项、Chrome 登录回归 8 项通过，见[源码解耦验收](docs/archive/reviews/2026-10-09-unipass-source-submodule.md)。真实企业登录及常用 Profile 人工验收仍待补。
 
 ## 按需入口
 

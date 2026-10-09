@@ -1,4 +1,4 @@
-import { accountCatalog } from "../shared/api";
+import { accountCatalog } from "../legacy/adapter";
 import type { AccountRef, VaultTarget } from "../shared/vault";
 import { appUrlMatches, vaultTargetMatches } from "../shared/url";
 import { targetsForAccountRef } from "./vault/vault-service";

@@ -48,6 +48,15 @@ Phase 1 只允许 Frontend Demo、mock scenario 和不含真实 engine/WASM 的�
 
 ## 开发与验证
 
+源码检出包含指向私有 UniPass 仓库的 Git submodule，首次开发先运行：
+
+```bash
+git submodule update --init --recursive
+pnpm install --frozen-lockfile
+```
+
+`sources/UniPass` 固定一个源码 commit；更新远端不会自动改变这个指针。源码边界与两个仓库的提交顺序见 [ADR 0018](docs/ADR/0018-unipass-source-submodule.md)。CI 的 `SOURCE_REPOSITORIES_TOKEN` 需具有 uNAS 和 UniPass 的只读 contents 权限；未配置时默认 token 仅适用于它有权读取的仓库。
+
 ```bash
 pnpm verify
 ```

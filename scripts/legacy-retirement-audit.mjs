@@ -3,10 +3,12 @@ import { readFile, readdir, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { createRequire } from 'node:module'
 import { createHash } from 'node:crypto'
+import { execFileSync } from 'node:child_process'
 const root = path.resolve(import.meta.dirname, '..')
 const app = path.join(root, 'apps/extension')
 const ts = createRequire(path.join(app, 'package.json'))('typescript')
 const moduleRoot = path.join(app, 'src/modules/password-manager')
+const sourceRoot = path.join(root, 'sources/UniPass/src')
 const relative = value => path.relative(root, value).replaceAll('\\', '/')
 async function exists(file) { try { return (await stat(file)).isFile() } catch { return false } }
 async function filesIn(dir) {
@@ -23,7 +25,7 @@ const imports = []
 const unresolved = []
 const legacyUiReferences = []
 const legacyMessages = new Set(['session', 'startUniPassLogin', 'completeUniPassLogin', 'getPluginVersionSettings', 'setPluginVersionOverride', 'getJupiterKeepalive', 'setJupiterKeepalive', 'accountCatalog', 'currentPageCatalog'])
-for (const file of await filesIn(moduleRoot)) {
+for (const file of [...await filesIn(moduleRoot), ...await filesIn(sourceRoot)]) {
   const text = await readFile(file, 'utf8')
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true)
   const specs = []
@@ -50,9 +52,9 @@ for (const file of await filesIn(moduleRoot)) {
   }
   graph.set(file, edges)
 }
-const targetNames = ['shared/api.ts', 'background/credential-core.ts', 'background/legacy-credential-source.ts', 'background/legacy-catalog.ts', 'background/unipass-login.ts', 'background/jupiter-keepalive.ts']
-const targets = new Set(targetNames.map(name => path.join(moduleRoot, name)))
-const roots = ['background/service-worker.ts', 'background/credential-access.ts', 'background/page-overlay.ts', 'background/user-scope-guard.ts', 'popup/popup.ts', 'popup/settings.ts', 'popup/catalog.ts']
+const targetNames = ['legacy/index.ts', 'shared/api.ts', 'background/credential-core.ts', 'background/legacy-credential-source.ts', 'background/legacy-catalog.ts', 'background/unipass-login.ts', 'background/jupiter-keepalive.ts']
+const targets = new Set(targetNames.map(name => path.join(sourceRoot, name)))
+const roots = ['background/service-worker.ts', 'background/credential-access.ts', 'background/page-overlay.ts', 'legacy/adapter.ts', 'popup/popup.ts', 'popup/settings.ts', 'popup/catalog.ts']
 function pathsToLegacy(start) {
   const queue = [[start]]
   const seen = new Set([start])
@@ -79,11 +81,18 @@ console.log(JSON.stringify({
   scope: 'TD-003 static dependency/artifact inventory; no network, user storage or credential reads',
   evidenceLimit: 'Type-only imports are included conservatively. CSS/HTML/runtime message edges and tree shaking require separate review. Build must be refreshed before interpreting artifacts. Not proof that disabling the registry removes Legacy.',
   compilerVersion: ts.version,
+  sourceRepository: {
+    path: 'sources/UniPass',
+    url: execFileSync('git', ['-C', path.join(root, 'sources/UniPass'), 'remote', 'get-url', 'origin'], { encoding: 'utf8' }).trim(),
+    head: execFileSync('git', ['-C', path.join(root, 'sources/UniPass'), 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+    dirty: Boolean(execFileSync('git', ['-C', path.join(root, 'sources/UniPass'), 'status', '--porcelain'], { encoding: 'utf8' }).trim()),
+    pinnedIndexEntry: execFileSync('git', ['ls-files', '--stage', 'sources/UniPass'], { cwd: root, encoding: 'utf8' }).trim(),
+  },
   directLegacyImports: imports.filter(edge => targetPaths.has(edge.to)),
   reachableLegacy: roots.map(name => ({ root: name, paths: pathsToLegacy(path.join(moduleRoot, name)) })),
   legacyUiReferences,
   unresolvedRelativeImports: unresolved,
   build: { present: built, version: manifest?.version, legacyHostPermissions: manifest?.host_permissions?.filter(host => /unipass|feishu|jupiter/.test(host)), artifacts },
   retirementAccepted: false,
-  remainingGates: ['Composition adapter isolation and WebDAV-only routing', 'Disabled-adapter whole-package/manifest/network regression', 'Real authorized WebDAV conflict recovery', 'Target Chrome toolbar gestures and data preservation'],
+  remainingGates: ['WebDAV-only routing (source isolation is not Legacy retirement)', 'Disabled-adapter whole-package/manifest/network regression', 'Real authorized WebDAV conflict recovery', 'Target Chrome toolbar gestures and data preservation'],
 }, null, 2))

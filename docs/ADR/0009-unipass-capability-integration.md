@@ -9,6 +9,8 @@ uNAS 原先只有 WXT/React Demo 壳，UniPass 则拥有独立的 DNR、WebDAV V
 
 ## 决策
 
+> UniPass 源码所有权与“只读来源”条款由 [ADR 0018](0018-unipass-source-submodule.md) 替代。
+
 - uNAS 是唯一构建与维护仓库；UniPass `main` 只作为只读来源与回归基线，本轮未修改。
 - UniPass 源码放入 `apps/extension/src/unipass/`，由 uNAS 唯一 `entrypoints/background.ts` 调用 `installUniPassBackground()`；统一消息 listener 由 `installWorkspaceRouter()` 注册，先校验来源，再分发 UniPass 请求。
 - 工具栏 action 保持无 `default_popup`，点击后通过 `activeTab` + `scripting` 注入原 UniPass `page-overlay.js`。浮层继续使用原始 popup DOM/CSS，并以 closed Shadow DOM 隔离样式。

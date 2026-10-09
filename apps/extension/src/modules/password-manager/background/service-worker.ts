@@ -1,11 +1,8 @@
-import {
-  accountCatalog,
-  accountsForApp,
-  appUrlForApp,
-  currentUser,
-  pluginVersionSettings,
-  setPluginVersionOverride,
-} from "../shared/api";
+import { accountCatalog, accountsForApp, appUrlForApp, currentUser, pluginVersionSettings, setPluginVersionOverride,
+  appsWithAvailableCredentials, clearCredentialAvailabilityCache, credentialAvailability,
+  getJupiterKeepaliveSettings, setJupiterKeepalive, completeUniPassLogin, startUniPassLogin,
+  legacyAccountCatalog, installLegacyAdapter, assertCurrentUserScope, withUserScope,
+} from "../legacy/adapter";
 import {
   credentialAvailabilityForRef,
   credentialForRef,
@@ -37,22 +34,9 @@ import {
 } from "./vault/vault-service";
 import { availableVaultApps } from "./vault/app-availability";
 import { popupSessionUserFor } from "../shared/user-scope";
-import { isHttpsUrl, isJupiterUrl, normalizeTargetUrl } from "../shared/url";
-import { appsWithAvailableCredentials, clearCredentialAvailabilityCache, credentialAvailability } from "./credential-availability";
-import {
-  getJupiterKeepaliveSettings,
-  JUPITER_KEEPALIVE_ALARM,
-  restoreJupiterKeepaliveAlarm,
-  runKeepJupiterAlive,
-  setJupiterKeepalive,
-  syncStoredJupiterSessionToTab,
-} from "./jupiter-keepalive";
-import { clearUniPassLoginForTab, completeUniPassLogin, processUniPassLoginTab, startUniPassLogin } from "./unipass-login";
+import { isHttpsUrl, normalizeTargetUrl } from "../shared/url";
 import { fillFromOverlay, fillFromPopup, isAuthorizedOverlayRequest, openApp, pageContextFor, pageThemeFor, togglePageOverlay } from "./page-overlay";
 import { assertRevealSource } from "./credential-access";
-import { legacyAccountCatalog } from "./legacy-catalog";
-import { installLegacyCredentialSource } from "./credential-source-composition";
-import { assertCurrentUserScope, withUserScope } from "./user-scope-guard";
 import type { BackgroundRequest, BackgroundResponse } from "../shared/types";
 import { isExtensionPageSender } from "../../../shared/sender-guard";
 
@@ -65,13 +49,11 @@ let installed = false;
 export function installPasswordManagerBackground(): void {
   if (installed) return;
   installed = true;
-  installLegacyCredentialSource();
+  installLegacyAdapter();
   void chrome.alarms.create(VAULT_SYNC_ALARM, { periodInMinutes: 5 });
   void syncAllVaults().catch(() => { /* offline startup is expected; the cache remains authoritative */ });
-  void restoreJupiterKeepaliveAlarm().catch((error: unknown) => console.warn("木星保活恢复失败", error));
 
   chrome.alarms.onAlarm.addListener((alarm) => {
-    if (alarm.name === JUPITER_KEEPALIVE_ALARM) void runKeepJupiterAlive();
     if (alarm.name === VAULT_SYNC_ALARM) void syncAllVaults();
   });
   chrome.runtime.onStartup.addListener(() => {
@@ -79,15 +61,6 @@ export function installPasswordManagerBackground(): void {
   });
   chrome.runtime.onInstalled.addListener(() => {
   });
-  chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if ((changeInfo.status === "loading" || changeInfo.status === "complete") && tab.url) {
-      void processUniPassLoginTab(tabId, tab.url).catch((error: unknown) => console.warn("密码管家登录辅助失败", error));
-    }
-    if (changeInfo.status === "complete" && tab.url && isJupiterUrl(tab.url)) {
-      void syncStoredJupiterSessionToTab(tabId).catch((error: unknown) => console.warn("木星会话同步失败", error));
-    }
-  });
-  chrome.tabs.onRemoved.addListener((tabId) => { void clearUniPassLoginForTab(tabId); });
   // The action intentionally opens the original in-page Shadow DOM overlay.
   chrome.action.onClicked.addListener((tab) => {
     if (tab.id == null) return;

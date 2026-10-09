@@ -5,6 +5,7 @@ import tseslint from 'typescript-eslint'
 export default tseslint.config(
   {
     ignores: [
+      'sources/UniPass/**',
       '**/dist/**',
       '**/.output/**',
       '**/.wxt/**',

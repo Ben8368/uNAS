@@ -23,10 +23,10 @@ TD-001 的拆分、验证范围与关闭记录见 [2026-09 归档](archive/tech-
 ### TD-003：Legacy 密码能力尚未完成应用级解耦
 
 - **优先级 / 位置 / 来源 / 目标阶段：** P1；密码模块 background、popup、shared/api 与 WXT 构建；2026-09-23 撤除前审查；Legacy Retirement。
-- **当前妥协与原因：** CredentialSource registry 隔离了 Vault core 的旧 API/WASM 依赖，但 service-worker 仍静态导入并安装 Legacy source、登录与 Jupiter 生命周期；credential-access 直接调用旧 catalog，page-overlay 和 user-scope-guard 仍接旧会话；popup/settings/catalog 仍提供兼容入口。原有空 registry 测试不证明完整扩展能删除 Legacy。
+- **当前妥协与原因：** [ADR 0018](ADR/0018-unipass-source-submodule.md) 已将 Legacy 实现归入 UniPass 源码子模块，service-worker、credential-access 和 page-overlay 只经 `legacy/adapter.ts` 消费，登录/Jupiter 生命周期集中显式安装。popup/settings/catalog 仍提供兼容入口，默认包仍启用 adapter，保留 Legacy host、WASM 和 runtime config；源码解耦不证明完整扩展能删除 Legacy。
 - **影响与最坏结果：** 只删 legacy-credential-source 或停止注册，会留下网络/保活/权限/WASM 和 UI 死入口；直接删 shared/api 会使填充/登录路由断裂。本轮保留运行行为，不删存量数据。
 - **自动跟踪：** 新增只读脚本 [legacy-retirement-audit.mjs](../scripts/legacy-retirement-audit.mjs)，输出 TS 导入路径、旧 UI 消息/标识、构建物及 manifest；逐项结果与限制详见[2026-09-24 自动验收](archive/reviews/2026-09-24-review-remediation.md)；此盘点不证明已禁用/撤除 Legacy，保留本项 P1。
-- **偿还方案：** 先把旧登录、目录、availability、scope、填充分支和 lifecycle 收拢到单独 composition adapter；随后切换 WebDAV-only 目录/会话和浮窗，拒绝已退役消息；最后移除旧 API/WASM、运行配置、专属 host/cookies 权限及包体白名单。不能误删广告模块规则源或 WebDAV 加密兼容 key。
+- **偿还方案：** composition adapter 与源码边界已收拢；下一步切换 WebDAV-only 目录/会话和浮窗，拒绝已退役消息；最后移除宿主 Legacy 依赖、WASM、运行配置、专属 host 权限及包体白名单。不能误删广告模块规则源或 WebDAV 加密兼容 key。
 - **验证方式：** 禁用 adapter 后构建整包并检查导入图/manifest/网络，再覆盖 Desktop 与浮窗的目录、创建/连接/重连、锁定、填充和取消；真实 WebDAV 多端冲突与目标 Chrome 工具栏手势通过后，才删除兼容文件并归档。
 
 不得用空的“以后优化”占位；产生真实妥协时按下列字段登记：

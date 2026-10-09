@@ -32,7 +32,22 @@ for (const scenario of cases) {
     }))
     await extension.context.route('https://accounts.feishu.cn/**', route => route.fulfill({
       contentType: 'text/html; charset=utf-8',
-      body: `<!doctype html><html><body>
+      // Install the synthetic handler before its markup: injectImmediately can
+      // observe streamed DOM before a trailing script has been parsed in Chrome.
+      body: `<!doctype html><html><head><script>
+        function revealScopes() {
+          const reveal = () => {
+            document.getElementById('expand').textContent = '收起';
+            const update = () => {
+              document.getElementById('scopes').hidden = false;
+              document.getElementById('authorize').disabled = false;
+            };
+            ${options.delayed ? 'setTimeout(update, 100)' : 'update()'};
+          };
+          if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', reveal, { once: true });
+          else reveal();
+        }
+      </script></head><body>
         <h1>钛动身份认证中心（Tec-IAM）</h1>
         ${scenario.reauthorize ? `
           <div class="scopeBlock-synthetic">
@@ -47,16 +62,6 @@ for (const scenario of cases) {
           </div>
           ${options.newScopeBlock ? '<div class="scopeBlock-synthetic"><span>新增权限</span><span class="scopeNameText-synthetic">读取通讯录</span></div>' : ''}` : '<p>获取用户身份标识</p>'}
         <button id="authorize" ${options.delayed ? 'disabled' : ''} onclick="this.dataset.clicked=String(Number(this.dataset.clicked || 0)+1)">授权</button>
-        <script>
-          function revealScopes() {
-            document.getElementById('expand').textContent = '收起';
-            const reveal = () => {
-              document.getElementById('scopes').hidden = false;
-              document.getElementById('authorize').disabled = false;
-            };
-            ${options.delayed ? 'setTimeout(reveal, 100)' : 'reveal()'};
-          }
-        </script>
       </body></html>`,
     }))
     // Open through Playwright before starting the helper, so the first document

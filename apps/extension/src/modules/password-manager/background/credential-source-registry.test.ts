@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { clearCredentialSources, credentialSourceFor, registerCredentialSource } from "./credential-source-registry";
-import { installLegacyCredentialSource } from "./credential-source-composition";
+import { installLegacyCredentialSource } from "../legacy/adapter";
 
 describe("credential source composition", () => {
   beforeEach(() => clearCredentialSources());

@@ -38,6 +38,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          token: ${{ secrets.SOURCE_REPOSITORIES_TOKEN || github.token }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -61,6 +64,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          token: ${{ secrets.SOURCE_REPOSITORIES_TOKEN || github.token }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4

@@ -1,9 +1,9 @@
-import { appUrlForApp, credentialForAccount } from "../shared/api";
+import { appUrlForApp, credentialForAccount } from "../legacy/adapter";
 import { credentialForRef } from "./vault/vault-service";
 import { appUrlMatches, isHttpsUrl, vaultTargetMatches } from "../shared/url";
 import type { BackgroundRequest, FillRequest, FillResult, PageContext, PageTheme } from "../shared/types";
 import { detectPageTheme } from "../shared/page-theme";
-import { assertCurrentUserScope } from "./user-scope-guard";
+import { assertCurrentUserScope } from "../legacy/adapter";
 import { fillTargetForAccount } from "./credential-access";
 
 const OVERLAY_TOKEN_KEY = "unipass-overlay-tokens-v1";

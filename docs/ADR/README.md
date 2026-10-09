@@ -34,4 +34,6 @@ ADR 记录影响长期维护的决定及理由。Roadmap 说明“按什么阶�
 | [0015](0015-file-manager-dav-cache.md) | 已接受 | Files 独立 WebDAV 文件连接、浏览器下载记录、OPFS 缓存与持久存储申请；缓存容量条款由 0016 替代 |
 | [0016](0016-file-cache-quota.md) | 已接受 | Files 临时缓存单文件 256 MiB、最多 200 项，取消应用层固定总量上限 |
 
+| [0018](0018-unipass-source-submodule.md) | 已接受 | UniPass 源码 submodule；Legacy adapter 统一入口与可移植密码功能回同步 |
+
 “已接受”表示维护者接受的方案基线，依据见各 ADR；不等于对应源码已实现或 Gate 已通过。若后续阶段改变边界，须以新 ADR 替代。0002 只保留历史，不再约束实现。
