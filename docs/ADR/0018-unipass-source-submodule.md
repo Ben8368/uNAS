@@ -19,7 +19,7 @@
 
 ## 后果
 
-- 初始化使用 `git submodule update --init --recursive`；私有 UniPass 仓库需要读取权限，CI 的 `SOURCE_REPOSITORIES_TOKEN` 需具有两个仓库的只读 contents 权限。
+- 初始化使用 `git submodule update --init --recursive`；私有 UniPass 仓库需要读取权限。CI 从 gitlink 解析固定 commit，再单独 checkout；`UNIPASS_SOURCE_READ_KEY` 是仅限 UniPass 的只读 deploy key，分别配置为 uNAS Actions 和 Dependabot secret，不持久化 checkout 凭据。
 - 两个仓库有独立的改动、验证和提交。维护者授权提交/推送后，应先提交并推送 UniPass，再将主仓库 gitlink 更新到该 commit，最后提交主仓库。子仓库未提交修改不会包含在 gitlink 中；本地同步不等于远端同步。
 - uNAS 执行 `pnpm verify` 和受影响扩展 E2E；UniPass 执行 `npm run verify`。构建和合成夹具不替代真实登录或 WebDAV 人工验收。
 
