@@ -30,7 +30,7 @@ export function DavFilesPane() {
   const [preview, setPreview] = useState<FileRef>()
   const previewRef = useRef<FilePreviewHandle>(null)
   const mounted = useRef(true)
-  const connectController = useRef<AbortController>()
+  const connectController = useRef<AbortController | undefined>(undefined)
   const inFlight = useRef(false)
   const path = history.at(-1) ?? ''
   const previewReader = useMemo(() => createPreviewReader('webdav', port.fileMetadata, port.openRead), [port])

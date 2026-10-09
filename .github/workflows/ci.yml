@@ -47,7 +47,7 @@ jobs:
         run: echo "sha=$(git rev-parse HEAD:sources/UniPass)" >> "$GITHUB_OUTPUT"
 
       - name: Checkout private UniPass source
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: Ben8368/UniPass
           ref: ${{ steps.unipass.outputs.sha }}
@@ -86,7 +86,7 @@ jobs:
         run: echo "sha=$(git rev-parse HEAD:sources/UniPass)" >> "$GITHUB_OUTPUT"
 
       - name: Checkout private UniPass source
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: Ben8368/UniPass
           ref: ${{ steps.unipass.outputs.sha }}

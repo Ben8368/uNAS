@@ -24,7 +24,7 @@ type DirectoryPickerToolbarProps = {
   searchText: string
   searchPlaceholder: string
   addressDraft: string
-  addressInputRef: RefObject<HTMLInputElement>
+  addressInputRef: RefObject<HTMLInputElement | null>
   onGoBack: () => void
   onGoForward: () => void
   onGoParent: () => void

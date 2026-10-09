@@ -17,8 +17,8 @@ function outputName(input: string, format: string) {
 export function MusicApp() {
   const workspaceState = inlineWorkspace.getState()
   const capability = useMemo<MusicCapability>(() => probeMusicCapability(), [])
-  const run = useRef<MusicDecryptRun>()
-  const objectUrl = useRef<string>()
+  const run = useRef<MusicDecryptRun | undefined>(undefined)
+  const objectUrl = useRef<string | undefined>(undefined)
   const [file, setFile] = useState<File | undefined>()
   const [result, setResult] = useState<MusicDecryptResult | undefined>()
   const [busy, setBusy] = useState(false)

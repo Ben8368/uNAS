@@ -55,7 +55,7 @@ git submodule update --init --recursive
 pnpm install --frozen-lockfile
 ```
 
-`sources/UniPass` 固定一个源码 commit；更新远端不会自动改变这个指针。源码边界与两个仓库的提交顺序见 [ADR 0018](docs/ADR/0018-unipass-source-submodule.md)。CI 的 `SOURCE_REPOSITORIES_TOKEN` 需具有 uNAS 和 UniPass 的只读 contents 权限；未配置时默认 token 仅适用于它有权读取的仓库。
+`sources/UniPass` 固定一个源码 commit；更新远端不会自动改变这个指针。源码边界、提交顺序与 CI 的私有源码读取配置见 [ADR 0018](docs/ADR/0018-unipass-source-submodule.md)。
 
 ```bash
 pnpm verify
