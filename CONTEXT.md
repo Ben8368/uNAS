@@ -1,6 +1,6 @@
 # 当前状态
 
-> **最后确认：** 2026-10-03
+> **最后确认：** 2026-10-09
 > **阶段：** Phase 2 / uNAS native module integration
 > **产品代码：** WXT MV3 已接入密码管家、广告拦截、WebDAV Vault、Legacy adapter 和 closed Shadow DOM 浮窗；桌面 App 共用下载外观基线；Files 有 WebDAV 文件实验切片、Chrome 下载记录面板和 OPFS 临时缓存/回收站，边界见 ADR 0015；`manage.html` 兼容保留。
 
@@ -34,7 +34,7 @@
 
 ## 最近验证
 
-- 2026-10-03：全量 pnpm verify 通过（64 个测试文件，390 passed/1 skipped）；Files/WebDAV/本地媒体与预览安全 E2E 8 passed，另窗口/生命周期/跨页面/布局回归 23 passed，见[验证记录](docs/archive/reviews/2026-10-03-file-preview-safety.md)。自动化浏览器不替代目标 Chrome Stable 人工验收；缓存 256 MiB 压力与常用 Profile 验收待补。
+- 2026-10-09：全量 pnpm verify 通过（65 个测试文件，391 passed/1 skipped）；Legacy 双块授权结构在 Chromium/系统 Chrome 各 8 项合成 E2E 通过，见[验证记录](docs/archive/reviews/2026-10-09-legacy-login.md)。此前 Files 与窗口回归见[2026-10-03](docs/archive/reviews/2026-10-03-file-preview-safety.md)。真实企业登录及常用 Profile 人工验收仍待补。
 
 ## 按需入口
 

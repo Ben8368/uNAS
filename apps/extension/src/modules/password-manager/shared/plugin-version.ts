@@ -5,7 +5,7 @@ import { normalizeVersion } from "./version";
  * Keep public/runtime-config.json in sync; it supplies the default request header.
  * This baseline is independent of the uNAS extension manifest version.
  */
-export const STORE_PLUGIN_VERSION = "5.3.5";
+export const STORE_PLUGIN_VERSION = "5.3.6";
 export const PLUGIN_VERSION_OVERRIDE_STORAGE_KEY = "unipassNetworkVersionOverride";
 
 export function normalizePluginVersion(value: unknown): string | null {

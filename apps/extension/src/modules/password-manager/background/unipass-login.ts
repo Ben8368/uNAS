@@ -188,8 +188,34 @@ async function clickTrustedFeishuAuthorizeButton(): Promise<boolean> {
     && url.searchParams.get("redirect_uri") === "https://tec-iam.tec-do.com/portal/api/v1/login/feishu_oauth/gboh9uvzolazw62gmxojwaarust5qyvh"
     && Boolean(url.searchParams.get("state"));
   if (!trusted) return false;
+  let expandedPreviousPermissions = false;
   const click = (): boolean => {
-    if (document.body?.innerText.includes("钛动身份认证中心（Tec-IAM）") && document.body.innerText.includes("获取用户身份标识")) {
+    const text = document.body?.innerText ?? "";
+    if (!text.includes("钛动身份认证中心（Tec-IAM）")) return false;
+    if (text.includes("请重新授权") || text.includes("此前已授予的权限")) {
+      if (!text.includes("以下权限此前已授予，重新授权后可继续使用")) return false;
+      // Feishu now collapses previously granted scopes. Reveal them before
+      // checking the permission; the reauthorization banner alone is not enough.
+      const blocks = [...document.querySelectorAll<HTMLElement>('[class^="scopeBlock-"]')]
+        .filter((block) => block.getClientRects().length > 0)
+        // Feishu uses scopeBlock for both the notice and the permission list.
+        // Exclude only the exact known notice, preserving checks on new scopes.
+        .filter((block) => block.innerText.replace(/\s+/g, "") !== "请重新授权以下权限此前已授予，重新授权后可继续使用");
+      if (blocks.length !== 1 || !blocks[0].innerText.includes("此前已授予的权限")) return false;
+      const block = blocks[0];
+      const expanders = [...block.querySelectorAll<HTMLElement>("span")]
+        .filter((element) => element.textContent?.trim() === "展开" && element.getClientRects().length > 0);
+      if (!expandedPreviousPermissions && expanders.length === 1) {
+        expandedPreviousPermissions = true;
+        expanders[0].click();
+        return false;
+      }
+      const scopes = [...block.querySelectorAll<HTMLElement>('[class^="scopeNameText-"]')]
+        .filter((element) => element.getClientRects().length > 0)
+        .map((element) => element.innerText.trim());
+      if (scopes.length !== 1 || scopes[0] !== "获取用户身份标识") return false;
+    }
+    if (document.body?.innerText.includes("获取用户身份标识")) {
       const matches = [...document.querySelectorAll<HTMLButtonElement>("button")]
         .filter((button) => button.textContent?.trim() === "授权" && !button.disabled && button.offsetParent !== null);
       if (matches.length === 1) {
@@ -199,7 +225,6 @@ async function clickTrustedFeishuAuthorizeButton(): Promise<boolean> {
     }
     return false;
   };
-  if (click()) return true;
   return await new Promise((resolve) => {
     const observer = new MutationObserver(() => { if (click()) finish(true); });
     const timeout = setTimeout(() => finish(false), 12_000);
@@ -208,6 +233,9 @@ async function clickTrustedFeishuAuthorizeButton(): Promise<boolean> {
       clearTimeout(timeout);
       resolve(clicked);
     };
-    observer.observe(document.documentElement ?? document, { childList: true, subtree: true, characterData: true });
+    observer.observe(document.documentElement ?? document, { childList: true, subtree: true, characterData: true, attributes: true });
+    // Observe first: expanding scopes can render synchronously or only change
+    // visibility/disabled attributes, without inserting any new text nodes.
+    if (click()) finish(true);
   });
 }

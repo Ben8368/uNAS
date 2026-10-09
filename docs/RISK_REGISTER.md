@@ -31,6 +31,7 @@
 - **阻断 Gate：** uNAS 公开发布 Gate；不阻断当前本地解包构建。
 - **问题：** 单一 MV3 构建与模块拆分自动回归已补充，见 [2026-09-24 自动验收](archive/reviews/2026-09-24-review-remediation.md)；工具栏 `action.onClicked` 的真实系统手势、原有密码浮窗人工视觉对照、真实 WebDAV 冲突恢复、历史 UniPass 资源再分发许可和 uNAS 维护者签名 key/固定扩展 ID尚未完成。
 - **控制：** 保留原 WebDAV 恢复路径和旧扩展回滚来源；不复制 storage/IndexedDB、不自动卸载旧扩展、不使用真实凭据；Playwright 测试明确跳过无法模拟 action 手势的场景。
+- **Legacy 登录增量：** 2026-10-09 实站观察到 Feishu 将此前已授予的身份权限默认折叠；辅助脚本先展开并核对唯一身份权限，未知结构/额外权限保留人工处理。实站仅核对页面和 OAuth 地址，未提交授权或读取企业凭据；完整企业登录、会话回传与目标 Chrome 常用 Profile 仍待验收。合成回归入口为 `apps/extension/e2e/legacy-login.spec.ts`。
 - **AdBlock 验收补充：** B 站四类推广位已按页面 DOM 增加本地 cosmetic 规则；目标 Chrome 加载新构建后的实站隐藏、暂停恢复和站点改版兼容性仍需人工验收。首页隐藏卡片后的序号间距错位增加 `bilibili-layout.spec.ts` 布局回归，登录态实站对齐仍待确认。自动化入口为 `apps/extension/e2e/bilibili-adblock.spec.ts`，合成 DOM 回归不替代实站验收，不宣称已阻止广告请求或视频内植入。
 - **补充订阅风险：** [ADR 0012](ADR/0012-repository-filter-subscription.md) 的仓库 JSON 尚未由本轮推送发布，远端首次获取及 Chrome GitHub Raw 权限需验收；仓库控制权/站点 DOM 变化可能造成规则误伤。控制为固定 URL、严格 schema/大小预算、独立失败回退、站点暂停与递增 revision 撤回；维护说明见 [filters](../filters/README.md)。
 - **关闭证据：** 隔离 Chrome Profile 的浅/深主题截图对比、工具栏真实点击打开/关闭/外部点击/Escape/SPA 测试、历史浮窗视觉基准对照、合成账号填充、合成 WebDAV 服务冲突夹具、许可批准记录和维护者保管的签名 key 对应 manifest。当前 E2E 已提供 HTTPS 合成页、既有 DOM/CSS 浮窗截图和浮窗全部应用视图截图，但不关闭真实 action 手势缺口。
