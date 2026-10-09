@@ -7,8 +7,8 @@ export default defineConfig({
   base: './',
   resolve: {
     alias: {
-      'unas-src': path.resolve(__dirname, 'src'),
-      '#contracts': path.resolve(__dirname, 'contracts/index.ts'),
+      'unas-src': path.resolve(import.meta.dirname, 'src'),
+      '#contracts': path.resolve(import.meta.dirname, 'contracts/index.ts'),
     },
   },
   server: {
@@ -21,7 +21,7 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'index.html'),
+        main: path.resolve(import.meta.dirname, 'index.html'),
       },
     },
   },

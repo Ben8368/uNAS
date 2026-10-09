@@ -34,7 +34,7 @@
 
 ## 最近验证
 
-- 2026-10-09：依赖集成后的 pnpm verify 通过（66 文件，393 passed/1 skipped），Web 回归 8 项通过，私有源码 CI 拉取与 Verify demo 已验证，见[PR 集成验收](docs/archive/reviews/2026-10-09-pr-integration.md)。UniPass 与系统 Chrome 既有证据见[同步验收](docs/archive/reviews/2026-10-09-unipass-branch-sync.md)；真实企业登录与常用 Profile 仍待补。
+- 2026-10-09：PR #9–#11 的依赖集成与 Vite 8 配套迁移后，pnpm verify 通过（66 文件，393 passed/1 skipped），依赖审计无已知漏洞；CI、浏览器回归与分支证据见[PR 集成验收](docs/archive/reviews/2026-10-09-pr-integration.md)。UniPass 与系统 Chrome 既有证据见[同步验收](docs/archive/reviews/2026-10-09-unipass-branch-sync.md)；真实企业登录与常用 Profile 仍待补。
 
 ## 按需入口
 
