@@ -177,6 +177,22 @@ jobs:
           node scripts/credential-core-provenance.mjs --rebuild
           pnpm --filter unipass-extension run verify:wasm-reproducible
 
+      # Does not relax the check above: on a mismatch it regenerates the artifact with this same pinned pipeline in
+      # the ephemeral checkout and uploads it, so a maintainer can review and commit the Linux-built bytes.
+      - name: Regenerate tracked WASM for review on provenance mismatch
+        if: ${{ failure() && steps.scope.outputs.run == 'true' }}
+        run: node scripts/credential-core-provenance.mjs --write
+
+      - name: Upload regenerated WASM and its record
+        if: ${{ failure() && steps.scope.outputs.run == 'true' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: regenerated-credential-core
+          path: |
+            apps/extension/public/credential-core.wasm
+            assets/demo-assets.json
+          if-no-files-found: error
+
       - name: Run automated Chrome smoke and hardened build
         if: steps.scope.outputs.run == 'true'
         env:
