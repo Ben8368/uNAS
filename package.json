@@ -19,17 +19,15 @@
     "check:architecture": "node scripts/architecture-boundary-check.mjs",
     "check:package": "node scripts/demo-package-check.mjs",
     "check:dependencies": "node scripts/dependency-inventory.mjs --check",
-    "unipass:lock:check": "node scripts/unipass-lock-parity.mjs",
-    "unipass:export": "node scripts/unipass-export.mjs",
-    "unipass:export:check": "node scripts/unipass-export.mjs --check",
-    "unipass:wasm:provenance": "node scripts/credential-core-provenance.mjs",
+    "password-compat:lock:check": "node scripts/password-compat-lock-parity.mjs",
+    "password-compat:wasm:provenance": "node scripts/credential-core-provenance.mjs",
     "lint": "eslint . --max-warnings 0",
     "test:e2e": "pnpm build:extension && pnpm --dir apps/extension run test:e2e",
     "test:e2e:p3": "pnpm build:extension && pnpm --dir apps/extension run test:e2e:p3",
     "verify:extension": "pnpm docs:governance:check && pnpm lint && pnpm check:demo && pnpm check:architecture && pnpm check:dependencies && pnpm test:demo && pnpm typecheck:demo && pnpm build:demo && pnpm build:extension && pnpm check:package",
-    "verify:unipass": "pnpm unipass:lock:check && pnpm unipass:export:check && pnpm unipass:wasm:provenance && pnpm --filter unipass-extension run verify",
-    "verify:unipass:release": "pnpm verify:unipass && node scripts/credential-core-provenance.mjs --rebuild && pnpm --filter unipass-extension run verify:wasm-reproducible && pnpm --filter unipass-extension run smoke:chrome && pnpm --filter unipass-extension run verify:hardened",
-    "verify": "pnpm verify:extension && pnpm verify:unipass"
+    "verify:password-compat": "pnpm password-compat:lock:check && pnpm password-compat:wasm:provenance && pnpm --filter @unas/password-compat run verify",
+    "verify:password-compat:release": "pnpm verify:password-compat && node scripts/credential-core-provenance.mjs --rebuild && pnpm --filter @unas/password-compat run verify:wasm-reproducible && pnpm --filter @unas/password-compat run smoke:chrome && pnpm --filter @unas/password-compat run verify:hardened",
+    "verify": "pnpm verify:extension && pnpm verify:password-compat"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

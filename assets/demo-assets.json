@@ -142,21 +142,21 @@
     },
     {
       "path": "apps/extension/public/rules/baseline.json",
-      "bytes": 11777,
-      "sha256": "3d711b0715d0732b8a729db3fad2b4f4df83b3b020bb2678d723b2df47fa1bad",
-      "kind": "UniPass audited static DNR baseline"
+      "bytes": 10867,
+      "sha256": "3aa0cce70a7dbde32380ae9c50f29b1c02c4e5e2570bc5c7f38089cf083f80f2",
+      "kind": "uNAS audited static DNR baseline"
     },
     {
       "path": "apps/extension/public/runtime-config.json",
       "bytes": 45,
       "sha256": "5cddc56d4ac44191f907a6871fe305ac1fa527038ea6313a17934297727d2ac1",
-      "kind": "uNAS build-time UniPass network version configuration"
+      "kind": "uNAS build-time enterprise protocol version configuration"
     },
     {
       "path": "apps/extension/public/credential-core.wasm",
       "bytes": 51885,
       "sha256": "e106f21b71ec1deae2e0cea0829141061d6256988d8dd43ff594d6adc88ce4c8",
-      "kind": "UniPass Legacy credential-core WASM compatibility artifact"
+      "kind": "uNAS Legacy credential-core WASM compatibility artifact"
     }
   ]
 }

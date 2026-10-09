@@ -14,7 +14,7 @@
 | Engines / Workers | Image/Media/Archive/PDF、adapter、WASM | 输入探测、资源预算、输出验证、取消 |
 | Frontend | New Tab、Workspace、Desktop、Tool App、mock | 不直连引擎、mock 可识别、状态完整 |
 | Extension Runtime | WXT、MV3、消息、权限、生命周期和商店包 | 最小权限、CSP、owner、无远程代码 |
-| UniPass Package | `packages/unipass` 源码、导出与下游发布镜像 | 单一事实源、单向导出、public API、WASM 出处与 lock 一致 |
+| Password Compatibility | `packages/password-compat` 内部源码与测试壳 | 无外部项目同步、public API、WASM 出处与 lock 一致 |
 | Security / Supply Chain | 数据流、依赖、WASM、素材、发布 | 许可证、哈希、隐私、升级和回滚 |
 | Governance / Quality | AGENTS、Context、Roadmap、Risk、测试 | 事实源、证据状态、门禁和归档 |
 

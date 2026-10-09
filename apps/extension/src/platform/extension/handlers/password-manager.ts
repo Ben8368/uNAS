@@ -1,7 +1,7 @@
-import { handleUniPassMessage, isUniPassMessage } from 'unas-src/features/password-manager/background/service-worker'
+import { handlePasswordManagerMessage, isPasswordManagerMessage } from 'unas-src/features/password-manager/background/service-worker'
 import { extensionApi } from '../extensionPlatform'
 import { defineRoute } from '../routes'
-import { isExtensionPage, isUniPassSender } from '../sender-policy'
+import { isExtensionPage, isLegacySender } from '../sender-policy'
 
 type OpenPasswordManager = { kind: 'password-manager.open' }
 
@@ -20,8 +20,8 @@ export const openPasswordManagerRoute = defineRoute({
 })
 
 export const passwordManagerRoute = defineRoute({
-  matches: isUniPassMessage,
-  authorize: isUniPassSender,
+  matches: isPasswordManagerMessage,
+  authorize: isLegacySender,
   rejection: '密码管家消息来源无效。',
-  handle: (message, sender) => handleUniPassMessage(message, sender as chrome.runtime.MessageSender),
+  handle: (message, sender) => handlePasswordManagerMessage(message, sender as chrome.runtime.MessageSender),
 })

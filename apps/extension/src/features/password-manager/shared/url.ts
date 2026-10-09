@@ -64,7 +64,7 @@ export function isJupiterUrl(value: string): boolean {
   }
 }
 
-export function isUniPassLoginUrl(value: string): boolean {
+export function isLegacyLoginUrl(value: string): boolean {
   try {
     const url = new URL(value);
     return url.origin === new URL(UNIPASS_LOGIN_URL).origin

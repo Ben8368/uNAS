@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-test('development material lab compares UniPass, the old uNAS material, and the Liquid Glass candidate', async ({ page }, testInfo) => {
+test('development material lab compares uNAS, the old uNAS material, and the Liquid Glass candidate', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/?material-lab=1')
   await expect(page.getByRole('heading', { name: 'Liquid Glass 材质对比' })).toBeVisible()

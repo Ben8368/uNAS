@@ -1,4 +1,4 @@
-// apps/extension/public/credential-core.wasm is a derived runtime artifact of packages/unipass/credential-core.
+// apps/extension/public/credential-core.wasm is a derived runtime artifact of packages/password-compat/credential-core.
 // Default: the tracked artifact must match its assets/demo-assets.json record (no toolchain needed).
 // --rebuild: also rebuild from source with the pinned toolchain and require a byte-for-byte match.
 // --write: Linux only. Rebuild with the pinned toolchain, then write the artifact and its demo-assets.json record.
@@ -15,7 +15,7 @@ const manifestPath = resolve(root, 'assets/demo-assets.json')
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex')
 
 async function rebuild() {
-  const { buildCredentialCore } = await import(pathToFileURL(resolve(root, 'packages/unipass/scripts/build-wasm.mjs')).href)
+  const { buildCredentialCore } = await import(pathToFileURL(resolve(root, 'packages/password-compat/scripts/build-wasm.mjs')).href)
   return await readFile(await buildCredentialCore())
 }
 
@@ -43,7 +43,7 @@ if (record.bytes !== tracked.byteLength) errors.push(`已跟踪产物大小 ${tr
 if (process.argv.includes('--rebuild')) {
   const built = await rebuild()
   if (sha256(built) !== sha256(tracked)) {
-    errors.push(`从 packages/unipass/credential-core 重建的 WASM（${sha256(built)}）与已跟踪产物不同；请更新 ${artifactPath} 与 demo-assets.json，或回退源码改动`)
+    errors.push(`从 packages/password-compat/credential-core 重建的 WASM（${sha256(built)}）与已跟踪产物不同；请更新 ${artifactPath} 与 demo-assets.json，或回退源码改动`)
     // Diagnostic only: never relaxes the check. Same length but different bytes usually means host path separators.
     if (built.byteLength === tracked.byteLength) {
       let differing = 0

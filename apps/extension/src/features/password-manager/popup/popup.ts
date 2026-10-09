@@ -1,4 +1,4 @@
-import type { PageContext, PageTheme, PopupSessionUser, UniPassLoginStartResult } from "../shared/types";
+import type { PageContext, PageTheme, PopupSessionUser, LegacyLoginStartResult } from "../shared/types";
 import { send, setOverlayToken } from "./bridge";
 import { CatalogController } from "./catalog";
 import { CredentialController } from "./credentials";
@@ -120,7 +120,7 @@ export function initializePopup(environment: PopupEnvironment = {}): PopupHandle
         return;
       }
       beginLoginRefresh();
-      void send<UniPassLoginStartResult>({ type: "startUniPassLogin" }).catch((error: unknown) => {
+      void send<LegacyLoginStartResult>({ type: "startLegacyLogin" }).catch((error: unknown) => {
         stopLoginRefresh();
         applyOfflineSession(error);
       });
@@ -181,7 +181,7 @@ export function initializePopup(environment: PopupEnvironment = {}): PopupHandle
     try {
       const user = await send<PopupSessionUser>({ type: "session" });
       stopLoginRefresh();
-      void send<void>({ type: "completeUniPassLogin" });
+      void send<void>({ type: "completeLegacyLogin" });
       applyOnlineSession(user);
       setStatus("登录成功，账号目录已刷新");
       await catalog.loadCurrentPage();

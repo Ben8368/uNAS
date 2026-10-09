@@ -8,11 +8,11 @@ const root = path.resolve(import.meta.dirname, '..')
 const app = path.join(root, 'apps/extension')
 const ts = createRequire(path.join(app, 'package.json'))('typescript')
 const moduleRoot = path.join(app, 'src/features/password-manager')
-const unipassPackage = path.join(root, 'packages/unipass')
-const sourceRoot = path.join(unipassPackage, 'src')
-// Package public exports are resolved to their source file so the import graph still reaches UniPass internals.
-const packageExports = new Map(Object.entries(JSON.parse(await readFile(path.join(unipassPackage, 'package.json'), 'utf8')).exports ?? {})
-  .map(([key, target]) => [`unipass-extension/${key.replace(/^\.\//, '')}`, path.join(unipassPackage, target)]))
+const passwordCompatPackage = path.join(root, 'packages/password-compat')
+const sourceRoot = path.join(passwordCompatPackage, 'src')
+// Package public exports are resolved to their source file so the import graph still reaches uNAS internals.
+const packageExports = new Map(Object.entries(JSON.parse(await readFile(path.join(passwordCompatPackage, 'package.json'), 'utf8')).exports ?? {})
+  .map(([key, target]) => [`@unas/password-compat/${key.replace(/^\.\//, '')}`, path.join(passwordCompatPackage, target)]))
 const relative = value => path.relative(root, value).replaceAll('\\', '/')
 async function exists(file) { try { return (await stat(file)).isFile() } catch { return false } }
 async function filesIn(dir) {
@@ -28,7 +28,7 @@ const graph = new Map()
 const imports = []
 const unresolved = []
 const legacyUiReferences = []
-const legacyMessages = new Set(['session', 'startUniPassLogin', 'completeUniPassLogin', 'getPluginVersionSettings', 'setPluginVersionOverride', 'getJupiterKeepalive', 'setJupiterKeepalive', 'accountCatalog', 'currentPageCatalog'])
+const legacyMessages = new Set(['session', 'startLegacyLogin', 'completeLegacyLogin', 'getPluginVersionSettings', 'setPluginVersionOverride', 'getJupiterKeepalive', 'setJupiterKeepalive', 'accountCatalog', 'currentPageCatalog'])
 for (const file of [...await filesIn(moduleRoot), ...await filesIn(sourceRoot)]) {
   const text = await readFile(file, 'utf8')
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true)
@@ -62,7 +62,7 @@ for (const file of [...await filesIn(moduleRoot), ...await filesIn(sourceRoot)])
   }
   graph.set(file, edges)
 }
-const targetNames = ['legacy/index.ts', 'shared/api.ts', 'background/credential-core.ts', 'background/legacy-credential-source.ts', 'background/legacy-catalog.ts', 'background/unipass-login.ts', 'background/jupiter-keepalive.ts']
+const targetNames = ['legacy/index.ts', 'shared/api.ts', 'background/credential-core.ts', 'background/legacy-credential-source.ts', 'background/legacy-catalog.ts', 'background/legacy-login.ts', 'background/jupiter-keepalive.ts']
 const targets = new Set(targetNames.map(name => path.join(sourceRoot, name)))
 const roots = ['background/service-worker.ts', 'background/credential-access.ts', 'background/page-overlay.ts', 'legacy/adapter.ts', 'popup/popup.ts', 'popup/settings.ts', 'popup/catalog.ts']
 function pathsToLegacy(start) {
@@ -92,11 +92,11 @@ console.log(JSON.stringify({
   evidenceLimit: 'Type-only imports are included conservatively. CSS/HTML/runtime message edges and tree shaking require separate review. Build must be refreshed before interpreting artifacts. Not proof that disabling the registry removes Legacy.',
   compilerVersion: ts.version,
   sourcePackage: {
-    // packages/unipass is the source of truth; the standalone UniPass repository is a downstream release mirror.
-    path: 'packages/unipass',
+    // This internal package is maintained only here; no external mirror or synchronization exists.
+    path: 'packages/password-compat',
     head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
-    dirty: Boolean(execFileSync('git', ['status', '--porcelain', '--', 'packages/unipass'], { cwd: root, encoding: 'utf8' }).trim()),
-    sourceFiles: execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '--', 'packages/unipass'], { cwd: root, encoding: 'utf8' }).split('\n').filter(Boolean).length,
+    dirty: Boolean(execFileSync('git', ['status', '--porcelain', '--', 'packages/password-compat'], { cwd: root, encoding: 'utf8' }).trim()),
+    sourceFiles: execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '--', 'packages/password-compat'], { cwd: root, encoding: 'utf8' }).split('\n').filter(Boolean).length,
     gitlinks: execFileSync('git', ['ls-files', '--stage'], { cwd: root, encoding: 'utf8' }).split('\n').filter(line => line.startsWith('160000')).length,
   },
   directLegacyImports: imports.filter(edge => targetPaths.has(edge.to)),

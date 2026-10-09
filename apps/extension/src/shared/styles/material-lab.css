@@ -22,7 +22,7 @@
 .mt-material-lab__scene--detail { background: repeating-conic-gradient(from 0deg, rgb(255 237 167 / .20) 0 10deg, transparent 10deg 20deg), rgb(12 33 54 / .40); }
 .mt-material-lab__samples { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .mt-material-lab__glass { position: relative; min-height: 164px; overflow: hidden; border: 1px solid rgb(255 255 255 / .22); border-radius: 20px; box-shadow: 0 16px 36px rgb(0 10 24 / .25), inset 0 1px 0 rgb(255 255 255 / .20); }
-.mt-material-lab__glass--unipass { background: rgb(19 28 37 / .42); backdrop-filter: blur(18px) saturate(155%) contrast(104%); }
+.mt-material-lab__glass--password-overlay { background: rgb(19 28 37 / .42); backdrop-filter: blur(18px) saturate(155%) contrast(104%); }
 .mt-material-lab__glass--current { background: rgb(27 29 32 / .88); backdrop-filter: blur(16px) saturate(110%); }
 .mt-material-lab__glass--candidate { background: var(--window-glass-window); backdrop-filter: var(--window-glass-filter); }
 .mt-material-lab__reflection { position: absolute; inset: 0; height: 80px; background: var(--window-glass-reflection); opacity: .88; pointer-events: none; }

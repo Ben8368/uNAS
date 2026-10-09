@@ -25,7 +25,7 @@ ADR 记录影响长期维护的决定及理由。Roadmap 说明“按什么阶�
 | [0006](0006-frontend-demo-first.md) | 已接受 | 前端 Demo 先行，通过 mock/real adapters 演进 |
 | [0007](0007-inline-app-workspace.md) | 已接受 | 内置 App 同页打开，逻辑 Workspace 单一 owner 与受限同源客户端 |
 | [0008](0008-private-preview-modern-chrome.md) | 已接受 | 私有预览追随 Chrome Stable，原生 API 优先与主动移除旧版兼容负担 |
-| [0009](0009-unipass-capability-integration.md) | 已接受 | UniPass AdBlock、WebDAV Vault、Legacy 边界与原版页面浮层并入 uNAS 的单一 MV3 构建 |
+| [0009](0009-unipass-capability-integration.md) | 已接受 | AdBlock、WebDAV Vault、Legacy 边界与原版页面浮层并入 uNAS 的单一 MV3 构建 |
 | [0010](0010-clean-room-mmkv-replacement.md) | 已接受 | 不再依赖无许可证的上游 `go-mmkv`；如需 MMKV 能力，采用自有 clean-room 实现 |
 | [0011](0011-local-authorized-music-processing.md) | 已接受 | 允许用户明确有权处理的本地 KGM/QMC/NCM 容器解密；禁止在线 DRM、账号、密钥和内容分发路径 |
 | [0012](0012-repository-filter-subscription.md) | 已接受 | 仓库自维护 JSON 补充订阅；独立缓存、受限 CSS 与随包兜底，不替换原有订阅 |
@@ -34,8 +34,10 @@ ADR 记录影响长期维护的决定及理由。Roadmap 说明“按什么阶�
 | [0015](0015-file-manager-dav-cache.md) | 已接受 | Files 独立 WebDAV 文件连接、浏览器下载记录、OPFS 缓存与持久存储申请；缓存容量条款由 0016 替代 |
 | [0016](0016-file-cache-quota.md) | 已接受 | Files 临时缓存单文件 256 MiB、最多 200 项，取消应用层固定总量上限 |
 | [0017](0017-unified-file-read-preview.md) | 已接受 | 受控 FileRef、WebDAV 分段读取与交互式预览 |
-| [0018](0018-unipass-source-submodule.md) | 已替代 | UniPass 源码 submodule 与 Legacy adapter 入口，由 0019 替代 |
-| [0019](0019-unipass-monorepo-package.md) | 已接受 | UniPass 归入 `packages/unipass`；独立仓库降为单向下游发布镜像 |
+| [0018](0018-unipass-source-submodule.md) | 已替代 | 历史密码兼容源码 submodule 与 Legacy adapter 入口，由 0019 替代 |
+| [0019](0019-unipass-monorepo-package.md) | 已替代 | 历史 monorepo 与下游镜像方案，由 0021 替代 |
 | [0020](0020-extension-source-taxonomy.md) | 已接受 | 扩展 `src` 按 owner 分为 shell / features / platform / shared，并由边界检查强制 |
+
+| [0021](0021-unas-only-brand.md) | 已接受 | 仅维护 uNAS 品牌，内部密码兼容包与独立项目无同步或发布关系 |
 
 “已接受”表示维护者接受的方案基线，依据见各 ADR；不等于对应源码已实现或 Gate 已通过。若后续阶段改变边界，须以新 ADR 替代。0002 只保留历史，不再约束实现。

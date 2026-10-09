@@ -18,12 +18,12 @@ TD-001 的拆分、验证范围与关闭记录见 [2026-09 归档](archive/tech-
 - **当前妥协与原因：** 2026-09-20 已完成代码迁移：删除全局浅色补丁和 App 私有 `--mt-*` 定义，Settings 独立样式，下载器/日志/PSD/Transcode 使用共享 Token，密码浮窗通过展示层适配消费同一主题源；目标 Chrome 人工走查尚缺，保留本项待验收，不继续扩大代码改版。
 - **影响与最坏结果：** 自动化未覆盖的工具栏真实手势、其他 App 的完整缩放流程、触控或存量未注册工具仍可能出现视觉差异；不能由构建通过推定验收。
 - **剩余偿还方案：** 系统 Chrome 隔离 Profile 测试入口已恢复，8 个 App、浮窗主题、材料降级与实际 200% 页面缩放已有[2026-09-24 自动验收](archive/reviews/2026-09-24-review-remediation.md)；仍需维护者常用 Profile 的真实工具栏手势、触控、视觉偏好及未注册工具确认，不以自动化关闭本项。
-- **验证方式：** 保留 `themeOwnership.test.ts` 防止别名/全局补丁回流；`appTheme.spec.ts` 检查固定深色桌面、键盘焦点与窄屏降级，`unipass-integration.spec.ts` 检查浅/深浮窗，`browserZoom.spec.ts` 检查真实页面缩放。完整验证及 Quality 第 5 节剩余人工证据满足后归档。
+- **验证方式：** 保留 `themeOwnership.test.ts` 防止别名/全局补丁回流；`appTheme.spec.ts` 检查固定深色桌面、键盘焦点与窄屏降级，`password-manager-integration.spec.ts` 检查浅/深浮窗，`browserZoom.spec.ts` 检查真实页面缩放。完整验证及 Quality 第 5 节剩余人工证据满足后归档。
 
 ### TD-003：Legacy 密码能力尚未完成应用级解耦
 
 - **优先级 / 位置 / 来源 / 目标阶段：** P1；密码模块 background、popup、shared/api 与 WXT 构建；2026-09-23 撤除前审查；Legacy Retirement。
-- **当前妥协与原因：** [ADR 0019](ADR/0019-unipass-monorepo-package.md) 已将 Legacy 实现归入 workspace 包 `packages/unipass`（取代 submodule 模型），service-worker、credential-access 和 page-overlay 只经 `legacy/adapter.ts` 消费，登录/Jupiter 生命周期集中显式安装。popup/settings/catalog 仍提供兼容入口，默认包仍启用 adapter，保留 Legacy host、WASM 和 runtime config；源码解耦不证明完整扩展能删除 Legacy。
+- **当前妥协与原因：** [ADR 0021](ADR/0021-unas-only-brand.md) 已将 Legacy 实现归入 workspace 包 `packages/password-compat`（取代 submodule 模型），service-worker、credential-access 和 page-overlay 只经 `legacy/adapter.ts` 消费，登录/Jupiter 生命周期集中显式安装。popup/settings/catalog 仍提供兼容入口，默认包仍启用 adapter，保留 Legacy host、WASM 和 runtime config；源码解耦不证明完整扩展能删除 Legacy。
 - **影响与最坏结果：** 只删 legacy-credential-source 或停止注册，会留下网络/保活/权限/WASM 和 UI 死入口；直接删 shared/api 会使填充/登录路由断裂。本轮保留运行行为，不删存量数据。
 - **自动跟踪：** 新增只读脚本 [legacy-retirement-audit.mjs](../scripts/legacy-retirement-audit.mjs)，输出 TS 导入路径、旧 UI 消息/标识、构建物及 manifest；逐项结果与限制详见[2026-09-24 自动验收](archive/reviews/2026-09-24-review-remediation.md)；此盘点不证明已禁用/撤除 Legacy，保留本项 P1。
 - **偿还方案：** composition adapter 与源码边界已收拢；下一步切换 WebDAV-only 目录/会话和浮窗，拒绝已退役消息；最后移除宿主 Legacy 依赖、WASM、运行配置、专属 host 权限及包体白名单。不能误删广告模块规则源或 WebDAV 加密兼容 key。

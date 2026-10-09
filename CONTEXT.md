@@ -14,7 +14,7 @@
 - 维护者已授权前端打磨：优先收敛桌面层级、App 启动入口、状态抽屉、响应式与无障碍；不改变 mock/真实边界。
 - 视觉采用原创的 macOS/iPadOS 启发式桌面层级与 Liquid Glass 原则，玻璃限于导航/控制层，并提供无障碍和性能降级。
 - uNAS Glass 工作包 A–C 已实现：`window-theme.css` 是主题与材质唯一来源；窗口根承担 blur，正文按内容分组使用可读面；Desktop/Dock/启动器/文件管理器已消费共享 Token。后续 D–E 见 [Development Blueprint](docs/DEVELOPMENT_BLUEPRINT.md#uNAS-glass-后续迁移顺序)。
-- UniPass 源码归 `packages/unipass`（[ADR 0019](docs/ADR/0019-unipass-monorepo-package.md)），宿主仅经 `unipass-extension/legacy` 接入；独立仓库为下游发布镜像。
+- 本仓库只维护 uNAS 品牌；密码兼容实现归 `packages/password-compat`，不与其他独立项目同步、导出或发布（[ADR 0021](docs/ADR/0021-unas-only-brand.md)）。
 
 - 密码库后端仅保留 WebDAV，共享传输已下沉（[ADR 0014](docs/ADR/0014-shared-webdav-transport.md)）；Legacy 应用级撤除仍受 [TD-003](docs/TECH_DEBT.md#td-003legacy-密码能力尚未完成应用级解耦) 约束。
 
@@ -34,7 +34,7 @@
 
 ## 最近验证
 
-- 2026-10-09：UniPass 迁入 monorepo、`src` 分层；本机 `pnpm verify`（399 passed/1 skipped）与 MV3 E2E 105 passed 通过，Linux CI 未跑；见[迁移验收](docs/archive/reviews/2026-10-09-unipass-monorepo-taxonomy.md)。此前依赖升级见[PR 集成验收](docs/archive/reviews/2026-10-09-pr-integration.md)；真实企业登录与常用 Profile 待补。
+- 2026-10-09：uNAS 品牌与仓库剥离完成；`pnpm verify`（455 passed/1 skipped；兼容包 184 Node/5 Rust）及 MV3 E2E（105 passed/3 skipped）、Web E2E（8 passed）、系统 Chrome smoke 通过；见[剥离验收](docs/archive/reviews/2026-10-09-unas-brand-independence.md)。Linux CI、真实企业登录与常用 Profile 待补。
 
 ## 按需入口
 

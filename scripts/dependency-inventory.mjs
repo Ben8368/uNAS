@@ -3,7 +3,7 @@ import { readFile, readdir, writeFile, mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { createHash } from 'node:crypto'
 const root = resolve(import.meta.dirname, '..')
-const packageFiles = [resolve(root, 'package.json'), resolve(root, 'apps/extension/package.json'), resolve(root, 'packages/unipass/package.json')]
+const packageFiles = [resolve(root, 'package.json'), resolve(root, 'apps/extension/package.json'), resolve(root, 'packages/password-compat/package.json')]
 const target = resolve(root, 'assets/dependency-inventory.json')
 const records = new Map()
 async function visit(name, parent, scope) {

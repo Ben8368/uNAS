@@ -3,6 +3,8 @@
 - 状态：已接受
 - 日期：2026-10-09
 
+> 包名与路径现按 [ADR 0021](0021-unas-only-brand.md) 使用 `@unas/password-compat` / `packages/password-compat`；以下原始路径仅为决策时记录。
+
 ## 背景
 
 `apps/extension/src` 原有 `apps`、`modules`、`api`、`application`、`runtime`、`music`、`archive`、`components`、`hooks`、`workers` 等十余个顶层目录，叠加了五条不同的分类轴：业务功能、UI 类型、技术层、运行环境和实现状态。结果是同一个能力散落多处（例如 Files 横跨 `apps/file-manager`、`api/*`、`api/real/*`、`runtime/webdav` 和 `archive`），`api/`、`application/`、`shared/` 变成无 owner 的模糊桶，边界只能靠约定维持。

@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-describe('UniPass source boundary', () => {
+describe('uNAS source boundary', () => {
   afterEach(() => vi.unstubAllGlobals())
 
   it('keeps production dependencies behind the Legacy adapter', () => {
@@ -13,7 +13,7 @@ describe('UniPass source boundary', () => {
       const file = path.join(entry.parentPath, entry.name)
       if (file === path.join(root, 'legacy/adapter.ts')) continue
       const text = readFileSync(file, 'utf8')
-      expect(text, path.relative(root, file)).not.toMatch(/(?:from|import)\s*\(?\s*['"][^'"]*(?:sources\/UniPass|unipass-extension(?:\/[^'"]*)?|shared\/api|\/credential-core|\/jupiter-keepalive|\/unipass-login|\/legacy-catalog)['"]/)
+      expect(text, path.relative(root, file)).not.toMatch(/(?:from|import)\s*\(?\s*['"][^'"]*(?:sources\/[^/]+|@unas\/password-compat(?:\/[^'"]*)?|shared\/api|\/credential-core|\/jupiter-keepalive|\/legacy-login|\/legacy-catalog)['"]/)
     }
   })
 

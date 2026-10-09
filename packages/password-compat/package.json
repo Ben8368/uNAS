@@ -1,0 +1,41 @@
+{
+  "name": "@unas/password-compat",
+  "private": true,
+  "version": "5.3.7",
+  "type": "module",
+  "exports": {
+    "./legacy": "./src/legacy/index.ts"
+  },
+  "scripts": {
+    "audit:static": "node scripts/traffic-light-check.mjs",
+    "audit:artifact": "node scripts/release-artifact-check.mjs",
+    "audit:dependencies": "npm audit --audit-level=high",
+    "build:wasm": "node scripts/build-wasm.mjs",
+    "build": "npm run audit:static && node build.mjs",
+    "build:hardened": "npm run audit:static && node scripts/build-hardened.mjs",
+    "docs:governance:check": "node scripts/governance-docs-check.mjs",
+    "test": "npm run build:wasm && node --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit",
+    "rust:fmt": "node scripts/rust-qa.mjs fmt",
+    "rust:test": "node scripts/rust-qa.mjs test",
+    "rust:clippy": "node scripts/rust-qa.mjs clippy",
+    "rust:clippy:wasm": "node scripts/rust-qa.mjs clippy:wasm",
+    "rust:build": "node scripts/rust-qa.mjs build",
+    "verify:rust": "npm run rust:fmt && npm run rust:test && npm run rust:clippy && npm run rust:clippy:wasm && npm run rust:build",
+    "verify:wasm-reproducible": "node scripts/verify-wasm-reproducible.mjs",
+    "verify:hardened:diversity": "node scripts/verify-hardened-diversity.mjs",
+    "smoke:chrome": "node scripts/chrome-smoke.mjs",
+    "smoke:chrome:hardened": "node scripts/chrome-smoke.mjs --hardened dist",
+    "audit:hardened": "node scripts/hardened-artifact-check.mjs",
+    "verify:hardened": "npm run build:hardened && npm run audit:hardened && npm run verify:hardened:diversity && npm run smoke:chrome:hardened",
+    "verify:release": "npm run verify && npm run verify:wasm-reproducible && npm run smoke:chrome && npm run verify:hardened",
+    "verify": "npm run docs:governance:check && npm run audit:dependencies && npm run audit:static && npm run verify:rust && npm test && npm run typecheck && npm run build"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.4",
+    "esbuild": "^0.28.2",
+    "fake-indexeddb": "^6.2.5",
+    "puppeteer-core": "^25.12.0",
+    "typescript": "^7.0.2"
+  }
+}

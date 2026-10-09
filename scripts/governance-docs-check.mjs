@@ -31,7 +31,7 @@ async function listMarkdown(directory) {
   for (const entry of entries) {
     if (['.git', 'node_modules'].includes(entry.name)) continue
     const path = resolve(directory, entry.name)
-    // Git-ignored trees (for example .artifacts/unipass-export) are local residue, not repository documents.
+    // Git-ignored trees (for example .artifacts/local-build) are local residue, not repository documents.
     if (entry.isDirectory() && isGitIgnored(path)) continue
     if (entry.isDirectory()) files.push(...await listMarkdown(path))
     else if (extname(entry.name).toLowerCase() === '.md') files.push(path)

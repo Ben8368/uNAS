@@ -13,11 +13,11 @@ const ts = createRequire(path.join(app, 'package.json'))('typescript')
 const posix = value => value.split(path.sep).join('/')
 const rel = value => posix(path.relative(root, value))
 
-// UniPass is consumed through exactly one adapter and one public entry.
-const UNIPASS_PACKAGE = 'unipass-extension'
-const UNIPASS_PUBLIC = new Set(['unipass-extension/legacy'])
-const UNIPASS_CONSUMER = 'apps/extension/src/features/password-manager/legacy/adapter.ts'
-const UNIPASS_TEST_CONSUMERS = new Set(['apps/extension/src/features/password-manager/shared/plugin-version.test.ts'])
+// The internal password compatibility package has one adapter and one public entry.
+const PASSWORD_COMPAT_PACKAGE = '@unas/password-compat'
+const PASSWORD_COMPAT_PUBLIC = new Set(['@unas/password-compat/legacy'])
+const PASSWORD_COMPAT_CONSUMER = 'apps/extension/src/features/password-manager/legacy/adapter.ts'
+const PASSWORD_COMPAT_TEST_CONSUMERS = new Set(['apps/extension/src/features/password-manager/shared/plugin-version.test.ts'])
 
 // What other features and the shell may import from a feature. Everything else in it is internal.
 const FEATURE_PUBLIC = {
@@ -92,7 +92,7 @@ function placeOf(file) {
 const isFeatureUi = (place, target) => place.bucket === 'features' && (/\.(?:tsx|css)$/.test(target) || /(^|\/)(?:popup|manage)\//.test(place.inner))
 const isPrivatePlatformPath = place => place.bucket === 'platform' && /(^|\/)(?:real|test-support)(\/|$)/.test(place.inner)
 
-// Baselined rules: existing coupling that is registered, may only shrink. Structural/UniPass rules are never baselined.
+// Baselined rules: existing coupling that is registered, may only shrink. Structural/password-compat rules are never baselined.
 const layerRules = [
   ['shared-no-upward', (from, to) => from.bucket === 'shared' && (to.bucket === 'features' || to.bucket === 'shell') && 'shared 不得依赖 features 或 shell（shared 只放多个 feature 共用且无业务 owner 的代码）'],
   ['platform-no-shell', (from, to) => from.bucket === 'platform' && to.bucket === 'shell' && 'platform 不得依赖 shell'],
@@ -107,13 +107,13 @@ const layerRules = [
 const hardRules = [
   (file, specifier, resolved) => {
     const target = resolved ? rel(resolved) : specifier
-    if (/(^|\/)sources\/UniPass(\/|$)/.test(target)) return '禁止依赖已移除的 sources/UniPass；UniPass 源码事实源是 packages/unipass'
-    if (/(^|\/)packages\/unipass\/(?!node_modules)/.test(target)) return '禁止通过文件路径深导入 packages/unipass；只能经由 package public export'
+    if (/(^|\/)sources\/[^/]+(\/|$)/.test(target)) return '禁止依赖已移除的 sources/；uNAS 源码事实源是 packages/password-compat'
+    if (/(^|\/)packages\/password-compat\/(?!node_modules)/.test(target)) return '禁止通过文件路径深导入 packages/password-compat；只能经由 package public export'
   },
   (file, specifier) => {
-    if (specifier !== UNIPASS_PACKAGE && !specifier.startsWith(`${UNIPASS_PACKAGE}/`)) return
-    if (!UNIPASS_PUBLIC.has(specifier)) return `unipass-extension 只公开 ${[...UNIPASS_PUBLIC].join(', ')}；未声明的子路径不属于 public API`
-    if (rel(file) !== UNIPASS_CONSUMER && !UNIPASS_TEST_CONSUMERS.has(rel(file))) return `UniPass 只能由 ${UNIPASS_CONSUMER} 这一个 adapter 消费（测试夹具除外）`
+    if (specifier !== PASSWORD_COMPAT_PACKAGE && !specifier.startsWith(`${PASSWORD_COMPAT_PACKAGE}/`)) return
+    if (!PASSWORD_COMPAT_PUBLIC.has(specifier)) return `@unas/password-compat 只公开 ${[...PASSWORD_COMPAT_PUBLIC].join(', ')}；未声明的子路径不属于 public API`
+    if (rel(file) !== PASSWORD_COMPAT_CONSUMER && !PASSWORD_COMPAT_TEST_CONSUMERS.has(rel(file))) return `uNAS 只能由 ${PASSWORD_COMPAT_CONSUMER} 这一个 adapter 消费（测试夹具除外）`
   },
 ]
 
@@ -140,10 +140,10 @@ const structural = []
 for (const entry of await readdir(srcRoot, { withFileTypes: true })) {
   if (!SRC_BUCKETS.has(entry.name) && entry.name !== 'vite-env.d.ts') structural.push(`apps/extension/src/${entry.name}\n    非法导入: 顶层目录 ${entry.name}\n    违反规则: src 只允许 shell/ features/ platform/ shared/（及 vite-env.d.ts）；按 owner 归入其一，不要新增分类桶`)
 }
-const unipassPackage = JSON.parse(await readFile(path.join(root, 'packages/unipass/package.json'), 'utf8'))
-const exported = Object.keys(unipassPackage.exports ?? {})
-if (exported.length === 0 || exported.some(key => key.includes('*'))) structural.push(`packages/unipass/package.json\n    非法导入: exports ${JSON.stringify(exported)}\n    违反规则: 必须声明显式 exports，禁止通配符暴露 ./src/*`)
-if (!await stat(path.join(root, '.gitmodules')).then(() => false, () => true)) structural.push('.gitmodules\n    非法导入: submodule 记录\n    违反规则: UniPass 已迁入 packages/unipass，仓库不再使用 submodule')
+const passwordCompatPackage = JSON.parse(await readFile(path.join(root, 'packages/password-compat/package.json'), 'utf8'))
+const exported = Object.keys(passwordCompatPackage.exports ?? {})
+if (exported.length === 0 || exported.some(key => key.includes('*'))) structural.push(`packages/password-compat/package.json\n    非法导入: exports ${JSON.stringify(exported)}\n    违反规则: 必须声明显式 exports，禁止通配符暴露 ./src/*`)
+if (!await stat(path.join(root, '.gitmodules')).then(() => false, () => true)) structural.push('.gitmodules\n    非法导入: submodule 记录\n    违反规则: uNAS 已迁入 packages/password-compat，仓库不再使用 submodule')
 
 if (process.argv.includes('--write-baseline')) {
   const entries = [...layered.keys()].sort()

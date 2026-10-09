@@ -1,6 +1,6 @@
 import { accountCatalog, accountsForApp, appUrlForApp, currentUser, pluginVersionSettings, setPluginVersionOverride,
   appsWithAvailableCredentials, clearCredentialAvailabilityCache, credentialAvailability,
-  getJupiterKeepaliveSettings, setJupiterKeepalive, completeUniPassLogin, startUniPassLogin,
+  getJupiterKeepaliveSettings, setJupiterKeepalive, completeLegacyLogin, startLegacyLogin,
   legacyAccountCatalog, installLegacyAdapter, assertCurrentUserScope, withUserScope,
 } from "../legacy/adapter";
 import {
@@ -70,7 +70,7 @@ export function installPasswordManagerBackground(): void {
 
 const UNIPASS_MESSAGE_TYPES = new Set<string>([
   "session", "pageContext", "pageTheme", "openApp", "fillFromOverlay", "fillFromPopup",
-  "startUniPassLogin", "completeUniPassLogin", "getPluginVersionSettings", "setPluginVersionOverride",
+  "startLegacyLogin", "completeLegacyLogin", "getPluginVersionSettings", "setPluginVersionOverride",
   "currentPageCatalog", "accountCatalog", "listApps", "accountsForApp", "appUrl", "credentialAvailability",
   "revealCredential", "getJupiterKeepalive", "setJupiterKeepalive", "listVaultProfiles", "listVaultConnectionStates",
   "listVaultSyncStatuses", "syncVaults", "enableLocalUnlock", "unlockVaultLocally", "disableLocalUnlock", "lockVault",
@@ -79,14 +79,14 @@ const UNIPASS_MESSAGE_TYPES = new Set<string>([
   "previewBrowserPasswords", "importBrowserPasswords",
 ]);
 
-export function isUniPassMessage(value: unknown): value is BackgroundRequest {
+export function isPasswordManagerMessage(value: unknown): value is BackgroundRequest {
   return Boolean(value && typeof value === "object" && !Array.isArray(value)
     && typeof (value as { type?: unknown }).type === "string"
     && UNIPASS_MESSAGE_TYPES.has((value as { type: string }).type));
 }
 
-export async function handleUniPassMessage(message: unknown, sender: chrome.runtime.MessageSender): Promise<BackgroundResponse> {
-  if (!isUniPassMessage(message)) return { ok: false, error: "密码管家消息格式无效" };
+export async function handlePasswordManagerMessage(message: unknown, sender: chrome.runtime.MessageSender): Promise<BackgroundResponse> {
+  if (!isPasswordManagerMessage(message)) return { ok: false, error: "密码管家消息格式无效" };
   try {
     return { ok: true, data: await handle(message, sender) };
   } catch (error) {
@@ -105,15 +105,15 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
     case "openApp":
       return message.vaultId ? vaultAppUrl(message.vaultId, String(message.appId)).then((url) => chrome.tabs.create({ url })) : withUserScope(message.userScope, () => openApp(message.appId));
     case "fillFromOverlay":
-      return requiresUniPassScope(message) ? withUserScope(message.userScope ?? "", () => fillFromOverlay(sender, message)) : fillFromOverlay(sender, message);
+      return requiresLegacyScope(message) ? withUserScope(message.userScope ?? "", () => fillFromOverlay(sender, message)) : fillFromOverlay(sender, message);
     case "fillFromPopup":
-      return requireVaultUiPage(sender, () => requiresUniPassScope(message)
+      return requireVaultUiPage(sender, () => requiresLegacyScope(message)
         ? withUserScope(message.userScope ?? "", () => fillFromPopup(message))
         : fillFromPopup(message));
-    case "startUniPassLogin":
-      return startUniPassLogin();
-    case "completeUniPassLogin":
-      return completeUniPassLogin();
+    case "startLegacyLogin":
+      return startLegacyLogin();
+    case "completeLegacyLogin":
+      return completeLegacyLogin();
     case "getPluginVersionSettings":
       return pluginVersionSettings();
     case "setPluginVersionOverride":
@@ -246,7 +246,7 @@ async function refreshWebDavCatalog(): Promise<Awaited<ReturnType<typeof account
   return { entries: webdav.entries.map(({ app, accounts }) => ({ appId: app.id, appName: app.name, appUrl: app.targets[0] ? `https://${app.targets[0].host}${app.targets[0].pathPrefix || "/"}` : "", accounts: accounts.map((account) => ({ id: account.id, account: account.username, remark: account.remark, vaultId: account.vaultId, appId: account.appId, accountRef: { vaultId: account.vaultId, accountId: account.id } })), vaultId: app.vaultId, targets: app.targets })), failures: webdav.failures.map((failure) => ({ appId: failure.vaultId, appName: "WebDAV Vault", error: failure.error, vaultId: failure.vaultId })), complete: webdav.failures.length === 0 };
 }
 
-function requiresUniPassScope(message: Extract<BackgroundRequest, { type: "fillFromOverlay" | "fillFromPopup" }>): boolean {
+function requiresLegacyScope(message: Extract<BackgroundRequest, { type: "fillFromOverlay" | "fillFromPopup" }>): boolean {
   return !message.accountRef || message.accountRef.vaultId === "legacy-unipass";
 }
 

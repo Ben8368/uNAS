@@ -7,7 +7,6 @@ RESOURCE_TYPE_MAP.set("subdocument", "sub_frame");
 const ABP_DOCUMENT_TYPES = ["main_frame", "sub_frame"];
 export const PROTECTED_INITIATOR_DOMAINS = Object.freeze([
   "portal.unipass.top", "accounts.feishu.cn", "jupiter.tec-do.com",
-  "gjphikebcceegfolnbfncepfmjnhdkam",
 ]);
 
 export function convertFilterList(source: string) {

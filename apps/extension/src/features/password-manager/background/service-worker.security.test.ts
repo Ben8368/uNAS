@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { handleUniPassMessage } from "./service-worker";
+import { handlePasswordManagerMessage } from "./service-worker";
 import { handleAdBlockMessage } from "../../adblock/background/service-worker";
 import { isAuthorizedOverlayRequest } from "./page-overlay";
 
@@ -10,16 +10,16 @@ describe("uNAS privileged message authorization", () => {
 
   it("rejects Vault mutation and popup fill requests from the ad page sender", async () => {
     vi.stubGlobal("chrome", { runtime: { id: "unas-test" } });
-    await expect(handleUniPassMessage({ type: "removeVault", vaultId: "vault" }, pageSender)).resolves.toEqual({ ok: false, error: "Vault 管理请求来源无效" });
-    await expect(handleUniPassMessage({ type: "saveWebDavVault", mode: "create", name: "x", endpoint: "https://dav.example/", username: "u", appPassword: "p" }, pageSender)).resolves.toEqual({ ok: false, error: "Vault 管理请求来源无效" });
-    await expect(handleUniPassMessage({ type: "updateVaultCredential", vaultId: "vault", accountId: "account", credential: { password: "p" } }, pageSender)).resolves.toEqual({ ok: false, error: "Vault 管理请求来源无效" });
-    await expect(handleUniPassMessage({ type: "fillFromPopup", tabId: 3, accountId: "account", accountRef: { vaultId: "vault", accountId: "account" }, expectedAppUrl: "https://example.test/" }, pageSender)).resolves.toEqual({ ok: false, error: "填充请求来源无效" });
+    await expect(handlePasswordManagerMessage({ type: "removeVault", vaultId: "vault" }, pageSender)).resolves.toEqual({ ok: false, error: "Vault 管理请求来源无效" });
+    await expect(handlePasswordManagerMessage({ type: "saveWebDavVault", mode: "create", name: "x", endpoint: "https://dav.example/", username: "u", appPassword: "p" }, pageSender)).resolves.toEqual({ ok: false, error: "Vault 管理请求来源无效" });
+    await expect(handlePasswordManagerMessage({ type: "updateVaultCredential", vaultId: "vault", accountId: "account", credential: { password: "p" } }, pageSender)).resolves.toEqual({ ok: false, error: "Vault 管理请求来源无效" });
+    await expect(handlePasswordManagerMessage({ type: "fillFromPopup", tabId: 3, accountId: "account", accountRef: { vaultId: "vault", accountId: "account" }, expectedAppUrl: "https://example.test/" }, pageSender)).resolves.toEqual({ ok: false, error: "填充请求来源无效" });
     await expect(handleAdBlockMessage({ type: "refreshBlockingSubscriptions" }, pageSender)).resolves.toEqual({ ok: false, error: "规则更新请求来源无效" });
   });
 
   it("keeps the original overlay fill route distinct from popup fill", async () => {
     vi.stubGlobal("chrome", { runtime: { id: "unas-test" } });
-    const response = await handleUniPassMessage({ type: "fillFromOverlay", accountId: "account", accountRef: { vaultId: "vault", accountId: "account" }, expectedAppUrl: "https://example.test/" }, pageSender);
+    const response = await handlePasswordManagerMessage({ type: "fillFromOverlay", accountId: "account", accountRef: { vaultId: "vault", accountId: "account" }, expectedAppUrl: "https://example.test/" }, pageSender);
     expect(response.ok).toBe(false);
     expect(response).not.toEqual({ ok: false, error: "填充请求来源无效" });
   });

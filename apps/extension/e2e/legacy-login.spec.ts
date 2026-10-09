@@ -71,7 +71,7 @@ for (const scenario of cases) {
     await expect(authPage.getByRole('button', { name: '钛动科技' })).toBeVisible()
     const ui = await extension.context.newPage()
     await ui.goto(`chrome-extension://${extension.extensionId}/manage.html`)
-    const result = await ui.evaluate(async () => chrome.runtime.sendMessage({ type: 'startUniPassLogin' }))
+    const result = await ui.evaluate(async () => chrome.runtime.sendMessage({ type: 'startLegacyLogin' }))
     expect(result.ok).toBe(true)
     const worker = extension.context.serviceWorkers()[0]
     await expect.poll(() => worker.evaluate(async () => (await chrome.tabs.query({})).some(tab => tab.url?.startsWith('https://accounts.feishu.cn/accounts/auth_login/oauth2/authorize')))).toBe(true)
@@ -95,9 +95,9 @@ for (const scenario of cases) {
     await authPage.screenshot({ path: testInfo.outputPath('synthetic-authorization.png') })
     const settings = await ui.evaluate(async () => chrome.runtime.sendMessage({ type: 'getPluginVersionSettings' }))
     expect(settings.data).toMatchObject({ networkVersion: '5.3.6', storeBaselineVersion: '5.3.6', source: 'built-in' })
-    const reused = await ui.evaluate(async () => chrome.runtime.sendMessage({ type: 'startUniPassLogin' }))
+    const reused = await ui.evaluate(async () => chrome.runtime.sendMessage({ type: 'startLegacyLogin' }))
     expect(reused.data.tabId).toBe(result.data.tabId)
-    await ui.evaluate(async () => chrome.runtime.sendMessage({ type: 'completeUniPassLogin' }))
+    await ui.evaluate(async () => chrome.runtime.sendMessage({ type: 'completeLegacyLogin' }))
     // The helper must preserve a login tab that it reused rather than created.
     expect(authPage.isClosed()).toBe(false)
     expect(await worker.evaluate(async () => (await chrome.storage.session.get('pendingUniPassLogin')).pendingUniPassLogin)).toBeUndefined()

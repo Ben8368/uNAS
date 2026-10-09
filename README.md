@@ -48,19 +48,19 @@ Phase 1 只允许 Frontend Demo、mock scenario 和不含真实 engine/WASM 的�
 
 ## 开发与验证
 
-UniPass 是 monorepo 内的 workspace 包 `packages/unipass`，不再使用 submodule，检出后直接安装：
+密码兼容实现是 monorepo 内部 workspace 包 `packages/password-compat`，检出后直接安装：
 
 ```bash
 pnpm install --frozen-lockfile
 ```
 
-UniPass 源码事实源只在 `packages/unipass`；`Ben8368/UniPass` 仅是下游发布镜像，`pnpm unipass:export` 单向导出到被忽略的 `.artifacts/unipass-export`，不联网、不推送。边界与取舍见 [ADR 0019](docs/ADR/0019-unipass-monorepo-package.md)。
+本仓库仅维护和发布 uNAS，不向其他独立项目同步、导出或发布。密码兼容包仅通过 `@unas/password-compat/legacy` 被宿主消费，内部测试壳不作为独立产品发布。边界见 [ADR 0021](docs/ADR/0021-unas-only-brand.md)。
 
 ```bash
 pnpm verify
 ```
 
-该入口等于 `verify:extension`（文档治理、Lint、Demo/架构边界、依赖清单、单元测试、类型检查、Vite/WXT 构建、素材哈希及包体预算）加 `verify:unipass`（lockfile 一致性、导出确定性、WASM 出处，以及 UniPass 自身的依赖审计、静态审计、Rust QA、Node 测试、类型检查和构建）。`verify:unipass` 需要 Rust 1.98.1 与 wasm32 目标，并会在线查询 Chrome 商店版号。WASM 重建、可重复性、Chrome smoke 和 hardened 构建在 `pnpm verify:unipass:release`。它们都不代替扩展 E2E 或人工验收。
+该入口等于 `verify:extension`（文档治理、Lint、Demo/架构边界、依赖清单、单元测试、类型检查、Vite/WXT 构建、素材哈希及包体预算）加 `verify:password-compat`（lockfile 一致性、WASM 出处，以及 内部密码兼容包的依赖审计、静态审计、Rust QA、Node 测试、类型检查和构建）。`verify:password-compat` 需要 Rust 1.98.1 与 wasm32 目标；不查询或追随外部项目的商店版本。WASM 重建、可重复性、Chrome smoke 和 hardened 构建在 `pnpm verify:password-compat:release`。它们都不代替扩展 E2E 或人工验收。
 
 GitHub Actions 在针对 `main` 的推送和 PR 上分别运行治理检查、`pnpm verify` 与 Playwright 的 MV3/Web 回归；E2E 只在完整验证通过后执行，并在完成或失败时保留报告、截图和 trace。CI 仍不能替代目标 Chrome 稳定版、真实缩放、辅助技术和性能的人工证据。
 
@@ -74,7 +74,7 @@ pnpm build:extension
 
 构建物位于 `apps/extension/.output/chrome-mv3/`。在 Chrome 扩展管理页面开启开发者模式后，选择“加载已解压的扩展程序”，并选择该目录。
 
-首次使用密码库时，在 uNAS Desktop 打开“密码管家”并直接完成管理。接入已有 Vault 时，使用原 UniPass 来源的 WebDAV HTTPS 地址、用户名、App Password 和 Vault Key；不要复制旧扩展的 storage/IndexedDB，也不要在迁移验证前卸载旧扩展。连接成功后点击 Chrome 工具栏的 uNAS 图标，当前支持的 HTTPS 网页会打开密码浮窗。`manage.html` 仅用于旧入口、隔离恢复和手工排障。
+首次使用密码库时，在 uNAS Desktop 打开“密码管家”并直接完成管理。接入已有 Vault 时，使用已有的 WebDAV HTTPS 地址、用户名、App Password 和 Vault Key；不要复制旧扩展的 storage/IndexedDB，也不要在迁移验证前卸载旧扩展。连接成功后点击 Chrome 工具栏的 uNAS 图标，当前支持的 HTTPS 网页会打开密码浮窗。`manage.html` 仅用于旧入口、隔离恢复和手工排障。
 
 首次准备自动化浏览器，运行 `pnpm --dir apps/extension exec playwright install chromium`；之后运行 `pnpm test:e2e`。它加载独立配置中的 MV3 构建物，检查跨标签与模拟流程，并保存布局截图；不操作已有浏览器配置。普通 E2E 在所有平台默认使用 Playwright Chromium，以保证 MV3 Service Worker 加载一致；报告在 `apps/extension/playwright-report/`，截图与失败 trace 在 `apps/extension/test-results/`。需要验证已安装的 Google Chrome 时运行 `pnpm --dir apps/extension run test:e2e:chrome`；该命令使用 headless 系统 Chrome，并在报告中标记 `channel: chrome`，不会冒充默认 bundled Chromium 证据。在支持 P3 的环境上，可运行 `pnpm test:e2e:p3` 以已安装的 Google Chrome headed + `display-p3` 模式进行人工视觉验收；P3 命令需要可用桌面会话，且不替代默认 sRGB CI 回归。证据解释见 [本轮验收记录](docs/archive/reviews/2026-09-07-links-startup-toolbar.md)，素材与依赖说明见 [ASSETS.md](docs/ASSETS.md)。
 

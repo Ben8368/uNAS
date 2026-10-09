@@ -1,6 +1,6 @@
 import { importVaultKey } from "../../shared/vault-crypto";
 import { normalizeWebDavUrl, webDavPermissionOrigin } from "../../../../platform/webdav/webdav-url";
-import type { AccountListResult, UniPassAccount } from "../../shared/types";
+import type { AccountListResult, LegacyAccount } from "../../shared/types";
 import { type AccountRef, type VaultAccount, type VaultAccountUpdate, type VaultApp, type VaultConnection, type VaultConnectionState, type VaultCredential, type VaultProfile } from "../../shared/vault";
 import { openLocalUnlockMaterial, sealLocalUnlockMaterial, type LocalUnlockEnvelope } from "./local-unlock";
 import { openPersistentMaterial, sealPersistentMaterial, type PersistentSecretEnvelope } from "./persistent-secrets";
@@ -364,7 +364,7 @@ async function readPersistentEnvelopes(): Promise<Record<string, PersistentSecre
 }
 async function readFailures(): Promise<Record<string, number>> { const value = (await chrome.storage.session.get(LOCAL_UNLOCK_FAILURES_KEY))[LOCAL_UNLOCK_FAILURES_KEY]; return isRecord(value) ? value as Record<string, number> : {}; }
 function validateProfiles(value: unknown): VaultProfile[] { return Array.isArray(value) ? value.filter((candidate): candidate is VaultProfile => { const profile = candidate as VaultProfile; return Boolean(profile && typeof profile.id === "string" && typeof profile.name === "string" && profile.backend === "webdav" && typeof profile.endpoint === "string" && profile.enabled === true); }) : []; }
-function toLegacyAccount(account: VaultAccount): UniPassAccount { return { id: account.id, account: account.username, remark: account.remark, vaultId: account.vaultId, appId: account.appId, accountRef: { vaultId: account.vaultId, accountId: account.id } }; }
+function toLegacyAccount(account: VaultAccount): LegacyAccount { return { id: account.id, account: account.username, remark: account.remark, vaultId: account.vaultId, appId: account.appId, accountRef: { vaultId: account.vaultId, accountId: account.id } }; }
 function targetToUrl(target: VaultApp["targets"][number]): string { return `https://${target.host}${target.pathPrefix || "/"}`; }
 function isRecord(value: unknown): value is Record<string, unknown> { return Boolean(value && typeof value === "object" && !Array.isArray(value)); }
 function hasSessionSecret(value: SessionSecret | undefined): boolean { return Boolean(value?.username && value.appPassword && value.vaultKey); }

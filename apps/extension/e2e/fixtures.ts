@@ -29,7 +29,7 @@ export const test = base.extend<{ extension: Extension }>({
     context.on('page', watch)
     context.on('request', (request) => {
       if (!/^https?:/.test(request.url())) return
-      // UniPass's migrated filter updater is expected to contact only these
+      // uNAS's migrated filter updater is expected to contact only these
       // fixed public lists during SW startup. Keep legacy Demo assertions
       // focused on unexpected application/network traffic.
       if (/^https:\/\/easylist-downloads\.adblockplus\.org\/(?:easylist|easyprivacy|easylistchina|abp-filters-anti-cv)\.txt$/.test(request.url())) return

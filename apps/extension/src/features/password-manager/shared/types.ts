@@ -11,7 +11,7 @@ export interface BrowserPasswordImportResult {
 export interface BrowserPasswordImportPreview { valid: number; duplicate: number; invalid: number; }
 export interface VaultSyncStatusResult { vaultId: string; state: "synced" | "offline" | "conflict" | "pending"; dirty: number; conflicts: number; }
 
-export interface UniPassApp {
+export interface LegacyApp {
   id: string | number;
   name?: string;
   appName?: string;
@@ -21,7 +21,7 @@ export interface UniPassApp {
   targets?: VaultTarget[];
 }
 
-export interface UniPassAccount {
+export interface LegacyAccount {
   id?: string | number;
   accountId?: string | number;
   appAccountUserId?: string | number;
@@ -63,8 +63,8 @@ export type BackgroundRequest = OverlayCapability & (
   | { type: "openApp"; appId: string | number; vaultId?: string; userScope: string }
   | { type: "fillFromOverlay"; accountId: string | number; accountRef?: AccountRef; expectedAppUrl: string; userScope?: string }
   | { type: "fillFromPopup"; tabId: number; accountId: string | number; accountRef?: AccountRef; expectedAppUrl: string; userScope?: string }
-  | { type: "startUniPassLogin" }
-  | { type: "completeUniPassLogin" }
+  | { type: "startLegacyLogin" }
+  | { type: "completeLegacyLogin" }
   | { type: "getPluginVersionSettings" }
   | { type: "setPluginVersionOverride"; version: string }
   | { type: "currentPageCatalog"; userScope: string }
@@ -110,7 +110,7 @@ export interface PluginVersionSettings {
   source: "built-in" | "manual";
 }
 
-export interface UniPassLoginStartResult {
+export interface LegacyLoginStartResult {
   tabId: number;
 }
 
@@ -126,7 +126,7 @@ export interface JupiterKeepaliveSettings {
 
 export interface AccountListResult {
   appUrl: string;
-  accounts: UniPassAccount[];
+  accounts: LegacyAccount[];
   vaultId?: string;
 }
 
@@ -134,7 +134,7 @@ export interface AccountCatalogEntry {
   appId: string | number;
   appName: string;
   appUrl: string;
-  accounts: UniPassAccount[];
+  accounts: LegacyAccount[];
   vaultId?: string;
   targets?: VaultTarget[];
 }
@@ -162,7 +162,7 @@ export interface CredentialAvailabilityResult {
 }
 
 export interface AvailableAppsResult {
-  apps: UniPassApp[];
+  apps: LegacyApp[];
   totalApps: number;
   excludedEmptyCredentialApps: number;
   excludedVerificationFailureApps: number;

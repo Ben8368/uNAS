@@ -1,0 +1,80 @@
+{
+  "manifest_version": 3,
+  "name": "uNAS",
+  "description": "自动拦截广告与追踪请求、清理经过验证的页面广告位；同时保留用户主动操作的 uNAS 凭据助手。",
+  "version": "5.3.7",
+  "action": {
+    "default_title": "uNAS",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "clipboardWrite",
+    "storage",
+    "alarms",
+    "tabs",
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "https://portal.unipass.top/*",
+    "https://accounts.feishu.cn/*",
+    "https://jupiter.tec-do.com/*",
+    "https://easylist-downloads.adblockplus.org/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*"
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "baseline",
+        "enabled": true,
+        "path": "rules/baseline.json"
+      }
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content/cosmetic-content.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "ISOLATED"
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/icon16.png",
+        "icons/icon48.png",
+        "icons/icon128.png"
+      ],
+      "matches": [
+        "https://*/*"
+      ]
+    }
+  ],
+  "minimum_chrome_version": "121"
+}

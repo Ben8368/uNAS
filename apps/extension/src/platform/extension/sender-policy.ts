@@ -10,7 +10,7 @@ export function isExtensionPage(sender: ExtensionMessageSender, extensionId: str
   } catch { return false }
 }
 
-export function isUniPassSender(sender: ExtensionMessageSender, extensionId: string, message?: unknown): boolean {
+export function isLegacySender(sender: ExtensionMessageSender, extensionId: string, message?: unknown): boolean {
   // The password overlay is injected into an HTTPS page and must be able to
   // complete its own fill handoff. AdBlock is routed separately below.
   if (isWebPageSender(sender, extensionId)) return true
