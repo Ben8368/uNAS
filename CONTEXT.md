@@ -34,7 +34,7 @@
 
 ## 最近验证
 
-- 2026-10-09：PR #9–#12 集成 Vite 8、Vitest 5、Lucide 和 TypeScript 7，保留编译器兼容 API 并修复 CSS 压缩回归；pnpm verify 通过（66 文件，393 passed/1 skipped），审计无已知漏洞；CI、浏览器与分支证据见[PR 集成验收](docs/archive/reviews/2026-10-09-pr-integration.md)。UniPass 与系统 Chrome 既有证据见[同步验收](docs/archive/reviews/2026-10-09-unipass-branch-sync.md)；真实企业登录与常用 Profile 仍待补。
+- 2026-10-09：PR #9–#12 集成 Vite 8、Vitest 5、Lucide、TypeScript 7，保留兼容 API 并修复 CSS 压缩；pnpm verify 通过（66 文件，393 passed/1 skipped），审计无已知漏洞；CI、浏览器与分支证据见[PR 集成验收](docs/archive/reviews/2026-10-09-pr-integration.md)。UniPass 与系统 Chrome 证据见[同步验收](docs/archive/reviews/2026-10-09-unipass-branch-sync.md)；真实企业登录与常用 Profile 待补。
 
 ## 按需入口
 
