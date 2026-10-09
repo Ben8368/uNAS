@@ -193,6 +193,12 @@ jobs:
             assets/demo-assets.json
           if-no-files-found: error
 
+      # smoke:chrome loads packages/unipass/dist. The standalone UniPass CI got it from `npm run verify` (whose last
+      # step is build) before running smoke; this job skips verify, so it must build dist itself.
+      - name: Build UniPass extension for Chrome smoke
+        if: steps.scope.outputs.run == 'true'
+        run: pnpm --filter unipass-extension run build
+
       - name: Run automated Chrome smoke and hardened build
         if: steps.scope.outputs.run == 'true'
         env:
