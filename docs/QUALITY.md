@@ -55,7 +55,7 @@ Frontend Demo 阶段的优先级是：交互真实性 > 状态完整 > 无障碍
 | 输入与可访问性 | 键盘主流程、焦点进入/约束/恢复、Escape、触控替代、长文本、实际浏览器 200% 缩放；减少动态下无非必要运动 |
 | 真实性与主观确认 | mock/真实标记、任务/导出状态分离；人工确认层级、可读性、操作可达和原创性 |
 
-证据记录构建标识、浏览器/OS、viewport 与 App 容器尺寸、主题/设置、scenario、步骤和结果。截图与状态表附在本次任务/PR 或已有验收记录，不为每次 UI 修改新建治理文档；需长期保留时使用 Git 可复现路径或注明保留期的 CI artifact。
+证据记录构建标识、浏览器/OS、viewport 与 App 容器尺寸、主题/设置、scenario、步骤和结果。截图与状态表附在本次任务/PR 或已有验收记录，不为每次 UI 修改新建治理文档；需长期保留时使用 Git 可复现路径或注明保留期的 CI artifact。一次性对比截图与日志留在被忽略的 `artifacts/`、`visual-evidence/` 或 PR 附件，不进入 Git。
 
 未给出适用证据或例外未被接受，不得宣称当前 UI 基线验收通过；自动化绿灯不能替代人工视觉确认，视口模拟不能代替真实缩放。仅改设计文档时检查规则、链接、预算和差异，不要求把方案实现或伪造截图。
 
@@ -132,6 +132,6 @@ docs governance → boundary/dependency → unit/contract → typecheck → buil
 
 视觉、真机、性能和商店材料可分命令，但对应 Gate 必须显式调用；未运行项写明原因，不能由构建通过代替。
 
-现有 Demo 的跨平台入口是 `pnpm verify`；它当前依次执行治理、ESLint、Demo 边界、依赖清单、Vitest、TypeScript、Vite/WXT 构建和包体检查。MV3 独立浏览器回归是 `pnpm test:e2e`（先构建扩展，默认使用 Playwright bundled Chromium），Web 回归是 `pnpm --dir apps/extension run test:e2e:web`。需要验证已安装的 Chrome Stable 时运行 `pnpm --dir apps/extension run test:e2e:chrome`；该命令使用 headless 系统 Chrome，P3 视觉验收使用 `pnpm test:e2e:p3`，后者要求 headed 系统 Chrome 和可用桌面会话。两者均在报告中记录实际 channel，不替代默认 Chromium 回归。首次运行默认 E2E 需要安装 Playwright Chromium；系统 Chrome 入口不自动安装或升级浏览器。E2E 报告附件记录实际 channel、版本、OS、色域、视口和证据类型；视口模拟不等于实际浏览器 200% 缩放或目标设备性能。
+跨平台入口是 `pnpm verify`，等于 `verify:extension`（治理、ESLint、Demo 与架构边界、依赖清单、Vitest、TypeScript、Vite/WXT 构建和包体检查）加 `verify:unipass`（lockfile 一致性、导出确定性、WASM 出处，以及 `packages/unipass` 自身的依赖审计、静态审计、Rust QA、Node 测试、类型检查和构建；需 Rust 工具链和网络）。`pnpm verify:unipass:release` 追加 WASM 源码重建与可重复性、Chrome smoke 和 hardened 构建，不并入日常 `verify`。MV3 独立浏览器回归是 `pnpm test:e2e`（先构建扩展，默认使用 Playwright bundled Chromium），Web 回归是 `pnpm --dir apps/extension run test:e2e:web`。需要验证已安装的 Chrome Stable 时运行 `pnpm --dir apps/extension run test:e2e:chrome`；该命令使用 headless 系统 Chrome，P3 视觉验收使用 `pnpm test:e2e:p3`，后者要求 headed 系统 Chrome 和可用桌面会话。两者均在报告中记录实际 channel，不替代默认 Chromium 回归。首次运行默认 E2E 需要安装 Playwright Chromium；系统 Chrome 入口不自动安装或升级浏览器。E2E 报告附件记录实际 channel、版本、OS、色域、视口和证据类型；视口模拟不等于实际浏览器 200% 缩放或目标设备性能。
 
-GitHub Actions 在 `main` 的 push、PR 和手动触发中运行：治理检查；使用 Node 22、根 `packageManager` 声明的 pnpm 和 `pnpm install --frozen-lockfile` 的 `pnpm verify`；以及在完整验证通过后执行的 MV3/Web E2E。E2E 报告、截图和失败 trace 以 CI artifact 保留 14 天。E2E 的浏览器版本、环境、截图和失败 trace 必须与结果一起记录；视口模拟不等于实际浏览器 200% 缩放或目标设备性能。
+GitHub Actions 在 `main` 的 push、PR 和手动触发中运行：治理检查；使用 Node 22、根 `packageManager` 声明的 pnpm 和 `pnpm install --frozen-lockfile` 分别运行 `verify:extension` 与 `verify:unipass`（后者安装 Rust 1.98.1）；RustSec 审计；main、手动触发或改动 `packages/unipass` 的 PR 上运行 UniPass 发布级检查；以及在宿主验证通过后执行的 MV3/Web E2E。CI 不再检出任何第二个仓库。E2E 报告、截图和失败 trace 以 CI artifact 保留 14 天。E2E 的浏览器版本、环境、截图和失败 trace 必须与结果一起记录；视口模拟不等于实际浏览器 200% 缩放或目标设备性能。

@@ -7,8 +7,12 @@ import { execFileSync } from 'node:child_process'
 const root = path.resolve(import.meta.dirname, '..')
 const app = path.join(root, 'apps/extension')
 const ts = createRequire(path.join(app, 'package.json'))('typescript')
-const moduleRoot = path.join(app, 'src/modules/password-manager')
-const sourceRoot = path.join(root, 'sources/UniPass/src')
+const moduleRoot = path.join(app, 'src/features/password-manager')
+const unipassPackage = path.join(root, 'packages/unipass')
+const sourceRoot = path.join(unipassPackage, 'src')
+// Package public exports are resolved to their source file so the import graph still reaches UniPass internals.
+const packageExports = new Map(Object.entries(JSON.parse(await readFile(path.join(unipassPackage, 'package.json'), 'utf8')).exports ?? {})
+  .map(([key, target]) => [`unipass-extension/${key.replace(/^\.\//, '')}`, path.join(unipassPackage, target)]))
 const relative = value => path.relative(root, value).replaceAll('\\', '/')
 async function exists(file) { try { return (await stat(file)).isFile() } catch { return false } }
 async function filesIn(dir) {
@@ -41,6 +45,12 @@ for (const file of [...await filesIn(moduleRoot), ...await filesIn(sourceRoot)])
   visit(source)
   const edges = []
   for (const spec of specs) {
+    if (packageExports.has(spec.value)) {
+      const target = packageExports.get(spec.value)
+      edges.push(target)
+      imports.push({ from: relative(file), line: spec.line, to: relative(target) })
+      continue
+    }
     if (!spec.value.startsWith('.')) continue
     const base = path.resolve(path.dirname(file), spec.value.split('?')[0])
     const candidates = [base, base + '.ts', base + '.tsx', path.join(base, 'index.ts'), path.join(base, 'index.tsx')]
@@ -81,12 +91,13 @@ console.log(JSON.stringify({
   scope: 'TD-003 static dependency/artifact inventory; no network, user storage or credential reads',
   evidenceLimit: 'Type-only imports are included conservatively. CSS/HTML/runtime message edges and tree shaking require separate review. Build must be refreshed before interpreting artifacts. Not proof that disabling the registry removes Legacy.',
   compilerVersion: ts.version,
-  sourceRepository: {
-    path: 'sources/UniPass',
-    url: execFileSync('git', ['-C', path.join(root, 'sources/UniPass'), 'remote', 'get-url', 'origin'], { encoding: 'utf8' }).trim(),
-    head: execFileSync('git', ['-C', path.join(root, 'sources/UniPass'), 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
-    dirty: Boolean(execFileSync('git', ['-C', path.join(root, 'sources/UniPass'), 'status', '--porcelain'], { encoding: 'utf8' }).trim()),
-    pinnedIndexEntry: execFileSync('git', ['ls-files', '--stage', 'sources/UniPass'], { cwd: root, encoding: 'utf8' }).trim(),
+  sourcePackage: {
+    // packages/unipass is the source of truth; the standalone UniPass repository is a downstream release mirror.
+    path: 'packages/unipass',
+    head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
+    dirty: Boolean(execFileSync('git', ['status', '--porcelain', '--', 'packages/unipass'], { cwd: root, encoding: 'utf8' }).trim()),
+    sourceFiles: execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '--', 'packages/unipass'], { cwd: root, encoding: 'utf8' }).split('\n').filter(Boolean).length,
+    gitlinks: execFileSync('git', ['ls-files', '--stage'], { cwd: root, encoding: 'utf8' }).split('\n').filter(line => line.startsWith('160000')).length,
   },
   directLegacyImports: imports.filter(edge => targetPaths.has(edge.to)),
   reachableLegacy: roots.map(name => ({ root: name, paths: pathsToLegacy(path.join(moduleRoot, name)) })),

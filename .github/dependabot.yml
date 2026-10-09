@@ -54,5 +54,7 @@ updates:
           - minor
           - patch
 
-# UniPass manages its own dependencies. Private submodule updates require
-# separate Dependabot read access before enabling the gitsubmodule ecosystem.
+# packages/unipass is a pnpm workspace member, so the root entry above updates it and pnpm-lock.yaml.
+# Its package-lock.json (standalone npm ci/audit only) is regenerated from that result by
+# `npm install --package-lock-only` inside packages/unipass; `pnpm unipass:lock:check` fails on drift.
+# Rust: credential-core is audited by RustSec in CI; Cargo updates stay manual because the WASM is byte-reproducibility gated.

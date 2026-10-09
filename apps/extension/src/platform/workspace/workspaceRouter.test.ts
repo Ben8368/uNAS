@@ -1,0 +1,138 @@
+import { describe, expect, it, vi } from 'vitest'
+import { validateLaunchMessage } from './workspaceRouter'
+import { installWorkspaceRouter } from '../extension/router'
+const sender = { id: 'unas', url: 'chrome-extension://unas/newtab.html', frameId: 0 }
+const launch = { schemaVersion: 1, action: 'workspace.launch', appId: 'fetcher' }
+describe('legacy Workspace routing boundary', () => {
+  it('recognizes only internal top-level pages and exact versioned app intents', () => {
+    expect(validateLaunchMessage(launch, sender, 'unas')).toBe(true)
+    for (const invalid of [{ ...launch, schemaVersion: 2 }, { ...launch, appId: '../../secrets' }, { ...launch, action: 'files.read' }, { ...launch, url: 'https://evil.test' }, null]) expect(validateLaunchMessage(invalid, sender, 'unas')).toBe(false)
+    for (const invalid of [{ ...sender, id: 'other' }, { ...sender, frameId: 1 }, { ...sender, url: 'https://example.com' }, { ...sender, url: 'chrome-extension://unas/other.html' }]) expect(validateLaunchMessage(launch, invalid, 'unas')).toBe(false)
+  })
+  it('rejects even valid old launch messages without creating or focusing tabs', async () => {
+    const create = vi.fn(); const update = vi.fn()
+    let listener: (...args: any[]) => unknown = () => {}
+    vi.stubGlobal('browser', { runtime: { id: 'unas', onMessage: { addListener: (fn: typeof listener) => { listener = fn } } }, tabs: { create, update } })
+    try {
+      installWorkspaceRouter()
+      await expect(listener(launch, sender)).resolves.toEqual({ ok: false, error: expect.stringContaining('刷新旧的') })
+      await expect(listener(launch, { ...sender, id: 'other' })).resolves.toEqual({ ok: false, error: expect.stringContaining('无效') })
+      expect(create).not.toHaveBeenCalled(); expect(update).not.toHaveBeenCalled()
+    } finally { vi.unstubAllGlobals() }
+  })
+  it('serializes only exact Link App mutations from extension top-level pages', async () => {
+    let listener: (...args: any[]) => unknown = () => {}
+    const storage = new Map<string, unknown>()
+    vi.stubGlobal('browser', {
+      runtime: { id: 'unas', onMessage: { addListener: (fn: typeof listener) => { listener = fn } } },
+      storage: {
+        local: {
+          get: async (key: string) => ({ [key]: storage.get(key) }),
+          set: async (values: Record<string, unknown>) => { Object.entries(values).forEach(([key, value]) => storage.set(key, value)) },
+        },
+        onChanged: { addListener: vi.fn(), removeListener: vi.fn() },
+      },
+    })
+    const link = { schemaVersion: 1, id: 'link-a', name: 'Example', url: 'https://example.com/', icon: 'globe' }
+    try {
+      installWorkspaceRouter()
+      await expect(listener({ schemaVersion: 1, action: 'link-apps.mutate', kind: 'upsert', link }, sender)).resolves.toEqual({ ok: true, links: [link] })
+      await expect(listener({ schemaVersion: 1, action: 'link-apps.mutate', kind: 'remove', original: link }, { ...sender, id: 'other' })).resolves.toEqual({ ok: false, error: expect.stringContaining('无效') })
+      await expect(listener({ schemaVersion: 1, action: 'link-apps.mutate', kind: 'migrate', links: [] }, sender)).resolves.toEqual({ ok: true, links: [link] })
+      expect(storage.get('unas-link-apps-v1')).toEqual([link])
+    } finally { vi.unstubAllGlobals() }
+  })
+  it('serializes browser download records and never cancels an unrelated download', async () => {
+    let listener: (...args: any[]) => unknown = () => {}
+    const storage = new Map<string, unknown>()
+    let nextDownloadId = 1
+    const cancelled: number[] = []
+    vi.stubGlobal('browser', {
+      runtime: { id: 'unas', onMessage: { addListener: (fn: typeof listener) => { listener = fn } } },
+      downloads: {
+        download: async () => nextDownloadId++,
+        search: async (query: { id: number }) => [{ id: query.id, state: 'in_progress', bytesReceived: 0, totalBytes: 1 }],
+        cancel: async (id: number) => { cancelled.push(id) },
+      },
+      storage: {
+        local: {
+          get: async (key: string) => { await new Promise((resolve) => setTimeout(resolve, 0)); return { [key]: storage.get(key) } },
+          set: async (values: Record<string, unknown>) => { await new Promise((resolve) => setTimeout(resolve, 0)); Object.entries(values).forEach(([key, value]) => storage.set(key, value)) },
+        },
+        onChanged: { addListener: vi.fn(), removeListener: vi.fn() },
+      },
+    })
+    try {
+      installWorkspaceRouter()
+      const [first, second] = await Promise.all([
+        listener({ kind: 'browser.download', url: 'https://example.test/one.mp4' }, sender),
+        listener({ kind: 'browser.download', url: 'https://example.test/two.mp4' }, sender),
+      ])
+      expect(first).toMatchObject({ ok: true, downloadId: 1 })
+      expect(second).toMatchObject({ ok: true, downloadId: 2 })
+      expect(storage.get('unas-browser-downloads-v1')).toEqual([
+        { downloadId: 1, url: 'https://example.test/one.mp4', createdAt: expect.any(Number) },
+        { downloadId: 2, url: 'https://example.test/two.mp4', createdAt: expect.any(Number) },
+      ])
+      await expect(listener({ kind: 'browser.download.cancel', downloadId: 999 }, sender)).resolves.toEqual({ ok: false, error: '此下载不属于 uNAS，未执行操作。' })
+      expect(cancelled).toEqual([])
+      await expect(listener({ kind: 'browser.download', url: 'https://example.test/page' }, sender)).resolves.toEqual({ ok: false, error: '消息来源、版本或动作无效。' })
+    } finally { vi.unstubAllGlobals() }
+  })
+
+  it('lists Chrome download records without exposing their absolute paths and can reveal a selected file', async () => {
+    let listener: (...args: any[]) => unknown = () => {}
+    const search = vi.fn(async () => [{ id: 7, filename: 'C:\\\\Users\\\\test\\\\Downloads\\\\report.txt', state: 'complete' as const, bytesReceived: 12, totalBytes: 12, exists: true, startTime: '2026-09-30T00:00:00.000Z' }])
+    const show = vi.fn()
+    vi.stubGlobal('browser', {
+      runtime: { id: 'unas', onMessage: { addListener: (fn: typeof listener) => { listener = fn } } },
+      downloads: { search, show, download: vi.fn(), cancel: vi.fn() },
+      tabs: { create: vi.fn() },
+    })
+    try {
+      installWorkspaceRouter()
+      const response = await listener({ kind: 'browser.downloads.files.list' }, sender)
+      expect(response).toEqual({
+        ok: true,
+        items: [{ id: 7, name: 'report.txt', state: 'complete', bytesReceived: 12, totalBytes: 12, exists: true, startTime: '2026-09-30T00:00:00.000Z' }],
+      })
+      expect(search).toHaveBeenCalledWith({ limit: 200, orderBy: ['-startTime'] })
+      expect(JSON.stringify(response)).not.toContain('C:')
+      await expect(listener({ kind: 'browser.downloads.files.show', downloadId: 7 }, sender)).resolves.toEqual({ ok: true })
+      expect(show).toHaveBeenCalledWith(7)
+    } finally { vi.unstubAllGlobals() }
+  })
+
+  it('does not start a download when tracking storage cannot be read', async () => {
+    let listener: (...args: any[]) => unknown = () => {}
+    const download = vi.fn()
+    vi.stubGlobal('browser', {
+      runtime: { id: 'unas', onMessage: { addListener: (fn: typeof listener) => { listener = fn } } },
+      downloads: { download, cancel: vi.fn(), search: vi.fn() },
+      storage: { local: { get: async () => { throw new Error('storage unavailable') }, set: vi.fn() } },
+    })
+    try {
+      installWorkspaceRouter()
+      await expect(listener({ kind: 'browser.download', url: 'https://example.test/file.zip' }, sender)).resolves.toEqual({ ok: false, error: 'storage unavailable' })
+      expect(download).not.toHaveBeenCalled()
+    } finally { vi.unstubAllGlobals() }
+  })
+
+  it('reports the real download ID when recording fails after Chrome starts', async () => {
+    let listener: (...args: any[]) => unknown = () => {}
+    const download = vi.fn(async () => 42)
+    const cancel = vi.fn()
+    vi.stubGlobal('browser', {
+      runtime: { id: 'unas', onMessage: { addListener: (fn: typeof listener) => { listener = fn } } },
+      downloads: { download, cancel, search: vi.fn() },
+      storage: { local: { get: async () => ({}), set: async () => { throw new Error('quota exceeded') } } },
+    })
+    try {
+      installWorkspaceRouter()
+      await expect(listener({ kind: 'browser.download', url: 'https://example.test/file.zip' }, sender)).resolves.toMatchObject({ ok: true, downloadId: 42, trackingWarning: expect.stringContaining('Chrome 已启动下载') })
+      await expect(listener({ kind: 'browser.download.cancel', downloadId: 42 }, sender)).resolves.toMatchObject({ ok: false })
+      expect(download).toHaveBeenCalledTimes(1)
+      expect(cancel).not.toHaveBeenCalled()
+    } finally { vi.unstubAllGlobals() }
+  })
+})

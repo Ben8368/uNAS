@@ -1,8 +1,0 @@
-export type { UnasDemoApi } from './api/types'
-export { getApiClient, setApiClient } from './api/client'
-export { bootstrapApiClient } from './api/bootstrap'
-export { demoScenarios } from './api/demo/contracts'
-export type { MockFileMetadata, DemoSnapshot, DemoScenarioId, PathGrantCapabilityResult } from './api/types'
-export { getApiRuntimeMode, getApiRuntimePresentation, isRealApiRuntime } from './api/runtime'
-export type { ApiRuntimeMode, ApiRuntimePresentation } from './api/runtime'
-export * from './api/forward'

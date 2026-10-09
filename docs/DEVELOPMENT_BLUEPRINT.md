@@ -97,7 +97,7 @@
 ### FE-10 扩展 adapter 与消息迁移
 
 - 依赖 FE-09：扩展 adapter 统一原生 `browser.*`，真正异步的 runtime 请求迁移为 Promise 响应；同步拒绝无需为了语法统一变成 `async`，不将所有 listener 无条件 Promise 化。
-- 检查 WXT 包装和实际打包依赖，删除确实冗余的旧版 shim；当前源码迁移锚点为 `src/runtime/extensionAdapter.ts`、background entry、WXT 配置及相应测试，不假设仓库已经存在可移除的 polyfill。
+- 检查 WXT 包装和实际打包依赖，删除确实冗余的旧版 shim；当前源码迁移锚点为 `src/platform/extension/router.ts`、background entry、WXT 配置及相应测试，不假设仓库已经存在可移除的 polyfill。
 - 盘点旧跨标签启动协议和 `workspace.html` 兼容入口，区分“过期 bundle 防重复启动”与“旧浏览器兼容”。可删除无消费者入口，但须同步替代 ADR 0007 的对应条款，验证旧页拒绝/刷新提示；不能仅因私用取消 owner 校验。
 - 验收：New Tab、工具栏、同页 App、多页 owner、未知消息、异步失败/超时和旧页残留；BroadcastChannel 保持原传输边界，不能因 Promise 改写拓扑。
 
@@ -261,8 +261,8 @@ App/File/Task schemas
 **最小实现面**
 
 - `contracts/filesystem.ts`：增加只表达稳定事实的 `FileRef`/读取结果/输出结果类型；不传 handle、路径或 Blob 大对象。
-- `src/api/real/fileWorkspace.ts`：增加 owner-only 的 `createReadFileRef`、受限 `readFileRef` 和 `exportFileRef`；复用现有 read permission、write-mode gate、唯一名称检查与清理边界。
-- `src/api/fileWorkspace.ts`：只暴露经过 Workspace owner 校验的 port 方法；client 只能得到摘要/终态，不转发 FileRef 内部句柄。
+- `src/platform/filesystem/real/fileWorkspace.ts`：增加 owner-only 的 `createReadFileRef`、受限 `readFileRef` 和 `exportFileRef`；复用现有 read permission、write-mode gate、唯一名称检查与清理边界。
+- `src/platform/filesystem/fileWorkspace.ts`：只暴露经过 Workspace owner 校验的 port 方法；client 只能得到摘要/终态，不转发 FileRef 内部句柄。
 - 一个最小 File Manager 入口和 `executionSource: real` 标识；不改 Desktop、Task Center、Downloader、Image、Archive 或 Media 的 mock 场景。
 
 **验证与证据**

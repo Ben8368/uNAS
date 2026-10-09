@@ -12,6 +12,9 @@ test-results/
 .tmp/
 .cache/
 .artifacts/
+# Temporary review screenshots/logs stay local, in CI artifacts or PR attachments; durable evidence goes to docs/archive/reviews.
+artifacts/
+visual-evidence/
 *.log
 *.pid
 

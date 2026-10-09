@@ -3,10 +3,10 @@
 ## 范围与结果
 
 - 修复本轮 review 的两项 P1 和一项 P2；保留上一轮 Legacy 商店版本 5.3.5 更新。未提交、推送、发布或访问真实企业账号/NAS。
-- 新建 Vault 在远端 manifest 写入前保存设备密钥加密的创建记录。失败保留记录，用户以同一规范化 endpoint 再次新建时复用原密钥；已有远端库必须解密成功且 ID 匹配才恢复。成功保存连接后清理记录；不自动覆盖、删除远端数据或后台重放创建。实现见 [pending-creation.ts](../../../apps/extension/src/modules/password-manager/background/vault/pending-creation.ts)。
+- 新建 Vault 在远端 manifest 写入前保存设备密钥加密的创建记录。失败保留记录，用户以同一规范化 endpoint 再次新建时复用原密钥；已有远端库必须解密成功且 ID 匹配才恢复。成功保存连接后清理记录；不自动覆盖、删除远端数据或后台重放创建。实现见 [pending-creation.ts](../../../apps/extension/src/features/password-manager/background/vault/pending-creation.ts)。
 - 本地配置提交失败明确提示恢复方式；设备密钥保存等待 IndexedDB transaction.oncomplete，中止必须拒绝，不以 request.onsuccess 代替事务提交。
-- 同步条件写入冲突先 GET 比较完整密文字节；一致则更新远端 revision，保留并发发生的新本地编辑；不同则保持冲突。旧版本已标记的相同内容冲突也可恢复，不强制覆盖或把确认计成新上传。实现见 [sync-engine.ts](../../../apps/extension/src/modules/password-manager/background/vault/sync-engine.ts)。
-- 暂停、恢复、过期整理共用后台队列，覆盖读取、DNR 替换、存储、通知和失败回滚；队列不会因一次失败失效。实现见 [site-pauses.ts](../../../apps/extension/src/modules/adblock/engine/site-pauses.ts)。
+- 同步条件写入冲突先 GET 比较完整密文字节；一致则更新远端 revision，保留并发发生的新本地编辑；不同则保持冲突。旧版本已标记的相同内容冲突也可恢复，不强制覆盖或把确认计成新上传。实现见 [sync-engine.ts](../../../apps/extension/src/features/password-manager/background/vault/sync-engine.ts)。
+- 暂停、恢复、过期整理共用后台队列，覆盖读取、DNR 替换、存储、通知和失败回滚；队列不会因一次失败失效。实现见 [site-pauses.ts](../../../apps/extension/src/features/adblock/engine/site-pauses.ts)。
 
 ## 自动化证据
 

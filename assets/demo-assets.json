@@ -97,7 +97,7 @@
       "height": 64
     },
     {
-      "path": "apps/extension/src/appearance.ts",
+      "path": "apps/extension/src/shared/appearance/appearance.ts",
       "bytes": 3651,
       "sha256": "9492c817d84a2c021478c6a2f1cd111b99d81931d26fa9599edc82609ac92962",
       "kind": "procedural-css-no-bitmap"

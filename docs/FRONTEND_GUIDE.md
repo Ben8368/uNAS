@@ -12,7 +12,7 @@
 ## 2. 技术与样式归属
 
 - React + TypeScript strict；Vite 用于本地 Demo，WXT 承载 MV3。精确版本以 [package.json](../apps/extension/package.json) 和锁文件为准，不在本文复制版本或权限清单。
-- CSS Custom Properties 承载语义 token，现有共享窗口主题入口是 [window-theme.css](../apps/extension/src/styles/window-theme.css)；[globals.css](../apps/extension/src/styles/globals.css) 组织样式，src/styles/ 按职责拆分，不使用 CSS Modules。
+- CSS Custom Properties 承载语义 token，现有共享窗口主题入口是 [window-theme.css](../apps/extension/src/shared/styles/window-theme.css)；[globals.css](../apps/extension/src/shared/styles/globals.css) 组织样式，src/shared/styles/ 按职责拆分，不使用 CSS Modules。
 - Zustand 管理本地 UI 状态，Lucide React 提供统一图标。布局/样式/状态优先复用现有公开组件，不引入另一套设计库或私有主题。
 - token 值按 Design System 映射；兼容别名只能引用同一语义源。App 私有样式只处理领域布局，不覆盖主题、玻璃材料、窗口壳与基础控件状态。
 - 原生 Dialog/Popover、容器查询与动效迁移遵循 [ADR 0008](ADR/0008-private-preview-modern-chrome.md)；平台 API 不自动提供完整的键盘、焦点、定位或可访问性验收。
@@ -31,9 +31,9 @@
 
 所有现有和新桌面 App 的外观以下载母版为准，规则只查 Design System UI-03。`app-navigation.css` 统一 default/hover/selected/focus；App 私有 CSS 不再声明导航选中色或覆盖共享控件尺寸。
 
-Files 的功能接入参照为 [FileManagerApp](../apps/extension/src/apps/FileManagerApp.tsx) 和 [LocalDirectoryPane](../apps/extension/src/apps/file-manager/LocalDirectoryPane.tsx)，不是旧 MockFileManagerPane。浏览器下载记录由独立 port 提供，不向 App View 暴露扩展 API。先在原页面提取公共布局，再由其他 App 消费；不得让其他 App import 文件管理私有组件或复制 fm-* CSS。
+Files 的功能接入参照为 [FileManagerApp](../apps/extension/src/features/file-manager/FileManagerApp.tsx) 和 [LocalDirectoryPane](../apps/extension/src/features/file-manager/LocalDirectoryPane.tsx)，不是旧 MockFileManagerPane。浏览器下载记录由独立 port 提供，不向 App View 暴露扩展 API。先在原页面提取公共布局，再由其他 App 消费；不得让其他 App import 文件管理私有组件或复制 fm-* CSS。
 
-[Window.tsx](../apps/extension/src/Window.tsx) 的 headerStatus 由 App Registry 声明、WindowContainer 注入；写入模式与色域状态按需加载，公共壳不订阅文件 port，不因新增 App 增加业务分支。槽位使用组合而非大量布尔开关；搜索、筛选或 footer 缺省时由布局统一收起。视觉参数只查 Design System UI-03。
+[Window.tsx](../apps/extension/src/shell/windows/Window.tsx) 的 headerStatus 由 App Registry 声明、WindowContainer 注入；写入模式与色域状态按需加载，公共壳不订阅文件 port，不因新增 App 增加业务分支。槽位使用组合而非大量布尔开关；搜索、筛选或 footer 缺省时由布局统一收起。视觉参数只查 Design System UI-03。
 
 ## 3. 层次与 Surface
 
@@ -66,4 +66,4 @@ New Tab 保持轻量，App 与 engine chunk 按需加载；逻辑 Workspace 的�
 
 交付说明只列：适用 UI 编号、受影响组件/页面、mock 或真实来源、验证命令与证据、未覆盖项/例外。响应式阈值和验收矩阵只链接 Design System / Quality，不在工作包或页面文档重复。
 
-既有界面不因规范发布自动达标；实现时检查相关样式的最终级联，包括 [accessibility.css](../apps/extension/src/styles/accessibility.css) 对材料和布局的覆盖。受影响部分按本规范修正，无关实现差异不在本指南维护清单。
+既有界面不因规范发布自动达标；实现时检查相关样式的最终级联，包括 [accessibility.css](../apps/extension/src/shared/styles/accessibility.css) 对材料和布局的覆盖。受影响部分按本规范修正，无关实现差异不在本指南维护清单。

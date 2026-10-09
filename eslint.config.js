@@ -5,7 +5,10 @@ import tseslint from 'typescript-eslint'
 export default tseslint.config(
   {
     ignores: [
-      'sources/UniPass/**',
+      // UniPass keeps its own typecheck, static audit and tests (packages/unipass).
+      'packages/unipass/**',
+      // Git-ignored local output such as the UniPass export tree.
+      '.artifacts/**',
       '**/dist/**',
       '**/.output/**',
       '**/.wxt/**',

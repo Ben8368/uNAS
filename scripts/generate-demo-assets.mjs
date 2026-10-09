@@ -31,8 +31,8 @@ for (const [name, [color, shape]] of Object.entries(shapes)) {
   await writeFile(resolve(root, file), svg)
   records.push({ path: file, bytes: Buffer.byteLength(svg), sha256: createHash('sha256').update(svg).digest('hex'), width: 64, height: 64 })
 }
-const appearance = await readFile(resolve(root, 'apps/extension/src/appearance.ts'))
-records.push({ path: 'apps/extension/src/appearance.ts', bytes: appearance.length, sha256: createHash('sha256').update(appearance).digest('hex'), kind: 'procedural-css-no-bitmap' })
+const appearance = await readFile(resolve(root, 'apps/extension/src/shared/appearance/appearance.ts'))
+records.push({ path: 'apps/extension/src/shared/appearance/appearance.ts', bytes: appearance.length, sha256: createHash('sha256').update(appearance).digest('hex'), kind: 'procedural-css-no-bitmap' })
 const startupAppearance = await readFile(resolve(root, 'apps/extension/public/startupAppearance.js'))
 records.push({ path: 'apps/extension/public/startupAppearance.js', bytes: startupAppearance.length, sha256: createHash('sha256').update(startupAppearance).digest('hex'), kind: 'local-startup-prepaint-script' })
 await mkdir(resolve(root, 'assets'), { recursive: true })
