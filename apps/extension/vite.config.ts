@@ -16,6 +16,8 @@ export default defineConfig({
     host: '0.0.0.0',
   },
   build: {
+    // Lightning CSS drops standard backdrop-filter when followed by its prefix.
+    cssMinify: 'esbuild',
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,

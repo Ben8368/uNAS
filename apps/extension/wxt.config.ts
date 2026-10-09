@@ -55,6 +55,10 @@ export default defineConfig({
   },
   vite: () => ({
     plugins: [react()],
+    build: {
+      // Preserve the standard backdrop-filter declaration for Chromium.
+      cssMinify: 'esbuild',
+    },
     resolve: {
       // Avoid WXT's reserved aliases when resolving the migrated Vite source.
       alias: [

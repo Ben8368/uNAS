@@ -111,6 +111,19 @@
       "repository": "git+https://github.com/gildas-lormeau/zip.js.git"
     },
     {
+      "name": "esbuild",
+      "version": "0.28.2",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681"
+        }
+      ],
+      "repository": "git+https://github.com/evanw/esbuild.git"
+    },
+    {
       "name": "eslint",
       "version": "10.12.0",
       "scope": "direct-build-test-tool",
