@@ -7,7 +7,7 @@
 ## 同步结果
 
 - UniPass [PR #20](https://github.com/Ben8368/UniPass/pull/20)、[PR #21](https://github.com/Ben8368/UniPass/pull/21) 已合并，保留各分支 ancestry；分别更新 Puppeteer Chrome smoke 工具和 Chrome API 类型。
-- 可移植密码改进及嵌入式源码入口已提交并推送；独立扩展的细节和验证由[UniPass 同步验收](../../../sources/UniPass/docs/archive/reviews/2026-10-09-branch-sync.md)维护。
+- 可移植密码改进及嵌入式源码入口已提交并推送；独立扩展的细节和验证由固定源码提交中的[UniPass 同步验收](https://github.com/Ben8368/UniPass/blob/b377879c9557abe8cc196e54dd674c7aaa5cd084/docs/archive/reviews/2026-10-09-branch-sync.md)维护。
 - 两仓库功能边界仍按 [ADR 0018](../../ADR/0018-unipass-source-submodule.md)；本轮仅同步源码与 gitlink，不创建 tag、Release 或发布扩展。
 
 ## 🚦 Audit Report
@@ -28,5 +28,7 @@
 ## 远端 CI 前提
 
 `gh secret list --repo Ben8368/uNAS --json name` 返回空列表。现有 workflow 使用 `SOURCE_REPOSITORIES_TOKEN || github.token` 初始化私有 UniPass 子模块；需要独立配置仅含两个仓库只读 contents 权限的凭证，不能以本地通过宣称远端 CI 已通过。本轮未把本机 GitHub CLI 的广泛权限 token 保存为 CI secret。
+
+[首次宿主 CI](https://github.com/Ben8368/uNAS/actions/runs/37892819449) 在私有子模块 checkout 报 `Repository not found`；Docs job 不初始化子模块，曾因本记录跨子模块的相对链接失败，已改为固定提交的 GitHub 链接，避免把文档检查绑定到源码读取授权。
 
 日志和浏览器附件在忽略目录；此文件记录可重复命令，不以构建或合成夹具替代真实企业账号和常用 Profile 人工验收。
