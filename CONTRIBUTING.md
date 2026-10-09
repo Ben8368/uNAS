@@ -11,8 +11,10 @@ uNAS 的阶段、已验证范围和近期优先级以 [CONTEXT.md](CONTEXT.md) �
 ## 分支与提交
 
 - 从 `main` 创建短生命周期分支，例如 `docs/refine-v1-scope`、`spike/ffmpeg-wasm-baseline`。
-- 使用 Conventional Commit 类型前缀，正文可使用中文，例如 `docs: 建立能力矩阵模板`。
+- commit message 标题和正文使用中文；Conventional Commit 类型前缀保留英文，例如 `docs: 建立能力矩阵模板`。
 - 一个提交只表达一个主题；不要把契约、引擎、UI 和文档堆成无法审查的巨型提交。
+- AI 工具参与实质改动并提交时，按 [docs/AI_RULES.md](docs/AI_RULES.md) 追加对应 `Co-authored-by` trailer；主作者保持维护者身份。
+- AI trailer 记录工具来源而非具体模型；历史模型级署名不回改，后续按工具级映射统一。
 - 不得提交 `.env`、账号凭据、客户文件、浏览器数据、未授权素材、WASM 临时构建物或性能测试原始大文件。
 
 ## 当前允许的改动

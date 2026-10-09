@@ -86,6 +86,35 @@
 ## 5. 文档与 Git
 
 - 只更新发生事实变化的权威文档，遵守 [GOVERNANCE.md](GOVERNANCE.md)。
-- 提交信息使用 Conventional Commit 类型；一次提交只表达一个可审查主题。
-- 不修改或清理用户的无关改动，不使用破坏性 Git 命令。
+- 默认不自动 `git commit` / `git push` / 发布；仅在用户明确要求时执行对应动作。
+- 不修改或清理用户的无关改动，不使用破坏性 Git 命令；不得提交 `.env`、凭据或其他敏感文件。
 - 用户明确要求提交时，提交前列出验证结果；保护分支和任何 push 仍需符合用户明确范围。
+
+### 提交信息与 AI trailer
+
+提交信息与 Git trailer 以本节为准；`AGENTS.md` / `CONTRIBUTING.md` 只保留入口摘要。
+
+- 标题与正文使用中文；Conventional Commit 类型前缀与 Git trailer 键名保留英文，例如 `feat:`、`fix:`、`docs:`。
+- 一次提交只表达一个可审查主题；契约、引擎、UI 和文档不要堆成无法审查的巨型提交。
+- AI 工具参与实质改动并执行提交时，在 message 末尾追加对应 `Co-authored-by` trailer，前方保留一个空行。主作者保持维护者身份，不靠改 `user.name` / `user.email` 伪装成 agent。
+- trailer 记录**工具来源**，不记录具体模型；同一工具换模型仍用下表固定行。历史模型级署名不回改。
+
+| 当前工具 | 必须追加的 trailer |
+| --- | --- |
+| Codex | `Co-authored-by: Codex <codex@openai.com>` |
+| Claude Code | `Co-authored-by: Claude Code <noreply@anthropic.com>` |
+| Cursor（含 Cursor Agent / Auto） | `Co-authored-by: Cursor <cursoragent@cursor.com>` |
+
+Windows PowerShell 中不得在单个 `git commit -m` 字符串内嵌入 `\n`（会写成字面字符，GitHub 无法识别 trailer）。正文与 trailer 使用独立 `-m` 参数：
+
+```powershell
+git commit -m "fix(web): 标题" -m "正文说明。" -m "Co-authored-by: Cursor <cursoragent@cursor.com>"
+```
+
+提交后必须执行：
+
+```powershell
+git show -s --format=%B HEAD | git interpret-trailers --parse
+```
+
+确认对应 `Co-authored-by` 出现在解析结果中；无输出或仅出现字面 `\n` 时，发布或推送前必须修正该提交。

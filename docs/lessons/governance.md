@@ -7,3 +7,4 @@
 - G-005：共享会话、库文档和现有项目只能提供背景，不能自动变成 uNAS 的已接受决策或已验证能力。
 - G-006：探针详细证据在 `benchmarks/<probe>/README.md`，Context 只保留链接化摘要；更新任一验收结论时反向核对 Context、probe 与风险台账，冲突以探针环境/步骤记录为准并同次修正。
 - G-007：治理文档的 Markdown 证据链接必须指向 Git 中可复现的文件；`test-results`、`playwright-report` 等忽略目录只能作为生成产物位置说明，不能作为链接目标，否则本地残留会掩盖干净检出的 CI 失败。
+- G-008：AI 提交用 `Co-authored-by` 工具级 trailer 署名（不改 `user.name`/`user.email`）；PowerShell 须拆多个 `-m`，提交后用 `git interpret-trailers --parse` 校验，细节以 `docs/AI_RULES.md` 为准。

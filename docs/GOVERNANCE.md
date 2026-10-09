@@ -23,6 +23,7 @@
 | 未验证假设与外部风险 | `docs/RISK_REGISTER.md` | 技术债、Context 详情 |
 | 已产生的实现妥协 | `docs/TECH_DEBT.md` | 风险台账、Roadmap |
 | 长期决策及理由 | `docs/ADR/*` | 状态卡、提交信息 |
+| 审查、验证、提交与 AI Git trailer | `docs/AI_RULES.md` | `AGENTS.md`、`CONTRIBUTING.md` 的副本 |
 | 历史状态、已关闭风险、长复盘 | `docs/archive/` 与 Git 历史 | 强制加载文件 |
 
 `CONTEXT.md` 是当前状态摘要；探针、真机和基准的细颗粒度覆盖矩阵由对应 `benchmarks/<probe>/README.md` 维护。两者不一致时，以带环境、步骤和结论的探针记录为准，并在同一次改动中修正 Context 摘要与风险状态。

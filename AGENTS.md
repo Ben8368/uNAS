@@ -38,7 +38,7 @@ Windows PowerShell 读取或输出中文时使用 UTF-8；文件一律保存为 
 - 源码改动后按 [docs/AI_RULES.md](docs/AI_RULES.md) 输出 `🚦 Audit Report`，再运行 `pnpm verify`；文档改动至少运行 `node scripts/governance-docs-check.mjs`。
 - 客观验证必须给出命令和结果；主观体验、兼容性真机或性能结论必须保留真实证据，不能由构建通过代替。
 - 当前状态只写 [CONTEXT.md](CONTEXT.md)，阶段计划只写 Roadmap，执行拆分只写 Development Blueprint，风险与技术债分开登记，长期决策写 ADR。
-- 默认不提交、不推送、不发布；仅在用户明确要求时执行对应 Git 或发布动作。
+- 默认不提交、不推送、不发布；仅在用户明确要求时执行对应 Git 或发布动作。提交信息与 AI `Co-authored-by` trailer 以 [docs/AI_RULES.md](docs/AI_RULES.md) 为准。
 - 默认使用中文汇报；标识符、命令、路径、API 字段和专有名词保留原文。
 
 ## 治理文档自治理
