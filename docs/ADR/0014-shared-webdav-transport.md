@@ -6,7 +6,7 @@
 
 ## 决策
 
-- WebDAV 协议传输位于 apps/extension/src/runtime/webdav/client.ts；纯 HTTPS 地址校验位于共享层。传输层不依赖密码模块、React、扩展权限 API、密钥存储或远端 Vault 格式。
+- WebDAV 协议传输位于 apps/extension/src/platform/webdav/client.ts；纯 HTTPS 地址校验位于共享层。传输层不依赖密码模块、React、扩展权限 API、密钥存储或远端 Vault 格式。
 - Vault adapter 保留 objects/*.json、manifest、强制 ETag、条件写入/删除与业务冲突错误；加密、缓存、dirty queue、tombstone 继续归密码模块，不成为通用文件协议。
 - 传输仅接受 endpoint 内相对路径；禁止重定向、浏览器 Cookie 与缓存。保留 12 秒整体请求超时，新增调用者取消及默认 16 MiB 请求/响应预算（最多可配置 64 MiB）。预算是实现防线，不是大文件支持承诺。HTTP 认证、权限、网络、超时、取消和资源限制输出可读且不含连接密钥的错误。
 - 不增加权限、后台自动上传或其他 App 联网入口；调用方继续负责用户同意、主机授权、生命周期与并发。未来每个 App 须经受控 port 接入，不能从 UI 直接 import 传输，也不能复用密码库连接材料或 Vault Key；用户未同意时仍本地处理。

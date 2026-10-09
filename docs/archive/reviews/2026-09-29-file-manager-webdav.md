@@ -25,7 +25,7 @@ $env:UNAS_E2E_BROWSER = 'chrome'
 pnpm --dir apps/extension exec playwright test e2e/fileManagerLocations.spec.ts e2e/fileWorkspaceDirectory.spec.ts e2e/fileWorkspaceStorage.spec.ts e2e/appTheme.spec.ts e2e/colorGamut.spec.ts -g 'file locations|download directory|WebDAV file|File Manager requires|extension page persists|file-manager|Settings reports'
 ```
 
-可复现入口：[Files locations](../../../apps/extension/e2e/fileManagerLocations.spec.ts)、[local directory](../../../apps/extension/e2e/fileWorkspaceDirectory.spec.ts)、[storage](../../../apps/extension/e2e/fileWorkspaceStorage.spec.ts)、[transport](../../../apps/extension/src/runtime/webdav/client.test.ts)、[DAV service](../../../apps/extension/src/api/real/davFiles.test.ts)、[cache lifecycle](../../../apps/extension/src/api/real/tempCache.test.ts)。测试附件生成在被 Git 忽略的 `apps/extension/test-results/extension-e2e/`，本记录不把该目录作为仓库证据链接。
+可复现入口：[Files locations](../../../apps/extension/e2e/fileManagerLocations.spec.ts)、[local directory](../../../apps/extension/e2e/fileWorkspaceDirectory.spec.ts)、[storage](../../../apps/extension/e2e/fileWorkspaceStorage.spec.ts)、[transport](../../../apps/extension/src/platform/webdav/client.test.ts)、[DAV service](../../../apps/extension/src/platform/webdav/real/davFiles.test.ts)、[cache lifecycle](../../../apps/extension/src/platform/storage/real/tempCache.test.ts)。测试附件生成在被 Git 忽略的 `apps/extension/test-results/extension-e2e/`，本记录不把该目录作为仓库证据链接。
 
 ## 覆盖与结果
 

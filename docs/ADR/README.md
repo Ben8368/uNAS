@@ -33,7 +33,9 @@ ADR 记录影响长期维护的决定及理由。Roadmap 说明“按什么阶�
 | [0014](0014-shared-webdav-transport.md) | 已接受 | 共享受限 WebDAV 传输、密码库仅使用 WebDAV、Legacy 撤除边界 |
 | [0015](0015-file-manager-dav-cache.md) | 已接受 | Files 独立 WebDAV 文件连接、浏览器下载记录、OPFS 缓存与持久存储申请；缓存容量条款由 0016 替代 |
 | [0016](0016-file-cache-quota.md) | 已接受 | Files 临时缓存单文件 256 MiB、最多 200 项，取消应用层固定总量上限 |
-
-| [0018](0018-unipass-source-submodule.md) | 已接受 | UniPass 源码 submodule；Legacy adapter 统一入口与可移植密码功能回同步 |
+| [0017](0017-unified-file-read-preview.md) | 已接受 | 受控 FileRef、WebDAV 分段读取与交互式预览 |
+| [0018](0018-unipass-source-submodule.md) | 已替代 | UniPass 源码 submodule 与 Legacy adapter 入口，由 0019 替代 |
+| [0019](0019-unipass-monorepo-package.md) | 已接受 | UniPass 归入 `packages/unipass`；独立仓库降为单向下游发布镜像 |
+| [0020](0020-extension-source-taxonomy.md) | 已接受 | 扩展 `src` 按 owner 分为 shell / features / platform / shared，并由边界检查强制 |
 
 “已接受”表示维护者接受的方案基线，依据见各 ADR；不等于对应源码已实现或 Gate 已通过。若后续阶段改变边界，须以新 ADR 替代。0002 只保留历史，不再约束实现。

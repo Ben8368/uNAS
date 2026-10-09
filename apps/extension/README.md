@@ -20,7 +20,7 @@ pnpm build:demo
 pnpm --filter @unas/extension-demo run preview
 ```
 
-`src/api/bootstrap.ts` 固定绑定 `demoApi`；`src/api/demo.ts` 是所有交互使用的本地演示数据实现。为保持离线首屏，HTML 不加载远程字体。
+`src/platform/workspace/api/bootstrap.ts` 固定绑定 `demoApi`；`src/platform/demo/index.ts` 是所有交互使用的本地演示数据实现。为保持离线首屏，HTML 不加载远程字体。
 
 不要直接在浏览器中打开 `index.html` 的 `file://` 路径；浏览器不能编译其中的 TypeScript 模块。要构建可解包 Chrome 扩展，请在仓库根目录运行：
 

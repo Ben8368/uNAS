@@ -25,10 +25,10 @@
 ## 2. 实际运行面、权限与证据边界
 
 - 产品只有一个 WXT MV3 扩展。实际代码集中在 `apps/extension`；Architecture 中顶层 `packages/`、`workers/` 是目标结构，当前未创建。真实 ZIP Worker 位于扩展内部。
-- [App Registry](../apps/extension/src/appRegistry.tsx) 注册添加 App、文件管理、下载、设置、日志、密码管家和广告拦截；`stable`/`beta` 是注册标签，不是能力验收结论。没有 Media、Transcode 或独立 Archive 的可启动 App。
-- [bootstrap](../apps/extension/src/api/bootstrap.ts) 将通用 API 接到 `demoApi`。真实文件通过独立 File Workspace port，下载通过扩展消息 adapter，密码管家和广告拦截通过独立 background services 接入；不能用全局 `isRealApiRuntime() === false` 推断所有功能都是 mock。
-- [inlineWorkspace](../apps/extension/src/runtime/inlineWorkspace.ts) 使用 Web Lock/BroadcastChannel 确定 owner；真实目录写入只允许 owner，其他页只读投影。它的任务快照及 `beforeunload` 判断仍来自 mock；不是覆盖 ZIP/Vault/下载的统一真实 Task Core。
-- [background entry](../apps/extension/entrypoints/background.ts) 安装密码管家、广告拦截 hooks 与唯一 [消息路由](../apps/extension/src/runtime/extensionAdapter.ts)。文件/ZIP 不在 Service Worker 中计算，Vault Crypto/同步及广告规则编译则实际在 Service Worker 内执行。无 offscreen、Native Helper、服务端转码或浏览器外常驻任务进程。
+- [App Registry](../apps/extension/src/shell/launcher/appRegistry.tsx) 注册添加 App、文件管理、下载、设置、日志、密码管家和广告拦截；`stable`/`beta` 是注册标签，不是能力验收结论。没有 Media、Transcode 或独立 Archive 的可启动 App。
+- [bootstrap](../apps/extension/src/platform/workspace/api/bootstrap.ts) 将通用 API 接到 `demoApi`。真实文件通过独立 File Workspace port，下载通过扩展消息 adapter，密码管家和广告拦截通过独立 background services 接入；不能用全局 `isRealApiRuntime() === false` 推断所有功能都是 mock。
+- [inlineWorkspace](../apps/extension/src/platform/workspace/inlineWorkspace.ts) 使用 Web Lock/BroadcastChannel 确定 owner；真实目录写入只允许 owner，其他页只读投影。它的任务快照及 `beforeunload` 判断仍来自 mock；不是覆盖 ZIP/Vault/下载的统一真实 Task Core。
+- [background entry](../apps/extension/entrypoints/background.ts) 安装密码管家、广告拦截 hooks 与唯一 [消息路由](../apps/extension/src/platform/extension/router.ts)。文件/ZIP 不在 Service Worker 中计算，Vault Crypto/同步及广告规则编译则实际在 Service Worker 内执行。无 offscreen、Native Helper、服务端转码或浏览器外常驻任务进程。
 
 权限以 [wxt.config.ts](../apps/extension/wxt.config.ts) 与 [adblock.content.ts](../apps/extension/entrypoints/adblock.content.ts) 为源码事实：
 
@@ -55,7 +55,7 @@
 | 验证等级 | SP-02 已验证限定的授权/存储边界：Chrome for Testing 151.0.7922.34、Windows 的小字符串 IDB/OPFS 与 OPFS handle 替身；2026-09-09 维护者记录原生 picker、授权/恢复、冲突与非递归删除人工通过。不能外推到后加的 ZIP 或未实现操作 |
 | 下一步最小交付 / 阻断 | 建议先补真实文件只读 intake/资源引用和一个可验证导出闭环，再接工具。缺 FileRef 接入、输出验证/提交、取消/清理、输入规模证据；Files + Image 阶段仍需 SP-03 / RISK-005 / G2-Core，不因目录已可用自动通过 |
 
-源码：[File Workspace port](../apps/extension/src/api/fileWorkspace.ts)、[real adapter](../apps/extension/src/api/real/fileWorkspace.ts)、[LocalDirectoryPane](../apps/extension/src/apps/file-manager/LocalDirectoryPane.tsx)。证据：[SP-02](../benchmarks/sp-02/README.md)、[目录 E2E](../apps/extension/e2e/fileWorkspaceDirectory.spec.ts)、[存储 E2E](../apps/extension/e2e/fileWorkspaceStorage.spec.ts)。
+源码：[File Workspace port](../apps/extension/src/platform/filesystem/fileWorkspace.ts)、[real adapter](../apps/extension/src/platform/filesystem/real/fileWorkspace.ts)、[LocalDirectoryPane](../apps/extension/src/features/file-manager/LocalDirectoryPane.tsx)。证据：[SP-02](../benchmarks/sp-02/README.md)、[目录 E2E](../apps/extension/e2e/fileWorkspaceDirectory.spec.ts)、[存储 E2E](../apps/extension/e2e/fileWorkspaceStorage.spec.ts)。
 
 ## 4. ZIP 矩阵
 
@@ -69,7 +69,7 @@
 | 验证等级 | 已实现未验证（模块 Gate 未过）。SP-04-A 已在 bundled Chromium/Windows/解包 MV3 验证损坏/CRC、路径、标记和声明资源超限的提交前拒绝；SP-04-B 已验证预提交取消、Files 窗口关闭、Worker 终止及失败后合法 ZIP 恢复；SP-04-C 已验证提交阶段第二文件写入失败、部分输出提示及后续唯一目录恢复。完整扩展 E2E 49/49、0 skipped；`pnpm verify` 与相关组成门禁需以当前基线重新记录。仍缺 ZIP64、实际解码膨胀/峰值内存、原生目录写权限、浏览器标签/进程关闭、Worker 崩溃、配额失败、原子提交/回滚和目标 Chrome Stable 人工验收 |
 | 下一步最小交付 / 阻断 | 优先独立设计实际浏览器标签/进程关闭探针或受控资源/配额压力证据；两者均须保留 RISK-007。不得因 SP-04-A/B/C 或 zip.js 功能扩大格式范围或宣称通用 ZIP 可用 |
 
-源码：[文件提交入口](../apps/extension/src/api/real/fileWorkspace.ts)、[prepare adapter](../apps/extension/src/api/real/zipExtraction.ts)、[Worker](../apps/extension/src/workers/archiveExtraction.worker.ts)、[zipSafety](../apps/extension/src/archive/zipSafety.ts)。证据：[SP-04](../benchmarks/sp-04/README.md)、[ZIP E2E](../apps/extension/e2e/archiveExtraction.spec.ts)、[安全单测](../apps/extension/src/archive/zipSafety.test.ts)。
+源码：[文件提交入口](../apps/extension/src/platform/filesystem/real/fileWorkspace.ts)、[prepare adapter](../apps/extension/src/platform/archive/real/zipExtraction.ts)、[Worker](../apps/extension/src/platform/archive/archiveExtraction.worker.ts)、[zipSafety](../apps/extension/src/platform/archive/zipSafety.ts)。证据：[SP-04](../benchmarks/sp-04/README.md)、[ZIP E2E](../apps/extension/e2e/archiveExtraction.spec.ts)、[安全单测](../apps/extension/src/platform/archive/zipSafety.test.ts)。
 
 额外边界：入口现在按三种合法 ZIP magic 字节对匹配，仍不能单独证明 ZIP 可解析；Worker 严格解析仍是后续检查。路径预检已拒绝 NFC/大小写折叠别名和文件祖先冲突；跨文件系统的完整别名矩阵与外部并发创建同名目标仍无证据。以上是源码观察及待验证项，本轮未用用户目录复现。
 
@@ -83,7 +83,7 @@
 | 性能与资源 | 未验证任何容器/codec、seek、时长、分辨率、帧率、内存、首帧或后台行为；不存在当前可承诺的播放大小上限 |
 | 下一步最小交付 / 阻断 | 建议先做一个合成本地文件的原生播放隔离探针，记录加载、seek、损坏输入、页面关闭和 object URL 释放。依赖真实只读 FileRef/Blob 接入及精确 Chrome 夹具证据；远程流媒体另受 RISK-013 限制 |
 
-源码依据：[App Registry](../apps/extension/src/appRegistry.tsx)、[mock 资产](../apps/extension/src/api/demo/runtime.ts)、[Files real adapter](../apps/extension/src/api/real/fileWorkspace.ts)。规划与门禁：[Media 策略](ARCHITECTURE.md)、[SP-06](DEVELOPMENT_BLUEPRINT.md#sp-06-media-native)、[RISK-006/013](RISK_REGISTER.md)。
+源码依据：[App Registry](../apps/extension/src/shell/launcher/appRegistry.tsx)、[mock 资产](../apps/extension/src/platform/demo/runtime.ts)、[Files real adapter](../apps/extension/src/platform/filesystem/real/fileWorkspace.ts)。规划与门禁：[Media 策略](ARCHITECTURE.md)、[SP-06](DEVELOPMENT_BLUEPRINT.md#sp-06-media-native)、[RISK-006/013](RISK_REGISTER.md)。
 
 ## 6. 视频转码矩阵
 
@@ -95,7 +95,7 @@
 | 性能与资源 | 没有编码吞吐、冷/热启动、峰值内存、线程数、并发、质量或最大文件证据；固定 CPU/GPU/网络仪表数据不可作为资源监测 |
 | 下一步最小交付 / 阻断 | 按 SP-06 先验证一个短片段的最窄原生处理路径及输出播放性，再决定 SP-07 的 ffmpeg.wasm 兼容路径；需容器/codec 探针、时序/音画同步、Task/Worker/输出契约、资源预算与取消清理。RISK-006/013 和 Media Gate 未解除 |
 
-源码：[TranscodeApp](../apps/extension/src/apps/TranscodeApp.tsx)、[demo API](../apps/extension/src/api/demo.ts)、[依赖清单](../apps/extension/package.json)。不得把仅声明的参数或库候选写成支持格式。
+源码：[TranscodeApp](../apps/extension/src/features/transcode/TranscodeApp.tsx)、[demo API](../apps/extension/src/platform/demo/index.ts)、[依赖清单](../apps/extension/package.json)。不得把仅声明的参数或库候选写成支持格式。
 
 ## 7. 下载器矩阵
 
@@ -109,7 +109,7 @@
 | 验证等级 | 真实路径有自动化证据：E2E 本机 HTTP 服务返回 32 KiB 固定字节、命名 sample.mp4，观察完成及 App 重开后记录。它不是真实 MP4 夹具，也未校验落盘文件内容；不能证明 HTTPS 鉴权站点、codec、吞吐或大文件。当前单元测试通过；历史 E2E 本轮未重跑 |
 | 下一步最小交付 / 阻断 | 建议补隔离直链下载的内容哈希、取消/中断与重启恢复证据，并明确记录 URL 的保留/脱敏边界。可独立于媒体引擎；网页/流媒体能力仍受 RISK-013 和 SP-06/SP-07 阻断 |
 
-源码：[URL 与前端 adapter](../apps/extension/src/runtime/browserDownloads.ts)、[后台实现](../apps/extension/src/runtime/extensionAdapter.ts)、[任务恢复/轮询](../apps/extension/src/apps/downloader/useDownloaderTaskData.ts)、[UI](../apps/extension/src/apps/DownloaderApp.tsx)。证据：[单测](../apps/extension/src/runtime/browserDownloads.test.ts)、[直链 E2E](../apps/extension/e2e/extension.spec.ts)。
+源码：[URL 与前端 adapter](../apps/extension/src/platform/browser/browserDownloads.ts)、[后台实现](../apps/extension/src/platform/extension/router.ts)、[任务恢复/轮询](../apps/extension/src/features/downloader/useDownloaderTaskData.ts)、[UI](../apps/extension/src/features/downloader/DownloaderApp.tsx)。证据：[单测](../apps/extension/src/platform/browser/browserDownloads.test.ts)、[直链 E2E](../apps/extension/e2e/extension.spec.ts)。
 
 ## 8. 密码管家 Vault 矩阵
 
@@ -125,9 +125,9 @@
 | 验证等级 | 配置串行化、同步/cache、来源校验有合成 backend/storage 单元测试；配置测试 mock 了 VaultCore、加密和持久密钥，未找到真实 Core/crypto 往返的专项测试。历史浮层 E2E 用 HTTPS 拦截页、直接注入脚本/合成凭据验证 DOM 填充和关闭，绕过真实 action 手势与取密链。不能推导“真实 Vault → 用户 action → 匹配页面填充”的完整链已验收；RISK-014 仍开放 |
 | 下一步最小交付 / 阻断 | 建议用合成 Vault/账号补真实 action 手势到受控 HTTPS 表单的完整填充及导航中止证据，再决定管理 CRUD 入口的收敛方式。依赖可运行的隔离目标 Chrome、手势/可选权限与远端冲突证据；公开发布另受资源许可和固定扩展 ID 阻断 |
 
-源码：[Vault service](../apps/extension/src/modules/password-manager/background/vault/vault-service.ts)、[Core](../apps/extension/src/modules/password-manager/background/vault/vault-core.ts)、[对象加密](../apps/extension/src/modules/password-manager/shared/vault-crypto.ts)、[持久连接材料](../apps/extension/src/modules/password-manager/background/vault/persistent-secrets.ts)、[本地解锁](../apps/extension/src/modules/password-manager/background/vault/local-unlock.ts)、[浮层与填充](../apps/extension/src/modules/password-manager/background/page-overlay.ts)、[权限路由](../apps/extension/src/modules/password-manager/background/service-worker.ts)、[reveal 限制](../apps/extension/src/modules/password-manager/popup/credentials.ts)、[CSV 导入](../apps/extension/src/modules/password-manager/popup/import-passwords.ts)。
+源码：[Vault service](../apps/extension/src/features/password-manager/background/vault/vault-service.ts)、[Core](../apps/extension/src/features/password-manager/background/vault/vault-core.ts)、[对象加密](../apps/extension/src/features/password-manager/shared/vault-crypto.ts)、[持久连接材料](../apps/extension/src/features/password-manager/background/vault/persistent-secrets.ts)、[本地解锁](../apps/extension/src/features/password-manager/background/vault/local-unlock.ts)、[浮层与填充](../apps/extension/src/features/password-manager/background/page-overlay.ts)、[权限路由](../apps/extension/src/features/password-manager/background/service-worker.ts)、[reveal 限制](../apps/extension/src/features/password-manager/popup/credentials.ts)、[CSV 导入](../apps/extension/src/features/password-manager/popup/import-passwords.ts)。
 
-证据：[Vault 同步审查](archive/reviews/2026-09-20-vault-sync-review.md)、[配置测试](../apps/extension/src/modules/password-manager/background/vault/vault-configuration.test.ts)、[浮层 E2E](../apps/extension/e2e/unipass-integration.spec.ts)、[安全单测](../apps/extension/src/modules/password-manager/background/service-worker.security.test.ts)。移除 Vault 会删本地 profile/连接材料并尝试清理 cache、撤销未使用权限，不删除远端密码库；cache 清理失败是 best effort。Legacy adapter 目前在后台启动时默认注册；“可删除/可分离”不等于当前已禁用。它涉及 Portal/Feishu/Jupiter 与随包 WASM，不能把其登录态、远端 API 或保活数据流混入纯 WebDAV 离线声明。
+证据：[Vault 同步审查](archive/reviews/2026-09-20-vault-sync-review.md)、[配置测试](../apps/extension/src/features/password-manager/background/vault/vault-configuration.test.ts)、[浮层 E2E](../apps/extension/e2e/unipass-integration.spec.ts)、[安全单测](../apps/extension/src/features/password-manager/background/service-worker.security.test.ts)。移除 Vault 会删本地 profile/连接材料并尝试清理 cache、撤销未使用权限，不删除远端密码库；cache 清理失败是 best effort。Legacy adapter 目前在后台启动时默认注册；“可删除/可分离”不等于当前已禁用。它涉及 Portal/Feishu/Jupiter 与随包 WASM，不能把其登录态、远端 API 或保活数据流混入纯 WebDAV 离线声明。
 
 ## 9. 广告拦截矩阵
 
@@ -141,7 +141,7 @@
 | 验证等级 | 真实运行链存在，构建与整合测试有历史通过记录；未找到独立的 DNR 网络阻断/cosmetic 全链效果与重启/订阅回滚专项 benchmark。不能用 manifest 声明或整套 UI E2E 通过替代拦截效果验收 |
 | 下一步最小交付 / 阻断 | 建议建立隔离固定规则的 HTTPS 合成页，验证命中/例外、frame、站点暂停恢复、订阅失败保留旧规则与 worker 重启；不依赖真实用户网页或 Vault。目标 Chrome、固定可再分发规则夹具与 RISK-009/014 的发布项仍需证据 |
 
-源码：[静态规则](../apps/extension/public/rules/baseline.json)、[订阅及限额](../apps/extension/src/modules/adblock/engine/subscriptions.ts)、[更新器](../apps/extension/src/modules/adblock/engine/filter-updater.ts)、[转换器](../apps/extension/src/modules/adblock/engine/filter-converter.ts)、[cosmetic 编译器](../apps/extension/src/modules/adblock/engine/cosmetic-compiler.ts)、[content 生命周期](../apps/extension/src/modules/adblock/content/cosmetic-content.ts)、[站点暂停](../apps/extension/src/modules/adblock/engine/site-pauses.ts)。
+源码：[静态规则](../apps/extension/public/rules/baseline.json)、[订阅及限额](../apps/extension/src/features/adblock/engine/subscriptions.ts)、[更新器](../apps/extension/src/features/adblock/engine/filter-updater.ts)、[转换器](../apps/extension/src/features/adblock/engine/filter-converter.ts)、[cosmetic 编译器](../apps/extension/src/features/adblock/engine/cosmetic-compiler.ts)、[content 生命周期](../apps/extension/src/features/adblock/content/cosmetic-content.ts)、[站点暂停](../apps/extension/src/features/adblock/engine/site-pauses.ts)。
 
 ## 10. WebDAV 矩阵
 
@@ -155,7 +155,7 @@
 | 验证等级 | 合成 backend/cache 单测覆盖丢失对象、部分计数、revision 冲突、并发编辑保护与重试；真实 WebDavBackend 加 mock fetch 的单测覆盖 GET/list 响应体超时、401、返回字节/ETag 保留。不是实际服务器 HTTP/认证/ETag 兼容性证据。真实服务的 401/403/405/409/412、权限手势、重定向、慢响应、多端冲突和中断恢复尚缺完整验收 |
 | 下一步最小交付 / 阻断 | 建议实现可复现的合成 HTTPS DAV 服务器 fixture，驱动真实 WebDavBackend 验证 ETag/条件写/缺项与断网恢复，随后再设计对象/列表/导入预算。RISK-014 仍开放；通用 WebDAV 文件管理是新增范围，不能当作现有 backend 的界面包装直接交付 |
 
-源码：[WebDavBackend](../apps/extension/src/modules/password-manager/background/vault/webdav-backend.ts)、[URL/target 边界](../apps/extension/src/modules/password-manager/shared/url.ts)、[fetch 超时](../apps/extension/src/modules/password-manager/shared/fetch.ts)、[同步引擎](../apps/extension/src/modules/password-manager/background/vault/sync-engine.ts)、[加密缓存](../apps/extension/src/modules/password-manager/background/vault/local-cache.ts)。测试：[同步测试](../apps/extension/src/modules/password-manager/background/vault/sync-engine.test.ts)、[fetch/Backend 测试](../apps/extension/src/modules/password-manager/shared/fetch.test.ts)。
+源码：[WebDavBackend](../apps/extension/src/features/password-manager/background/vault/webdav-backend.ts)、[URL/target 边界](../apps/extension/src/features/password-manager/shared/url.ts)、[fetch 超时](../apps/extension/src/features/password-manager/shared/fetch.ts)、[同步引擎](../apps/extension/src/features/password-manager/background/vault/sync-engine.ts)、[加密缓存](../apps/extension/src/features/password-manager/background/vault/local-cache.ts)。测试：[同步测试](../apps/extension/src/features/password-manager/background/vault/sync-engine.test.ts)、[fetch/Backend 测试](../apps/extension/src/features/password-manager/shared/fetch.test.ts)。
 
 特别说明：UI 的“测试 WebDAV 连接”会调用 `connect()`，必要时创建远端根目录及 objects 目录，并非纯只读探测。本轮没有调用该功能，没有连接真实 DAV，也未读取/修改任何密码库。
 

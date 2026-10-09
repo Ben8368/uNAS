@@ -33,7 +33,7 @@ test('Web StrictMode Workspace acquires ownership, preserves drafts and restores
 test('cold App launch paints final bounds and an explicit loading surface', async ({ page }, testInfo) => {
   let release!: () => void
   const ready = new Promise<void>((resolve) => { release = resolve })
-  await page.route('**/src/apps/BrowserApp.tsx', async (route) => { await ready; await route.continue() })
+  await page.route('**/src/features/browser/BrowserApp.tsx', async (route) => { await ready; await route.continue() })
   await page.goto('/')
   await page.evaluate(() => {
     const frames: { x: number; y: number; width: number; height: number; empty: boolean }[] = []
@@ -71,7 +71,7 @@ test('cold App launch paints final bounds and an explicit loading surface', asyn
 test('fast lazy load reveals content and chrome together', async ({ page }) => {
   let release!: () => void
   const ready = new Promise<void>(resolve => { release = resolve })
-  await page.route('**/src/apps/BrowserApp.tsx', async route => { await ready; await route.continue() })
+  await page.route('**/src/features/browser/BrowserApp.tsx', async route => { await ready; await route.continue() })
   await page.goto('/')
   await expect(page.locator('.app-icon--browser')).toBeVisible()
   await page.clock.install()
@@ -92,7 +92,7 @@ test('fast lazy load reveals content and chrome together', async ({ page }) => {
 test('closing a slow launch does not reopen it when the module arrives', async ({ page }) => {
   let release!: () => void
   const ready = new Promise<void>(resolve => { release = resolve })
-  await page.route('**/src/apps/BrowserApp.tsx', async route => { await ready; await route.continue() })
+  await page.route('**/src/features/browser/BrowserApp.tsx', async route => { await ready; await route.continue() })
   await page.goto('/')
   await page.locator('.app-icon--browser').click()
   try {
@@ -108,7 +108,7 @@ test('closing a slow launch does not reopen it when the module arrives', async (
 test('a rejected lazy load reveals a readable error instead of a hidden window', async ({ page }) => {
   // Exercise the error UI rather than the existing one-shot stale-chunk reload.
   await page.addInitScript(() => { sessionStorage.setItem = () => { throw new Error('storage unavailable') } })
-  await page.route('**/src/apps/BrowserApp.tsx', route => route.abort())
+  await page.route('**/src/features/browser/BrowserApp.tsx', route => route.abort())
   await page.goto('/')
   await page.locator('.app-icon--browser').click()
   await expect(page.getByRole('alert')).toContainText('应用资源加载失败')

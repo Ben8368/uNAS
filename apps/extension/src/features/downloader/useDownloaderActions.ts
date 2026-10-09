@@ -1,0 +1,153 @@
+import { useCallback, useState } from 'react'
+
+import { cancelTask, deleteTaskRecord, submitFetch } from 'unas-src/platform/workspace/api'
+import {
+  buildRetryPayload,
+  createOptimisticTask,
+  getTaskSourceUrl,
+  mergeTasks,
+} from 'unas-src/features/downloader/helpers'
+import { describeBatch, runBatch } from 'unas-src/shared/jobs/batch'
+import type { DownloadTask, DownloaderRowMenuAction } from 'unas-src/features/downloader/types'
+import { cancelBrowserDownload, forgetBrowserDownload, openBrowserDownloads } from 'unas-src/platform/browser/browserDownloads'
+
+interface UseDownloaderActionsOpts {
+  selectedTasks: DownloadTask[]
+  selectedClearableTasks: DownloadTask[]
+  refreshLists: () => Promise<void>
+  recheckDownload: (task: DownloadTask) => void
+  setOptimisticTasks: React.Dispatch<React.SetStateAction<DownloadTask[]>>
+  onOptimisticTaskCreated?: (task: DownloadTask) => void
+}
+
+type SubmitFetchResult = Awaited<ReturnType<typeof submitFetch>>
+
+function createCheckedOptimisticTask(urls: string[], payload: Record<string, unknown>, result: SubmitFetchResult): DownloadTask {
+  if (!result || !result.task_id) {
+    throw new Error('任务创建失败：未返回任务 ID。')
+  }
+  return createOptimisticTask(urls.join(', '), payload, result)
+}
+
+export function useDownloaderActions({
+  selectedTasks,
+  selectedClearableTasks,
+  refreshLists,
+  recheckDownload,
+  setOptimisticTasks,
+  onOptimisticTaskCreated,
+}: UseDownloaderActionsOpts) {
+  const [actionError, setActionError] = useState('')
+
+  const clearRecords = useCallback(async () => {
+    if (!selectedClearableTasks.length) return
+    setActionError('')
+    const result = await runBatch(selectedClearableTasks, async task => {
+      if (task.executionSource === 'real' && typeof task.params?.browser_download_id === 'number') {
+        // An untracked transfer has no persisted record. Removing this local
+        // placeholder must work even while storage is unavailable; never cancel it.
+        if (task.params.browser_download_tracked !== false) await forgetBrowserDownload(task.params.browser_download_id)
+        setOptimisticTasks(prev => prev.filter(item => item.id !== task.id))
+        return
+      }
+      await deleteTaskRecord(task.id)
+    })
+    try { await refreshLists() } catch (error) {
+      setActionError(`${describeBatch('移除列表记录', result, (task) => task.id)} 刷新失败，请刷新列表。`)
+      return result
+    }
+    setActionError(describeBatch('移除列表记录', result, (task) => task.id))
+    return result
+  }, [refreshLists, selectedClearableTasks, setOptimisticTasks])
+
+  const stopSelected = useCallback(async () => {
+    if (!selectedTasks.length) return
+    setActionError('')
+    const result = await runBatch(selectedTasks, async (task) => {
+      if (task.executionSource === 'real' && typeof task.params?.browser_download_id === 'number') {
+        await cancelBrowserDownload(task.params.browser_download_id)
+        return
+      }
+      await cancelTask(task.id)
+    })
+    try { await refreshLists() } catch {
+      setActionError(`${describeBatch('发送取消请求', result, (task) => task.id)} 刷新失败；终态尚未确认。`)
+      return
+    }
+    setActionError(`${describeBatch('发送取消请求', result, (task) => task.id)} 以列表中的任务终态为准。`)
+  }, [refreshLists, selectedTasks])
+
+  const retrySelected = useCallback(async () => {
+    if (!selectedTasks.length) return
+    setActionError('')
+    const result = await runBatch(selectedTasks, async (task) => {
+      const payload = buildRetryPayload(task)
+      if (!payload) throw new Error('缺少可重试的 URL')
+      const urls = Array.isArray(payload.urls) ? payload.urls.filter((url): url is string => typeof url === 'string') : []
+      if (!urls.length) throw new Error('缺少可重试的 URL')
+      if (task.executionSource === 'real') throw new Error('请从上方链接输入重新提交浏览器下载。')
+      const created = await submitFetch(payload)
+      const optimisticTask = createCheckedOptimisticTask(urls, payload, created)
+      setOptimisticTasks((prev) => mergeTasks([optimisticTask], prev))
+      onOptimisticTaskCreated?.(optimisticTask)
+    })
+    try { await refreshLists() } catch {
+      setActionError(`${describeBatch('重试模拟任务', result, (task) => task.id)} 刷新失败，请刷新列表。`)
+      return result
+    }
+    setActionError(describeBatch('重试模拟任务', result, (task) => task.id))
+    return result
+  }, [onOptimisticTaskCreated, refreshLists, selectedTasks, setOptimisticTasks])
+
+  const handleRowMenuAction = useCallback(
+    async (action: DownloaderRowMenuAction, task: DownloadTask) => {
+      setActionError('')
+      if (action === 'recheck') { recheckDownload(task); return }
+      if (action === 'copy_url') {
+        const url = getTaskSourceUrl(task)
+        if (!url) {
+          setActionError('此任务缺少来源链接')
+          return
+        }
+        try { await navigator.clipboard.writeText(url) } catch { setActionError('无法复制链接，请手动选择并复制来源 URL。') }
+      }
+      if (action === 'download_file') {
+        if (task.executionSource === 'real') {
+          try { await openBrowserDownloads() }
+          catch (error) { setActionError(error instanceof Error ? error.message : '无法打开 Chrome 下载列表。') }
+        } else setActionError(`模拟结果 ${task.id}（executionSource: mock）：不包含可下载文件。`)
+      }
+      if (action === 'retry') {
+        const payload = buildRetryPayload(task)
+        if (!payload) {
+          setActionError('此任务缺少可重试的 URL')
+          return
+        }
+        try {
+          if (task.executionSource === 'real') {
+            setActionError('请从上方链接输入重新提交浏览器下载。')
+            return
+          }
+          const result = await submitFetch(payload)
+          const urls = Array.isArray(payload.urls) ? payload.urls.filter((url): url is string => typeof url === 'string') : []
+          const optimisticTask = createCheckedOptimisticTask(urls, payload, result)
+          setOptimisticTasks((prev) => mergeTasks([optimisticTask], prev))
+          onOptimisticTaskCreated?.(optimisticTask)
+          await refreshLists()
+        } catch (err: unknown) {
+          setActionError(err instanceof Error ? err.message : '重试任务失败')
+        }
+      }
+    },
+    [onOptimisticTaskCreated, refreshLists, recheckDownload, setOptimisticTasks],
+  )
+
+  return {
+    actionError,
+    setActionError,
+    clearRecords,
+    stopSelected,
+    retrySelected,
+    handleRowMenuAction,
+  }
+}

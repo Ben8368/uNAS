@@ -14,7 +14,7 @@ TD-001 的拆分、验证范围与关闭记录见 [2026-09 归档](archive/tech-
 
 ### TD-002：全局兼容样式的局部化迁移
 
-- **优先级 / 位置 / 来源 / 目标阶段：** P1；`apps/extension/src/styles/accessibility.css`、各 App 私有样式；uNAS Glass 工作包 A；UI-Glass-D。
+- **优先级 / 位置 / 来源 / 目标阶段：** P1；`apps/extension/src/shared/styles/accessibility.css`、各 App 私有样式；uNAS Glass 工作包 A；UI-Glass-D。
 - **当前妥协与原因：** 2026-09-20 已完成代码迁移：删除全局浅色补丁和 App 私有 `--mt-*` 定义，Settings 独立样式，下载器/日志/PSD/Transcode 使用共享 Token，密码浮窗通过展示层适配消费同一主题源；目标 Chrome 人工走查尚缺，保留本项待验收，不继续扩大代码改版。
 - **影响与最坏结果：** 自动化未覆盖的工具栏真实手势、其他 App 的完整缩放流程、触控或存量未注册工具仍可能出现视觉差异；不能由构建通过推定验收。
 - **剩余偿还方案：** 系统 Chrome 隔离 Profile 测试入口已恢复，8 个 App、浮窗主题、材料降级与实际 200% 页面缩放已有[2026-09-24 自动验收](archive/reviews/2026-09-24-review-remediation.md)；仍需维护者常用 Profile 的真实工具栏手势、触控、视觉偏好及未注册工具确认，不以自动化关闭本项。
@@ -23,11 +23,27 @@ TD-001 的拆分、验证范围与关闭记录见 [2026-09 归档](archive/tech-
 ### TD-003：Legacy 密码能力尚未完成应用级解耦
 
 - **优先级 / 位置 / 来源 / 目标阶段：** P1；密码模块 background、popup、shared/api 与 WXT 构建；2026-09-23 撤除前审查；Legacy Retirement。
-- **当前妥协与原因：** [ADR 0018](ADR/0018-unipass-source-submodule.md) 已将 Legacy 实现归入 UniPass 源码子模块，service-worker、credential-access 和 page-overlay 只经 `legacy/adapter.ts` 消费，登录/Jupiter 生命周期集中显式安装。popup/settings/catalog 仍提供兼容入口，默认包仍启用 adapter，保留 Legacy host、WASM 和 runtime config；源码解耦不证明完整扩展能删除 Legacy。
+- **当前妥协与原因：** [ADR 0019](ADR/0019-unipass-monorepo-package.md) 已将 Legacy 实现归入 workspace 包 `packages/unipass`（取代 submodule 模型），service-worker、credential-access 和 page-overlay 只经 `legacy/adapter.ts` 消费，登录/Jupiter 生命周期集中显式安装。popup/settings/catalog 仍提供兼容入口，默认包仍启用 adapter，保留 Legacy host、WASM 和 runtime config；源码解耦不证明完整扩展能删除 Legacy。
 - **影响与最坏结果：** 只删 legacy-credential-source 或停止注册，会留下网络/保活/权限/WASM 和 UI 死入口；直接删 shared/api 会使填充/登录路由断裂。本轮保留运行行为，不删存量数据。
 - **自动跟踪：** 新增只读脚本 [legacy-retirement-audit.mjs](../scripts/legacy-retirement-audit.mjs)，输出 TS 导入路径、旧 UI 消息/标识、构建物及 manifest；逐项结果与限制详见[2026-09-24 自动验收](archive/reviews/2026-09-24-review-remediation.md)；此盘点不证明已禁用/撤除 Legacy，保留本项 P1。
 - **偿还方案：** composition adapter 与源码边界已收拢；下一步切换 WebDAV-only 目录/会话和浮窗，拒绝已退役消息；最后移除宿主 Legacy 依赖、WASM、运行配置、专属 host 权限及包体白名单。不能误删广告模块规则源或 WebDAV 加密兼容 key。
 - **验证方式：** 禁用 adapter 后构建整包并检查导入图/manifest/网络，再覆盖 Desktop 与浮窗的目录、创建/连接/重连、锁定、填充和取消；真实 WebDAV 多端冲突与目标 Chrome 工具栏手势通过后，才删除兼容文件并归档。
+
+### TD-004：AdBlock 顶层页面发送方策略宽于注释声明
+
+- **优先级 / 位置 / 来源 / 目标阶段：** P2；`apps/extension/src/platform/extension/sender-policy.ts` 的 `isAdBlockSender`；2026-10-09 router 拆分时由测试发现；下一次 AdBlock 安全评审。
+- **当前妥协与原因：** 注释写“web pages may only request cosmetic rules”，实际只有子 frame 被限定为精确的 `getCosmeticRules`；顶层 HTTP(S) 页面的内容脚本发送方可发送任意 AdBlock 消息类型（含 `pauseBlockingForSite`、`refreshBlockingSubscriptions`）。拆分严格保持行为不变，未收紧，避免无证据地改变既有安全语义。
+- **影响与最坏结果：** 发送方必须是本扩展注入的内容脚本（`sender.id` 校验），普通网页不能直接触发；但被攻陷的内容脚本可暂停某站点拦截。无凭据或 Vault 路径受影响。
+- **偿还方案：** 先确认是否有顶层页面合法发送非 cosmetic 消息；没有则收紧为与子 frame 相同的精确请求，并修正注释与 [SECURITY](../SECURITY.md) 措辞。
+- **验证方式：** `router.test.ts` 增加顶层页面发送非 cosmetic 消息被拒绝的断言，并跑 AdBlock E2E。
+
+### TD-005：`platform/filesystem/real/fileWorkspace.ts` 超过 450 行
+
+- **优先级 / 位置 / 来源 / 目标阶段：** P2；`apps/extension/src/platform/filesystem/real/fileWorkspace.ts`（474 行）；2026-10-09 目录迁移评估；Files 下一次功能迭代。
+- **当前妥协与原因：** 文件混合目录授权状态、路由表、写入模式门禁和 ZIP 提交。协议、关联与超时已在 `platform/workspace/*` 分离，因此该文件主要是 FSA 句柄逻辑。ZIP 提交与取消依赖模块级共享状态（`active`、`routes`、`snapshot`），无设计就拆会引入跨模块可变状态；本轮没有新增覆盖这些并发/取消路径的测试，故不强拆。
+- **影响与最坏结果：** 维护成本；拆分不当可能破坏写入模式门禁或 ZIP 取消语义。
+- **偿还方案：** 先抽出纯函数（名称校验、`ensureEntryAbsent`、`commitPreparedArchive`），再把授权状态收进显式对象；每步保持 `fileWorkspace.test.ts` 与 `fileWorkspaceDirectory.spec.ts` 通过。
+- **验证方式：** 现有 `fileWorkspace.test.ts`、`zipExtraction.test.ts` 及 Files/ZIP E2E 全部通过，并补目录授权失效与取消路径断言。
 
 不得用空的“以后优化”占位；产生真实妥协时按下列字段登记：
 

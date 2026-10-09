@@ -1,7 +1,8 @@
 # ADR 0018：UniPass 源码子模块与 Legacy 集成边界
 
-- 状态：已接受
+- 状态：已替代
 - 日期：2026-10-09
+- 替代者：[ADR 0019](0019-unipass-monorepo-package.md)。以下为当时采用 submodule 的历史决策正文，保留不改；其中 `adapter.ts` 作为唯一生产入口、uNAS 不导入 UniPass standalone Service Worker 的条款在 0019 中继续有效。
 
 ## 背景
 

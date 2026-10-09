@@ -48,20 +48,19 @@ Phase 1 只允许 Frontend Demo、mock scenario 和不含真实 engine/WASM 的�
 
 ## 开发与验证
 
-源码检出包含指向私有 UniPass 仓库的 Git submodule，首次开发先运行：
+UniPass 是 monorepo 内的 workspace 包 `packages/unipass`，不再使用 submodule，检出后直接安装：
 
 ```bash
-git submodule update --init --recursive
 pnpm install --frozen-lockfile
 ```
 
-`sources/UniPass` 固定一个源码 commit；更新远端不会自动改变这个指针。源码边界、提交顺序与 CI 的私有源码读取配置见 [ADR 0018](docs/ADR/0018-unipass-source-submodule.md)。
+UniPass 源码事实源只在 `packages/unipass`；`Ben8368/UniPass` 仅是下游发布镜像，`pnpm unipass:export` 单向导出到被忽略的 `.artifacts/unipass-export`，不联网、不推送。边界与取舍见 [ADR 0019](docs/ADR/0019-unipass-monorepo-package.md)。
 
 ```bash
 pnpm verify
 ```
 
-该跨平台入口覆盖文档治理、Demo 边界、依赖清单、单元测试、类型检查、Vite/WXT 构建、素材哈希及包体预算。它不代替扩展 E2E 或人工验收。
+该入口等于 `verify:extension`（文档治理、Lint、Demo/架构边界、依赖清单、单元测试、类型检查、Vite/WXT 构建、素材哈希及包体预算）加 `verify:unipass`（lockfile 一致性、导出确定性、WASM 出处，以及 UniPass 自身的依赖审计、静态审计、Rust QA、Node 测试、类型检查和构建）。`verify:unipass` 需要 Rust 1.98.1 与 wasm32 目标，并会在线查询 Chrome 商店版号。WASM 重建、可重复性、Chrome smoke 和 hardened 构建在 `pnpm verify:unipass:release`。它们都不代替扩展 E2E 或人工验收。
 
 GitHub Actions 在针对 `main` 的推送和 PR 上分别运行治理检查、`pnpm verify` 与 Playwright 的 MV3/Web 回归；E2E 只在完整验证通过后执行，并在完成或失败时保留报告、截图和 trace。CI 仍不能替代目标 Chrome 稳定版、真实缩放、辅助技术和性能的人工证据。
 

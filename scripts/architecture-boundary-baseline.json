@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Registered architecture coupling (TD-004). The list may only shrink: new violations fail the check, and entries that no longer occur must be deleted.",
+  "violations": []
+}

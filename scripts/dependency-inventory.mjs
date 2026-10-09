@@ -3,7 +3,7 @@ import { readFile, readdir, writeFile, mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { createHash } from 'node:crypto'
 const root = resolve(import.meta.dirname, '..')
-const packageFiles = [resolve(root, 'package.json'), resolve(root, 'apps/extension/package.json')]
+const packageFiles = [resolve(root, 'package.json'), resolve(root, 'apps/extension/package.json'), resolve(root, 'packages/unipass/package.json')]
 const target = resolve(root, 'assets/dependency-inventory.json')
 const records = new Map()
 async function visit(name, parent, scope) {
@@ -35,10 +35,12 @@ async function visit(name, parent, scope) {
   records.set(key, { name: data.name, version: data.version, scope, declaredLicense: data.license ?? 'not-declared', licenseFiles, repository: typeof data.repository === 'object' ? data.repository.url : data.repository ?? null })
   if (scope === 'runtime-declared') for (const dependency of Object.keys(data.dependencies ?? {}).sort()) await visit(dependency, manifest, scope)
 }
+// Workspace packages are first-party source (their own manifests are listed in packageFiles), not third-party supply chain.
+const thirdParty = deps => Object.entries(deps ?? {}).filter(([, spec]) => !String(spec).startsWith('workspace:')).map(([name]) => name).sort()
 for (const packageFile of packageFiles) {
   const pkg = JSON.parse(await readFile(packageFile, 'utf8'))
-  for (const name of Object.keys(pkg.dependencies ?? {}).sort()) await visit(name, packageFile, 'runtime-declared')
-  for (const name of Object.keys(pkg.devDependencies ?? {}).sort()) await visit(name, packageFile, 'direct-build-test-tool')
+  for (const name of thirdParty(pkg.dependencies)) await visit(name, packageFile, 'runtime-declared')
+  for (const name of thirdParty(pkg.devDependencies)) await visit(name, packageFile, 'direct-build-test-tool')
 }
 const result = JSON.stringify({
   schemaVersion: 1,

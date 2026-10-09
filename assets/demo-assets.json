@@ -97,7 +97,7 @@
       "height": 64
     },
     {
-      "path": "apps/extension/src/appearance.ts",
+      "path": "apps/extension/src/shared/appearance/appearance.ts",
       "bytes": 3651,
       "sha256": "9492c817d84a2c021478c6a2f1cd111b99d81931d26fa9599edc82609ac92962",
       "kind": "procedural-css-no-bitmap"
@@ -155,7 +155,7 @@
     {
       "path": "apps/extension/public/credential-core.wasm",
       "bytes": 51885,
-      "sha256": "db6c133fddf6c59c66ccfeb73328dc5a78acc761a45b27a3bb3b4f45e5b0903c",
+      "sha256": "e106f21b71ec1deae2e0cea0829141061d6256988d8dd43ff594d6adc88ce4c8",
       "kind": "UniPass Legacy credential-core WASM compatibility artifact"
     }
   ]

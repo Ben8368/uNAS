@@ -93,9 +93,9 @@ node scripts/sp09-probe.mjs --module-dir C:\Users\ben.luo\go\pkg\mod\unlock-musi
 
 实现入口：
 
-- `apps/extension/src/workers/musicDecrypt.worker.ts`：独立 Worker，按 1 MiB 读取和发送，主线程 ACK 后继续，支持取消和结构化失败。
-- `apps/extension/src/api/real/musicDecryption.ts`：能力探测、OPFS staged output、顺序写入、取消超时兜底和幂等清理。
-- `apps/extension/src/apps/real/MusicApp.tsx`：`executionSource: real` 的 Beta Tool App；只接受用户通过文件选择器选取的本地文件，不读任意路径、不覆盖原文件、不联网。
+- `apps/extension/src/features/music/musicDecrypt.worker.ts`：独立 Worker，按 1 MiB 读取和发送，主线程 ACK 后继续，支持取消和结构化失败。
+- `apps/extension/src/features/music/real/musicDecryption.ts`：能力探测、OPFS staged output、顺序写入、取消超时兜底和幂等清理。
+- `apps/extension/src/features/music/real/MusicApp.tsx`：`executionSource: real` 的 Beta Tool App；只接受用户通过文件选择器选取的本地文件，不读任意路径、不覆盖原文件、不联网。
 
 固定资源预算：输入/输出各 128 MiB、单 section 16 MiB、QMC footer 64 KiB、Worker 分块 1 MiB。输出先写入 OPFS `unas-music-*.stage`，Worker 只做音频签名级检查并记录输出 SHA-256；取消/失败由用户流程清理，下载触发后因页面无法确认浏览器完成状态而保留暂存项，用户可重试下载或显式清理。
 

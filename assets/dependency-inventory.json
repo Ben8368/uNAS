@@ -150,6 +150,19 @@
       "repository": "eslint/eslint"
     },
     {
+      "name": "fake-indexeddb",
+      "version": "6.2.5",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "Apache-2.0",
+      "licenseFiles": [
+        {
+          "file": "LICENSE",
+          "sha256": "0c2e77addd3045b932ae0de86b7cf66aa1eeed4248d4dab37e851f9e5499d85e"
+        }
+      ],
+      "repository": "git://github.com/dumbmatter/fakeIndexedDB.git"
+    },
+    {
       "name": "globals",
       "version": "17.13.0",
       "scope": "direct-build-test-tool",
@@ -174,6 +187,14 @@
         }
       ],
       "repository": "https://github.com/lucide-icons/lucide.git"
+    },
+    {
+      "name": "puppeteer-core",
+      "version": "25.12.0",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "Apache-2.0",
+      "licenseFiles": [],
+      "repository": "https://github.com/puppeteer/puppeteer/tree/main/packages/puppeteer-core"
     },
     {
       "name": "react",

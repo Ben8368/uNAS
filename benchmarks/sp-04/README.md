@@ -15,7 +15,7 @@
 
 - 2026-09-10，Windows win32 10.0.26200 x64、Playwright bundled Chromium、解包 MV3：`pnpm build:extension` 后运行 `pnpm --dir apps/extension exec playwright test e2e/archiveExtraction.spec.ts` 通过。
 - 夹具是内联、可复现的 Store/Deflate ZIP：`nested/hello.txt` 内容为 `uNAS ZIP extraction fixture`。测试将其写入隔离 OPFS handle，经过真实的扩展页 Dedicated Worker，确认 CRC 校验后的新目录 `fixture（解压）/nested/hello.txt` 内容精确一致；无页面错误、无 HTTP(S) 请求。
-- 单元测试 `src/archive/zipSafety.test.ts` 覆盖相对路径、穿越/绝对/盘符/反斜杠/保留名/重复分隔符、加密、软链接、文件目录冲突和资源上限。
+- 单元测试 `src/platform/archive/zipSafety.test.ts` 覆盖相对路径、穿越/绝对/盘符/反斜杠/保留名/重复分隔符、加密、软链接、文件目录冲突和资源上限。
 
 ## 未覆盖
 
@@ -40,10 +40,10 @@
 ## SP-04-B：预提交取消与暂存清理
 
 - 2026-09-20，bundled Chromium 151.0.7922.34，Windows win32 10.0.26200 x64，headless 1440×900，隔离临时 Profile 和固定 OPFS 子目录；仅使用 [archiveFixtures.ts](../../apps/extension/e2e/archiveFixtures.ts) 生成的合法 Deflate ZIP，不操作用户目录、密码库或网络服务。
-- [zipExtraction.ts](../../apps/extension/src/api/real/zipExtraction.ts) 的 `cancel()` 会立即断开 Worker 回调、终止 Dedicated Worker，并清空 owner 对已暂存 Blob 的引用；此时尚未创建输出目录。Files 组件在自身卸载和 `pagehide` 时请求同一取消操作；提交开始后仍不允许取消。
-- [zipExtraction.test.ts](../../apps/extension/src/api/real/zipExtraction.test.ts) 用不响应的合成 Worker 断言取消会拒绝结果、终止 Worker 且移除回调，不等待 ACK 或解码器合作响应。
+- [zipExtraction.ts](../../apps/extension/src/platform/archive/real/zipExtraction.ts) 的 `cancel()` 会立即断开 Worker 回调、终止 Dedicated Worker，并清空 owner 对已暂存 Blob 的引用；此时尚未创建输出目录。Files 组件在自身卸载和 `pagehide` 时请求同一取消操作；提交开始后仍不允许取消。
+- [zipExtraction.test.ts](../../apps/extension/src/platform/archive/real/zipExtraction.test.ts) 用不响应的合成 Worker 断言取消会拒绝结果、终止 Worker 且移除回调，不等待 ACK 或解码器合作响应。
 - [archiveCancellation.spec.ts](../../apps/extension/e2e/archiveCancellation.spec.ts) 仅在测试页包装 `Worker` 并拦截 ACK，使真实打包 Worker 停在 prepare；用户界面“取消解压”后断言无新输出目录，恢复未包装 Worker 后同一合法 ZIP 成功。再次停在 prepare 后关闭 Files 窗口，断言同样没有第二个输出目录。测试结束只递归删除临时 Profile 中固定创建的 OPFS 子目录。
-- 定向命令：`pnpm --dir apps/extension exec vitest run src/api/real/zipExtraction.test.ts src/archive/zipSafety.test.ts`（2 文件、11 测试通过）；`pnpm build:extension`；`pnpm --dir apps/extension exec playwright test e2e/archiveCancellation.spec.ts e2e/archiveNegative.spec.ts e2e/archiveExtraction.spec.ts --reporter=list`（3/3 通过，12.2 秒，仅测试时长）。
+- 定向命令：`pnpm --dir apps/extension exec vitest run src/platform/archive/real/zipExtraction.test.ts src/platform/archive/zipSafety.test.ts`（2 文件、11 测试通过）；`pnpm build:extension`；`pnpm --dir apps/extension exec playwright test e2e/archiveCancellation.spec.ts e2e/archiveNegative.spec.ts e2e/archiveExtraction.spec.ts --reporter=list`（3/3 通过，12.2 秒，仅测试时长）。
 - 完整回归：完整扩展 E2E 按测试文件分组运行以保留终态输出，48/48 通过、0 skipped（bundled Chromium；不是目标 Chrome Stable 验收）。`pnpm verify` 已运行；此环境的命令桥在 Vite 输出时截断最终退出码，因而不把它标记为“通过”。其可见组成门禁已分别通过：治理、lint、边界、依赖、33 个单测文件/156 测试、类型检查、Web/MV3 构建与包体检查；`pnpm build:demo`、`pnpm build:extension`、`pnpm check:package` 随后又独立通过。
 - 已关闭的限定证据缺口：预提交用户取消、Files 窗口关闭时的预提交取消、Worker/owner 暂存引用清理的单元级行为。未关闭：浏览器标签或进程强制终止、提交中的关闭/取消、Worker 崩溃、写入失败后部分输出、原生目录权限、ZIP64、真实炸弹压力和峰值内存。没有测量浏览器堆/进程峰值，因此不能把引用清理写成内存上限或性能结论；RISK-007 保持开放。
 
