@@ -22,7 +22,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@zip.js/zip.js": "2.8.60",
+    "@zip.js/zip.js": "2.23.0",
     "lucide-react": "^0.468.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
