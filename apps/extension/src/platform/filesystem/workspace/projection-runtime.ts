@@ -1,91 +1,59 @@
 import { inlineWorkspace } from 'unas-src/platform/workspace/inlineWorkspace'
-import type { ProjectionMessage } from './protocol'
-import { CHANNEL_NAME, validMessage } from './protocol'
-import { publishSnapshot, handleListRequest } from './projection-host'
-import type { ProjectionClient } from './projection-client'
 import * as directoryAdapter from '../real/fileWorkspace'
+import { createProjectionClient } from './projection-client'
+import { handleHostMessage, publishSnapshot, type ProjectionHostDeps } from './projection-host'
+import { CHANNEL_NAME, MAX_MESSAGE_BYTES, validMessage, type ProjectionMessage } from './protocol'
 
-export class ProjectionRuntime {
-  private channel: BroadcastChannel | undefined
-  private self = ''
-  private readonly listeners = new Set<() => void>()
-  private client: ProjectionClient | undefined
+let channel: BroadcastChannel | undefined
+let self = ''
+const listeners = new Set<() => void>()
 
-  private isOwner() {
-    return inlineWorkspace.getState() === 'owner'
-  }
+export const isOwner = () => inlineWorkspace.getState() === 'owner'
+export const isClient = () => inlineWorkspace.getState() === 'client'
+const notify = () => { for (const listener of listeners) listener() }
 
-  private isClient() {
-    return inlineWorkspace.getState() === 'client'
-  }
+function post(message: ProjectionMessage) {
+  if (JSON.stringify(message).length > MAX_MESSAGE_BYTES) throw new Error('目录 Workspace 消息超过本地预算。')
+  channel?.postMessage(message)
+}
 
-  private async receive(event: MessageEvent<unknown>) {
-    if (!validMessage(event.data)) return
-    const message = event.data
-    if (message.sender === this.self || ('target' in message && message.target && message.target !== this.self)) return
+const host: ProjectionHostDeps = {
+  self: () => self,
+  isOwner,
+  post,
+  getSnapshot: () => directoryAdapter.getFileWorkspaceSnapshot(),
+  listDirectory: (path) => directoryAdapter.listAuthorizedDirectory(path),
+}
+export const projectionClient = createProjectionClient({ self: () => self, isClient, connect: connectProjection, post })
 
-    if (this.isOwner()) {
-      if (message.type === 'snapshot-request') {
-        publishSnapshot(this.channel, this.self, message.sender)
-        return
-      }
-      if (message.type !== 'list-request') return
-      await handleListRequest(this.channel, this.self, message.sender, message.id, message.path)
-      return
-    }
+async function receive(event: MessageEvent<unknown>) {
+  if (!validMessage(event.data)) return
+  const message = event.data
+  if (message.sender === self || ('target' in message && message.target && message.target !== self)) return
+  if (isOwner()) { await handleHostMessage(host, message); return }
+  if (!isClient()) return
+  if (projectionClient.receive(message)) notify()
+}
 
-    if (!this.isClient() || !this.client) return
-    if (message.type === 'snapshot') {
-      this.client.updateSnapshot(message.snapshot)
-      this.notify()
-      return
-    }
-    if (message.type !== 'list-result') return
-    this.client.handleListResult(message.id, message.listing, message.error)
-  }
+/** Creates the shared channel once. Returns false when BroadcastChannel is unavailable. */
+export function connectProjection(): boolean {
+  if (channel) return true
+  if (typeof BroadcastChannel === 'undefined') return false
+  self = crypto.randomUUID()
+  channel = new BroadcastChannel(CHANNEL_NAME)
+  channel.onmessage = (event) => { void receive(event) }
+  directoryAdapter.subscribeFileWorkspace(() => { publishSnapshot(host); notify() })
+  inlineWorkspace.subscribe(() => {
+    if (isOwner()) publishSnapshot(host)
+    else if (isClient()) void projectionClient.requestSnapshot().catch(() => undefined)
+    notify()
+  })
+  publishSnapshot(host)
+  return true
+}
 
-  private notify() {
-    for (const listener of this.listeners) listener()
-  }
-
-  ensureChannel(client: ProjectionClient) {
-    if (this.channel || typeof BroadcastChannel === 'undefined') {
-      this.client = client
-      client.setChannel(this.channel)
-      client.setSender(this.self)
-      return
-    }
-    this.self = crypto.randomUUID()
-    this.channel = new BroadcastChannel(CHANNEL_NAME)
-    this.channel.onmessage = (event) => { void this.receive(event) }
-    this.client = client
-    client.setChannel(this.channel)
-    client.setSender(this.self)
-
-    directoryAdapter.subscribeFileWorkspace(() => {
-      publishSnapshot(this.channel, this.self)
-      this.notify()
-    })
-
-    inlineWorkspace.subscribe(() => {
-      if (this.isOwner()) publishSnapshot(this.channel, this.self)
-      else if (this.isClient() && this.client) void this.client.requestSnapshot().catch(() => undefined)
-      this.notify()
-    })
-
-    if (this.isOwner()) publishSnapshot(this.channel, this.self)
-  }
-
-  get channelId(): string {
-    return this.self
-  }
-
-  get broadcastChannel(): BroadcastChannel | undefined {
-    return this.channel
-  }
-
-  subscribe(listener: () => void): () => void {
-    this.listeners.add(listener)
-    return () => { this.listeners.delete(listener) }
-  }
+export function subscribeProjection(listener: () => void) {
+  connectProjection()
+  listeners.add(listener)
+  return () => { listeners.delete(listener) }
 }
