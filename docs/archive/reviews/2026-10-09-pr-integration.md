@@ -38,3 +38,10 @@ MV3 全量回归与最新 CI 结果保留在 PR #7 Checks 和本轮任务中；P
 - CSS 压缩配置修复后上述冻结安装、verify 和 audit 再次通过，清单为 21 项；系统 Chrome Web 回归 `pnpm --dir apps/extension run test:e2e:web` 为 8 passed。完整 MV3/Web CI 仍以 PR #11 最终提交的 Checks 为准，失败的旧运行不作为通过证据。
 - 本轮三个原远程分支均通过 `git merge-base --is-ancestor <ref> HEAD`；完整 GitHub MV3/Web 回归结果与系统 Chrome 抽样保留在 PR #11 和本轮任务中。既有风险与人工验收缺口沿用本记录的 Audit Report。
 - 保留 Dependabot 自动更新。每轮只删除已合入 main 的分支，不删除后续自动产生且尚未验证的新分支。
+
+## PR #12 编译器迁移
+
+- 等待 #11 CI 时新发现 [PR #12](https://github.com/Ben8368/uNAS/pull/12)，本轮范围截止到此 PR。保留其原始 ancestry 并在已修复的集成分支上解析锁冲突。
+- TypeScript 7 没有旧 JavaScript 编译器 API；直接替换会破坏 WXT/typescript-eslint。按 [官方并行安装方案](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/) 将 `@typescript/native` 指向 `typescript@7.0.2`，`typescript` 指向 `@typescript/typescript6@6.0.2`（提供 TypeScript 6 API）。`tsc --version` 实测为 7.0.2；ESLint 保持支持的 6.x peer，不放宽 peer 或跳过 lint。
+- `baseUrl` 被新版编译器移除；删除该选项，将 `paths` 值改为相对配置路径，保留既有别名含义。没有改业务源码、运行时权限或 UniPass gitlink。22 项依赖来源及许可哈希已刷新。
+- 冻结安装、`pnpm verify`（393 passed / 1 skipped）与审计通过，无已知漏洞；类型检查、Demo/MV3 构建及包体检查通过。完整 GitHub MV3/Web CI 和 ancestry 检查结果保留在 PR #12 Checks 与本轮任务中；既有风险沿用上面的 Audit Report，不作速度或内存改善承诺。

@@ -17,10 +17,9 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
     "paths": {
-      "unas-src/*": ["src/*"],
-      "#contracts": ["contracts/index.ts"]
+      "unas-src/*": ["./src/*"],
+      "#contracts": ["./contracts/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "contracts/**/*.ts", "entrypoints/**/*.ts", "entrypoints/**/*.tsx", "wxt.config.ts"]
