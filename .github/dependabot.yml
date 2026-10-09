@@ -1,0 +1,52 @@
+version: 2
+
+updates:
+  # The root pnpm workspace and lockfile include apps/extension.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      runtime-minor-patch:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+      tooling-minor-patch:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+      security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      actions-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+# UniPass manages its own dependencies. Private submodule updates require
+# separate Dependabot read access before enabling the gitsubmodule ecosystem.
