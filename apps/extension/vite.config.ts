@@ -7,8 +7,8 @@ export default defineConfig({
   base: './',
   resolve: {
     alias: {
-      'unas-src': path.resolve(__dirname, 'src'),
-      '#contracts': path.resolve(__dirname, 'contracts/index.ts'),
+      'unas-src': path.resolve(import.meta.dirname, 'src'),
+      '#contracts': path.resolve(import.meta.dirname, 'contracts/index.ts'),
     },
   },
   server: {
@@ -16,12 +16,14 @@ export default defineConfig({
     host: '0.0.0.0',
   },
   build: {
+    // Lightning CSS drops standard backdrop-filter when followed by its prefix.
+    cssMinify: 'esbuild',
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'index.html'),
+        main: path.resolve(import.meta.dirname, 'index.html'),
       },
     },
   },

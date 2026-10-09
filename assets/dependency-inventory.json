@@ -86,7 +86,7 @@
     },
     {
       "name": "@vitejs/plugin-react",
-      "version": "4.7.0",
+      "version": "6.1.2",
       "scope": "direct-build-test-tool",
       "declaredLicense": "MIT",
       "licenseFiles": [
@@ -109,6 +109,19 @@
         }
       ],
       "repository": "git+https://github.com/gildas-lormeau/zip.js.git"
+    },
+    {
+      "name": "esbuild",
+      "version": "0.28.2",
+      "scope": "direct-build-test-tool",
+      "declaredLicense": "MIT",
+      "licenseFiles": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681"
+        }
+      ],
+      "repository": "git+https://github.com/evanw/esbuild.git"
     },
     {
       "name": "eslint",
@@ -138,13 +151,13 @@
     },
     {
       "name": "lucide-react",
-      "version": "0.468.0",
+      "version": "1.53.0",
       "scope": "runtime-declared",
       "declaredLicense": "ISC",
       "licenseFiles": [
         {
           "file": "LICENSE",
-          "sha256": "1e7290b35280a048667bbf0ebabac1c7fd52a75300e8b2946ac165715997f2bc"
+          "sha256": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57"
         }
       ],
       "repository": "https://github.com/lucide-icons/lucide.git"
@@ -216,26 +229,26 @@
     },
     {
       "name": "vite",
-      "version": "6.4.3",
+      "version": "8.3.3",
       "scope": "direct-build-test-tool",
       "declaredLicense": "MIT",
       "licenseFiles": [
         {
           "file": "LICENSE.md",
-          "sha256": "008938a3441801ca3960f8e3ccb4c0738e7996442a53063141d57d3769a7344d"
+          "sha256": "a47172e44a86a7e2cd1c16282341f7726ec60caafe3a6166fe3e0602005b6fa6"
         }
       ],
       "repository": "git+https://github.com/vitejs/vite.git"
     },
     {
       "name": "vitest",
-      "version": "4.1.11",
+      "version": "5.0.3",
       "scope": "direct-build-test-tool",
       "declaredLicense": "MIT",
       "licenseFiles": [
         {
           "file": "LICENSE.md",
-          "sha256": "881d660c26831481b697e39724d4a35c9f86e07b67156d4aeb693a0b39910435"
+          "sha256": "c8f14eea9df88b94c4710b4c476d8642e080832d7de0d861eba1337746494b4d"
         }
       ],
       "repository": "git+https://github.com/vitest-dev/vitest.git"

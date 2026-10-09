@@ -27,3 +27,14 @@ MV3 全量回归与最新 CI 结果保留在 PR #7 Checks 和本轮任务中；P
 ## 🚦 Audit Report
 
 总体评价：🟡 可通行。没有新增运行时权限、跨层引擎调用、用户数据上传或能力承诺。真实凭据与工具栏手势、人工 UI、ZIP 广泛能力仍分别受 RISK-014、RISK-012、RISK-007 约束；自动回归不关闭这些风险。
+
+## PR #9–#11 后续集成
+
+- [PR #11](https://github.com/Ben8368/uNAS/pull/11) 承载 Lucide、Vitest 和 React 插件的三个分支，保留 merge ancestry。原 #9/#10 存在锁冲突，#11 的 Verify demo 在依赖清单检查失败；统一解析锁文件并重新生成清单。
+- React 插件 6 的 peer 要求 Vite 8；WXT 0.21.4 声明兼容 Vite 8，故配套迁移构建器。Vite 固定为符合发布年龄策略的 8.3.3，不保留安装器自动增加的发布年龄例外；Node engines 与 Vitest 5 的 Node 22.12+/24/26+ 范围对齐。Vite 配置用 `import.meta.dirname` 消除原生加载兼容警告。
+- 依赖来源清单记录本次实际解析的版本和许可哈希；Lucide 许可证声明仍为 ISC，Vite/Vitest/React 插件仍为 MIT。参考 [Vitest 5 迁移](https://vitest.dev/guide/migration/)、[React 插件](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react) 与 [WXT Vite 配置](https://wxt.dev/guide/essentials/config/vite)；核对日期为 2026-10-09。
+- Vite 8 默认 Lightning CSS 压缩器会丢失同时声明的标准 `backdrop-filter`，已在当前安装版本直接复现，与 [Vite #22649](https://github.com/vitejs/vite/issues/22649) 一致。Demo 与 MV3 显式使用 `esbuild@0.28.2` 压缩 CSS，补充直接构建依赖及来源清单；不改视觉 Token 或降低测试断言。UI-01/UI-02 的窗口、Dock、启动器和减少透明度路径受影响，系统 Chrome 154 中原失败的两项 `glassVisual.spec.ts` 已恢复通过；截图位于 `apps/extension/test-results/pr-followup-glass-fixed/`，检查了深色 Files 和减少透明度 Browser App，无溢出或文字遮挡。此前系统 Chrome 的文件/ZIP/Music/UniPass 抽样 14 项通过；这些证据不关闭既有人工验收风险。
+- `pnpm install --frozen-lockfile`、`pnpm verify`、`pnpm audit --audit-level=moderate` 通过：66 文件，393 passed / 1 skipped，Demo/MV3 构建和包体检查通过，无已知漏洞。配置调整后重新运行 verify，结果一致。
+- CSS 压缩配置修复后上述冻结安装、verify 和 audit 再次通过，清单为 21 项；系统 Chrome Web 回归 `pnpm --dir apps/extension run test:e2e:web` 为 8 passed。完整 MV3/Web CI 仍以 PR #11 最终提交的 Checks 为准，失败的旧运行不作为通过证据。
+- 本轮三个原远程分支均通过 `git merge-base --is-ancestor <ref> HEAD`；完整 GitHub MV3/Web 回归结果与系统 Chrome 抽样保留在 PR #11 和本轮任务中。既有风险与人工验收缺口沿用本记录的 Audit Report。
+- 保留 Dependabot 自动更新。每轮只删除已合入 main 的分支，不删除后续自动产生且尚未验证的新分支。
