@@ -4,7 +4,7 @@ import { abortableRequest, pollJob } from 'unas-src/application/pollJob'
 
 /** Closing the view stops observation, never claims that the task was cancelled. */
 export function usePsdTask() {
-  const controller = useRef<AbortController>()
+  const controller = useRef<AbortController | undefined>(undefined)
   const mounted = useRef(true)
   const [jobId, setJobId] = useState<string | null>(null)
   const [cancelMessage, setCancelMessage] = useState('')

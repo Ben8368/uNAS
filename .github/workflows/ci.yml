@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -37,13 +37,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
-          submodules: recursive
-          token: ${{ secrets.SOURCE_REPOSITORIES_TOKEN || github.token }}
+          persist-credentials: false
+
+      - name: Resolve pinned UniPass source
+        id: unipass
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD:sources/UniPass)" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout private UniPass source
+        uses: actions/checkout@v7
+        with:
+          repository: Ben8368/UniPass
+          ref: ${{ steps.unipass.outputs.sha }}
+          path: sources/UniPass
+          ssh-key: ${{ secrets.UNIPASS_SOURCE_READ_KEY }}
+          persist-credentials: false
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -63,13 +76,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
-          submodules: recursive
-          token: ${{ secrets.SOURCE_REPOSITORIES_TOKEN || github.token }}
+          persist-credentials: false
+
+      - name: Resolve pinned UniPass source
+        id: unipass
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD:sources/UniPass)" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout private UniPass source
+        uses: actions/checkout@v7
+        with:
+          repository: Ben8368/UniPass
+          ref: ${{ steps.unipass.outputs.sha }}
+          path: sources/UniPass
+          ssh-key: ${{ secrets.UNIPASS_SOURCE_READ_KEY }}
+          persist-credentials: false
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -91,7 +117,7 @@ jobs:
 
       - name: Upload Playwright artifacts
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-artifacts
           path: |
