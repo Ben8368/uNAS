@@ -16,7 +16,7 @@
 ## 决策
 
 - **事实源**：`packages/unipass` 是 UniPass 唯一源码事实源，作为 pnpm workspace 成员（包名 `unipass-extension`，保持不变）。迁移采用 submodule 固定的 `b377879` 的已提交树，迁移时该 submodule 无未提交修改；除新增 `exports` 与两个常量的 public re-export 外不改动源码、版本和行为。
-- **public API**：uNAS 只能经 `unipass-extension/legacy` 消费。`package.json` 的 `exports` 显式列出入口，不暴露 `./src/*`；`apps/extension` 内唯一生产 adapter 仍是 `modules/password-manager/legacy/adapter.ts`。`scripts/architecture-boundary-check.mjs` 禁止文件路径深导入、未声明子路径、其他消费者以及 `sources/UniPass` 回流，并输出源文件、非法导入与违反规则。
+- **public API**：uNAS 只能经 `unipass-extension/legacy` 消费。`package.json` 的 `exports` 显式列出入口，不暴露 `./src/*`；`apps/extension` 内唯一生产 adapter 仍是 `features/password-manager/legacy/adapter.ts`。`scripts/architecture-boundary-check.mjs` 禁止文件路径深导入、未声明子路径、其他消费者以及 `sources/UniPass` 回流，并输出源文件、非法导入与违反规则。
 - **下游发布仓库**：`Ben8368/UniPass` 降级为 distribution / release mirror。只允许单向 `uNAS → UniPass`：`pnpm unipass:export` 从 `packages/unipass` 确定性导出到被忽略的 `.artifacts/unipass-export`，默认不联网、不推送；禁止双向同步和在下游仓库直接开发。`.github/`、`AGENTS.md`、`CONTEXT.md` 等随包保留，属于发布仓库元数据，在 monorepo 内不被 GitHub 读取。
 - **依赖**：monorepo 安装事实源是根 `pnpm-lock.yaml`。`packages/unipass/package-lock.json` 仅服务独立仓库的 `npm ci` / `npm audit`，由 `pnpm unipass:lock:check` 校验直接依赖与 pnpm 不漂移；不静默删除原有 `npm audit`。
 - **WASM**：`apps/extension/public/credential-core.wasm` 保留为已跟踪的派生运行时产物，源码事实源是 `packages/unipass/credential-core`；登记在 `assets/demo-assets.json`，`pnpm unipass:wasm:provenance` 校验登记，`--rebuild` 用固定工具链重建并要求逐字节一致。不制造第三份 WASM。
