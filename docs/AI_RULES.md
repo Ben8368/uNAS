@@ -121,7 +121,7 @@ git show -s --format=%B HEAD | git interpret-trailers --parse
 
 ### 仓库级署名校验
 
-首次 clone 后运行 `pnpm git:hooks:install`（或 `node scripts/install-git-hooks.mjs`），启用 [.githooks/commit-msg](../.githooks/commit-msg)。安装只设置本仓库的 `core.hooksPath`；遇到其他路径或既有 hook 拒绝覆盖，不修改全局身份。恢复默认路径可运行 `git config --local --unset core.hooksPath`。
+每个独立 clone 都必须运行 `pnpm git:hooks:install`（或 `node scripts/install-git-hooks.mjs`），启用 [.githooks/commit-msg](../.githooks/commit-msg)。安装只设置该 clone 的 `.git/config` 中的 `core.hooksPath`；配置不会随提交、推送或其他 clone 同步，因此在一个环境安装成功不代表另一个环境已启用。遇到其他路径或既有 hook 时安装器拒绝覆盖，不修改全局身份。恢复默认路径可运行 `git config --local --unset core.hooksPath`。
 hook 使用 Git 的最终 trailer 解析，要求上述工具署名；不猜测实际工具、不自动改写消息或作者。纯人工改动用 `Human-authored: true` 声明；有 AI 参与不得用该声明代替署名或同时混用。既有历史（包括模型级署名）保持原样，新提交按当前工具级映射执行。
 Cursor 切换分支的 `checkpoint before checking out ...` 提交会遗漏署名；hook 拒绝后，应先按实际工具署名提交再切换。GUI 与终端共用本地校验；未安装或 `--no-verify` 可绕过。CI 运行 hook 回归，不扫描或重写旧提交，也不代表远端强制校验每个提交。
 回归入口为 `pnpm test:git-hooks`（[scripts/git-hooks.test.mjs](../scripts/git-hooks.test.mjs)）；在隔离仓库执行真实提交，覆盖缺失/错误署名、三种工具/多工具、CRLF、人工声明、消息保留和安装冲突。已接入 `pnpm verify` 与 CI，Windows 本机结果不替代 Linux CI 实测。
