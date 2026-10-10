@@ -1,6 +1,6 @@
 # 当前状态
 
-> **最后确认：** 2026-10-09
+> **最后确认：** 2026-10-10
 > **阶段：** Phase 2 / uNAS native module integration
 > **产品代码：** WXT MV3 已接入密码管家、广告拦截、WebDAV Vault、Legacy adapter 和 closed Shadow DOM 浮窗；桌面 App 共用下载外观基线；Files 有 WebDAV 文件实验切片、Chrome 下载记录面板和 OPFS 临时缓存/回收站，边界见 ADR 0015；`manage.html` 兼容保留。
 
@@ -15,7 +15,6 @@
 - 视觉采用原创的 macOS/iPadOS 启发式桌面层级与 Liquid Glass 原则，玻璃限于导航/控制层，并提供无障碍和性能降级。
 - uNAS Glass 工作包 A–C 已实现：`window-theme.css` 是主题与材质唯一来源；窗口根承担 blur，正文按内容分组使用可读面；Desktop/Dock/启动器/文件管理器已消费共享 Token。后续 D–E 见 [Development Blueprint](docs/DEVELOPMENT_BLUEPRINT.md#uNAS-glass-后续迁移顺序)。
 - 本仓库只维护 uNAS 品牌；密码兼容实现归 `packages/password-compat`，不与其他独立项目同步、导出或发布（[ADR 0021](docs/ADR/0021-unas-only-brand.md)）。
-
 - 密码库后端仅保留 WebDAV，共享传输已下沉（[ADR 0014](docs/ADR/0014-shared-webdav-transport.md)）；Legacy 应用级撤除仍受 [TD-003](docs/TECH_DEBT.md#td-003legacy-密码能力尚未完成应用级解耦) 约束。
 
 ## 近期优先级
@@ -34,6 +33,7 @@
 
 ## 最近验证
 
+- 2026-10-10：署名 hook 已启用，15 项 Git 回归及 `pnpm verify` 通过；见[验收记录](docs/archive/reviews/2026-10-10-git-attribution-hooks.md)。
 - 2026-10-09：uNAS 品牌与仓库剥离完成；`pnpm verify`（455 passed/1 skipped；兼容包 184 Node/5 Rust）及 MV3 E2E（105 passed/3 skipped）、Web E2E（8 passed）、系统 Chrome smoke 通过；见[剥离验收](docs/archive/reviews/2026-10-09-unas-brand-independence.md)。Linux CI、真实企业登录与常用 Profile 待补。
 
 ## 按需入口

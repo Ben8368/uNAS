@@ -127,11 +127,11 @@ Chrome DevTools MCP 是优先接入的诊断工具，仍由 Playwright 与人工
 Phase 0 的 `pnpm verify` 只有治理检查。引入前端后逐步扩展：
 
 ```text
-docs governance → boundary/dependency → unit/contract → typecheck → build/package → selected extension E2E
+docs governance → Git hook regression → boundary/dependency → unit/contract → typecheck → build/package → selected extension E2E
 ```
 
 视觉、真机、性能和商店材料可分命令，但对应 Gate 必须显式调用；未运行项写明原因，不能由构建通过代替。
 
-跨平台入口是 `pnpm verify`，等于 `verify:extension`（治理、ESLint、Demo 与架构边界、依赖清单、Vitest、TypeScript、Vite/WXT 构建和包体检查）加 `verify:password-compat`（lockfile 一致性、WASM 出处，以及 `packages/password-compat` 自身的依赖审计、静态审计、Rust QA、Node 测试、类型检查和构建；需 Rust 工具链和网络）。`pnpm verify:password-compat:release` 追加 WASM 源码重建与可重复性、Chrome smoke 和 hardened 构建，不并入日常 `verify`。MV3 独立浏览器回归是 `pnpm test:e2e`（先构建扩展，默认使用 Playwright bundled Chromium），Web 回归是 `pnpm --dir apps/extension run test:e2e:web`。需要验证已安装的 Chrome Stable 时运行 `pnpm --dir apps/extension run test:e2e:chrome`；该命令使用 headless 系统 Chrome，P3 视觉验收使用 `pnpm test:e2e:p3`，后者要求 headed 系统 Chrome 和可用桌面会话。两者均在报告中记录实际 channel，不替代默认 Chromium 回归。首次运行默认 E2E 需要安装 Playwright Chromium；系统 Chrome 入口不自动安装或升级浏览器。E2E 报告附件记录实际 channel、版本、OS、色域、视口和证据类型；视口模拟不等于实际浏览器 200% 缩放或目标设备性能。
+跨平台入口是 `pnpm verify`，等于 `verify:extension`（治理、Git 署名 hook 回归、ESLint、Demo 与架构边界、依赖清单、Vitest、TypeScript、Vite/WXT 构建和包体检查）加 `verify:password-compat`（lockfile 一致性、WASM 出处，以及 `packages/password-compat` 自身的依赖审计、静态审计、Rust QA、Node 测试、类型检查和构建；需 Rust 工具链和网络）。`pnpm verify:password-compat:release` 追加 WASM 源码重建与可重复性、Chrome smoke 和 hardened 构建，不并入日常 `verify`。MV3 独立浏览器回归是 `pnpm test:e2e`（先构建扩展，默认使用 Playwright bundled Chromium），Web 回归是 `pnpm --dir apps/extension run test:e2e:web`。需要验证已安装的 Chrome Stable 时运行 `pnpm --dir apps/extension run test:e2e:chrome`；该命令使用 headless 系统 Chrome，P3 视觉验收使用 `pnpm test:e2e:p3`，后者要求 headed 系统 Chrome 和可用桌面会话。两者均在报告中记录实际 channel，不替代默认 Chromium 回归。首次运行默认 E2E 需要安装 Playwright Chromium；系统 Chrome 入口不自动安装或升级浏览器。E2E 报告附件记录实际 channel、版本、OS、色域、视口和证据类型；视口模拟不等于实际浏览器 200% 缩放或目标设备性能。
 
 GitHub Actions 在 `main` 的 push、PR 和手动触发中运行：治理检查；使用 Node 22、根 `packageManager` 声明的 pnpm 和 `pnpm install --frozen-lockfile` 分别运行 `verify:extension` 与 `verify:password-compat`（后者安装 Rust 1.98.1）；RustSec 审计；main、手动触发或改动 `packages/password-compat` 的 PR 上运行 密码兼容包发布质量检查；以及在宿主验证通过后执行的 MV3/Web E2E。CI 不再检出任何第二个仓库。E2E 报告、截图和失败 trace 以 CI artifact 保留 14 天。E2E 的浏览器版本、环境、截图和失败 trace 必须与结果一起记录；视口模拟不等于实际浏览器 200% 缩放或目标设备性能。

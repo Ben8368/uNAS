@@ -32,6 +32,9 @@ jobs:
       - name: Validate governance docs
         run: node scripts/governance-docs-check.mjs
 
+      - name: Exercise Git attribution hooks
+        run: node --test scripts/git-hooks.test.mjs
+
   verify-extension:
     name: Verify uNAS host
     runs-on: ubuntu-latest

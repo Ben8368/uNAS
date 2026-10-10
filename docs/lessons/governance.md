@@ -8,3 +8,4 @@
 - G-006：探针详细证据在 `benchmarks/<probe>/README.md`，Context 只保留链接化摘要；更新任一验收结论时反向核对 Context、probe 与风险台账，冲突以探针环境/步骤记录为准并同次修正。
 - G-007：治理文档的 Markdown 证据链接必须指向 Git 中可复现的文件；`test-results`、`playwright-report` 等忽略目录只能作为生成产物位置说明，不能作为链接目标，否则本地残留会掩盖干净检出的 CI 失败。
 - G-008：AI 提交用 `Co-authored-by` 工具级 trailer 署名（不改 `user.name`/`user.email`）；PowerShell 须拆多个 `-m`，提交后用 `git interpret-trailers --parse` 校验，细节以 `docs/AI_RULES.md` 为准。
+- G-009：GUI 的 checkpoint 提交不经过代理读取的署名规则；clone 后安装仓库 hook，并用真实 Git 提交验证拒绝路径，不替 checkpoint 猜测工具归属。
