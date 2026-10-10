@@ -1,12 +1,35 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { aes128Ecb, createKgmCipher, createQmcCipher, decryptKgmChunk, detectAudio, parseKgmHeader } from './algorithms'
+import {
+  aes128Ecb,
+  buildNcmKeyBox,
+  createKgmCipher,
+  createQmcCipher,
+  decryptKgmChunk,
+  decryptNcmChunk,
+  decryptQmcChunk,
+  detectAudio,
+  parseKgmHeader,
+  parseNcmHeader,
+  parseQmcFooter,
+} from './algorithms'
+import { MUSIC_LIMITS } from './types'
 
 describe('music browser algorithms', () => {
   it('decrypts the AES-128 ECB known vector used by the NCM adapter', () => {
     const ciphertext = Uint8Array.from(Buffer.from('69c4e0d86a7b0430d8cdb78070b4c55a', 'hex'))
     const key = Uint8Array.from(Buffer.from('000102030405060708090a0b0c0d0e0f', 'hex'))
     expect(Buffer.from(aes128Ecb(ciphertext, key)).toString('hex')).toBe('00112233445566778899aabbccddeeff')
+  })
+
+  it('keeps NCM audio decryption consistent across chunk boundaries', () => {
+    const ciphertext = Uint8Array.from({ length: 32 }, (_, index) => index * 7 & 0xff)
+    const box = buildNcmKeyBox(new TextEncoder().encode('Key'))
+    const complete = decryptNcmChunk(ciphertext, box, 0)
+    const firstChunk = decryptNcmChunk(ciphertext.subarray(0, 13), box, 0)
+    const secondChunk = decryptNcmChunk(ciphertext.subarray(13), box, 13)
+    expect(Uint8Array.from(Buffer.concat([Buffer.from(firstChunk), Buffer.from(secondChunk)]))).toEqual(complete)
+    expect(complete).not.toEqual(ciphertext)
   })
 
   it('matches the KGM Kugou MD5 box derivation', () => {
@@ -23,14 +46,79 @@ describe('music browser algorithms', () => {
     expect(detectAudio(new TextEncoder().encode('OggS')).format).toBe('ogg')
   })
 
-  const kgmFixture = process.env.UNAS_MUSIC_KGM_FIXTURE
+  const fixtures = [
+    {
+      name: 'KGM', env: 'UNAS_MUSIC_KGM_FIXTURE', outputFormat: 'flac',
+      decrypt(input: Uint8Array) {
+        const header = input.subarray(0, 60)
+        const parsed = parseKgmHeader(header)
+        const cipher = createKgmCipher(header)
+        return {
+          audioOffset: parsed.audioOffset,
+          audioBytes: input.length - parsed.audioOffset,
+          decode: (chunk: Uint8Array, offset: number) => decryptKgmChunk(chunk, cipher, offset),
+        }
+      },
+    },
+    {
+      name: 'NCM', env: 'UNAS_MUSIC_NCM_FIXTURE', outputFormat: undefined,
+      decrypt(input: Uint8Array) {
+        const parsed = parseNcmHeader(input, input.length)
+        return {
+          audioOffset: parsed.audioOffset,
+          audioBytes: input.length - parsed.audioOffset,
+          decode: (chunk: Uint8Array, offset: number) => decryptNcmChunk(chunk, parsed.keyBox, offset),
+        }
+      },
+    },
+    {
+      name: 'QMC', env: 'UNAS_MUSIC_QMC_FIXTURE', outputFormat: undefined,
+      decrypt(input: Uint8Array) {
+        const tailLength = Math.min(input.length, MUSIC_LIMITS.maxFooterBytes + 8)
+        const footer = parseQmcFooter(input.subarray(input.length - tailLength), input.length)
+        const cipher = createQmcCipher(footer.rawKey)
+        return {
+          audioOffset: 0,
+          audioBytes: footer.audioBytes,
+          decode: (chunk: Uint8Array, offset: number) => decryptQmcChunk(chunk, cipher, offset),
+        }
+      },
+    },
+  ] as const
 
-  it.skipIf(!kgmFixture || !existsSync(kgmFixture))('decrypts the configured private KGM sample with the browser algorithm', () => {
-    const path = kgmFixture!
-    const input = readFileSync(path)
-    const header = new Uint8Array(input.subarray(0, 60))
-    const parsed = parseKgmHeader(header)
-    const output = decryptKgmChunk(new Uint8Array(input.subarray(parsed.audioOffset, parsed.audioOffset + 64)), createKgmCipher(header), 0)
-    expect(new TextDecoder('ascii').decode(output.subarray(0, 4))).toBe('fLaC')
-  })
+  for (const fixture of fixtures) {
+    const path = process.env[fixture.env]?.trim()
+    it.skipIf(!path || !existsSync(path))(`decrypts the complete configured private ${fixture.name} sample`, () => {
+      const input = readFileSync(path!)
+      expect(input.byteLength).toBeGreaterThan(0)
+      expect(input.byteLength).toBeLessThanOrEqual(MUSIC_LIMITS.maxInputBytes)
+
+      const parsed = fixture.decrypt(input)
+      expect(parsed.audioOffset).toBeGreaterThanOrEqual(0)
+      expect(parsed.audioBytes).toBeGreaterThan(0)
+      expect(parsed.audioBytes).toBeLessThanOrEqual(MUSIC_LIMITS.maxOutputBytes)
+      expect(parsed.audioOffset + parsed.audioBytes).toBeLessThanOrEqual(input.length)
+
+      let audioOffset = parsed.audioOffset
+      let outputOffset = 0
+      let prefix = new Uint8Array()
+      while (outputOffset < parsed.audioBytes) {
+        const length = Math.min(MUSIC_LIMITS.workerChunkBytes, parsed.audioBytes - outputOffset)
+        const decoded = parsed.decode(input.subarray(audioOffset, audioOffset + length), outputOffset)
+        expect(decoded).toHaveLength(length)
+        if (prefix.length < 16) {
+          const merged = new Uint8Array(Math.min(16, prefix.length + decoded.length))
+          merged.set(prefix)
+          merged.set(decoded.subarray(0, merged.length - prefix.length), prefix.length)
+          prefix = merged
+        }
+        audioOffset += length
+        outputOffset += decoded.length
+      }
+
+      const detected = detectAudio(prefix)
+      expect(detected.format).not.toBe('unknown')
+      if (fixture.outputFormat) expect(detected.format).toBe(fixture.outputFormat)
+    })
+  }
 })
