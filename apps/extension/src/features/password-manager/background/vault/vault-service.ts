@@ -417,8 +417,22 @@ export function migrateWebDavConnections(): Promise<void> {
       if (profile.connectionId || !profile.endpoint) continue;
       const secret = secrets[profile.id];
       if (!secret?.username || !secret.appPassword) continue;
-      const existing = (await listConnections()).find(connection => connection.vaultEndpoint === profile.endpoint);
-      const connection = existing ?? await storeConnection({ name: profile.name, endpoint: profile.endpoint, username: secret.username, appPassword: secret.appPassword, vaultEndpoint: profile.endpoint });
+      const connections = await listConnections();
+      const existing = connections.find(connection => connection.vaultEndpoint === profile.endpoint);
+      let connection: Awaited<ReturnType<typeof storeConnection>>;
+      if (existing) {
+        const material = await sharedConnectionMaterial(existing.id);
+        // Reusing a path with different credentials would silently replace this
+        // profile's only durable copy of its legacy authentication material.
+        if (material.username !== secret.username.trim() || material.appPassword !== secret.appPassword) continue;
+        connection = existing;
+      } else {
+        // The shared store allows one credential set per endpoint. If an
+        // existing connection occupies that endpoint but points its Vault at a
+        // different path, keep this legacy profile intact for manual recovery.
+        if (connections.some(connection => connection.endpoint === profile.endpoint)) continue;
+        connection = await storeConnection({ name: profile.name, endpoint: profile.endpoint, username: secret.username, appPassword: secret.appPassword, vaultEndpoint: profile.endpoint });
+      }
       profile.connectionId = connection.id;
       persistent[profile.id] = await sealPersistentMaterial(storedSecret({ ...secret, connectionId: connection.id }));
       if (isRecord(session) && session[profile.id]) session[profile.id] = storedSecret({ ...secret, connectionId: connection.id });
