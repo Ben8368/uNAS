@@ -29,14 +29,6 @@ TD-001 的拆分、验证范围与关闭记录见 [2026-09 归档](archive/tech-
 - **偿还方案：** composition adapter 与源码边界已收拢；下一步切换 WebDAV-only 目录/会话和浮窗，拒绝已退役消息；最后移除宿主 Legacy 依赖、WASM、运行配置、专属 host 权限及包体白名单。不能误删广告模块规则源或 WebDAV 加密兼容 key。
 - **验证方式：** 禁用 adapter 后构建整包并检查导入图/manifest/网络，再覆盖 Desktop 与浮窗的目录、创建/连接/重连、锁定、填充和取消；真实 WebDAV 多端冲突与目标 Chrome 工具栏手势通过后，才删除兼容文件并归档。
 
-### TD-004：AdBlock 顶层页面发送方策略宽于注释声明
-
-- **优先级 / 位置 / 来源 / 目标阶段：** P2；`apps/extension/src/platform/extension/sender-policy.ts` 的 `isAdBlockSender`；2026-10-09 router 拆分时由测试发现；下一次 AdBlock 安全评审。
-- **当前妥协与原因：** 注释写“web pages may only request cosmetic rules”，实际只有子 frame 被限定为精确的 `getCosmeticRules`；顶层 HTTP(S) 页面的内容脚本发送方可发送任意 AdBlock 消息类型（含 `pauseBlockingForSite`、`refreshBlockingSubscriptions`）。拆分严格保持行为不变，未收紧，避免无证据地改变既有安全语义。
-- **影响与最坏结果：** 发送方必须是本扩展注入的内容脚本（`sender.id` 校验），普通网页不能直接触发；但被攻陷的内容脚本可暂停某站点拦截。无凭据或 Vault 路径受影响。
-- **偿还方案：** 先确认是否有顶层页面合法发送非 cosmetic 消息；没有则收紧为与子 frame 相同的精确请求，并修正注释与 [SECURITY](../SECURITY.md) 措辞。
-- **验证方式：** `router.test.ts` 增加顶层页面发送非 cosmetic 消息被拒绝的断言，并跑 AdBlock E2E。
-
 ### TD-005：`platform/filesystem/real/fileWorkspace.ts` 超过 450 行
 
 - **优先级 / 位置 / 来源 / 目标阶段：** P2；`apps/extension/src/platform/filesystem/real/fileWorkspace.ts`（474 行）；2026-10-09 目录迁移评估；Files 下一次功能迭代。
@@ -45,7 +37,7 @@ TD-001 的拆分、验证范围与关闭记录见 [2026-09 归档](archive/tech-
 - **偿还方案：** 先抽出纯函数（名称校验、`ensureEntryAbsent`、`commitPreparedArchive`），再把授权状态收进显式对象；每步保持 `fileWorkspace.test.ts` 与 `fileWorkspaceDirectory.spec.ts` 通过。
 - **验证方式：** 现有 `fileWorkspace.test.ts`、`zipExtraction.test.ts` 及 Files/ZIP E2E 全部通过，并补目录授权失效与取消路径断言。
 
-不得用空的“以后优化”占位；产生真实妥协时按下列字段登记：
+不得用空的"以后优化"占位；产生真实妥协时按下列字段登记：
 
 ```text
 TD-XXX：标题

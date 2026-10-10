@@ -30,8 +30,11 @@ describe('extension message router', () => {
   it('answers a matching but unauthorized AdBlock or Password Manager message with an explicit error', async () => {
     const send = install()
     const childFrame = { ...webPage, frameId: 3 }
-    // Child frames may send only the exact cosmetic-rules request; anything else is rejected before dispatch.
+    // Web pages (top-level or child frames) may send only the exact cosmetic-rules request; anything else is rejected before dispatch.
     await expect(send({ type: 'getBlockingStatus' }, childFrame)).resolves.toEqual({ ok: false, error: '广告拦截消息来源无效。' })
+    await expect(send({ type: 'getBlockingStatus' }, webPage)).resolves.toEqual({ ok: false, error: '广告拦截消息来源无效。' })
+    await expect(send({ type: 'pauseBlockingForSite' }, webPage)).resolves.toEqual({ ok: false, error: '广告拦截消息来源无效。' })
+    await expect(send({ type: 'refreshBlockingSubscriptions' }, webPage)).resolves.toEqual({ ok: false, error: '广告拦截消息来源无效。' })
     await expect(send({ type: 'getCosmeticRules', extra: true }, childFrame)).resolves.toEqual({ ok: false, error: '广告拦截消息来源无效。' })
     await expect(send({ type: 'getBlockingStatus' }, foreignExtension)).resolves.toEqual({ ok: false, error: '广告拦截消息来源无效。' })
     await expect(send({ type: 'session' }, foreignExtension)).resolves.toEqual({ ok: false, error: '密码管家消息来源无效。' })

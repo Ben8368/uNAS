@@ -17,11 +17,17 @@ export function isLegacySender(sender: ExtensionMessageSender, extensionId: stri
   return isExtensionPageSender(sender, extensionId, ['/newtab.html', '/workspace.html', '/popup.html', '/manage.html'])
 }
 
-/** AdBlock has a narrower route: web pages may only request cosmetic rules. */
+/**
+ * AdBlock sender policy: web pages (including top-level frames) may only send
+ * the exact `getCosmeticRules` request. All other AdBlock messages require an
+ * authorized extension page.
+ */
 export function isAdBlockSender(sender: ExtensionMessageSender, extensionId: string, message?: unknown): boolean {
   const isCosmeticRulesRequest = Boolean(message && typeof message === 'object' && !Array.isArray(message)
     && Object.keys(message).sort().join(',') === 'type'
     && (message as { type?: unknown }).type === 'getCosmeticRules')
-  if (isWebPageSender(sender, extensionId, isCosmeticRulesRequest)) return true
+  // Web pages (top-level or child frames) may only send getCosmeticRules.
+  if (isWebPageSender(sender, extensionId, true)) return isCosmeticRulesRequest
+  // Extension pages may send any AdBlock message.
   return isExtensionPageSender(sender, extensionId, ['/newtab.html', '/workspace.html'])
 }
