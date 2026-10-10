@@ -47,7 +47,7 @@
     },
     {
       "name": "@types/node",
-      "version": "22.20.1",
+      "version": "26.5.1",
       "scope": "direct-build-test-tool",
       "declaredLicense": "MIT",
       "licenseFiles": [
