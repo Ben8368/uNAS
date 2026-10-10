@@ -36,6 +36,8 @@ node scripts/governance-docs-check.mjs
 
 ## PR 必备信息
 
+Dependabot 更新 PR 的选择策略、锁文件与来源清单维护步骤见 [ADR 0022](docs/ADR/0022-dependabot-maintenance.md)。
+
 - 改动目的与所处阶段。
 - 主要文件和事实源变化。
 - 验证命令、结果和未覆盖项。

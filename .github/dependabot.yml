@@ -2,6 +2,7 @@ version: 2
 
 updates:
   # The root pnpm workspace and lockfile include apps/extension.
+  # Update policy and maintainer steps: docs/ADR/0022-dependabot-maintenance.md.
   - package-ecosystem: npm
     directory: /
     schedule:
@@ -9,7 +10,10 @@ updates:
       day: monday
       time: "09:00"
       timezone: Asia/Shanghai
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 4
+    cooldown:
+      default-days: 7
+      semver-major-days: 30
     commit-message:
       prefix: build
       include: scope
@@ -20,8 +24,24 @@ updates:
           - react-dom
           - "@types/react"
           - "@types/react-dom"
+        update-types:
+          - minor
+          - patch
       runtime-minor-patch:
         dependency-type: production
+        update-types:
+          - minor
+          - patch
+      build-toolchain-minor-patch:
+        dependency-type: development
+        patterns:
+          - vite
+          - "@vitejs/*"
+          - wxt
+          - esbuild
+          - vitest
+          - "@playwright/*"
+          - puppeteer-core
         update-types:
           - minor
           - patch
@@ -42,7 +62,9 @@ updates:
       day: monday
       time: "09:00"
       timezone: Asia/Shanghai
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 2
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: ci
       include: scope
@@ -53,8 +75,13 @@ updates:
         update-types:
           - minor
           - patch
+      actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
 
 # packages/password-compat is a pnpm workspace member, so the root entry above updates it and pnpm-lock.yaml.
-# Its package-lock.json (package-level npm audit only) is regenerated from that result by
-# `npm install --package-lock-only` inside packages/password-compat; `pnpm password-compat:lock:check` fails on drift.
+# Its package-lock.json exists for package-level npm audit only. After a dependency change, maintainers run
+# `npm install --package-lock-only --ignore-scripts` inside packages/password-compat, then reconcile any drift
+# with `pnpm password-compat:lock:check`; npm resolution alone does not guarantee parity with pnpm.
 # Rust: credential-core is audited by RustSec in CI; Cargo updates stay manual because the WASM is byte-reproducibility gated.
