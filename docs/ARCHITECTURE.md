@@ -147,7 +147,7 @@ CapabilityPort
 
 文件 contract 不传本机绝对路径。FileRef 使用不透明 ID、来源、授权状态和受控 token。恢复只恢复元数据和可重新取得的能力；权限失效时要求用户重新授权。
 
-Files 的 WebDAV 文件、浏览器下载记录与缓存 ports 按 [ADR 0015](ADR/0015-file-manager-dav-cache.md) 隔离；受控 FileRef 与分段读取见 [ADR 0017](ADR/0017-unified-file-read-preview.md)。WebDAV 凭据只在当前 Owner 页面内存，连接可跨 Files 位置切换并在页面退出时释放；远程写入以 Web Lock 防并发。下载面板只列 Chrome 下载记录并由浏览器定位文件，不获取目录句柄；缓存仅操作自身 OPFS 子目录、以随机 ID 引用并受预算/过期控制。不进入密码模块或跨页消息；缓存不是永久文件库。
+Files 的 WebDAV 文件、浏览器下载记录与缓存 ports 按 [ADR 0015](ADR/0015-file-manager-dav-cache.md) 隔离；受控 FileRef 与分段读取见 [ADR 0017](ADR/0017-unified-file-read-preview.md)。WebDAV 配置与认证由项目共享连接服务按 [ADR 0023](ADR/0023-project-webdav-connections.md) 管理；Files 只在当前 Owner 页面内存持有已获取的会话，校验配置修订与权限，页面退出释放；Vault Key 不进入 Files。远程写入以 Web Lock 防并发。下载面板只列 Chrome 下载记录并由浏览器定位文件，不获取目录句柄；缓存仅操作自身 OPFS 子目录、以随机 ID 引用并受预算/过期控制。缓存不进入密码模块或跨页消息，也不是永久文件库。
 
 ## 9. 真实任务运行流
 

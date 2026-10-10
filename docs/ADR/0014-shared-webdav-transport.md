@@ -1,6 +1,7 @@
 # ADR 0014：共享 WebDAV 传输层与密码库后端收敛
 
 - 状态：已接受
+- 2026-10-10 部分替代：连接材料复用、持久化与统一配置入口遵循 [ADR 0023](0023-project-webdav-connections.md)，以下原条款仅在未被替代的范围继续有效。
 - 日期：2026-09-23
 - 背景：维护者要求密码管理仅发展 WebDAV，移除 GitHub/Cloudflare，并为其他 App 复用 WebDAV 做准备。现有 WebDAV 网络实现嵌在 Vault adapter，Legacy 的整体撤除仍有独立调用链待处理。
 

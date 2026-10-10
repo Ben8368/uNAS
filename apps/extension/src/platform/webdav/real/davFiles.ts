@@ -1,3 +1,4 @@
+import { acquireWebDavConnection, checkWebDavConnection } from '../connections'
 import type { DavConnectionInput, DavDirectoryListing, DavFileEntry, FileRef, FileReadLease, FileReadOptions } from '#contracts'
 import { WebDavClient } from 'unas-src/platform/webdav/client'
 import { WebDavRangeReader } from 'unas-src/platform/webdav/rangeReader'
@@ -25,6 +26,13 @@ export function createDavFilesPort() {
   const readLeases = new Set<{ close(): void }>()
   const knownDirectories = new Set([''])
   let generation = 0
+  let shared: { id: string; revision: string; vaultEndpoint: string; endpoint: string } | undefined
+  async function checkShared() { if (shared) await checkWebDavConnection(shared.id, shared.revision) }
+  function reserved(path: string) {
+    const segments = path.split('/').map(segment => decodeURIComponent(segment).toLowerCase())
+    return segments.includes('.unas-vault') || Boolean(shared && shared.vaultEndpoint === shared.endpoint && segments[0] === 'objects')
+  }
+  function allowPath(path: string) { if (reserved(path)) throw new Error('密码库目录由系统管理，请在密码管家中操作。') }
 
   async function operation<T>(mutating: boolean, action: (current: WebDavClient, signal: AbortSignal) => Promise<T>): Promise<T> {
     requireExtensionFiles()
@@ -35,6 +43,7 @@ export function createDavFilesPort() {
     controller = pending
     try {
       if (!await extensionApi()?.permissions?.contains({ origins: [webDavPermissionOrigin(current.endpoint)] })) throw new Error('WebDAV 主机权限已撤销，请重新连接。')
+      await checkShared()
       pending.signal.throwIfAborted()
       if (!mutating) return await action(current, pending.signal)
       if (typeof navigator.locks?.request !== 'function') throw new Error('浏览器缺少文件操作锁，当前连接不能写入。')
@@ -54,10 +63,12 @@ export function createDavFilesPort() {
     davPath(path)
     const response = await current.request('PROPFIND', path, { headers: { Depth: '1', 'Content-Type': 'application/xml; charset=utf-8' }, body: propfind, signal, readBody: true, maxResponseBytes: 1024 * 1024 })
     expectStatus(response.status, [207])
-    return parseDavListing(new TextDecoder().decode(response.data), current.endpoint, path)
+    const result = parseDavListing(new TextDecoder().decode(response.data), current.endpoint, path)
+    return { ...result, entries: result.entries.filter(entry => !reserved(entry.path)) }
   }
   function directory(path: string) {
     davPath(path)
+    allowPath(path)
     if (!knownDirectories.has(path)) throw new Error('目录不属于当前连接已读取的范围。')
   }
   function file(path: string): DavFileEntry {
@@ -73,7 +84,6 @@ export function createDavFilesPort() {
       if (controller) throw new Error('已有 WebDAV 操作正在执行。')
       if (client) throw new Error('请先断开已有文件连接。')
       const endpoint = normalizeWebDavUrl(input.endpoint)
-      const candidate = new WebDavClient(endpoint, input.username, input.appPassword, { maxBytes: maxFileBytes })
       const ticket = ++generation
       const permission = extensionApi()?.permissions
       if (!permission) throw new Error('浏览器未开放可选主机权限申请。')
@@ -85,7 +95,14 @@ export function createDavFilesPort() {
         const granted = await permission.request({ origins: [webDavPermissionOrigin(endpoint)] })
         if (ticket !== generation || requestSignal.aborted) throw new Error('已取消连接。')
         if (!granted) throw new Error('未授予 WebDAV 主机权限，连接已取消。')
+        const material = 'connectionId' in input ? await acquireWebDavConnection(input.connectionId) : input
+        if (material.endpoint !== endpoint) throw new Error('WebDAV 配置已更新，请重新选择连接。')
+        if (ticket !== generation || requestSignal.aborted) throw new Error('已取消连接。')
+        shared = 'connectionId' in input ? material as typeof shared : undefined
+        const candidate = new WebDavClient(endpoint, material.username, material.appPassword, { maxBytes: maxFileBytes })
         const result = await readList(candidate, '', requestSignal)
+        await checkShared()
+        requestSignal.throwIfAborted()
         if (ticket !== generation) throw new Error('已取消连接。')
         client = candidate
         listing = result
@@ -105,7 +122,7 @@ export function createDavFilesPort() {
       })
     },
     async createDirectory(path: string, name: string) {
-      directory(path); davName(name)
+      directory(path); davName(name); allowPath(`${path}${encodeURIComponent(name)}/`)
       await operation(true, async (current, signal) => {
         const response = await current.request('MKCOL', `${path}${encodeURIComponent(name)}/`, { signal, headers: { 'If-None-Match': '*' } })
         expectStatus(response.status, [201])
@@ -116,6 +133,7 @@ export function createDavFilesPort() {
       const selected = await selectOneFile()
       if (!selected) return false
       davName(selected.name)
+      allowPath(`${path}${encodeURIComponent(selected.name)}`)
       if (selected.size > maxFileBytes) throw new Error('本次上传超过 16 MiB 文件预算。')
       await operation(true, async (current, signal) => {
         const data = new Uint8Array(await selected.arrayBuffer())
@@ -182,6 +200,7 @@ export function createDavFilesPort() {
           try {
             options.signal?.throwIfAborted()
             if (!await extensionApi()?.permissions?.contains({ origins: [webDavPermissionOrigin(client!.endpoint)] })) throw new Error('WebDAV 主机权限已撤销；读取已停止。')
+            await checkShared()
             if (cursor >= offset + length) { close(); controller.close(); return }
             const bytes = await range.read(cursor, Math.min(512 * 1024, offset + length - cursor), options.signal)
             cursor += bytes.byteLength
@@ -219,6 +238,6 @@ export function createDavFilesPort() {
       })
     },
     cancel() { controller?.abort(); for (const lease of [...readLeases]) lease.close() },
-    disconnect() { generation++; controller?.abort(); for (const lease of [...readLeases]) lease.close(); fileRefs.clear(); client = undefined; listing = undefined; knownDirectories.clear(); knownDirectories.add('') },
+    disconnect() { generation++; controller?.abort(); for (const lease of [...readLeases]) lease.close(); fileRefs.clear(); shared = undefined; client = undefined; listing = undefined; knownDirectories.clear(); knownDirectories.add('') },
   })
 }

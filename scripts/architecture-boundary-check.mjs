@@ -23,7 +23,7 @@ const PASSWORD_COMPAT_TEST_CONSUMERS = new Set(['apps/extension/src/features/pas
 const FEATURE_PUBLIC = {
   // background/service-worker.ts is each feature's composition surface (install*/handle*/is*Message); platform/extension routes to it.
   adblock: ['ui.tsx', 'ui.css', 'contracts.ts', 'background/service-worker.ts'],
-  'password-manager': ['ui.tsx', 'ui.css', 'WebDavSettings.tsx', 'background/service-worker.ts'],
+  'password-manager': ['ui.tsx', 'ui.css', 'background/service-worker.ts'],
   music: ['ui.tsx'],
   browser: ['BrowserApp.tsx'],
   downloader: ['DownloaderApp.tsx'],

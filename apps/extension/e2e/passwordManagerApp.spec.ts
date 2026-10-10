@@ -29,6 +29,6 @@ test('独立 manage.html 保留为兼容/恢复入口', async ({ extension }) =>
   await managePage.goto(`chrome-extension://${extension.extensionId}/manage.html`)
   await expect(managePage).toHaveTitle('uNAS 密码管家')
   await expect(managePage.getByText('uNAS · 密码管家')).toBeVisible()
-  await expect(managePage.getByRole('heading', { name: '连接 WebDAV' }).first()).toBeVisible()
+  await expect(managePage.getByRole('link', { name: '管理共享 WebDAV 连接' })).toBeVisible()
   expect(extension.errors).toEqual([])
 })

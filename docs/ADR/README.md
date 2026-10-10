@@ -41,4 +41,6 @@ ADR 记录影响长期维护的决定及理由。Roadmap 说明“按什么阶�
 | [0021](0021-unas-only-brand.md) | 已接受 | 仅维护 uNAS 品牌，内部密码兼容包与独立项目无同步或发布关系 |
 | [0022](0022-dependabot-maintenance.md) | 已接受 | Dependabot 分组维护 npm 与 Actions，保留人工合并、双 lock 和 WASM 门禁 |
 
+| [0023](0023-project-webdav-connections.md) | 已接受 | 项目共享 WebDAV 配置、自动初始化密码库、连接材料与 Vault Key 隔离 |
+
 “已接受”表示维护者接受的方案基线，依据见各 ADR；不等于对应源码已实现或 Gate 已通过。若后续阶段改变边界，须以新 ADR 替代。0002 只保留历史，不再约束实现。

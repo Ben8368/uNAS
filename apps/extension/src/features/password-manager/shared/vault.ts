@@ -15,6 +15,7 @@ export interface VaultTarget {
 export interface VaultProfile {
   id: string;
   name: string;
+  connectionId?: string;
   backend: VaultBackendType;
   enabled: boolean;
   /** Kept for compatibility with the current WebDAV profile store. */

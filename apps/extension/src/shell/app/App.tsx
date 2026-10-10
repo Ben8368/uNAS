@@ -25,6 +25,20 @@ export default function App() {
   }, [openWindow, setShowLauncher])
 
   useEffect(() => {
+    const openSettingsRoute = () => { if (location.hash === '#settings') openWindow('settings') }
+    const onSettingsLink = (event: MouseEvent) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      if (!(event.target instanceof Element) || !event.target.closest('a[href="#settings"]')) return
+      event.preventDefault()
+      openWindow('settings')
+    }
+    openSettingsRoute()
+    window.addEventListener('hashchange', openSettingsRoute)
+    document.addEventListener('click', onSettingsLink)
+    return () => { window.removeEventListener('hashchange', openSettingsRoute); document.removeEventListener('click', onSettingsLink) }
+  }, [openWindow])
+
+  useEffect(() => {
     if (!workspace || !['owner', 'client'].includes(session.state)) return
     const openRoute = () => { const app = location.hash.slice(1); if (isWorkspaceApp(app)) openWindow(app) }
     const onVisible = () => { if (!document.hidden) openRoute() }

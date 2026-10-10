@@ -131,3 +131,10 @@
   .settings-stage { padding: 16px; }
   .settings-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+.settings-advanced { padding: var(--window-space-3); border: 1px solid var(--window-divider); border-radius: var(--app-control-radius); }
+.settings-advanced summary { cursor: pointer; color: var(--window-text-muted); font-size: 13px; }
+.settings-advanced[open] > .settings-field { margin-top: var(--window-space-3); }
+
+.settings-consent { display: flex; align-items: flex-start; gap: var(--window-space-2); font-size: 12px; line-height: 1.6; }
+.settings-consent input { flex-shrink: 0; margin-top: 4px; }

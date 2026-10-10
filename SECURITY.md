@@ -46,7 +46,7 @@ User file / archive / media    不可信输入
 - 当前 required permissions 为 `activeTab`, `scripting`, `clipboardWrite`, `storage`, `alarms`, `tabs`, `declarativeNetRequest`, `downloads`, `system.cpu`, `system.memory`, `system.storage`。其中 `activeTab`/`scripting` 只在用户点击 action 后注入页面浮层或用户点击填充时注入一次性填充脚本；`storage` 保存设置、Link App、Vault profile/加密材料和规则状态；`alarms` 驱动规则/Vault/Jupiter 恢复；`tabs` 用于当前页复核和用户触发的页面操作；`clipboardWrite` 仅用于用户点击复制；`declarativeNetRequest` 执行 baseline/dynamic block 与站点暂停规则；`downloads` 用于用户明确发起的直链下载及文件管理器展示浏览器下载记录；`system.cpu`/`system.memory`/`system.storage` 仅用于右侧系统详情读取 CPU 元数据、物理内存和固定存储容量，不读取文件内容、网络内容或用户数据。显示器信息只在浏览器实际开放 `system.display` 时读取，否则显示不可用；CPU 温度仅在浏览器实际提供时显示，GPU 型号仅在 WebGPU 适配器暴露信息时显示。
 - 固定 host permissions 仅包含密码管家兼容服务、Feishu OAuth、Jupiter、EasyList 下载域名和 GitHub Raw 补充规则域；后者仅请求固定仓库 JSON，禁重定向、凭据和 referrer，详见 [ADR 0012](docs/ADR/0012-repository-filter-subscription.md)。`https://*/*` 是 optional host permission，只在用户连接 WebDAV 时请求对应单一 origin。页面 cosmetic content script 只处理规则 CSS/受限 `remove-attr`，不能读取凭据。
 - optional permissions 也不得为未来预留；只在用户触发功能时解释并请求。
-- Files WebDAV 连接沿用单一 HTTPS origin 的用户手势授权并检查撤销；须独立连接/上传同意，凭据仅在当前 Workspace 页面内存，切换 Files 位置时维持连接，手动断开或页面退出时释放。上传只发送本次选择文件。传输、ETag 删除、预算、取消和未确认写入按 [ADR 0015](docs/ADR/0015-file-manager-dav-cache.md)，不连接账号/元数据服务、不读取 Vault 材料。
+- 项目 WebDAV 配置、认证加密存储、自动密码库初始化、旧连接迁移与可信页面 acquire 边界见 [ADR 0023](docs/ADR/0023-project-webdav-connections.md)。Files 使用共享连接 ID，按操作核对权限/修订并保护密码库目录；断开或页面退出只清理会话。上传只发送用户本次选择的文件，传输、ETag、预算、取消和未确认写入继续按 [ADR 0015](docs/ADR/0015-file-manager-dav-cache.md)；不读取 Vault Key。
 - 受控 FileRef、Owner-only FSA 引用、本页 WebDAV 会话、强 ETag Range 读取和条件文本保存按 [ADR 0017](docs/ADR/0017-unified-file-read-preview.md)。HTML/SVG/PDF/Office 不由当前预览器执行或解析；Markdown 不渲染远端 HTML；本地媒体 object URL 在播放器关闭时释放。
 - `downloads` 权限用于用户明确发起的 HTTPS 直链下载，以及文件管理器最近 200 条 Chrome 下载记录（仅显示名称、状态、大小和时间，并响应用户点击定位文件）。不保存或展示来源 URL、本机绝对路径，不读取下载文件内容或授予下载目录句柄。m3u8/mpd 播放清单和网页链接不走直链路径；可执行文件仍由 Chrome 的安全检查和用户确认控制。
 - host permissions 默认不全域开放；网页资源导入优先使用 `activeTab` 或更窄的用户触发能力。
@@ -63,7 +63,7 @@ User file / archive / media    不可信输入
 
 ### 密码管家 Vault 与浮窗边界
 
-- 共享 WebDAV 传输遵循 [ADR 0014](docs/ADR/0014-shared-webdav-transport.md)：限定 HTTPS endpoint 内相对路径、禁止重定向/Cookie/缓存、请求和响应有字节预算及取消/超时；主机授权与用户同意仍由各调用方负责。不得把其他 App 的文件自动上传或复用 Vault Key。
+- 共享 WebDAV 传输遵循 [ADR 0014](docs/ADR/0014-shared-webdav-transport.md)：限定 HTTPS endpoint 内相对路径、禁止重定向/Cookie/缓存、请求和响应有字节预算及取消/超时；主机授权与项目复用同意由共享设置负责，具体文件上传仍需用户动作。不得把其他 App 的文件自动上传或复用 Vault Key。
 
 - Vault 使用既有兼容 AES-256-GCM envelope、Vault Key、PBKDF2 本地解锁、加密 IndexedDB cache、dirty queue、ETag 冲突和 tombstone；明文密码只在后台短暂获取，并在填充/复制路径清理，不进入 uNAS Desktop store、BroadcastChannel、日志或持久化普通 JSON。
 - `CredentialSource` 将 WebDAV Vault 与 `legacy-unipass` 分开；Legacy API/Jupiter/旧 AES 解密/WASM 经 `legacy/adapter.ts` 消费 workspace 包 `packages/password-compat`（仅 `@unas/password-compat/legacy` 公开入口）并显式安装。Vault core 不导入 Legacy API/WASM；导入该入口不安装独立后台或广告事件，不在运行时拉取代码，CI 也不再需要读取第二个私有仓库（[ADR 0021](docs/ADR/0021-unas-only-brand.md)）。内部测试壳已移除外部商店身份及版本查询，DNR 不再为原商店扩展 ID 保留例外；协议域名与持久化标识不因品牌变更而修改。Legacy 仍启用，撤除门槛见 [TD-003](docs/TECH_DEBT.md#td-003legacy-密码能力尚未完成应用级解耦)。

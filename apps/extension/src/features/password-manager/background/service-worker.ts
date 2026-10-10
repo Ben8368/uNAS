@@ -18,10 +18,6 @@ import {
   disableLocalUnlock,
   lockVault,
   removeVault,
-  releaseUnusedWebDavPermission,
-  requestWebDavPermission,
-  saveWebDavVault,
-  testWebDavConnection,
   updateVaultAccount,
   updateVaultApp,
   updateVaultCredential,
@@ -72,7 +68,7 @@ const UNIPASS_MESSAGE_TYPES = new Set<string>([
   "session", "pageContext", "pageTheme", "openApp", "fillFromOverlay", "fillFromPopup",
   "startLegacyLogin", "completeLegacyLogin", "getPluginVersionSettings", "setPluginVersionOverride",
   "currentPageCatalog", "accountCatalog", "listApps", "accountsForApp", "appUrl", "credentialAvailability",
-  "revealCredential", "getJupiterKeepalive", "setJupiterKeepalive", "listVaultProfiles", "listVaultConnectionStates",
+  "revealCredential", "getJupiterKeepalive", "setJupiterKeepalive", "openWebDavSettings", "listVaultProfiles", "listVaultConnectionStates",
   "listVaultSyncStatuses", "syncVaults", "enableLocalUnlock", "unlockVaultLocally", "disableLocalUnlock", "lockVault",
   "testWebDavConnection", "saveWebDavVault", "removeVault", "vaultCatalog", "createVaultApp", "updateVaultApp",
   "deleteVaultApp", "createVaultAccount", "updateVaultAccount", "deleteVaultAccount", "updateVaultCredential",
@@ -167,6 +163,8 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
       return withUserScope(message.userScope, () => getJupiterKeepaliveSettings(message.userScope));
     case "setJupiterKeepalive":
       return withUserScope(message.userScope, () => setJupiterKeepalive(message.userScope, message.enabled, message.appId, message.accountId, message.username));
+    case "openWebDavSettings":
+      return requireVaultManager(sender, message.overlayToken, async () => { await chrome.tabs.create({ url: chrome.runtime.getURL("newtab.html#settings"), active: true }); });
     case "listVaultProfiles":
       return requireVaultManager(sender, message.overlayToken, listVaultProfiles);
     case "listVaultConnectionStates":
@@ -184,23 +182,9 @@ function handle(message: BackgroundRequest, sender: chrome.runtime.MessageSender
     case "lockVault":
       return requireVaultManager(sender, message.overlayToken, () => lockVault(message.vaultId));
     case "testWebDavConnection":
-      return requireVaultManager(sender, message.overlayToken, async () => {
-        await requestWebDavPermission(message.endpoint);
-        try {
-          return await testWebDavConnection(message);
-        } finally {
-          await releaseUnusedWebDavPermission(message.endpoint);
-        }
-      });
     case "saveWebDavVault":
       return requireVaultManager(sender, message.overlayToken, async () => {
-        await requestWebDavPermission(message.endpoint);
-        try {
-          return await saveWebDavVault(message);
-        } catch (error) {
-          await releaseUnusedWebDavPermission(message.endpoint);
-          throw error;
-        }
+        throw new Error("请在 uNAS 设置中管理共享 WebDAV 连接。");
       });
     case "removeVault":
       return requireVaultManager(sender, message.overlayToken, () => removeVault(message.vaultId));

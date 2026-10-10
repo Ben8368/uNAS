@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-const mock = vi.hoisted(() => ({ request: vi.fn(), rangeOpen: vi.fn(), parse: vi.fn(), permission: vi.fn(), contains: vi.fn(), select: vi.fn(), export: vi.fn() }))
+const mock = vi.hoisted(() => ({ acquire: vi.fn(), check: vi.fn(), request: vi.fn(), rangeOpen: vi.fn(), parse: vi.fn(), permission: vi.fn(), contains: vi.fn(), select: vi.fn(), export: vi.fn() }))
 vi.mock('../../browser/real/fileManagerIO', () => ({ requireExtensionFiles() {}, selectOneFile: mock.select, offerFileExport: mock.export }))
 vi.mock('unas-src/platform/extension/extensionPlatform', () => ({ extensionApi: () => ({ permissions: { request: mock.permission, contains: mock.contains } }) }))
 vi.mock('unas-src/platform/webdav/client', () => ({ WebDavClient: class { constructor(readonly endpoint: string) {} request = mock.request } }))
 vi.mock('unas-src/platform/webdav/rangeReader', () => ({ WebDavRangeReader: { open: mock.rangeOpen } }))
 vi.mock('unas-src/platform/webdav/listing', async original => ({ ...await original<typeof import('../listing')>(), parseDavListing: mock.parse }))
+vi.mock('../connections', () => ({ acquireWebDavConnection: mock.acquire, checkWebDavConnection: mock.check }))
 import { createDavFilesPort } from './davFiles'
 
 const input = { endpoint: 'https://dav.example/files/', username: 'user', appPassword: 'secret', consent: true }
@@ -14,6 +15,8 @@ beforeEach(() => {
   mock.permission.mockResolvedValue(true); mock.contains.mockResolvedValue(true)
   mock.request.mockResolvedValue({ status: 207, data: new TextEncoder().encode('<xml/>') })
   mock.parse.mockReturnValue(listing)
+  mock.acquire.mockResolvedValue({ ...input, id: 'shared', revision: 'v1', vaultEndpoint: input.endpoint + '.unas-vault/' })
+  mock.check.mockResolvedValue(undefined)
   vi.stubGlobal('navigator', { locks: { request: async (_name: string, _options: unknown, action: (lock: object) => Promise<unknown>) => await action({}) } })
 })
 afterEach(() => vi.unstubAllGlobals())
@@ -102,5 +105,46 @@ describe('WebDAV file service', () => {
     mock.request.mockClear()
     await expect(port.deleteFile('proof.txt')).rejects.toThrow('另一个页面')
     expect(mock.request).not.toHaveBeenCalled()
+  })
+})
+
+describe('shared file connections', () => {
+  it('acquires authentication by ID and refuses further requests after the configuration changes', async () => {
+    const port = createDavFilesPort()
+    await port.connect({ endpoint: input.endpoint, connectionId: 'shared', consent: true })
+    expect(mock.acquire).toHaveBeenCalledWith('shared')
+    mock.check.mockRejectedValue(new Error('配置已更新'))
+    mock.request.mockClear()
+    await expect(port.deleteFile('proof.txt')).rejects.toThrow('已更新')
+    expect(mock.request).not.toHaveBeenCalled()
+  })
+  it('hides the system Vault folder and rejects creating a reserved name', async () => {
+    mock.parse.mockReturnValue({ ...listing, entries: [...listing.entries, { path: '.unas-vault/', name: '.unas-vault', type: 'directory', size: 0 }] })
+    const port = createDavFilesPort()
+    const connected = await port.connect({ endpoint: input.endpoint, connectionId: 'shared', consent: true })
+    expect(connected.listing.entries.map(entry => entry.name)).not.toContain('.unas-vault')
+    mock.request.mockClear()
+    await expect(port.createDirectory('', '.unas-vault')).rejects.toThrow('系统管理')
+    expect(mock.request).not.toHaveBeenCalled()
+  })
+  it('protects the old objects folder for migrated Vault roots', async () => {
+    mock.acquire.mockResolvedValue({ ...input, id: 'shared', revision: 'v1', vaultEndpoint: input.endpoint })
+    mock.parse.mockReturnValue({ ...listing, entries: [...listing.entries, { path: 'objects/', name: 'objects', type: 'directory', size: 0 }] })
+    const port = createDavFilesPort()
+    const connected = await port.connect({ endpoint: input.endpoint, connectionId: 'shared', consent: true })
+    expect(connected.listing.entries.map(entry => entry.name)).not.toContain('objects')
+    await expect(port.list('objects/')).rejects.toThrow('系统管理')
+  })
+  it('cannot complete a cancelled acquisition or use a changed endpoint', async () => {
+    let resolve!: (value: unknown) => void
+    mock.acquire.mockImplementationOnce(() => new Promise(done => { resolve = done }))
+    const port = createDavFilesPort()
+    const pending = port.connect({ endpoint: input.endpoint, connectionId: 'shared', consent: true })
+    await vi.waitFor(() => expect(resolve).toBeDefined())
+    port.disconnect(); resolve({ ...input, id: 'shared', revision: 'v1' })
+    await expect(pending).rejects.toThrow('取消')
+    expect(mock.request).not.toHaveBeenCalled()
+    mock.acquire.mockResolvedValueOnce({ ...input, endpoint: 'https://other.example/' })
+    await expect(port.connect({ endpoint: input.endpoint, connectionId: 'shared', consent: true })).rejects.toThrow('已更新')
   })
 })

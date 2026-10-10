@@ -127,64 +127,21 @@
       <div id="versionSettingsDialog" class="dialog-backdrop hidden" role="presentation">
         <section class="version-dialog webdav-dialog" role="dialog" aria-modal="true" aria-labelledby="versionDialogTitle" aria-describedby="versionDialogDescription">
           <div class="dialog-heading">
-            <div><span class="eyebrow">密码库</span><h2 id="versionDialogTitle">WebDAV 连接</h2><p id="versionDialogDescription">选择当前要完成的操作，只填写必需信息。</p></div>
+            <div><span class="eyebrow">密码库</span><h2 id="versionDialogTitle">WebDAV 连接</h2><p id="versionDialogDescription">项目共享连接，无需为密码库重复配置。</p></div>
             <button id="closeVersionSettings" class="icon-button" type="button" title="关闭" aria-label="关闭">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
             </button>
           </div>
-          <form id="webdavForm" class="settings-form webdav-form">
-            <div id="webdavVaultProfileField" class="version-override">
-              <span id="webdavVaultProfileLabel">选择密码库</span>
-              <div class="webdav-vault-split">
-                <div id="webdavVaultPicker" class="webdav-vault-picker">
-                <select id="webdavVaultProfile" aria-hidden="true" tabindex="-1" hidden>
-                  <option value="__add__">添加密码库</option>
-                </select>
-                  <input id="webdavVaultName" type="text" autocomplete="off" hidden />
-                  <button id="webdavVaultSelection" type="button" aria-labelledby="webdavVaultProfileLabel webdavVaultSelectionText" role="combobox" aria-controls="webdavVaultProfileMenu" aria-haspopup="listbox" aria-expanded="false"><span id="webdavVaultSelectionText">添加密码库</span></button>
-                <svg class="webdav-vault-picker-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>
-                <div id="webdavVaultProfileMenu" class="webdav-vault-menu" role="listbox" aria-label="密码库选项" hidden></div>
-                <button id="removeWebDavVault" class="webdav-vault-remove" type="button" title="删除密码库" aria-label="删除密码库" hidden>
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
-                </button>
-                </div>
-                <span class="webdav-vault-divider" aria-hidden="true"></span>
-                <label class="sr-only" for="webdavUrl">WebDAV 地址</label>
-                <input id="webdavUrl" type="url" autocomplete="off" placeholder="WebDAV 地址" />
-              </div>
-            </div>
-            <div id="webdavConnectionFields">
-              <div class="webdav-auth-row">
-                <label class="version-override" for="webdavUsername">WebDAV 用户名
-                  <input id="webdavUsername" type="text" autocomplete="username" placeholder="专用账号" />
-                </label>
-                <label class="version-override" for="webdavPassword">App Password
-                  <input id="webdavPassword" type="password" autocomplete="new-password" placeholder="应用密码" aria-describedby="webdavConnectionHelp" />
-                </label>
-              </div>
-              <label id="webdavVaultKeyField" class="version-override" for="webdavVaultKey"><span>Vault Key</span>
-                <input id="webdavVaultKey" type="password" autocomplete="off" placeholder="新建可留空，接入已有库时粘贴" aria-describedby="webdavTaskHint webdavConnectionHelp" />
-                <small id="webdavTaskHint" class="webdav-vault-key-help">留空将新建密码库；粘贴已有 Vault Key 则接入远端密码库。</small>
-              </label>
-              <p id="webdavConnectionHelp" class="settings-help">连接材料会以扩展设备密钥加密并长期保存在本机；浏览器重启后可自动恢复 WebDAV 连接。连接时会申请主机权限并检查目录访问。</p>
+          <div class="settings-form webdav-form">
+            <p class="settings-help">WebDAV 由 uNAS 统一配置，文件管理与密码管家共用。保存连接后会自动配置加密密码库。</p>
+            <button id="openSharedWebDav" class="settings-save" type="button">管理共享 WebDAV 连接</button>
               <button id="importBrowserPasswords" class="settings-secondary browser-import-trigger" type="button">
                 <span class="browser-import-trigger-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v11M7.5 9.5 12 14l4.5-4.5M5 17.5v2h14v-2" /></svg></span>
                 <span class="browser-import-trigger-copy"><strong>从浏览器导入密码</strong><small>支持 Chrome / Edge CSV</small></span>
                 <svg class="browser-import-trigger-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg>
               </button>
               <input id="browserPasswordCsv" type="file" accept=".csv,text/csv" hidden />
-            </div>
-            <p id="webdavStatus" class="webdav-status" role="status" aria-live="polite" hidden></p>
-            <div id="webdavRecoveryKey" class="webdav-recovery-key" hidden>
-              <strong>请立即安全保存 Vault Key</strong>
-              <p>它只用于恢复密码库加密密钥；扩展会长期记住 WebDAV 连接材料，关闭浏览器后也能继续连接。请把它作为最终恢复凭据安全保存。</p>
-              <input id="webdavRecoveryKeyValue" type="text" readonly aria-label="Vault Key" />
-            </div>
-            <div id="legacyBuildSettings" hidden aria-hidden="true"></div>
-          </form>
-          <div id="webdavActions" class="settings-actions webdav-actions">
-            <button id="testWebDav" class="settings-reset" type="button">仅测试</button>
-            <button id="saveWebDav" class="settings-save" type="submit" form="webdavForm">添加密码库</button>
+
           </div>
           <form id="versionForm" hidden aria-hidden="true">
             <input id="pluginVersionOverride" type="text" />

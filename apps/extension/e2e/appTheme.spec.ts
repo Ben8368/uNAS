@@ -139,7 +139,7 @@ test('Settings and Downloader share navigation states and control geometry', asy
       await expect(settings.locator(selector)).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
       await expect(settings.locator(selector)).toHaveCSS('background-image', 'none')
     }
-    await expect(settings.getByRole('button', { name: '测试连接', exact: true })).toHaveCSS('min-height', '32px')
+    await expect(settings.getByLabel('WebDAV 地址')).toHaveCSS('min-height', '36px')
     await testInfo.attach('shared-navigation-' + reduced, { body: await page.screenshot(), contentType: 'image/png' })
   }
 })

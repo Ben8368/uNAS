@@ -80,7 +80,7 @@ export function PasswordManagerApp() {
   }
 
   async function saveApp(): Promise<void> {
-    if (!selectedVaultId) return setStatus({ text: '请先在「设置 → WebDAV」中连接密码库，再刷新此页面。', error: true })
+    if (!selectedVaultId) return setStatus({ text: '请先在「设置 → WebDAV」中配置共享 WebDAV，再刷新此页面。', error: true })
     await run('app', async () => {
       const next = { id: app.id, vaultId: selectedVaultId, name: app.name.trim(), targets: [{ scheme: 'https' as const, host: app.host.trim(), pathPrefix: app.path.trim() || undefined }] }
       if (app.id) await send<VaultApp>({ type: 'updateVaultApp', vaultId: selectedVaultId, app: next })
@@ -92,7 +92,7 @@ export function PasswordManagerApp() {
   }
 
   async function saveAccount(): Promise<void> {
-    if (!selectedVaultId) return setStatus({ text: '请先在「设置 → WebDAV」中连接密码库，再刷新此页面。', error: true })
+    if (!selectedVaultId) return setStatus({ text: '请先在「设置 → WebDAV」中配置共享 WebDAV，再刷新此页面。', error: true })
     await run('account', async () => {
       if (!account.id) {
         if (!account.password) throw new Error('新增账号必须填写密码')
@@ -131,17 +131,17 @@ export function PasswordManagerApp() {
 
   return <main className="password-manager-app" aria-label="密码管家">
     <header className="password-manager-app__header">
-      <div><p className="password-manager-app__eyebrow">uNAS · LOCAL VAULT</p><h2>密码管家</h2><p>管理密码库中的网站和登录账号；连接配置请前往「设置 → WebDAV」。</p></div>
-      <div className="password-manager-app__header-actions"><button type="button" className="mt-btn" onClick={() => void load(selectedVaultId)} disabled={Boolean(busy)}><RefreshCw size={16} aria-hidden="true" />刷新</button><span className="password-manager-app__badge">{profiles.length ? `${profiles.length} 个密码库` : '未配置'}</span></div>
+      <div><p className="password-manager-app__eyebrow">uNAS · LOCAL VAULT</p><h2>密码管家</h2><p>管理密码库中的网站和登录账号；密码库自动使用项目共享 WebDAV。</p></div>
+      <div className="password-manager-app__header-actions"><a className="mt-btn" href="#settings">管理共享连接</a><button type="button" className="mt-btn" onClick={() => void load(selectedVaultId)} disabled={Boolean(busy)}><RefreshCw size={16} aria-hidden="true" />刷新</button><span className="password-manager-app__badge">{profiles.length ? `${profiles.length} 个密码库` : '未配置'}</span></div>
     </header>
 
-    <section className="password-manager-app__status-card" aria-label="密码库状态"><div><ShieldCheck size={18} aria-hidden="true" /><strong>{selectedProfile ? selectedProfile.name : '尚未配置密码库'}</strong><span>{selectedSync ? syncText(selectedSync) : '在设置中连接密码库后，点击刷新'}</span></div><button type="button" className="mt-btn" onClick={() => void syncVaults()} disabled={!profiles.length || Boolean(busy)}>{busy === 'sync' ? '同步中…' : '检查同步'}</button></section>
+    <section className="password-manager-app__status-card" aria-label="密码库状态"><div><ShieldCheck size={18} aria-hidden="true" /><strong>{selectedProfile ? selectedProfile.name : '尚未配置密码库'}</strong><span>{selectedSync ? syncText(selectedSync) : '在设置中配置共享 WebDAV后，点击刷新'}</span></div><button type="button" className="mt-btn" onClick={() => void syncVaults()} disabled={!profiles.length || Boolean(busy)}>{busy === 'sync' ? '同步中…' : '检查同步'}</button></section>
 
     {profiles.length > 0 && <section className="password-manager-app__card"><h3>已配置密码库</h3><div className="password-manager-app__list">{profiles.map((profile) => <button key={profile.id} type="button" className={`password-manager-app__list-row ${profile.id === selectedVaultId ? 'is-selected' : ''}`} onClick={() => void load(profile.id)}><span><strong>{profile.name}</strong></span><span>{profile.id === selectedVaultId ? '当前' : '选择'}</span></button>)}</div></section>}
 
     <section className="password-manager-app__card"><div className="password-manager-app__section-heading"><span>第 1 步</span><div><h3>添加网站</h3><p>只填写登录网站的 HTTPS 域名和可选路径，密码管家据此匹配网页。</p></div></div><form className="password-manager-app__form" onSubmit={(event) => { event.preventDefault(); void saveApp() }}>
       <label>网站名称<input required disabled={!canEdit} value={app.name} onChange={(event) => setApp({ ...app, name: event.target.value })} placeholder="例如：公司邮箱" /></label><label>HTTPS 主机<input required disabled={!canEdit} value={app.host} onChange={(event) => setApp({ ...app, host: event.target.value })} placeholder="example.com" /></label><label>路径前缀（可选）<input disabled={!canEdit} value={app.path} onChange={(event) => setApp({ ...app, path: event.target.value })} placeholder="/login" /></label><div className="password-manager-app__actions"><button type="submit" className="mt-btn mt-btn--primary" disabled={!canEdit || Boolean(busy)}>{busy === 'app' ? '保存中…' : '保存网站'}</button><button type="button" className="mt-btn mt-btn--danger" onClick={() => void deleteApp()} disabled={!app.id || Boolean(busy)}>删除网站</button></div>
-    </form>{!catalog.length && <p className="password-manager-app__empty">{canEdit ? '还没有添加网站，请先填写上面的表单。' : '请先在「设置 → WebDAV」中连接密码库，再点击上方刷新，即可添加网站。'}</p>}{!!catalog.length && <div className="password-manager-app__list">{catalog.map((entry) => <button key={entry.app.id} type="button" className="password-manager-app__list-row" onClick={() => selectApp(entry)}><span><strong>{entry.app.name}</strong><small>{targetUrl(entry.app)}</small></span><span>{entry.accounts.length} 个账号</span></button>)}</div>}</section>
+    </form>{!catalog.length && <p className="password-manager-app__empty">{canEdit ? '还没有添加网站，请先填写上面的表单。' : '请先在「设置 → WebDAV」中配置共享 WebDAV，再点击上方刷新，即可添加网站。'}</p>}{!!catalog.length && <div className="password-manager-app__list">{catalog.map((entry) => <button key={entry.app.id} type="button" className="password-manager-app__list-row" onClick={() => selectApp(entry)}><span><strong>{entry.app.name}</strong><small>{targetUrl(entry.app)}</small></span><span>{entry.accounts.length} 个账号</span></button>)}</div>}</section>
 
     <section className="password-manager-app__card"><div className="password-manager-app__section-heading"><span>第 2 步</span><div><h3>保存账号</h3><p>一个网站可以有多个账号；修改已有账号时，密码留空即可保留原密码。</p></div></div><form className="password-manager-app__form" onSubmit={(event) => { event.preventDefault(); void saveAccount() }}>
       <label>选择网站<select required disabled={!canEdit} value={account.appId} onChange={(event) => setAccount({ ...account, appId: event.target.value })}><option value="">请选择</option>{catalog.map((entry) => <option key={entry.app.id} value={entry.app.id}>{entry.app.name}</option>)}</select></label><label>登录账号<input required disabled={!canEdit} value={account.username} onChange={(event) => setAccount({ ...account, username: event.target.value })} autoComplete="username" /></label><label>备注（可选）<input disabled={!canEdit} value={account.remark} onChange={(event) => setAccount({ ...account, remark: event.target.value })} autoComplete="off" /></label><label>登录密码<input type="password" disabled={!canEdit} value={account.password} onChange={(event) => setAccount({ ...account, password: event.target.value })} autoComplete="new-password" /><small>新增账号必填；修改已有账号时留空。</small></label><div className="password-manager-app__actions"><button type="submit" className="mt-btn mt-btn--primary" disabled={!canEdit || Boolean(busy)}>{busy === 'account' ? '保存中…' : '保存账号'}</button><button type="button" className="mt-btn mt-btn--danger" onClick={() => void deleteAccount()} disabled={!account.id || Boolean(busy)}>删除账号</button></div>

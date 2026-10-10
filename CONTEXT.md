@@ -15,7 +15,7 @@
 - 视觉采用原创的 macOS/iPadOS 启发式桌面层级与 Liquid Glass 原则，玻璃限于导航/控制层，并提供无障碍和性能降级。
 - uNAS Glass 工作包 A–C 已实现：`window-theme.css` 是主题与材质唯一来源；窗口根承担 blur，正文按内容分组使用可读面；Desktop/Dock/启动器/文件管理器已消费共享 Token。后续 D–E 见 [Development Blueprint](docs/DEVELOPMENT_BLUEPRINT.md#uNAS-glass-后续迁移顺序)。
 - 本仓库只维护 uNAS 品牌；密码兼容实现归 `packages/password-compat`，不与其他独立项目同步、导出或发布（[ADR 0021](docs/ADR/0021-unas-only-brand.md)）。
-- 密码库后端仅保留 WebDAV，共享传输已下沉（[ADR 0014](docs/ADR/0014-shared-webdav-transport.md)）；Legacy 应用级撤除仍受 [TD-003](docs/TECH_DEBT.md#td-003legacy-密码能力尚未完成应用级解耦) 约束。
+- WebDAV 共用连接并自动配置密码库（[ADR 0023](docs/ADR/0023-project-webdav-connections.md)）；Legacy 撤除受 [TD-003](docs/TECH_DEBT.md#td-003legacy-密码能力尚未完成应用级解耦) 约束。
 
 ## 近期优先级
 
@@ -34,7 +34,7 @@
 ## 最近验证
 
 - 2026-10-10：TD-004 关闭，router 测试 13 项通过；[验收](docs/archive/reviews/2026-10-10-td-004-fix.md)、[归档](docs/archive/tech-debt/2026-10.md)。署名 hook 启用，Git 回归 15 项通过；[验收](docs/archive/reviews/2026-10-10-git-attribution-hooks.md)。
-- 2026-10-09：品牌剥离完成；`pnpm verify`（455/1，兼容包 184/5）、MV3 E2E（105/3）、Web E2E（8）、Chrome E2E 通过；[验收](docs/archive/reviews/2026-10-09-unas-brand-independence.md)。Linux CI、企业登录与常用Profile待补。
+- 2026-10-10：项目 WebDAV 共用连接与 Files 排版完成；`pnpm verify`（476/1）、MV3 E2E（106/3）、Web E2E（8）、Chrome 定向测试通过；[验证记录](docs/archive/reviews/2026-10-10-project-webdav.md)。真实 NAS 与人工体验待验收。
 
 ## 按需入口
 

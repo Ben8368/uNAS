@@ -60,6 +60,13 @@ describe('extension message router', () => {
     expect(search).not.toHaveBeenCalled(); expect(download).not.toHaveBeenCalled()
   })
 
+  it('rejects shared credential acquisition before dispatch for untrusted senders', async () => {
+    const send = install()
+    for (const sender of [webPage, foreignExtension, { ...extensionPage, frameId: 2 }]) {
+      await expect(send({ kind: 'webdav.connection', version: 1, action: 'acquire', input: { id: 'saved' } }, sender)).resolves.toEqual({ ok: false, error: 'WebDAV 连接请求仅允许来自 uNAS 顶层页面。' })
+    }
+  })
+
   it('rejects unknown and malformed messages from every source', async () => {
     const send = install()
     for (const message of [undefined, null, 'session', [], {}, { kind: 'browser.download', url: 'javascript:alert(1)' }, { kind: 'browser.download.cancel', downloadId: -1 }]) {

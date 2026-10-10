@@ -122,12 +122,20 @@ test('temporary cache accepts a file above the former 32 MiB limit in Chrome', a
   expect(extension.remoteRequests).toEqual([])
 })
 
-test('WebDAV file UI enforces consent, bounded operations, conflicts, cancellation and href isolation', async ({ extension }, testInfo) => {
+test('WebDAV shared file UI enforces permission, bounded operations, conflicts, cancellation and href isolation', async ({ extension }, testInfo) => {
   const page = await extension.context.newPage()
   await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
   await page.evaluate(() => {
     const state = { mode: 'valid', deleted: false, uploaded: false, folder: false, requests: [] as Array<{ method: string; path: string; depth: string | null; match: string | null; none: string | null; bytes: number }> }
     Object.assign(globalThis, { davFileProbe: state })
+    const connection = { id: 'shared-fixture', name: '共享 NAS', endpoint: 'https://dav-files.example/selected/', vaultEndpoint: 'https://dav-files.example/selected/.unas-vault/', revision: 'v1' }
+    const originalMessage = browser.runtime.sendMessage.bind(browser.runtime)
+    browser.runtime.sendMessage = (async (message: { kind?: string; action?: string }) => {
+      if (message.kind !== 'webdav.connection') return originalMessage(message)
+      if (message.action === 'list') return { ok: true, data: [connection] }
+      if (message.action === 'acquire') return { ok: true, data: { ...connection, username: 'synthetic-user', appPassword: 'synthetic-test-password' } }
+      return { ok: true }
+    }) as typeof browser.runtime.sendMessage
     browser.permissions.request = (async () => state.mode !== 'denied') as typeof browser.permissions.request
     browser.permissions.contains = (async () => true) as typeof browser.permissions.contains
     const originalFetch = globalThis.fetch.bind(globalThis)
@@ -160,24 +168,22 @@ test('WebDAV file UI enforces consent, bounded operations, conflicts, cancellati
   await page.locator('.app-icon--file-manager').click()
   const app = page.locator('[data-app-id="file-manager"]')
   await app.getByRole('navigation', { name: '文件位置' }).getByRole('button', { name: 'WebDAV', exact: true }).click()
-  await app.getByLabel('WebDAV 地址').fill('https://dav-files.example/selected/')
-  await app.getByLabel('用户名', { exact: true }).fill('synthetic-user')
-  await app.getByLabel('App Password', { exact: true }).fill('synthetic-test-password')
-  await expect(app.getByRole('button', { name: '连接文件服务器' })).toBeDisabled()
-  await app.getByRole('checkbox').check()
+  await expect(app.getByLabel('共享 WebDAV 连接')).toHaveValue('shared-fixture')
+  await expect(app.getByLabel('App Password', { exact: true })).toHaveCount(0)
+  await expect(app.getByRole('button', { name: '浏览文件' })).toBeEnabled()
   const mode = (value: string) => page.evaluate(value => { (globalThis as any).davFileProbe.mode = value }, value)
   await mode('denied')
-  await app.getByRole('button', { name: '连接文件服务器' }).click()
+  await app.getByRole('button', { name: '浏览文件' }).click()
   await expect(app.getByRole('alert')).toContainText('未授予')
   expect(await page.evaluate(() => (globalThis as any).davFileProbe.requests.length)).toBe(0)
   for (const [scenario, message] of [['outside', '授权目录之外'], ['encoded', '文件名无效'], ['failed-property', '无法确认目标']]) {
     await mode(scenario)
-    await app.getByRole('button', { name: '连接文件服务器' }).click()
+    await app.getByRole('button', { name: '浏览文件' }).click()
     await expect(app.getByRole('alert')).toContainText(message)
     await expect(app.getByRole('button', { name: '断开连接' })).toHaveCount(0)
   }
   await mode('valid')
-  await app.getByRole('button', { name: '连接文件服务器' }).click()
+  await app.getByRole('button', { name: '浏览文件' }).click()
   await expect(app.getByRole('button', { name: '下载 proof.txt' })).toBeVisible()
   await app.getByRole('button', { name: '打开文件夹 nested' }).click()
   await expect(app).toContainText('此目录为空')
@@ -212,7 +218,7 @@ test('WebDAV file UI enforces consent, bounded operations, conflicts, cancellati
   await page.screenshot({ path: shot, animations: 'disabled' })
   await testInfo.attach('webdav-files', { path: shot, contentType: 'image/png' })
   await app.getByRole('button', { name: '断开连接' }).click()
-  await expect(app.getByLabel('App Password', { exact: true })).toHaveValue('')
+  await expect(app.getByLabel('App Password', { exact: true })).toHaveCount(0)
   expect(extension.errors).toEqual([])
   expect(extension.remoteRequests).toEqual([])
 })

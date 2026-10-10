@@ -22,26 +22,11 @@
         <div class="step"><span class="step-number">3</span><span><strong>保存账号</strong><small>填写登录信息</small></span></div>
       </nav>
       <section class="card">
-        <div class="section-heading"><span class="step-label">第 1 步</span><h2>连接 WebDAV</h2><p>WebDAV 是保存密码库的远程文件夹。先完成连接，下面的功能才会开放。</p></div>
-        <details class="help-details">
-          <summary>不知道这些信息在哪里找？</summary>
-          <div>
-            <p>打开 NAS 或云盘的 WebDAV 设置页，复制它提供的 HTTPS 地址。</p>
-            <ul><li>WebDAV 地址：通常类似 <code>https://nas.example.com/dav/</code></li><li>用户名：WebDAV 服务使用的账号</li><li>应用密码：优先新建一个只用于 WebDAV 的密码，不要填写 NAS 管理员登录密码</li></ul>
-          </div>
-        </details>
+        <div class="section-heading"><span class="step-label">共享连接</span><h2>WebDAV</h2><p>连接由项目设置统一管理，密码库会自动配置。</p></div>
+        <a class="primary" href="newtab.html#settings">管理共享 WebDAV 连接</a>
         <div id="profiles" class="profiles"></div>
-        <div id="profilesEmpty" class="empty-state">还没有配置密码库。填写下面的信息后，先点“测试连接”，确认无误再保存。</div>
-        <form id="vaultForm" class="form-grid">
-          <label>密码库名称<input id="vaultName" required autocomplete="off" placeholder="例如：我的 NAS 密码库" /><span class="field-help">给这个保存位置起一个容易识别的名字。</span></label>
-          <label>WebDAV 地址<input id="endpoint" required type="text" inputmode="url" placeholder="https://nas.example.com/dav/" autocomplete="off" /><span class="field-help">必须以 https:// 开头，可包含文件夹路径。</span></label>
-          <label>WebDAV 用户名<input id="username" autocomplete="username" /><span class="field-help">新建时必填；已有密码库可留空，使用本机长期保存的连接材料。</span></label>
-          <label>应用密码（App Password）<input id="appPassword" type="password" autocomplete="new-password" /><span class="field-help">新建时必填；已有密码库可留空，使用本机长期保存的连接材料。</span></label>
-          <label>Vault Key（首次接入已有库时填写）<input id="vaultKey" type="password" autocomplete="off" /><span class="field-help">扩展会长期记住 Vault Key；只有迁移设备或恢复本地数据时才需要再次填写。</span></label>
-          <div id="recoveryKeyNotice" class="security-note" hidden><strong>立即保存 Vault Key</strong><span>关闭此页后不会再显示。<input id="recoveryKey" readonly aria-label="Vault Key" /></span></div>
-          <div class="security-note"><strong>安全提示</strong><span>WebDAV 用户名、App Password 和 Vault Key 会以扩展设备密钥加密并长期保存在本机；配置完成后，可在“全部应用”页点击应用图标 5 次查看账号密码。</span></div>
-          <div class="actions"><button id="testVault" class="secondary" type="button">测试连接</button><button class="primary" type="submit">保存并继续</button><button id="removeVault" class="danger" type="button" disabled>删除密码库</button><p id="status" class="status" role="status" aria-live="polite" hidden></p></div>
-        </form>
+        <div id="profilesEmpty" class="empty-state">尚未配置共享连接。前往设置保存 WebDAV 后，返回刷新即可。</div>
+        <p id="status" class="status" role="status" aria-live="polite" hidden></p>
       </section>
       <section class="card">
         <div class="section-heading"><span class="step-label">第 2 步</span><h2>添加网站</h2><p>告诉密码管家账号属于哪个网站。只填写登录网站的域名和可选路径。</p></div>

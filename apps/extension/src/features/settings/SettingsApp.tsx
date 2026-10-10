@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Server } from 'lucide-react'
 import { ResizableAppSidebar } from 'unas-src/shared/ui/ResizableAppSidebar'
 
-const WebDavSettings = lazy(() => import('unas-src/features/password-manager/WebDavSettings').then((module) => ({ default: module.WebDavSettings })))
+const WebDavSettings = lazy(() => import('./WebDavSettings').then((module) => ({ default: module.WebDavSettings })))
 
 export function SettingsApp() {
   return (
@@ -15,7 +15,7 @@ export function SettingsApp() {
         </nav>
       </ResizableAppSidebar>
       <main className="settings-panel">
-        <header className="settings-toolbar"><div><h2>WebDAV</h2><p>管理密码库的 WebDAV 连接与认证信息。</p></div></header>
+        <header className="settings-toolbar"><div><h2>WebDAV</h2><p>统一管理各 App 共用的文件服务器与认证信息。</p></div></header>
         <div className="settings-stage">
           <Suspense fallback={<p role="status">正在加载 WebDAV 设置…</p>}><WebDavSettings /></Suspense>
         </div>

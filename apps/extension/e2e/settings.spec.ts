@@ -12,7 +12,10 @@ test('设置直接显示 WebDAV，切换桌面外观保留连接输入', async (
   const endpoint = settings.getByLabel('WebDAV 地址')
   await expect(endpoint).toBeEnabled()
   await endpoint.fill('http://invalid.example/dav')
-  await settings.getByRole('button', { name: '测试连接', exact: true }).click()
+  await settings.getByLabel('用户名', { exact: true }).fill('fixture-user')
+  await settings.getByLabel('应用密码（App Password）').fill('fixture-password')
+  await settings.getByRole('checkbox').check()
+  await settings.getByRole('button', { name: '保存连接', exact: true }).click()
   await expect(settings.getByRole('alert')).toContainText('HTTPS')
   await endpoint.fill('https://nas.example.com/dav/')
   await settings.getByLabel('应用密码（App Password）').fill('fixture-password')
@@ -37,24 +40,21 @@ test('WebDAV 设置通过受控消息保存、重连与移除，成功后清空�
   await page.goto(`chrome-extension://${extension.extensionId}/newtab.html`)
   // Controlled service responses verify the UI lifecycle only, not NAS compatibility.
   await page.evaluate(() => {
-    const original = chrome.runtime.sendMessage.bind(chrome.runtime)
-    const profile = { id: 'settings-fixture', name: '测试密码库', endpoint: 'https://nas.example.com/dav/', backend: 'webdav', enabled: true }
-    Object.assign(chrome.runtime, {
-      sendMessage: (message: { type: string; mode?: string; vaultId?: string }) => {
-        if (message.type === 'listVaultProfiles') return Promise.resolve({ ok: true, data: [] })
-        if (message.type === 'saveWebDavVault') {
-          if (message.mode === 'reconnect' && message.vaultId !== profile.id) return Promise.resolve({ ok: false, error: '错误的连接 ID' })
-          return Promise.resolve({ ok: true, data: { profile, recoveryKey: message.mode === 'create' ? 'fixture-recovery-key' : undefined } })
-        }
-        if (message.type === 'removeVault') return Promise.resolve({ ok: true })
-        return original(message)
-      },
-    })
+    const original = browser.runtime.sendMessage.bind(browser.runtime)
+    const connection = { id: 'settings-fixture', name: '测试共享连接', endpoint: 'https://nas.example.com/dav/', revision: 'v1', vaultEndpoint: 'https://nas.example.com/dav/.unas-vault/' }
+    browser.permissions.request = (async () => true) as typeof browser.permissions.request
+    browser.runtime.sendMessage = (async (message: { kind?: string; action?: string; input?: { id?: string } }) => {
+      if (message.kind !== 'webdav.connection') return original(message)
+      if (message.action === 'list') return { ok: true, data: [] }
+      if (message.action === 'save') return { ok: true, data: { connection, vaultReady: true, recoveryKey: message.input?.id ? undefined : 'fixture-recovery-key' } }
+      return { ok: true }
+    }) as typeof browser.runtime.sendMessage
   })
   await page.getByRole('navigation', { name: '桌面导航' }).getByRole('button', { name: '设置', exact: true }).click()
   const settings = page.locator('[data-app-id="settings"]')
   await settings.getByRole('button', { name: 'WebDAV', exact: true }).click()
-  await settings.getByLabel('密码库名称').fill('测试密码库')
+  await settings.getByLabel('用户名', { exact: true }).fill('fixture-user')
+  await settings.getByRole('checkbox').check()
   await settings.getByLabel('WebDAV 地址').fill('https://nas.example.com/dav/')
   await settings.getByLabel('应用密码（App Password）').fill('fixture-password')
   await settings.getByRole('button', { name: '保存连接', exact: true }).click()
@@ -66,7 +66,7 @@ test('WebDAV 设置通过受控消息保存、重连与移除，成功后清空�
   await settings.getByRole('button', { name: '已安全保存密钥' }).click()
   await expect(settings.getByLabel('Vault Key', { exact: true })).toHaveCount(0)
   await settings.getByLabel('应用密码（App Password）').fill('fixture-reconnect-password')
-  await settings.getByRole('button', { name: '重新连接', exact: true }).click()
+  await settings.getByRole('button', { name: '更新连接', exact: true }).click()
   await expect(settings.getByRole('status')).toContainText('连接已保存')
   await expect(settings.getByLabel('应用密码（App Password）')).toHaveValue('')
   page.once('dialog', (dialog) => dialog.accept())

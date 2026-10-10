@@ -44,7 +44,7 @@ export function FileManagerApp() {
     <main className="fm-workspace-main">
       <div hidden={section !== 'local'}><LocalDirectoryPane active={section === 'local'} /></div>
       {section === 'downloads' && <BrowserDownloadsPane />}
-      <div hidden={section !== 'webdav'}><DavFilesPane /></div>
+      <div hidden={section !== 'webdav'}><DavFilesPane active={section === 'webdav'} /></div>
       {(section === 'cache' || section === 'trash') && <TempCachePane key={section} trash={section === 'trash'} />}
     </main>
   </div>

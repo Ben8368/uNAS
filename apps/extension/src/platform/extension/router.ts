@@ -1,3 +1,4 @@
+import { webDavRoute } from './handlers/webdav'
 import { validateLaunchMessage } from '../workspace/workspaceRouter'
 import { extensionApi } from './extensionPlatform'
 import { adBlockRoute } from './handlers/adblock'
@@ -7,7 +8,7 @@ import { openPasswordManagerRoute, passwordManagerRoute } from './handlers/passw
 import type { MessageRoute, RuntimeResponse } from './routes'
 
 /** Order is part of the contract: earlier routes win, and AdBlock must be tried before the broader Password Manager sender policy. */
-const ROUTES: readonly MessageRoute[] = [openPasswordManagerRoute, adBlockRoute, passwordManagerRoute, linkRoute, downloadRoute]
+const ROUTES: readonly MessageRoute[] = [openPasswordManagerRoute, webDavRoute, adBlockRoute, passwordManagerRoute, linkRoute, downloadRoute]
 
 /** Reject old page bundles instead of allowing them to create a second desktop. */
 export function installWorkspaceRouter() {

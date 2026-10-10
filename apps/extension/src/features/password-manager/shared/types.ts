@@ -76,6 +76,7 @@ export type BackgroundRequest = OverlayCapability & (
   | { type: "revealCredential"; accountId: string | number; accountRef?: AccountRef; userScope?: string }
   | { type: "getJupiterKeepalive"; userScope: string }
   | { type: "setJupiterKeepalive"; enabled: boolean; userScope: string; appId?: string | number; accountId?: string | number; username?: string }
+  | { type: "openWebDavSettings" }
   | { type: "listVaultProfiles" }
   | { type: "listVaultConnectionStates" }
   | { type: "listVaultSyncStatuses" }

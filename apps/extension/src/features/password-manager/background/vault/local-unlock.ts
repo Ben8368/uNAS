@@ -6,6 +6,7 @@ const NONCE_BYTES = 12;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 export interface LocalUnlockMaterial {
+  connectionId?: string;
   username: string;
   appPassword: string;
   vaultKey: string;
@@ -54,7 +55,7 @@ function isEnvelope(value: unknown): value is LocalUnlockEnvelope {
 }
 function isMaterial(value: unknown): value is LocalUnlockMaterial {
   const item = value as LocalUnlockMaterial;
-  return Boolean(item && typeof item.username === "string" && item.username && typeof item.appPassword === "string" && item.appPassword && typeof item.vaultKey === "string" && item.vaultKey);
+  return Boolean(item && (typeof item.connectionId === "string" && item.connectionId || typeof item.username === "string" && item.username && typeof item.appPassword === "string" && item.appPassword) && typeof item.vaultKey === "string" && item.vaultKey);
 }
 async function derive(password: string, salt: Uint8Array, usages: KeyUsage[]): Promise<CryptoKey> {
   const source = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveKey"]);

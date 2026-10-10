@@ -24,6 +24,14 @@ describe("uNAS privileged message authorization", () => {
     expect(response).not.toEqual({ ok: false, error: "填充请求来源无效" });
   });
 
+  it("rejects separate WebDAV configuration even from trusted extension pages", async () => {
+    vi.stubGlobal("chrome", { runtime: { id: "unas-test" } });
+    const sender = { id: "unas-test", url: "chrome-extension://unas-test/newtab.html", frameId: 0 } as chrome.runtime.MessageSender;
+    const fields = { name: "NAS", endpoint: "https://dav.example/", username: "u", appPassword: "p" };
+    await expect(handlePasswordManagerMessage({ type: "saveWebDavVault", mode: "create", ...fields }, sender)).resolves.toEqual({ ok: false, error: "请在 uNAS 设置中管理共享 WebDAV 连接。" });
+    await expect(handlePasswordManagerMessage({ type: "testWebDavConnection", ...fields }, sender)).resolves.toEqual({ ok: false, error: "请在 uNAS 设置中管理共享 WebDAV 连接。" });
+  });
+
   it("accepts the overlay manager handoff only with the action capability", async () => {
     vi.stubGlobal("chrome", {
       runtime: { id: "unas-test" },

@@ -1,7 +1,8 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from './fixtures'
 
-async function connectSyntheticDav(page: Page, extensionId: string) {
+async function connectSyntheticDav(page: Page, extension: { extensionId: string; context: import('@playwright/test').BrowserContext }) {
+  const { extensionId } = extension
   await page.goto(`chrome-extension://${extensionId}/newtab.html`)
   await page.evaluate(async () => {
     const canvas = document.createElement('canvas')
@@ -51,14 +52,27 @@ async function connectSyntheticDav(page: Page, extensionId: string) {
       } })
     }
   })
+  const worker = extension.context.serviceWorkers()[0]
+  await worker.evaluate(() => {
+    const originalFetch = globalThis.fetch.bind(globalThis)
+    globalThis.fetch = async (input, options) => String(input).startsWith('https://dav-preview.example/files/')
+      ? new Response('<d:multistatus xmlns:d="DAV:"></d:multistatus>', { status: 207 })
+      : originalFetch(input, options)
+    chrome.permissions.contains = (async () => true) as typeof chrome.permissions.contains
+  })
+  await page.evaluate(() => { location.hash = '#settings' })
+  const settings = page.locator('[data-app-id="settings"]')
+  await settings.getByLabel('WebDAV 地址').fill('https://dav-preview.example/files/')
+  await settings.getByLabel('用户名', { exact: true }).fill('synthetic-user')
+  await settings.getByLabel('应用密码（App Password）').fill('synthetic-password')
+  await settings.getByRole('checkbox').check()
+  await settings.getByRole('button', { name: '保存连接', exact: true }).click()
+  await expect(settings.getByRole('alert')).toContainText('WebDAV 连接已保存')
+  await settings.getByRole('button', { name: '关闭设置' }).click()
   await page.locator('.app-icon--file-manager').click()
   const app = page.locator('[data-app-id="file-manager"]')
   await app.getByRole('navigation', { name: '文件位置' }).getByRole('button', { name: 'WebDAV', exact: true }).click()
-  await app.getByLabel('WebDAV 地址').fill('https://dav-preview.example/files/')
-  await app.getByLabel('用户名', { exact: true }).fill('synthetic-user')
-  await app.getByLabel('App Password', { exact: true }).fill('synthetic-password')
-  await app.getByRole('checkbox').check()
-  await app.getByRole('button', { name: '连接文件服务器' }).click()
+  await app.getByRole('button', { name: '浏览文件' }).click()
   await expect(app.getByRole('button', { name: '预览 readme.md', exact: true })).toBeVisible()
   return app
 }
@@ -107,7 +121,7 @@ test('local deletion preserves exact names and switching locations preserves chi
 
 test('unsaved WebDAV edits survive cancelled close, replacement and disconnect; saves protect the editor', async ({ extension }) => {
   const page = await extension.context.newPage()
-  const app = await connectSyntheticDav(page, extension.extensionId)
+  const app = await connectSyntheticDav(page, extension)
   await app.getByRole('button', { name: '预览 readme.md', exact: true }).click()
   const panel = app.locator('.fm-preview')
   await panel.getByRole('button', { name: '编辑', exact: true }).click()
@@ -162,7 +176,7 @@ test('unsaved WebDAV edits survive cancelled close, replacement and disconnect; 
 
 test('WebDAV previews sniff images without MIME, keep text limits and render large Markdown as plain text', async ({ extension }, testInfo) => {
   const page = await extension.context.newPage()
-  const app = await connectSyntheticDav(page, extension.extensionId)
+  const app = await connectSyntheticDav(page, extension)
   await app.getByRole('button', { name: '预览 large.png', exact: true }).click()
   const panel = app.locator('.fm-preview')
   await expect(panel.getByRole('img')).toBeVisible()
