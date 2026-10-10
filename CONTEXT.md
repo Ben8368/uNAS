@@ -33,8 +33,8 @@
 
 ## 最近验证
 
-- 2026-10-10：署名 hook 已启用，15 项 Git 回归及 `pnpm verify` 通过；见[验收记录](docs/archive/reviews/2026-10-10-git-attribution-hooks.md)。
-- 2026-10-09：uNAS 品牌与仓库剥离完成；`pnpm verify`（455 passed/1 skipped；兼容包 184 Node/5 Rust）及 MV3 E2E（105 passed/3 skipped）、Web E2E（8 passed）、系统 Chrome smoke 通过；见[剥离验收](docs/archive/reviews/2026-10-09-unas-brand-independence.md)。Linux CI、真实企业登录与常用 Profile 待补。
+- 2026-10-10：TD-004 关闭，router 测试 13 项通过；[验收](docs/archive/reviews/2026-10-10-td-004-fix.md)、[归档](docs/archive/tech-debt/2026-10.md)。署名 hook 启用，Git 回归 15 项通过；[验收](docs/archive/reviews/2026-10-10-git-attribution-hooks.md)。
+- 2026-10-09：品牌剥离完成；`pnpm verify`（455/1，兼容包 184/5）、MV3 E2E（105/3）、Web E2E（8）、Chrome E2E 通过；[验收](docs/archive/reviews/2026-10-09-unas-brand-independence.md)。Linux CI、企业登录与常用Profile待补。
 
 ## 按需入口
 
