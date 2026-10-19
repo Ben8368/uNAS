@@ -177,7 +177,7 @@
     },
     {
       "name": "lucide-react",
-      "version": "1.53.0",
+      "version": "1.55.0",
       "scope": "runtime-declared",
       "declaredLicense": "ISC",
       "licenseFiles": [
