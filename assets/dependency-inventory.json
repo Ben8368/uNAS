@@ -190,7 +190,7 @@
     },
     {
       "name": "puppeteer-core",
-      "version": "25.12.0",
+      "version": "25.13.0",
       "scope": "direct-build-test-tool",
       "declaredLicense": "Apache-2.0",
       "licenseFiles": [],
@@ -267,7 +267,7 @@
     },
     {
       "name": "vite",
-      "version": "8.3.3",
+      "version": "8.3.4",
       "scope": "direct-build-test-tool",
       "declaredLicense": "MIT",
       "licenseFiles": [
