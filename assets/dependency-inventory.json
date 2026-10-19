@@ -17,7 +17,7 @@
     },
     {
       "name": "@playwright/test",
-      "version": "1.63.0",
+      "version": "1.64.0",
       "scope": "direct-build-test-tool",
       "declaredLicense": "Apache-2.0",
       "licenseFiles": [
@@ -34,7 +34,7 @@
     },
     {
       "name": "@types/chrome",
-      "version": "0.3.4",
+      "version": "0.3.5",
       "scope": "direct-build-test-tool",
       "declaredLicense": "MIT",
       "licenseFiles": [
@@ -47,7 +47,7 @@
     },
     {
       "name": "@types/node",
-      "version": "26.6.4",
+      "version": "26.6.5",
       "scope": "direct-build-test-tool",
       "declaredLicense": "MIT",
       "licenseFiles": [
