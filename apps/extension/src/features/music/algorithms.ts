@@ -12,7 +12,9 @@ const DERIVE_V2_KEY_2 = new Uint8Array([0x2a, 0x2a, 0x23, 0x21, 0x28, 0x23, 0x24
 export type KgmHeader = { audioOffset: number; version: number; slot: number }
 export type KgmCipher = { fileBox: Uint8Array; slotBox: Uint8Array }
 export type NcmHeader = { audioOffset: number; keyBox: Uint8Array; metadataFormat?: string }
-export type QmcFooter = { audioBytes: number; rawKey: Uint8Array; footer: 'raw-key' | 'qtag' | 'static' }
+export type QmcFooter =
+  | { audioBytes: number; rawKey: Uint8Array; footer: 'raw-key' | 'qtag' | 'static' }
+  | { audioBytes: number; rawKey: Uint8Array; footer: 'musicex'; mediaFileName: string }
 export type QmcCipher = { kind: 'map' | 'rc4' | 'static'; key: Uint8Array; box?: Uint8Array; hash?: number }
 
 function sameBytes(left: Uint8Array, right: Uint8Array) {
@@ -371,11 +373,53 @@ export function detectAudio(bytes: Uint8Array) {
   return { format: 'unknown' as const, magic: Array.from(bytes.subarray(0, 4), (value) => value.toString(16).padStart(2, '0')).join('') }
 }
 
+const MUSICEX_MAGIC = new Uint8Array([0x6d, 0x75, 0x73, 0x69, 0x63, 0x65, 0x78, 0x00])
+const MUSICEX_MIN_TAG_BYTES = 0xc0
+const MUSICEX_MEDIA_FILE_NAME_OFFSET = 0x48
+const MUSICEX_MEDIA_FILE_NAME_BYTES = 100
+
+// The upstream MusicEx format stores an ASCII name in the low byte of each
+// UTF-16LE code unit. Match that byte semantics; the selected file name is
+// still available as a fallback when the tag name is not ASCII.
+function readMusicExFileName(tag: Uint8Array) {
+  let name = ''
+  for (let index = 0; index < MUSICEX_MEDIA_FILE_NAME_BYTES; index += 2) {
+    const byte = tag[index]
+    if (byte === 0) break
+    name += String.fromCharCode(byte)
+  }
+  return name.normalize('NFC')
+}
+
+function parseMusicExFooter(bytes: Uint8Array, fileSize: number) {
+  if (bytes.length < 16) throw new Error('QMC musicex footer 截断')
+  const tagSize = readUint32LE(bytes, bytes.length - 16)
+  const version = readUint32LE(bytes, bytes.length - 12)
+  if (!sameBytes(bytes.subarray(bytes.length - 8), MUSICEX_MAGIC)) throw new Error('QMC musicex magic 不匹配')
+  if (version !== 1) throw new Error(`不支持的 QMC musicex 版本：${version}`)
+  if (tagSize < MUSICEX_MIN_TAG_BYTES) throw new Error('QMC musicex tag 小于 0xC0')
+  if (tagSize > MUSIC_LIMITS.maxMusicExTagBytes) throw new Error('QMC musicex tag 超过 64 KiB 资源预算')
+  if (tagSize > fileSize) throw new Error('QMC musicex tag 超过文件大小')
+
+  const tagStart = bytes.length - tagSize
+  const nameEnd = tagStart + MUSICEX_MEDIA_FILE_NAME_OFFSET + MUSICEX_MEDIA_FILE_NAME_BYTES
+  if (tagStart < 0 || nameEnd > bytes.length) throw new Error('QMC musicex tag 截断')
+  const mediaFileName = readMusicExFileName(bytes.subarray(tagStart + MUSICEX_MEDIA_FILE_NAME_OFFSET, nameEnd))
+  if (!mediaFileName) throw new Error('QMC musicex 缺少 MediaFileName')
+
+  const audioBytes = fileSize - tagSize
+  if (audioBytes <= 0) throw new Error('QMC musicex 音频区段为空')
+  return { audioBytes, mediaFileName }
+}
+
 export function parseQmcFooter(bytes: Uint8Array, fileSize: number): QmcFooter {
   if (bytes.length < 4) throw new Error('QMC footer 截断')
   const suffix = bytes.subarray(bytes.length - 4)
   if (ascii(suffix) === 'STag') throw new Error('QMC STag 没有可用媒体 key')
-  if (suffix[0] === 0x63 && suffix[1] === 0x65 && suffix[2] === 0x78 && suffix[3] === 0) throw new Error('QMC cex footer 需要外部 MMKV，当前浏览器路径不支持')
+  if (suffix[0] === 0x63 && suffix[1] === 0x65 && suffix[2] === 0x78 && suffix[3] === 0) {
+    const musicex = parseMusicExFooter(bytes, fileSize)
+    return { audioBytes: musicex.audioBytes, rawKey: new Uint8Array(), footer: 'musicex', mediaFileName: musicex.mediaFileName }
+  }
   if (ascii(suffix) === 'QTag') {
     if (bytes.length < 8) throw new Error('QMC QTag footer 截断')
     const metadataLength = readUint32BE(bytes, bytes.length - 8)

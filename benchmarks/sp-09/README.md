@@ -18,6 +18,8 @@
 - 根许可证：MIT；`LICENSE` SHA-256 `c9028d65d98058e7bb95dff0980e90e1185ded1ae90591032ecf513354ab77b0`
 - 快照事实：82 个文件，802,812 bytes；仅同步到系统 Go module cache，未进入 uNAS Git、锁文件或扩展包。
 
+2026-10-20 增量复核：上游已发布 `cli-v0.2.20.zip`（SHA-256 `27a326a7edb37494abbaca0ebefe248dcf0796718526c5f35f356f3dbd1d8f7d`，Gitea 归档 commit `618dd65a2a5caa8ab46c86f762fe6775e11105c1`，96 个文件 / 821,758 bytes），module path 改为 `git.um-react.app/um/cli`；根 `LICENSE` 未变，23 个 QMC `testdata` 与 2 个 ximalaya scramble table 逐字节未变；新增直接依赖 `github.com/unlock-music/go-mmkv@v0.1.6` 的 tag 树仍无许可证文件。完整 v0.2.20 依赖表尚未逐项重审，[SUPPLY_CHAIN.md](SUPPLY_CHAIN.md) 的 v0.2.12 表仍是已审计基线；该缺口保持登记在 RISK-015。
+
 `go.mod` 中 26 个声明依赖已逐项登记来源、版本、Module checksum、许可证文件和许可证哈希；25 个可取得许可证的模块已完成静态锁定。`unlock-music.dev/mmkv@v0.1.0` 的官方镜像 tag 已取得并固定到 commit `31549c6a948b24a29476b4b5c06838758dd2fd3b`，但 tag 树没有许可证文件或声明；Module Proxy 返回 404、原站 direct 请求返回 403。uNAS 不再把该上游模块作为产品依赖，详见 [ADR-0010](../../docs/ADR/0010-clean-room-mmkv-replacement.md)；这不等于上游代码获得了许可证。
 
 资源结论：QMC 上游算法测试向量属于根项目 MIT 资源，只读引用、不复制；KGM v5 所需 KGG 数据库不在源码快照中，且已确认它是用户本机的加密 SQLite 密钥数据库，不是可随扩展分发的通用算法资源。本轮已启动其来源审计，但上游移植来源返回 HTTP 403，实际数据库 provenance、许可、schema 和包体边界仍未锁定；未发现并未引入本轮所需 WASM/codec/媒体资源。维护者提供的 `um-web.extension.v1.10.8` 仍只作静态参考，不作为源码、许可证或产品能力证据。
@@ -77,17 +79,29 @@ node scripts/sp09-probe.mjs --module-dir C:\Users\ben.luo\go\pkg\mod\unlock-musi
 | QMC static/no marker | 不支持 | 不依赖扩展名猜测；需要后续有界、可复核的识别路径 |
 | 未知/伪扩展名 | 不支持 | 未识别 magic/container |
 
+## 用户提供 ekey 的 QMC 路径（2026-10-20）
+
+依据 [ADR 0025](../../docs/ADR/0025-user-provided-qmc-ekey-import.md)，Beta App 允许用户主动选择本地 ekey 清单：
+
+- 格式：JSON 对象或“文件名 / ekey”交替行；1 MiB、10,000 项、名称和 ekey 各 4,096 字符预算。
+- 用途：QMC `musicex`（`cex\0`）按 `MediaFileName` 查找；无 footer legacy QMC 按所选文件名查找；raw-key/QTag 内嵌 key 优先。
+- 边界：Worker 内解析并只驻留内存；不持久化、不写日志/跨上下文消息/遥测；不自动读取 MMKV/SQLite/KGG，不调用原生 CLI。
+
+证据：单元测试 `qmcKeys.test.ts` 与 `algorithms.test.ts` 覆盖清单解析、冲突/预算、NFC/basename 查找和 musicex tag；`apps/extension/e2e/musicKeyImport.spec.ts` 在 bundled Chromium 的 MV3 构建中验证 musicex 与 legacy 解密、下载哈希、暂存清理和无网络请求。测试向量由 uNAS 测试辅助代码生成（30-byte map cipher），不复制上游 testdata、真实用户 ekey 或媒体。
+
+未验证：真实 QQ 音乐 `cex\0` 私有样本、目标 Chrome Stable、直接 MMKV/SQLite 解析和真实用户清单兼容性。
+
 ## 已验证、未验证与不支持汇总
 
-**已验证：** MD-01 的根来源/tag/SHA/checksum、根 MIT 许可证、可取得依赖的静态许可证清单、QMC 上游夹具来源与哈希；MD-02 对 KGM v3/v5、NCM 结构、QMC QTag/raw-key footer 的固定输入识别和预算拒绝；6 个本地 KGM v3 样本（历史 1 个 + 本轮授权 5 个）经自有脚本解密并通过 FLAC magic、`ffprobe` 和完整 `ffmpeg` 解码；一个本地 NCM 样本经自有脚本解密后通过 MP3 magic、`ffprobe` 和完整 `ffmpeg` 解码；26 个本地 QMC `.mgg` 样本全部经自有脚本解密并通过 OGG/Vorbis `ffprobe` 和完整 `ffmpeg` 解码；本轮 5 个 KGM v3 样本均在 bundled Chromium 的 `music` Beta Tool App 中完成失败重试、取消、SHA-256 一致性和 OPFS 暂存清理验证。Worker 使用 1 MiB 分块、ACK 背压和 OPFS 暂存，输入/输出上限 128 MiB，单 section 上限 16 MiB，QMC footer 上限 64 KiB。
+**已验证：** MD-01 的根来源/tag/SHA/checksum、根 MIT 许可证、可取得依赖的静态许可证清单、QMC 上游夹具来源与哈希；MD-02 对 KGM v3/v5、NCM 结构、QMC QTag/raw-key footer 的固定输入识别和预算拒绝；6 个本地 KGM v3 样本（历史 1 个 + 本轮授权 5 个）经自有脚本解密并通过 FLAC magic、`ffprobe` 和完整 `ffmpeg` 解码；一个本地 NCM 样本经自有脚本解密后通过 MP3 magic、`ffprobe` 和完整 `ffmpeg` 解码；26 个本地 QMC `.mgg` 样本全部经自有脚本解密并通过 OGG/Vorbis `ffprobe` 和完整 `ffmpeg` 解码；本轮 5 个 KGM v3 样本均在 bundled Chromium 的 `music` Beta Tool App 中完成失败重试、取消、SHA-256 一致性和 OPFS 暂存清理验证；用户提供 ekey 清单的 QMC musicex 与无 footer legacy 路径使用 uNAS 自行生成的合成向量，在 bundled Chromium MV3 中完成解密、下载哈希、暂存清理和无网络请求验证。Worker 使用 1 MiB 分块、ACK 背压和 OPFS 暂存，输入/输出上限 128 MiB，单 section 上限 16 MiB，QMC footer 上限 64 KiB。
 
-**未验证：** 上游 `unlock-music.dev/mmkv` 许可证与再分发授权（已退出 uNAS 产品依赖）；uNAS 自有 MMKV 兼容层；完整 Go module graph；KGM v5 KGG 实际数据库 provenance/许可证/schema/打包；可纳入仓库再分发的真实音频夹具；目标 Chrome Stable 的本功能复验；音乐 App 的完整 FileRef/Task/owner lease 接入；页面关闭后的音乐专项 E2E；峰值 JS/Worker/Chrome 进程内存实测和跨版本兼容性；NCM/QMC 私有夹具仍未配置，因此对应下载/失败/重试和 SHA-256 浏览器 E2E 尚未取得真实媒体证据。KGM v3 本轮只证明这 5 个用户授权样本，不扩大为所有 KGM v3 文件兼容性。
+**未验证：** 上游 `unlock-music.dev/mmkv` 许可证与再分发授权（已退出 uNAS 产品依赖）；直接 MMKV/SQLite 解析与真实 QQ 音乐 `cex\0` 私有样本；v0.2.20 的完整依赖表逐项重审；完整 Go module graph；KGM v5 KGG 实际数据库 provenance/许可证/schema/打包；可纳入仓库再分发的真实音频夹具；目标 Chrome Stable 的本功能复验；音乐 App 的完整 FileRef/Task/owner lease 接入；页面关闭后的音乐专项 E2E；峰值 JS/Worker/Chrome 进程内存实测和跨版本兼容性；NCM/QMC 私有夹具仍未配置，因此对应下载/失败/重试和 SHA-256 浏览器 E2E 尚未取得真实媒体证据。KGM v3 本轮只证明这 5 个用户授权样本，不扩大为所有 KGM v3 文件兼容性。
 
-**不支持：** 文件管理关联、右键菜单、在线封面/元数据/密钥/账号、Native Helper、在线 DRM/付费墙/站点授权绕过、KGM v5 实际解密、QMC `cex\0`/外部 MMKV 分支，以及没有 extension-independent marker 的 QMC static 分支。Beta App 只暴露已验证的 KGM v3、NCM 和 QMC raw-key-footer 路径。
+**不支持：** 文件管理关联、右键菜单、在线封面/元数据/密钥/账号、Native Helper、在线 DRM/付费墙/站点授权绕过、KGM v5 实际解密、QMC 直接 MMKV/SQLite/KGG 读取、没有 ekey 清单的 QMC `cex\0`，以及没有 extension-independent marker 的 QMC static 分支。Beta App 暴露已验证的 KGM v3、NCM、QMC raw-key-footer，以及用户提供 ekey 清单时的 QMC musicex/legacy 路径。
 
 ## 后续阻断项
 
-上游 `mmkv` 许可证阻断已通过“退出上游依赖、改走自有 clean-room 实现”降级，但自有兼容层尚未实现和单独审查；KGM v5 KGG 实际资源审计仍阻断供应链锁定。KGM v3、NCM 和 QMC raw-key-footer 已完成隔离脚本、Worker、OPFS 暂存、取消/显式清理和 bundled Chromium Beta App 验收；本轮 5 个 KGM v3 授权样本新增了浏览器下载失败/重试、取消、SHA-256 一致性和清理证据。下载无完成回执时结果保留并允许重试；NCM/QMC 仍缺私有浏览器夹具。音乐专用 FileRef/Task/owner lease、目标 Chrome Stable、峰值内存实测和可再分发真实音频夹具仍未完成。`VipSongsDownload` 只读盘点得到 26 个 `.mgg`，均为 raw-key-footer；未发现 KGM/VPR。RISK-015 保持开放，Music Module Gate 仍未整体通过。
+上游 `mmkv` 许可证阻断已通过“退出上游依赖、改走自有 clean-room 实现”降级，但直接 MMKV/SQLite 解析尚未实现和单独审查；KGM v5 KGG 实际资源审计仍阻断供应链锁定。KGM v3、NCM、QMC raw-key-footer，以及用户提供 ekey 清单的 QMC musicex/legacy 路径已完成隔离脚本、Worker、OPFS 暂存、取消/显式清理和 bundled Chromium Beta App 验收；本轮 5 个 KGM v3 授权样本新增了浏览器下载失败/重试、取消、SHA-256 一致性和清理证据。下载无完成回执时结果保留并允许重试；NCM/QMC 仍缺私有浏览器夹具，cex 仅有 uNAS 合成向量。音乐专用 FileRef/Task/owner lease、目标 Chrome Stable、峰值内存实测和可再分发真实音频夹具仍未完成。`VipSongsDownload` 只读盘点得到 26 个 `.mgg`，均为 raw-key-footer；未发现 KGM/VPR。RISK-015 保持开放，Music Module Gate 仍未整体通过。
 
 ## Worker、浏览器与产品集成验证
 
@@ -95,7 +109,7 @@ node scripts/sp09-probe.mjs --module-dir C:\Users\ben.luo\go\pkg\mod\unlock-musi
 
 - `apps/extension/src/features/music/musicDecrypt.worker.ts`：独立 Worker，按 1 MiB 读取和发送，主线程 ACK 后继续，支持取消和结构化失败。
 - `apps/extension/src/features/music/real/musicDecryption.ts`：能力探测、OPFS staged output、顺序写入、取消超时兜底和幂等清理。
-- `apps/extension/src/features/music/real/MusicApp.tsx`：`executionSource: real` 的 Beta Tool App；只接受用户通过文件选择器选取的本地文件，不读任意路径、不覆盖原文件、不联网。
+- `apps/extension/src/features/music/real/MusicApp.tsx`：`executionSource: real` 的 Beta Tool App；只接受用户通过文件选择器选取的本地文件或 ekey 清单，不读任意路径、不覆盖原文件、不联网。
 
 固定资源预算：输入/输出各 128 MiB、单 section 16 MiB、QMC footer 64 KiB、Worker 分块 1 MiB。输出先写入 OPFS `unas-music-*.stage`，Worker 只做音频签名级检查并记录输出 SHA-256；取消/失败由用户流程清理，下载触发后因页面无法确认浏览器完成状态而保留暂存项，用户可重试下载或显式清理。
 

@@ -42,5 +42,6 @@ ADR 记录影响长期维护的决定及理由。Roadmap 说明“按什么阶�
 | [0022](0022-dependabot-maintenance.md) | 已接受 | Dependabot 分组维护 npm 与 Actions，保留人工合并、双 lock 和 WASM 门禁 |
 | [0023](0023-project-webdav-connections.md) | 已接受 | 项目共享 WebDAV 配置、自动初始化密码库、连接材料与 Vault Key 隔离 |
 | [0024](0024-repository-automation.md) | 已接受 | 采用 CodeQL、PR Labeler、Stale 与选择性 CodeRabbit；禁止自动合并、自动发布和自动升级 Rust/WASM |
+| [0025](0025-user-provided-qmc-ekey-import.md) | 已接受 | 用户选择的本地 ekey 清单作为受控 File 输入，Worker 内解析并限制在内存；不自动读取 MMKV/SQLite/KGG |
 
 “已接受”表示维护者接受的方案基线，依据见各 ADR；不等于对应源码已实现或 Gate 已通过。若后续阶段改变边界，须以新 ADR 替代。0002 只保留历史，不再约束实现。

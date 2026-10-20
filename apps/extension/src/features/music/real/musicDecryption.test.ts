@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { prepareMusicDecrypt } from './musicDecryption'
+import { MUSIC_LIMITS } from 'unas-src/features/music/types'
 const staging = vi.hoisted(() => ({ release: vi.fn(async () => {}), recover: vi.fn(async () => {}) }))
 vi.mock('./musicStaging', () => ({ recoverMusicStaging: staging.recover, holdMusicStage: async () => staging.release }))
 vi.mock('unas-src/platform/extension/extensionPlatform', () => ({ extensionApi: () => undefined }))
@@ -74,6 +75,25 @@ describe('music cleanup and hashing', () => {
     expect(staging.release).not.toHaveBeenCalled()
     await run.cleanup()
     expect(staging.release).toHaveBeenCalledOnce()
+  })
+  it('forwards the user-selected ekey manifest and reports its key source', async () => {
+    const keyFile = new File(['song.mflac\nZmFrZS1rZXk=\n'], 'keys.txt')
+    const run = prepareMusicDecrypt(new File(['test'], 'song.mflac'), { keyFile })
+    void run.result.catch(() => {})
+    await vi.waitFor(() => expect(worker.postMessage).toHaveBeenCalled())
+    expect(worker.postMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'decrypt', keyFile }))
+    worker.emit({ type: 'started', format: 'qmc', audioBytes: 4, keySource: 'imported' })
+    worker.emit({ type: 'chunk', buffer: new ArrayBuffer(4), bytes: 4 })
+    worker.emit({ type: 'complete', outputBytes: 4, outputFormat: 'flac', validationDepth: 'audio-signature' })
+    await vi.waitFor(() => expect(worker.postMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'hash' })))
+    worker.emit({ type: 'hashed', sha256: 'b'.repeat(64) })
+    await expect(run.result).resolves.toMatchObject({ keySource: 'imported' })
+    await run.cleanup()
+  })
+  it('rejects an oversized ekey manifest before creating a Worker', async () => {
+    const keyFile = new File(['x'.repeat(MUSIC_LIMITS.maxKeyFileBytes + 1)], 'keys.txt')
+    const run = prepareMusicDecrypt(new File(['test'], 'song.mflac'), { keyFile })
+    await expect(run.result).rejects.toThrow('1 MiB')
   })
   it('cancels during hashing without resolving a late successful result', async () => {
     const run = await started()

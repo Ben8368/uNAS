@@ -12,8 +12,10 @@ import {
   parseKgmHeader,
   parseNcmHeader,
   parseQmcFooter,
+  type QmcCipher,
 } from 'unas-src/features/music/algorithms'
-import { MUSIC_LIMITS, type MusicWorkerMessage, type MusicWorkerRequest, type MusicOutputFormat } from 'unas-src/features/music/types'
+import { parseQmcKeyFile, selectQmcKey, type QmcKeyMap } from 'unas-src/features/music/qmcKeys'
+import { MUSIC_LIMITS, type MusicWorkerMessage, type MusicWorkerRequest, type MusicOutputFormat, type MusicKeySource } from 'unas-src/features/music/types'
 
 type ActiveJob = { id: string; controller: AbortController; ack?: Promise<void>; acknowledge?: () => void; rejectAck?: (reason: unknown) => void }
 let active: ActiveJob | undefined
@@ -49,6 +51,14 @@ async function readRange(file: File, start: number, length: number) {
   return new Uint8Array(await file.slice(start, start + length).arrayBuffer())
 }
 
+async function readQmcKeys(keyFile: File | undefined): Promise<QmcKeyMap> {
+  if (!keyFile) return new Map()
+  if (!(keyFile instanceof File)) throw new Error('ekey 清单不是有效的本地文件。')
+  if (keyFile.size <= 0) throw new Error('ekey 清单为空。')
+  if (keyFile.size > MUSIC_LIMITS.maxKeyFileBytes) throw new Error('ekey 清单超过 1 MiB 资源预算。')
+  return parseQmcKeyFile(await keyFile.text())
+}
+
 function abortIfNeeded(controller: AbortController) {
   if (controller.signal.aborted) throw new DOMException('已取消；临时输出将被清理。', 'AbortError')
 }
@@ -72,6 +82,8 @@ async function decrypt(request: Extract<MusicWorkerRequest, { type: 'decrypt' }>
     let audioBytes: number
     let outputFormat: MusicOutputFormat = 'unknown'
     let cipherKind: string | undefined
+    let keySource: MusicKeySource | undefined
+    let keyFileProvided = false
     let decryptChunk: (chunk: Uint8Array, offset: number) => Uint8Array
 
     if (startsWith(prefix, getKgmMagic())) {
@@ -99,16 +111,28 @@ async function decrypt(request: Extract<MusicWorkerRequest, { type: 'decrypt' }>
       decryptChunk = (chunk, offset) => decryptNcmChunk(chunk, parsed.keyBox, offset)
     } else {
       format = 'qmc'
+      keyFileProvided = Boolean(request.keyFile)
       const tailLength = Math.min(file.size, MUSIC_LIMITS.maxFooterBytes + 8)
       const tail = await readRange(file, file.size - tailLength, tailLength)
       const footer = parseQmcFooter(tail, file.size)
-      const cipher = createQmcCipher(footer.rawKey)
+      // Embedded raw-key/QTag files do not need the user manifest; only read
+      // the manifest when the footer actually requires an imported key.
+      const keys = footer.footer === 'musicex' || footer.footer === 'static' ? await readQmcKeys(request.keyFile) : new Map<string, string>()
+      const selection = selectQmcKey(footer, file.name, keys)
+      let cipher: QmcCipher
+      try {
+        cipher = createQmcCipher(selection.rawKey)
+      } catch (error) {
+        if (selection.keySource === 'imported') throw new Error('导入的 ekey 无法用于该文件；请检查清单中的文件名和 ekey。', { cause: error })
+        throw error
+      }
+      keySource = selection.keySource
       audioOffset = 0; audioBytes = footer.audioBytes; cipherKind = cipher.kind
       decryptChunk = (chunk, offset) => decryptQmcChunk(chunk, cipher, offset)
     }
 
     if (audioBytes <= 0 || audioBytes > MUSIC_LIMITS.maxOutputBytes) throw new Error('解密输出超过资源预算或为空。')
-    post({ type: 'started', id: request.id, format, outputFormat, inputBytes: file.size, audioBytes, ...(cipherKind ? { cipher: cipherKind } : {}) })
+    post({ type: 'started', id: request.id, format, outputFormat, inputBytes: file.size, audioBytes, ...(cipherKind ? { cipher: cipherKind } : {}), ...(keySource ? { keySource } : {}) })
 
     let position = audioOffset; let outputBytes = 0; let first = new Uint8Array()
     while (position < file.size && outputBytes < audioBytes) {
@@ -122,7 +146,12 @@ async function decrypt(request: Extract<MusicWorkerRequest, { type: 'decrypt' }>
       await emitChunkAndWait(request.id, decoded)
     }
     const detected = detectAudio(first)
-    if (detected.format === 'unknown') throw new Error(`解密输出签名无法识别：${detected.magic}`)
+    if (detected.format === 'unknown') {
+      const hint = keySource === 'imported'
+        ? '；请检查 ekey 清单中的值是否与该文件匹配。'
+        : keySource === 'static' && keyFileProvided ? '；ekey 清单中没有匹配该文件名的条目，或该文件不需要 key。' : ''
+      throw new Error(`解密输出签名无法识别：${detected.magic}${hint}`)
+    }
     post({ type: 'complete', id: request.id, outputBytes, outputFormat: detected.format, validationDepth: 'audio-signature' })
   } catch (error) {
     const cancelled = error instanceof DOMException && error.name === 'AbortError'

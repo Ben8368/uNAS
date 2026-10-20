@@ -99,7 +99,7 @@ ZIP、PDF、Media 不阻断 G2-Core；它们在进入各自集成前完成模块
 
 默认顺序：Archive ZIP → PDF → Media。
 
-Music encrypted-container 不继承 Media 的支持结论，单独使用 [Music Module Gate](#music-module-gate)。SP-09 已允许已验证的 KGM v3、NCM 和 QMC raw-key-footer 进入仅限本地文件选择的 Beta Tool App；在 Gate 完整通过前，Music 不进入文件管理入口，也不作稳定产品能力承诺。
+Music encrypted-container 不继承 Media 的支持结论，单独使用 [Music Module Gate](#music-module-gate)。SP-09 已允许已验证的 KGM v3、NCM、QMC raw-key-footer，以及用户提供 ekey 清单时的 QMC musicex/legacy 路径进入仅限本地文件选择的 Beta Tool App；在 Gate 完整通过前，Music 不进入文件管理入口，也不作稳定产品能力承诺。
 
 每个模块自己的进入 Gate 至少要求：
 

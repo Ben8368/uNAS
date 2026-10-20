@@ -46,6 +46,46 @@ describe('music browser algorithms', () => {
     expect(detectAudio(new TextEncoder().encode('OggS')).format).toBe('ogg')
   })
 
+  it('derives the synthetic ekey used by the imported-key tests', () => {
+    const cipher = createQmcCipher(new TextEncoder().encode('dU5BUy1FSzGCzjmFvnGs92deDVCxcu74GR7w6PhN8HMcFTbUKgQ5ig=='))
+    expect(cipher.kind).toBe('map')
+    const plain = new TextEncoder().encode('fLaC-test')
+    expect(decryptQmcChunk(decryptQmcChunk(plain, cipher, 0), cipher, 0)).toEqual(plain)
+  })
+
+  function writeUint32LE(bytes: Uint8Array, offset: number, value: number) {
+    bytes[offset] = value & 0xff
+    bytes[offset + 1] = value >>> 8 & 0xff
+    bytes[offset + 2] = value >>> 16 & 0xff
+    bytes[offset + 3] = value >>> 24 & 0xff
+  }
+
+  function buildMusicExTag(mediaFileName: string, tagSize = 0xc0, version = 1) {
+    const tag = new Uint8Array(tagSize)
+    for (let index = 0; index < mediaFileName.length && index < 50; index += 1) tag[0x48 + index * 2] = mediaFileName.charCodeAt(index)
+    writeUint32LE(tag, tagSize - 16, tagSize)
+    writeUint32LE(tag, tagSize - 12, version)
+    tag.set(new TextEncoder().encode('musicex\0'), tagSize - 8)
+    return tag
+  }
+
+  it('parses a MusicEx footer and exposes its MediaFileName', () => {
+    const tag = buildMusicExTag('song.mflac')
+    const audioBytes = 4096
+    const footer = parseQmcFooter(tag, audioBytes + tag.length)
+    expect(footer.footer).toBe('musicex')
+    expect(footer.audioBytes).toBe(audioBytes)
+    if (footer.footer === 'musicex') expect(footer.mediaFileName).toBe('song.mflac')
+  })
+
+  it('rejects invalid MusicEx versions, sizes, and missing names', () => {
+    expect(() => parseQmcFooter(buildMusicExTag('song.mflac', 0xc0, 2), 4096)).toThrow('版本')
+    expect(() => parseQmcFooter(buildMusicExTag('song.mflac', 0xbf), 4096)).toThrow('小于 0xC0')
+    expect(() => parseQmcFooter(buildMusicExTag('song.mflac'), 0xbf)).toThrow('超过文件大小')
+    expect(() => parseQmcFooter(buildMusicExTag('song.mflac', MUSIC_LIMITS.maxMusicExTagBytes + 16), 4096)).toThrow('64 KiB')
+    expect(() => parseQmcFooter(buildMusicExTag(''), 4096)).toThrow('缺少 MediaFileName')
+  })
+
   const fixtures = [
     {
       name: 'KGM', env: 'UNAS_MUSIC_KGM_FIXTURE', outputFormat: 'flac',

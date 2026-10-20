@@ -21,6 +21,8 @@
 .music-app__file, .music-app__notice, .music-app__error { max-width: 900px; margin: 18px 0 0; padding: 12px 14px; border-radius: var(--app-control-radius); overflow-wrap: anywhere; }
 .music-app__file { display: flex; justify-content: space-between; gap: 12px; background: var(--window-surface-readable); color: var(--window-text-muted, #b8c4d8); }
 .music-app__file strong { color: var(--window-text, #edf3ff); }
+.music-app__key-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; max-width: 900px; margin-top: 10px; color: var(--window-text-muted, #b8c4d8); font-size: 12px; }
+.music-app__key-row strong { color: var(--window-text, #edf3ff); }
 .music-app__notice { border: 1px solid var(--window-accent); background: var(--window-surface-readable); color: var(--window-text); }
 .music-app__error { border: 1px solid var(--window-danger); background: var(--window-surface-readable); color: var(--window-danger); }
 .music-app__progress { max-width: 900px; margin-top: 18px; padding: 2px; border: 1px solid var(--window-border, #536886); border-radius: 8px; }
@@ -33,5 +35,5 @@
   .music-app { padding: 16px; }
   .music-app__header { display: block; }
   .music-app__badge { display: inline-block; margin-top: 12px; }
-  .music-app__file { display: grid; }
+  .music-app__file, .music-app__key-row { display: grid; }
 }

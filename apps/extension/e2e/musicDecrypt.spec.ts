@@ -49,7 +49,7 @@ for (const sample of samples) {
     const app = page.locator('[data-app-id="music"]')
     await expect(app.getByText('Worker READY')).toBeVisible()
 
-    await app.locator('input[type="file"]').setInputFiles(fixturePath)
+    await app.locator('input[type="file"]').first().setInputFiles(fixturePath)
     await app.getByRole('button', { name: '开始解密', exact: true }).click()
     await expect(app.locator('.music-app__result strong')).toHaveText(/^(FLAC|MP3|OGG|WAV) 音频签名已识别$/, { timeout: 20_000 })
     const outputFormat = (await app.locator('.music-app__result strong').innerText()).split(' ')[0].toLowerCase()
@@ -88,7 +88,7 @@ for (const sample of samples) {
     const fixturePath = requiredFixturePath(sample)
     const page = await workspace(extension, 'music')
     const app = page.locator('[data-app-id="music"]')
-    await app.locator('input[type="file"]').setInputFiles(fixturePath)
+    await app.locator('input[type="file"]').first().setInputFiles(fixturePath)
     await app.getByRole('button', { name: '开始解密', exact: true }).click()
     await expect(app.locator('.music-app__result strong')).toHaveText(/^(FLAC|MP3|OGG|WAV) 音频签名已识别$/, { timeout: 20_000 })
     await page.evaluate(() => {
@@ -112,7 +112,7 @@ for (const sample of samples) {
     const fixturePath = requiredFixturePath(sample)
     const page = await workspace(extension, 'music')
     const app = page.locator('[data-app-id="music"]')
-    await app.locator('input[type="file"]').setInputFiles(fixturePath)
+    await app.locator('input[type="file"]').first().setInputFiles(fixturePath)
     await app.getByRole('button', { name: '开始解密', exact: true }).click()
     await expect(app.getByRole('button', { name: '取消并清理', exact: true })).toBeEnabled()
     await app.getByRole('button', { name: '取消并清理', exact: true }).click()

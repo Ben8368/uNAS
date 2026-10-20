@@ -70,12 +70,12 @@
 ### RISK-015（P0）：Music encrypted-container 来源与稳定产品边界尚未验证
 
 - **阻断 Gate：** Music Module Gate；不阻断 G2-Core、G3 或其他已规划模块。
-- **问题：** 允许用户明确有权处理的本地 KGM/QMC/NCM 容器解密；KGM v3、NCM、QMC raw-key-footer 已有自有 adapter、Worker/OPFS 和 bundled Chromium Beta App 证据，但目标 Chrome、完整 FileRef/Task owner lease、峰值内存、KGM v5 的 KGG 数据库、构建物 provenance 和可再分发授权夹具仍未完成逐项审查；若复用上游 `go-mmkv`，其许可证/再分发授权仍未确认；QMC 仍存在 MMKV/文件路径分支，不能直接当作浏览器能力。
-- **当前事实：** 维护者已说明获得作者授权；源码已通过 Go Module Proxy 临时同步并固定 tag/SHA/checksum；uNAS 已接受 ADR-0010，不复制或继续依赖上游 `go-mmkv`，未来仅允许自有 clean-room 兼容实现；本地授权解密边界已由 ADR-0011 固化；维护者提供的 `um-web.extension.v1.10.8` 仅完成静态观察，未加载、未执行、未进入 Git。
+- **问题：** 允许用户明确有权处理的本地 KGM/QMC/NCM 容器解密；KGM v3、NCM、QMC raw-key-footer、用户提供 ekey 的 QMC `cex\0`/legacy 路径已有自有 adapter、Worker/OPFS 和 bundled Chromium Beta App 证据，但目标 Chrome、完整 FileRef/Task owner lease、峰值内存、KGM v5 的 KGG 数据库、构建物 provenance 和可再分发授权夹具仍未完成逐项审查；若复用上游 `go-mmkv`，其许可证/再分发授权仍未确认；QMC 的直接 MMKV/SQLite/KGG 读取仍不能当作浏览器能力。
+- **当前事实：** 维护者已说明获得作者授权；源码已通过 Go Module Proxy 临时同步并固定 tag/SHA/checksum；uNAS 已接受 ADR-0010，不复制或继续依赖上游 `go-mmkv`，未来仅允许自有 clean-room 兼容实现；本地授权解密边界已由 ADR-0011 固化，[ADR-0025](ADR/0025-user-provided-qmc-ekey-import.md) 允许用户主动选择 ekey 清单并仅在 Worker 内存中解析；维护者提供的 `um-web.extension.v1.10.8` 仅完成静态观察，未加载、未执行、未进入 Git。
 - **控制：** 不提交上游源代码/构建物，不运行 Go CLI，不引入 Native Helper；所有真实测试只用用户明确有权处理的固定夹具；禁止远程封面、元数据、密钥、账号、在线 DRM 或站点授权路径；Beta App 仅暴露已验证的本地文件选择路径；自有兼容实现、解密 adapter 和资源未完成许可证、来源和独立审查前不进入稳定产品或公开分发。
-- **本轮增量：** [2026-09-29 修复](archive/reviews/2026-09-29-download-archive-music.md) 为暂存增加 Web Lock、孤儿恢复与清理重试，并将输出校验移到 Worker；不等于完整 Task owner lease、真实崩溃、峰值内存或完整音频验证已验收。
+- **本轮增量：** [2026-09-29 修复](archive/reviews/2026-09-29-download-archive-music.md) 为暂存增加 Web Lock、孤儿恢复与清理重试，并将输出校验移到 Worker；不等于完整 Task owner lease、真实崩溃、峰值内存或完整音频验证已验收。2026-10-20 按 ADR-0025 实现用户 ekey 清单导入，覆盖 QMC musicex 与无 footer legacy 文件，合成夹具 E2E 见 `apps/extension/e2e/musicKeyImport.spec.ts`；真实 QQ 音乐 cex 样本、直接 MMKV/SQLite 读取和目标 Chrome 仍未验证。
 - **关闭证据：** [SP-09](../benchmarks/sp-09/README.md) 补齐依赖许可证清单、KGM/QMC/NCM 夹具 manifest 与 SHA-256、Worker/WASM/CSP/内存/取消/清理结果、不支持表，并由维护者决定进入、降级或延后 Music Module Gate。
-- **降级：** 已验证格式可在 bundled Chromium Beta App 中提供本地实验性处理；目标 Chrome、稳定 Task/FileRef 接入、KGM v5、QMC MMKV/`cex\0` 和无 marker static 分支继续只提供格式识别/能力提示，不支持真实处理。
+- **降级：** 已验证格式可在 bundled Chromium Beta App 中提供本地实验性处理；目标 Chrome、稳定 Task/FileRef 接入、KGM v5、QMC 直接 MMKV/SQLite/KGG 读取和无 marker static 分支继续只提供格式识别/能力提示，不支持真实处理；QMC `cex\0` 仅在用户提供匹配 ekey 清单时处理。
 
 ### RISK-010（P1）：前端先行导致真实能力返工
 
