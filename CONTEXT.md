@@ -1,6 +1,6 @@
 # 当前状态
 
-> **最后确认：** 2026-10-10
+> **最后确认：** 2026-10-20
 > **阶段：** Phase 2 / uNAS native module integration
 > **产品代码：** WXT MV3 已接入密码管家、广告拦截、WebDAV Vault、Legacy adapter 和 closed Shadow DOM 浮窗；桌面 App 共用下载外观基线；Files 有 WebDAV 文件实验切片、Chrome 下载记录面板和 OPFS 临时缓存/回收站，边界见 ADR 0015；`manage.html` 兼容保留。
 
@@ -27,13 +27,13 @@
 
 - G1 已确认；SP-04 仍开放 RISK-007，详见 [SP-04](benchmarks/sp-04/README.md)。
 - G2-Core 和 PDF/Media/Music 各模块 Gate 未因本轮实现而通过；FileRef、媒体与预览仍为受限实验路径。
-- SP-09：KGM v3、NCM、QMC raw-key-footer 已完成 Worker/OPFS Beta 验证；5 个授权 KGM v3 样本通过解码及下载/取消/清理。暂存下载无完成回执；无覆盖或联网。
-- SP-09 仍开放 RISK-015：目标 Chrome、owner lease、关页、峰值内存、KGM v5、QMC MMKV/`cex\0`、可再分发夹具未完成。
+- SP-09：KGM v3、NCM、QMC raw-key-footer 已完成 Worker/OPFS Beta 验证；QMC musicex/legacy 支持用户主动导入 ekey 清单（仅 Worker 内存，ADR 0025）；5 个授权 KGM v3 样本通过解码及下载/取消/清理。暂存下载无完成回执；无覆盖或联网。
+- SP-09 仍开放 RISK-015：目标 Chrome、owner lease、关页、峰值内存、KGM v5、QMC 直接 MMKV/SQLite 读取与真实 cex 样本、可再分发夹具未完成。
 - 活跃风险以 [RISK_REGISTER.md](docs/RISK_REGISTER.md) 为唯一事实源；Chrome Web Store 更新属于未来 Store Gate。
 
 ## 最近验证
 
-- 2026-10-10：TD-004 关闭，router 测试 13 项通过；[验收](docs/archive/reviews/2026-10-10-td-004-fix.md)、[归档](docs/archive/tech-debt/2026-10.md)。署名 hook 启用，Git 回归 15 项通过；[验收](docs/archive/reviews/2026-10-10-git-attribution-hooks.md)。
+- 2026-10-20：音乐 QMC musicex/legacy 用户 ekey 清单导入完成；`pnpm verify`、扩展单测（495/3）、合成夹具 MV3 E2E（3）通过；[验证记录](docs/archive/reviews/2026-10-20-music-ekey-import.md)。
 - 2026-10-10：项目 WebDAV 共用连接与 Files 排版完成；`pnpm verify`（476/1）、MV3 E2E（106/3）、Web E2E（8）、Chrome 定向测试通过；[验证记录](docs/archive/reviews/2026-10-10-project-webdav.md)。真实 NAS 与人工体验待验收。
 
 ## 按需入口

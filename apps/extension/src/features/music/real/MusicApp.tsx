@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { inlineWorkspace } from 'unas-src/platform/workspace/inlineWorkspace'
 import { prepareMusicDecrypt, probeMusicCapability, recoverMusicStaging, type MusicDecryptRun } from 'unas-src/features/music/musicDecryption'
-import type { MusicCapability, MusicDecryptResult } from 'unas-src/features/music/types'
+import { MUSIC_LIMITS, type MusicCapability, type MusicDecryptResult, type MusicKeySource } from 'unas-src/features/music/types'
+
+const KEY_SOURCE_LABEL: Record<MusicKeySource, string> = {
+  embedded: '内嵌 key',
+  imported: '导入的 ekey',
+  static: '无 key（static）',
+}
 
 function formatBytes(value: number) {
   if (value < 1024) return `${value} B`
@@ -19,7 +25,9 @@ export function MusicApp() {
   const capability = useMemo<MusicCapability>(() => probeMusicCapability(), [])
   const run = useRef<MusicDecryptRun | undefined>(undefined)
   const objectUrl = useRef<string | undefined>(undefined)
+  const keyInput = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | undefined>()
+  const [keyFile, setKeyFile] = useState<File | undefined>()
   const [result, setResult] = useState<MusicDecryptResult | undefined>()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -53,12 +61,24 @@ export function MusicApp() {
     if (objectUrl.current) { URL.revokeObjectURL(objectUrl.current); objectUrl.current = undefined }
   }, [])
 
+  const selectKey = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const selected = event.target.files?.[0]
+    if (!selected) return
+    if (selected.size > MUSIC_LIMITS.maxKeyFileBytes) { setError('ekey 清单超过 1 MiB 资源预算。'); return }
+    setKeyFile(selected); setError('')
+  }, [])
+
+  const clearKey = useCallback(() => {
+    setKeyFile(undefined)
+    if (keyInput.current) keyInput.current.value = ''
+  }, [])
+
   const start = useCallback(async () => {
     if (!file || busy) return
     setBusy(true)
     try { await cleanup() } catch (reason) { setBusy(false); setError(reason instanceof Error ? reason.message : '暂存清理失败，请重试。'); return }
-    setError(''); setNotice('正在 Worker 中探测并解密；输出尚未提交。'); setProcessed(0)
-    const current = prepareMusicDecrypt(file, ({ processedBytes }) => setProcessed(processedBytes))
+    setError(''); setNotice(keyFile ? '正在 Worker 中探测并解密；ekey 清单仅在 Worker 内存中读取，输出尚未提交。' : '正在 Worker 中探测并解密；输出尚未提交。'); setProcessed(0)
+    const current = prepareMusicDecrypt(file, { keyFile, onProgress: ({ processedBytes }) => setProcessed(processedBytes) })
     run.current = current
     try {
       const next = await current.result
@@ -70,7 +90,7 @@ export function MusicApp() {
     } finally {
       if (run.current === current) { setBusy(false) }
     }
-  }, [busy, cleanup, file])
+  }, [busy, cleanup, file, keyFile])
 
   const cancel = useCallback(() => {
     const current = run.current
@@ -107,7 +127,7 @@ export function MusicApp() {
 
   return <section className="music-app" aria-label="音乐解锁">
     <header className="music-app__header">
-      <div><p className="music-app__eyebrow">LOCAL MUSIC ENGINE · executionSource: real</p><h2>音乐解锁</h2><p>仅处理你主动选择的本地 KGM v3、NCM 和 QMC `.mgg` 文件；不联网、不读取外部 key、不覆盖原文件。</p></div>
+      <div><p className="music-app__eyebrow">LOCAL MUSIC ENGINE · executionSource: real</p><h2>音乐解锁</h2><p>仅处理你主动选择的本地 KGM v3、NCM 和 QMC 文件；需要 ekey 的 QQ 音乐文件可由你导入本地清单。不联网、不自动读取外部 key、不覆盖原文件。</p></div>
       <span className={`music-app__badge ${capability.supported ? 'music-app__badge--ready' : ''}`}>{capability.supported ? 'Worker READY' : 'UNAVAILABLE'}</span>
     </header>
     {!capability.supported && <div className="music-app__error" role="alert">{capability.reasons.join(' ')}</div>}
@@ -115,17 +135,26 @@ export function MusicApp() {
     <div className="music-app__controls">
       <label className="music-app__picker">
         <span>选择本地加密音乐</span>
-        <input type="file" accept=".kgm,.ncm,.mgg,.qmc0,.qmc3,.qmcflac,.mflac" onChange={select} disabled={busy || !capability.supported} />
+        <input type="file" accept=".kgm,.ncm,.mgg,.mgg2,.qmc0,.qmc3,.qmcflac,.mflac,.mflac2" onChange={select} disabled={busy || !capability.supported} />
       </label>
       <button type="button" className="mt-btn mt-btn--primary" onClick={() => void start()} disabled={!file || busy || !capability.supported}>{busy ? '处理中…' : '开始解密'}</button>
       <button type="button" className="mt-btn" onClick={cancel} disabled={!busy}>取消并清理</button>
     </div>
     <div className="music-app__file" aria-live="polite">{file ? <><strong>{file.name}</strong><span>{formatBytes(file.size)}</span></> : '尚未选择文件；原文件不会被修改。'}</div>
+    <div className="music-app__key-row">
+      <label className="music-app__picker">
+        <span>导入 ekey 清单（可选）</span>
+        <input ref={keyInput} type="file" accept=".json,.txt" onChange={selectKey} disabled={busy || !capability.supported} />
+      </label>
+      {keyFile
+        ? <><strong>{keyFile.name}</strong><span>{formatBytes(keyFile.size)} · 仅在 Worker 内存中解析</span><button type="button" className="mt-btn" onClick={clearKey} disabled={busy}>移除清单</button></>
+        : <span>支持 JSON 或“文件名 / ekey”交替行；不读取 MMKV、SQLite 或任意路径。</span>}
+    </div>
     {busy && <div className="music-app__progress" role="status"><span style={{ width: `${Math.min(100, file ? processed / file.size * 100 : 0)}%` }} /><small>{processed ? `${formatBytes(processed)} 已写入 OPFS staged output` : '正在读取与验证输入…'}</small></div>}
     {notice && <p className="music-app__notice" role="status">{notice}</p>}
     {recoveryWarning && <p className="music-app__notice" role="status">{recoveryWarning} 新任务仍可继续。</p>}
     {error && <p className="music-app__error" role="alert">{error}</p>}
     {error && run.current && !busy && <button type="button" className="mt-btn" onClick={() => { void cleanup().then(() => setError('')).catch(reason => setError(String(reason))) }}>重试清理暂存</button>}
-    {result && !busy && <div className="music-app__result"><div><strong>{result.outputFormat.toUpperCase()} 音频签名已识别</strong><span>仅签名级验证，未完成完整音频验证 · {formatBytes(result.outputBytes)} · {result.format}</span><span data-output-sha256={result.outputSha256}>SHA-256 {result.outputSha256}</span></div><button type="button" className="mt-btn mt-btn--primary" onClick={download}>下载解密结果</button><button type="button" className="mt-btn" onClick={() => { void cleanup().catch(reason => setError(reason instanceof Error ? reason.message : '暂存清理失败，请重试。')) }}>清理暂存</button></div>}
+    {result && !busy && <div className="music-app__result"><div><strong>{result.outputFormat.toUpperCase()} 音频签名已识别</strong><span>仅签名级验证，未完成完整音频验证 · {formatBytes(result.outputBytes)} · {result.format}{result.keySource ? ` · ${KEY_SOURCE_LABEL[result.keySource]}` : ''}</span><span data-output-sha256={result.outputSha256}>SHA-256 {result.outputSha256}</span></div><button type="button" className="mt-btn mt-btn--primary" onClick={download}>下载解密结果</button><button type="button" className="mt-btn" onClick={() => { void cleanup().catch(reason => setError(reason instanceof Error ? reason.message : '暂存清理失败，请重试。')) }}>清理暂存</button></div>}
   </section>
 }

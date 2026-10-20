@@ -14,11 +14,26 @@
 | 根 `LICENSE` | MIT；SHA-256 `c9028d65d98058e7bb95dff0980e90e1185ded1ae90591032ecf513354ab77b0` |
 | 根审计输入 | `go.mod` SHA-256 `0efb6d8cc718c97ddd5d1e6cd66da28c1fdfaeeab48653c7fa69d8c9235462e8`；`go.sum` SHA-256 `d2ea3544613965b78cfb1ecc1f7517504e162e9016d31f344544381031cafc35` |
 
+### 2026-10-20 v0.2.20 增量复核
+
+| 项目 | 固定事实 |
+| --- | --- |
+| 版本 / tag / commit | `v0.2.20` / `618dd65a2a5caa8ab46c86f762fe6775e11105c1`（Go Module Proxy `Origin.Hash` 与维护者 ZIP 归档注释一致） |
+| 模块路径 | `git.um-react.app/um/cli`（v0.2.12 的 `unlock-music.dev/cli` 已不再对应此版本；源码来源改为 `https://git.um-react.app/um/cli`） |
+| 维护者归档 | `C:\Users\ben.luo\Downloads\cli-v0.2.20.zip`；SHA-256 `27a326a7edb37494abbaca0ebefe248dcf0796718526c5f35f356f3dbd1d8f7d` |
+| 源码快照 | 96 个文件，821,758 bytes；只读审计，未复制进 uNAS Git、依赖锁或扩展包 |
+| 根 `LICENSE` | MIT；SHA-256 `c9028d65d98058e7bb95dff0980e90e1185ded1ae90591032ecf513354ab77b0`（与 v0.2.12 相同） |
+| 根审计输入 | `go.mod` SHA-256 `a35941bfe44e913d8b3780d1f229491785fc7e8943e406ae6e16fa00c737fdc4`；`go.sum` SHA-256 `67858ae688d1768568a093150f026a68c5c44346b5b5c021ad97216da5c75644` |
+| 已登记夹具 | 23 个 `algo/qmc/testdata/*.bin` 与 2 个 ximalaya scramble table 和 v0.2.12 逐字节一致；仅 `algo/ximalaya/ximalaya.go` 的 import 路径变化 |
+| 依赖增量 | 移除 `unlock-music.dev/mmkv@v0.1.0`；新增 direct `github.com/unlock-music/go-mmkv@v0.1.6`、`modernc.org/sqlite@v1.40.0`；Go 1.25.1；`fsnotify 1.9.0`、`samber/lo 1.52.0`、`urfave/cli/v2 2.27.7`、`x/crypto 0.44.0`、`x/text 0.31.0` |
+| `go-mmkv@v0.1.6` 许可证 | tag `83770a01d6972334dd15711f9e342d35a19c862c`；tag tree 无 `LICENSE`/`COPYING`/`NOTICE`，GitHub license API 返回 404；许可证/再分发授权仍未确认 |
+| 审计状态 | 完整 v0.2.20 依赖表（含新增 modernc/sqlite 传递依赖）尚未逐项重审；上表 v0.2.12 仍是已审计基线，该缺口登记在 RISK-015 |
+
 来源、版本、checksum 和 license 文件均以本地 Go module cache 的只读文件为证据。下表的 `License SHA-256` 是对应版本模块内许可证文件的哈希；没有把许可证文本或第三方源码复制进本仓库。
 
 维护者提供的 `cli-v0.2.12.zip` 已在系统临时目录只读展开核对：文件数、总字节数、根 `LICENSE`/`go.mod`/`go.sum`/README 哈希及已登记 QMC/Ximalaya 资源哈希均与 Module Proxy 快照一致。归档根目录只有 `cli/`，不包含 `unlock-music.dev/mmkv` 源码、KGG 数据库或 WASM。
 
-`mmkv` 来源复核：官方镜像 `https://github.com/unlock-music/go-mmkv` 的 `v0.1.0` tag 指向 `31549c6a948b24a29476b4b5c06838758dd2fd3b`，tag 树共 16 个源码/测试文件；没有 `LICENSE`、`COPYING` 或 `NOTICE`，全文检索也没有 SPDX、MIT、Apache 或 BSD 许可证声明。镜像可作为来源线索，但不能替代作者许可或再分发授权。
+`mmkv` 来源复核：官方镜像 `https://github.com/unlock-music/go-mmkv` 的 `v0.1.0` tag 指向 `31549c6a948b24a29476b4b5c06838758dd2fd3b`，tag 树共 16 个源码/测试文件；没有 `LICENSE`、`COPYING` 或 `NOTICE`，全文检索也没有 SPDX、MIT、Apache 或 BSD 许可证声明。镜像可作为来源线索，但不能替代作者许可或再分发授权。v0.2.20 改用 `github.com/unlock-music/go-mmkv@v0.1.6`（tag `83770a01d6972334dd15711f9e342d35a19c862c`），tag tree 仍无许可证文件，GitHub license API 返回 404；许可证阻断未解除。
 
 uNAS 的源码扫描未发现对 `unlock-music.dev/mmkv` 的实际引用；根据 [ADR-0010](../../docs/ADR/0010-clean-room-mmkv-replacement.md)，该上游模块退出 uNAS 产品依赖。若后续确需 MMKV 能力，只实现由 uNAS 自有代码维护的最小兼容层，并在代码进入仓库前单独确定许可证、来源和 clean-room 证据；不能给上游代码补发许可证。
 

@@ -80,7 +80,7 @@ Demo 流程不读取真实文件、不执行真实转换、不申请宽权限；
 | Archive | ZIP 创建、列表、选择性解压、冲突处理 | V1 不承诺 RAR/7z/TAR、破解或损坏包修复 |
 | PDF | 合并、拆分、旋转、图片转 PDF、页面转图片 | 不做 OCR、电子签名、内容级编辑和复杂表单 |
 | Media | 音频提取、缩略图、GIF、短片段与少量常见容器转换 | 不承诺任意 codec、长视频、4K、DRM 或后台续跑 |
-| Music（计划研究） | 对用户明确有权处理的 KGM/QMC/NCM 本地文件进行容器解密、输出验证和必要的元数据处理 | 不提供在线链接、账号、密钥获取、远程服务或在线 DRM/付费墙绕过；须独立通过 Music Module Gate |
+| Music（计划研究） | 对用户明确有权处理的 KGM/QMC/NCM 本地文件进行容器解密、输出验证和必要的元数据处理；可导入用户主动选择的本地 ekey 清单（[ADR 0025](ADR/0025-user-provided-qmc-ekey-import.md)） | 不提供在线链接、账号、密钥获取、远程服务或在线 DRM/付费墙绕过；不自动读取 MMKV/SQLite/KGG 或任意路径；须独立通过 Music Module Gate |
 | Tasks | 队列、进度、取消、失败原因、结果验证和历史摘要 | 页面关闭后的真实任务不保证继续 |
 | 密码管家 | WebDAV 加密 Vault、桌面管理页、网页密码浮窗与用户触发填充 | 不提供新的云密码服务；明文不进入 Desktop Store 或广告模块 |
 | 广告拦截 | DNR、过滤订阅、Cosmetic filtering、站点暂停/恢复 | 不读取 Vault、凭据缓存或 WebDAV 连接材料 |

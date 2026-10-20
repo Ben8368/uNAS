@@ -202,7 +202,7 @@ Scenario 属于测试与演示资产，不是产品支持矩阵。
 
 ### SP-09 Music encrypted-container 来源与浏览器可行性
 
-- 固定候选来源为 `um/cli` `v0.2.12`，记录 tag 提交 `61fba401c7ba83e6a0e69a528460f08f0f707c`、Go module checksum 和根 `MIT` 文本；源码只允许同步到系统临时目录，不进入 uNAS Git、扩展包或构建产物。
+- 固定候选来源基线为 `um/cli` `v0.2.12`，记录 tag 提交 `61fba401c7ba83e6a0e69a528460f08f0f707c`、Go module checksum 和根 `MIT` 文本；2026-10-20 已复核 `v0.2.20`（`git.um-react.app/um/cli`，commit `618dd65a2a5caa8ab46c86f762fe6775e11105c1`）的 cex/musicex 增量，完整依赖表重审仍开放。源码只允许同步到系统临时目录，不进入 uNAS Git、扩展包或构建产物。需要 ekey 的 QMC 文件只允许用户通过受控文件选择提供本地清单，边界见 [ADR 0025](ADR/0025-user-provided-qmc-ekey-import.md)。
 - 审计 `LICENSE`、`go.mod`、`go.sum`、`algo/kgm`、`algo/qmc`、`algo/ncm`、`pc_kugou_db` 及所有间接依赖；逐项记录许可证、资源来源、是否需要文件路径/外部数据库/网络和是否可在浏览器 Worker 中复用。
 - 将维护者提供的 `um-web.extension.v1.10.8` 仅作为静态参考：确认其 MV3 manifest、Worker、WASM、CSP、权限和算法分工；不把 minified 构建物当作源码、许可证或产品支持证据。
 - 分别设计 KGM、QMC、NCM 的授权夹具和输出验证；只记录用户明确有权处理的本地文件，不收集真实用户媒体，不把扩展名清单写成能力承诺。

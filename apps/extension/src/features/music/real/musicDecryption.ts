@@ -1,6 +1,6 @@
 import { holdMusicStage, recoverMusicStaging } from './musicStaging'
 import { extensionApi } from 'unas-src/platform/extension/extensionPlatform'
-import { MUSIC_LIMITS, type MusicCapability, type MusicDecryptResult, type MusicWorkerMessage, type MusicWorkerRequest } from 'unas-src/features/music/types'
+import { MUSIC_LIMITS, type MusicCapability, type MusicDecryptResult, type MusicKeySource, type MusicWorkerMessage, type MusicWorkerRequest } from 'unas-src/features/music/types'
 
 type OpfsDirectory = {
   getFileHandle(name: string, options?: { create?: boolean }): Promise<OpfsFileHandle>
@@ -24,6 +24,11 @@ export type MusicDecryptRun = {
 }
 
 export type MusicProgress = { processedBytes: number; totalBytes: number }
+export type MusicDecryptOptions = { onProgress?: (progress: MusicProgress) => void; keyFile?: File }
+
+function rejectedRun(message: string): MusicDecryptRun {
+  return { result: Promise.reject(new Error(message)), cancel: async () => undefined, cleanup: async () => undefined }
+}
 
 export function probeMusicCapability(): MusicCapability {
   const reasons: string[] = []
@@ -54,10 +59,12 @@ function opfsStorage() {
   return storage
 }
 
-export function prepareMusicDecrypt(file: File, onProgress?: (progress: MusicProgress) => void): MusicDecryptRun {
+export function prepareMusicDecrypt(file: File, options: MusicDecryptOptions = {}): MusicDecryptRun {
+  const { onProgress, keyFile } = options
   const capability = probeMusicCapability()
-  if (!capability.supported) return { result: Promise.reject(new Error(capability.reasons.join(' '))), cancel: async () => undefined, cleanup: async () => undefined }
-  if (file.size > MUSIC_LIMITS.maxInputBytes) return { result: Promise.reject(new Error('输入超过 128 MiB 资源预算。')), cancel: async () => undefined, cleanup: async () => undefined }
+  if (!capability.supported) return rejectedRun(capability.reasons.join(' '))
+  if (file.size > MUSIC_LIMITS.maxInputBytes) return rejectedRun('输入超过 128 MiB 资源预算。')
+  if (keyFile && keyFile.size > MUSIC_LIMITS.maxKeyFileBytes) return rejectedRun('ekey 清单超过 1 MiB 资源预算。')
 
   const id = crypto.randomUUID()
   const worker = new Worker(workerUrl(), { type: 'module', name: 'unas-music-decrypt' })
@@ -73,6 +80,7 @@ export function prepareMusicDecrypt(file: File, onProgress?: (progress: MusicPro
   let outputBytes = 0
   let started: Extract<MusicWorkerMessage, { type: 'started' }> | undefined
   let completed: Extract<MusicWorkerMessage, { type: 'complete' }> | undefined
+  let keySource: MusicKeySource | undefined
   let outputFile: File | undefined
   let pending = Promise.resolve()
   let setup: Promise<void> = Promise.resolve()
@@ -114,7 +122,7 @@ export function prepareMusicDecrypt(file: File, onProgress?: (progress: MusicPro
   }
   const handleMessage = async (message: MusicWorkerMessage) => {
     if (!message || message.id !== id || stopped || settled) return
-    if (message.type === 'started') { started = message; return }
+    if (message.type === 'started') { started = message; keySource = message.keySource; return }
     if (message.type === 'chunk') {
       if (!(message.buffer instanceof ArrayBuffer) || message.bytes !== message.buffer.byteLength || message.bytes > MUSIC_LIMITS.workerChunkBytes || !writable) throw new Error('音乐 Worker 返回了无效分块。')
       outputBytes += message.bytes
@@ -144,7 +152,7 @@ export function prepareMusicDecrypt(file: File, onProgress?: (progress: MusicPro
       settled = true
       finishWorker()
       resolveResult({ format: started.format, outputFormat: completed.outputFormat, validationDepth: completed.validationDepth,
-        inputBytes: file.size, outputBytes, outputSha256: message.sha256, outputFile })
+        inputBytes: file.size, outputBytes, outputSha256: message.sha256, outputFile, ...(keySource ? { keySource } : {}) })
       return
     }
     if (message.type === 'error') throw new Error(message.message)
@@ -167,7 +175,7 @@ export function prepareMusicDecrypt(file: File, onProgress?: (progress: MusicPro
       if (stopped) return
       writable = await handle.createWritable()
       if (stopped) return
-      worker.postMessage({ type: 'decrypt', id, file } satisfies MusicWorkerRequest)
+      worker.postMessage({ type: 'decrypt', id, file, ...(keyFile ? { keyFile } : {}) } satisfies MusicWorkerRequest)
     } catch (error) { fail(error) }
   })()
   return { result, cancel: cleanup, cleanup }
