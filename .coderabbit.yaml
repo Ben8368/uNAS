@@ -1,0 +1,143 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# Repository-level CodeRabbit policy. Installing the CodeRabbit GitHub App is a
+# manual maintainer action; see docs/ADR/0024-repository-automation.md.
+language: "zh-CN"
+early_access: false
+enable_free_tier: true
+tone_instructions: "以中文评审；只报告可验证的安全、隐私、供应链和正确性问题；不重复 ESLint、TypeScript 或既有测试已覆盖的风格问题。"
+reviews:
+  profile: "quiet"
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_in_walkthrough: true
+  changed_files_summary: false
+  sequence_diagrams: false
+  estimate_code_review_effort: false
+  assess_linked_issues: false
+  related_issues: false
+  related_prs: false
+  suggested_labels: false
+  auto_apply_labels: false
+  suggested_reviewers: false
+  auto_assign_reviewers: false
+  review_status: false
+  review_details: true
+  collapse_walkthrough: true
+  poem: false
+  in_progress_fortune: false
+  auto_review:
+    enabled: true
+    drafts: false
+    auto_incremental_review: true
+    auto_pause_after_reviewed_commits: 5
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+      - "DNM"
+  path_filters:
+    - "**/*"
+    - ".github/**"
+    - ".githooks/**"
+    - ".coderabbit.yaml"
+    - "!**/node_modules/**"
+    - "!apps/extension/.output/**"
+    - "!apps/extension/.wxt/**"
+    - "!apps/extension/dist/**"
+    - "!apps/extension/playwright-report/**"
+    - "!apps/extension/test-results/**"
+    - "!packages/password-compat/dist/**"
+    - "!packages/password-compat/artifacts/**"
+    - "!packages/password-compat/credential-core/target/**"
+    - "!artifacts/**"
+    - "!visual-evidence/**"
+    - "!fixtures/local/**"
+    - "!benchmarks/output/**"
+    - "!docs/archive/**"
+    - "!**/*.wasm"
+    - "!**/*.min.js"
+    - "!**/*.snap"
+    - "!**/*.log"
+    - "!pnpm-lock.yaml"
+    - "!**/package-lock.json"
+  path_instructions:
+    - path: "apps/extension/entrypoints/**"
+      instructions: >-
+        重点检查 Manifest V3 信任边界：消息 sender/origin/schemaVersion 校验、Service Worker
+        生命周期、权限与 CSP 是否被扩大、是否存在远程代码/任意 URL/任意扩展路由。
+    - path: "apps/extension/src/features/password-manager/**"
+      instructions: >-
+        重点检查凭据泄露、Vault Key/明文生命周期、WebDAV 重定向/Cookie/缓存、token capability
+        校验和日志/持久化/BroadcastChannel 中的敏感数据。不得建议放宽既有加密或权限边界。
+    - path: "apps/extension/src/features/adblock/**"
+      instructions: >-
+        重点检查 DNR 规则与 cosmetic content script 的最小权限、站点暂停、规则来源校验和
+        remove-attr/CSS 注入是否可能读取凭据或执行页面代码。
+    - path: "apps/extension/src/platform/webdav/**"
+      instructions: >-
+        重点检查 HTTPS endpoint/相对路径限制、重定向、字节预算、取消/超时、ETag 条件写入和
+        OPFS/暂存清理；不得建议自动重试写请求或上传未选择文件。
+    - path: "apps/extension/src/features/file-manager/**"
+      instructions: >-
+        重点检查文件路径穿越、覆盖、权限/修订核对、Object URL/stream/Worker 清理和
+        OPFS 缓存生命周期；不得把缓存描述为备份或目录授权。
+    - path: "packages/password-compat/**"
+      instructions: >-
+        重点检查 Rust/WASM ABI、加密兼容性、密钥/明文暴露、出处与锁文件一致性。
+        Cargo、Rust toolchain、Binaryen 和跟踪中的 WASM 不得建议自动升级或重新生成。
+    - path: ".github/**"
+      instructions: >-
+        重点检查最小权限、action 固定、不可信输入、pull_request_target 风险和 secrets 使用；
+        不得建议自动合并、自动发布或扩大写权限。
+  tools:
+    eslint:
+      enabled: false
+    biome:
+      enabled: false
+    oxc:
+      enabled: false
+    markdownlint:
+      enabled: false
+    yamllint:
+      enabled: false
+    htmlhint:
+      enabled: false
+    stylelint:
+      enabled: false
+    checkov:
+      enabled: false
+    hadolint:
+      enabled: false
+    clippy:
+      enabled: false
+    reactDoctor:
+      enabled: false
+    languagetool:
+      enabled: false
+    vale:
+      enabled: false
+    presidio:
+      enabled: false
+    dotenvLint:
+      enabled: false
+    ast-grep:
+      enabled: false
+    opengrep:
+      enabled: false
+    trufflehog:
+      enabled: false
+    trivy:
+      enabled: false
+    actionlint:
+      enabled: true
+    zizmor:
+      enabled: true
+    gitleaks:
+      enabled: true
+    osvScanner:
+      enabled: true
+    semgrep:
+      enabled: true
+    shellcheck:
+      enabled: true
+chat:
+  auto_reply: false

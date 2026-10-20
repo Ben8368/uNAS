@@ -1,0 +1,29 @@
+name: uNAS CodeQL
+
+# Scan product source and repository automation, not generated output, tests, or
+# historical documents. Tests and E2E specs remain covered by Vitest/Playwright.
+paths-ignore:
+  - '**/node_modules/**'
+  - 'apps/extension/.output/**'
+  - 'apps/extension/.wxt/**'
+  - 'apps/extension/dist/**'
+  - 'apps/extension/playwright-report/**'
+  - 'apps/extension/test-results/**'
+  - 'apps/extension/e2e/**'
+  - 'apps/extension/e2e-web/**'
+  - 'packages/password-compat/dist/**'
+  - 'packages/password-compat/artifacts/**'
+  - 'packages/password-compat/credential-core/target/**'
+  - 'packages/password-compat/tests/**'
+  - 'artifacts/**'
+  - 'visual-evidence/**'
+  - 'fixtures/local/**'
+  - 'benchmarks/output/**'
+  - 'docs/**'
+  - 'filters/**'
+  - 'assets/**'
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  - '**/*.spec.ts'
+  - '**/*.min.js'
+  - '**/*.wasm'

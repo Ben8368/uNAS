@@ -1,0 +1,45 @@
+name: Stale
+
+on:
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: stale
+  cancel-in-progress: false
+
+# Stale marking only. No contents write, no branch deletion, no auto-close.
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Mark inactive issues and PRs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Mark stale without closing
+        uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-issue-stale: 90
+          days-before-pr-stale: 60
+          days-before-issue-close: -1
+          days-before-pr-close: -1
+          days-before-close: -1
+          stale-issue-label: stale
+          stale-pr-label: stale
+          stale-issue-message: >-
+            此 Issue 因长期无活动被标记为 stale，不会自动关闭。
+            请维护者确认后移除 stale 标签；安全、隐私、风险、阻塞和重要条目不受影响。
+          stale-pr-message: >-
+            此 PR 因长期无活动被标记为 stale，不会自动关闭或合并。
+            请维护者确认后移除 stale 标签；依赖、安全、隐私、风险、阻塞和重要条目不受影响。
+          exempt-issue-labels: security,privacy,risk,blocked,important
+          exempt-pr-labels: security,privacy,risk,blocked,important,dependencies,github_actions
+          exempt-draft-pr: true
+          remove-stale-when-updated: true
+          operations-per-run: 50
