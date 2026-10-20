@@ -102,6 +102,14 @@ User file / archive / media    不可信输入
 - 新依赖说明用途、替代方案、包体、维护状态、CSP、远程资源和许可证。
 - 许可证与再分发证据未完成前不得公开发布扩展或二进制资源。
 
+## 仓库自动化与外部服务
+
+- Dependabot 按 [ADR 0022](docs/ADR/0022-dependabot-maintenance.md) 维护 npm 与 GitHub Actions，不自动合并依赖 PR。
+- CodeQL Advanced Setup 扫描 GitHub Actions 与 JavaScript/TypeScript，结果只用于发现候选问题；扫描通过不等于扩展安全验收，不替代真实 Chrome、权限/CSP、WASM 复现或人工安全评审。
+- CodeRabbit 是可选的第三方 PR 评审服务，只处理已提交到公开仓库的代码差异；禁止向其提供真实凭据、用户数据、私有夹具或未公开漏洞。安装 GitHub App 由维护者确认，配置不授予自动合并、自动批准或仓库写权限。
+- PR Labeler 只在 `pull_request` 上添加路径标签，不使用 `pull_request_target`；Stale 只标记不关闭。两者不得扩大 secrets、contents 或发布权限。
+- Cargo、Rust toolchain、Binaryen、预编译 WASM 和密码兼容 ABI 不交给版本机器人；变更仍按 [ADR 0019](docs/ADR/0019-unipass-monorepo-package.md)、[ADR 0021](docs/ADR/0021-unas-only-brand.md) 与 [ADR 0022](docs/ADR/0022-dependabot-maintenance.md) 的来源、锁文件与可复现构建门禁执行。自动化边界见 [ADR 0024](docs/ADR/0024-repository-automation.md)。
+
 ## 不应提交
 
 - `.env`、token、cookie、登录态、浏览器配置、私钥或账号信息。

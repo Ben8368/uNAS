@@ -1,0 +1,55 @@
+# Path-based PR labels. A pull request may receive several labels.
+# Labels must exist before actions/labeler runs; see ADR 0024.
+extension:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'apps/extension/**'
+
+password-compat:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'packages/password-compat/**'
+
+rust-wasm:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'packages/password-compat/credential-core/**'
+          - 'apps/extension/public/credential-core.wasm'
+          - 'scripts/credential-core-provenance.mjs'
+
+adblock:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'filters/**'
+          - 'apps/extension/public/rules/**'
+
+tooling:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'scripts/**'
+          - '.githooks/**'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - '*.md'
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**'
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'pnpm-lock.yaml'
+          - 'package.json'
+          - '**/package.json'
+          - '**/package-lock.json'
+
+e2e:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'apps/extension/e2e/**'
+          - 'apps/extension/e2e-web/**'
