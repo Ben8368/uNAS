@@ -198,7 +198,7 @@
     },
     {
       "name": "react",
-      "version": "19.3.0",
+      "version": "19.3.1",
       "scope": "runtime-declared",
       "declaredLicense": "MIT",
       "licenseFiles": [
@@ -211,7 +211,7 @@
     },
     {
       "name": "react-dom",
-      "version": "19.3.0",
+      "version": "19.3.1",
       "scope": "runtime-declared",
       "declaredLicense": "MIT",
       "licenseFiles": [
