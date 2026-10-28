@@ -112,7 +112,7 @@
     },
     {
       "name": "@zip.js/zip.js",
-      "version": "2.23.0",
+      "version": "2.24.0",
       "scope": "runtime-declared",
       "declaredLicense": "BSD-3-Clause",
       "licenseFiles": [
@@ -177,7 +177,7 @@
     },
     {
       "name": "lucide-react",
-      "version": "1.55.0",
+      "version": "1.61.0",
       "scope": "runtime-declared",
       "declaredLicense": "ISC",
       "licenseFiles": [
