@@ -18,7 +18,7 @@
 
 ## Archive runtime dependency
 
-`@zip.js/zip.js` 固定为 `2.24.0`，用于文件管理的受限 ZIP 解压 Worker。其 npm 元数据声明 BSD-3-Clause 许可证，上游仓库为 [gildas-lormeau/zip.js](https://github.com/gildas-lormeau/zip.js)，依赖身份、许可证文件哈希与锁定完整性由 `assets/dependency-inventory.json` 记录。
+`@zip.js/zip.js` 固定为 `2.24.0`，用于文件管理的受限 ZIP 解压 Worker。其 npm 元数据声明 BSD-3-Clause 许可证，上游仓库为 [gildas-lormeau/zip.js](https://github.com/gildas-lormeau/zip.js)，依赖名称、版本、许可证及许可证文件哈希由 `assets/dependency-inventory.json` 记录；锁定完整性值以 `pnpm-lock.yaml` 为准。
 
 - 用途：读取本地、已授权目录中的单个 ZIP，并在校验成功后写入新的同级目录；不上传文件或加载远程模块。
 - 边界：Worker 关闭 zip.js 的内部 Worker；本次验证构建中 `archive-worker.js` 为 133.65 kB，扩展集成包总计 1,236,984 B（约 1.24 MB，含 51.88 kB `credential-core.wasm`）。它不是性能或通用 ZIP 支持承诺。
