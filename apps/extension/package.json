@@ -41,6 +41,6 @@
     "typescript": "npm:@typescript/typescript6@6.0.2",
     "vite": "8.3.5",
     "vitest": "^5.0.5",
-    "wxt": "0.21.4"
+    "wxt": "0.21.5"
   }
 }
