@@ -20,7 +20,7 @@ button:disabled { cursor: not-allowed; }
 .workspace-status { margin: 0; }
 .demo-projection { top: var(--desktop-top); }
 .mt-left-nav__section--apps { overflow-y: auto; min-height: 0; width: 100%; align-items: center; }
-.mt-left-nav__power-menu { width: 250px; color: #eff4fa; line-height: 1.6; }
+.mt-left-nav__power-menu { width: 250px; color: #f4f0f5; line-height: 1.6; }
 .demo-tool, .psd-panel, .transcode-main { overflow: auto; }
 .fm-actions, .fm-topbar, .psd-form { flex-wrap: wrap; }
 .fm-table { overflow-x: auto; }
@@ -30,8 +30,8 @@ button:disabled { cursor: not-allowed; }
 .mt-window-btn { min-width: 36px; color: var(--color-text); font-size: 20px; }
 
 html[data-reduce-transparency='true'] :is(.mt-window, .mt-left-nav, .mt-launcher-overlay, .mt-launcher, .mt-right-panel, .rp-panel-content) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background-color: var(--window-surface-raised) !important; }
-html[data-high-contrast='true'] :is(.mt-window, .mt-window-body, .mt-window-header, .mt-window-body main, .mt-window-body aside, .rp-panel-content, .demo-tool, .settings-app) { background: #050b14 !important; color: #fff !important; }
-html[data-high-contrast='true'] .mt-window-body :is(p, span, label, small, strong, button, input, select, textarea, h2, h3) { color: #fff !important; background-color: #050b14 !important; border-color: #fff !important; }
+html[data-high-contrast='true'] :is(.mt-window, .mt-window-body, .mt-window-header, .mt-window-body main, .mt-window-body aside, .rp-panel-content, .demo-tool, .settings-app) { background: #111216 !important; color: #fff !important; }
+html[data-high-contrast='true'] .mt-window-body :is(p, span, label, small, strong, button, input, select, textarea, h2, h3) { color: #fff !important; background-color: #111216 !important; border-color: #fff !important; }
 html[data-reduce-motion='true'] *, html[data-reduce-motion='true'] *::before, html[data-reduce-motion='true'] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 @supports not (backdrop-filter: blur(1px)) {
   :root { --window-glass-filter: none; --window-floating-filter: none; --window-dialog-filter: none; --window-glass-navigation: var(--window-surface-raised); --window-glass-floating: var(--window-surface-raised); --window-glass-window: var(--window-surface-raised); --window-glass-dialog: var(--window-surface-raised); }

@@ -7,15 +7,15 @@ export const IconMonitor = () => (
 
 export const IconGrid = () => (
   <svg viewBox="0 0 20 20" width={18} height={18}>
-    <circle cx="3.5" cy="3.5" r="2" fill="#6B9DFF" />
-    <circle cx="10" cy="3.5" r="2" fill="#54D2E6" />
-    <circle cx="16.5" cy="3.5" r="2" fill="#F59B5E" />
-    <circle cx="3.5" cy="10" r="2" fill="#A78BFA" />
-    <circle cx="10" cy="10" r="2" fill="#A78BFA" />
-    <circle cx="16.5" cy="10" r="2" fill="#F59B5E" />
-    <circle cx="3.5" cy="16.5" r="2" fill="#6B9DFF" />
-    <circle cx="10" cy="16.5" r="2" fill="#54D2E6" />
-    <circle cx="16.5" cy="16.5" r="2" fill="#F59B5E" />
+    <circle cx="3.5" cy="3.5" r="2" fill="#9AAAB4" />
+    <circle cx="10" cy="3.5" r="2" fill="#A6B89C" />
+    <circle cx="16.5" cy="3.5" r="2" fill="#C8AA7B" />
+    <circle cx="3.5" cy="10" r="2" fill="#BEA3AA" />
+    <circle cx="10" cy="10" r="2" fill="#BEA3AA" />
+    <circle cx="16.5" cy="10" r="2" fill="#C8AA7B" />
+    <circle cx="3.5" cy="16.5" r="2" fill="#9AAAB4" />
+    <circle cx="10" cy="16.5" r="2" fill="#A6B89C" />
+    <circle cx="16.5" cy="16.5" r="2" fill="#C8AA7B" />
   </svg>
 )
 

@@ -63,14 +63,26 @@
 
 .mt-launcher-search { position: relative; z-index: 1; padding: var(--window-space-4); border-bottom: 1px solid var(--window-divider); }
 
+.mt-launcher-search__icon {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--window-space-4) + 12px);
+  width: 18px;
+  height: 18px;
+  color: var(--window-text-muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
 .mt-launcher-search input {
   width: 100%;
   min-height: var(--window-control-height);
   height: var(--window-control-height);
-  padding: 0 var(--window-space-3);
+  padding: 0 var(--window-space-3) 0 38px;
   border: 1px solid var(--window-border);
   border-radius: var(--window-radius-control);
-  background: var(--window-surface-control);
+  background: var(--window-surface-field);
+  box-shadow: inset 0 1px 0 var(--window-content-highlight);
   color: var(--window-text);
   font-size: 14px;
 }
@@ -115,15 +127,9 @@
   transition: background var(--window-motion-fast) var(--window-motion-ease), border-color var(--window-motion-fast) var(--window-motion-ease), transform var(--window-motion-fast) var(--window-motion-ease);
 }
 
-.launcher-app:hover { background: var(--window-surface-control); }
+.launcher-app:hover { background: var(--window-surface-control); border-color: var(--window-content-border); }
 .launcher-app:active { background: var(--window-surface-control); transform: scale(.98); }
 .launcher-app:focus-visible { border-color: var(--window-focus-ring); background: color-mix(in srgb, var(--window-accent) 12%, var(--window-surface-raised)); outline: 3px solid var(--window-focus-ring); outline-offset: 2px; }
-
-.launcher-app .app-icon-img {
-  width: 48px;
-  height: 48px;
-  margin-bottom: 0;
-}
 
 .launcher-app-name {
   display: -webkit-box;

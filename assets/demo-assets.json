@@ -1,120 +1,133 @@
 {
   "schemaVersion": 1,
-  "provenance": "Original geometric SVG and CSS authored in this repository on 2026-09-04; extension and favicon icon PNGs are separately recorded with their source.",
+  "provenance": "Original geometric SVG and CSS authored in this repository; unified App icon family revised on 2026-11-03; extension and favicon icon PNGs are separately recorded with their source.",
   "generator": "scripts/generate-demo-assets.mjs",
   "license": "Repository license not yet selected by maintainer; local development only. No third-party license is claimed.",
   "publicDistributionApproved": false,
   "assets": [
     {
+      "path": "apps/extension/public/static/app/icons/default/link.svg",
+      "bytes": 617,
+      "sha256": "7449631870664cae2b860f136633121e2d4e54ae23c8a9b854c5c4359eedcf4c",
+      "width": 64,
+      "height": 64
+    },
+    {
       "path": "apps/extension/public/static/app/icons/default/browser.svg",
-      "bytes": 349,
-      "sha256": "f140f6822c540baea336367d4f8298c7bc0204ba25bd4856de5e7092028a1bfa",
+      "bytes": 704,
+      "sha256": "5a42492cbb93a8c555ecf96531cc13e83ac2394727123dfe50133299e178b69e",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/password.svg",
-      "bytes": 396,
-      "sha256": "e2dab04262f7d3696316bcfb39082a557e77200ec96f7bd30349511870931728",
+      "bytes": 695,
+      "sha256": "3d53a67b1b46b8451c427d5925b6e8a515a835e4ebd1ecc2b2dfccb15ce5b45b",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/adblock.svg",
-      "bytes": 342,
-      "sha256": "a0dcc7e1161ce73a9d2a5e4cb4fd10b85368528247410b5aafb1720bb84a9130",
+      "bytes": 641,
+      "sha256": "91a89b88a1ca18185eb273d1805262a47f0afcb0a55eecdd5f1a2dab9e133d46",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/download.svg",
-      "bytes": 307,
-      "sha256": "59915576be1ba10a8fe36f4871dbde9be39277ea18c9e9b7a0ae5d3af0ee9714",
+      "bytes": 587,
+      "sha256": "ed23473b4a074d244a1be02329fa970bcd750f6473f5202ce793101a64170469",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/files.svg",
-      "bytes": 310,
-      "sha256": "4e00343d597ca540e3bb78f033d08c0e93b5ca4bbf9d929ed687f39b37fc3a03",
+      "bytes": 645,
+      "sha256": "143116d7424d660f307fc423acab16fdb24d4b9db1f656d538cfb468f47ffc30",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "apps/extension/public/static/app/icons/default/music.svg",
+      "bytes": 666,
+      "sha256": "7b051b5fe0a2a48179252daf5e49a265ddae2a6221b93e2db1ae0bb69a8729eb",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/media.svg",
-      "bytes": 334,
-      "sha256": "21715ace728091dd3c3fc3812f5328f9c2b9b25cf2c4352c0dbe2b15172b0777",
+      "bytes": 632,
+      "sha256": "49beecedc587d42c9bb8be1d5dc2447ece2343503aa03889cd0e0cf8eac6d799",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/layers.svg",
-      "bytes": 326,
-      "sha256": "94ef1d3adc6bd6f5374c2dd312c7eee35deb5620bc1f880fc8be78962b84271d",
+      "bytes": 638,
+      "sha256": "393ad92f7873b79cde170a728ee477aaa04e2198577c8de1273a07936266c690",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/settings.svg",
-      "bytes": 386,
-      "sha256": "133a67b3804b946ec1200ad391dcb704a1a78dbdbb151c377e0f79e2b2b1346b",
+      "bytes": 699,
+      "sha256": "cfaaa9ec6c6ff391b52b4ce3ae2c4b6798963c0cd2820629f362dde5e340a0e6",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/logs.svg",
-      "bytes": 309,
-      "sha256": "d52c4baae7cded7d88301037812e5895e1f5195351e66a80b8a913e5327c69fc",
+      "bytes": 616,
+      "sha256": "e0bd30ba40f373eff7a7ab5153083bf3358c39e298cecedafbd3f0259b9f0333",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/image.svg",
-      "bytes": 374,
-      "sha256": "6b3c62a1ec443088bfa768f833faf19b67374dba4d14d4b6f1e81558fec6f987",
+      "bytes": 642,
+      "sha256": "77ee92cc6656883044480932f6eb6f210e14b85cebf0c6d9f845ba5bf9ae1f27",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/document.svg",
-      "bytes": 318,
-      "sha256": "f07283e8b5b16217eb79a90caf45de6ddca8e23901b3223804efa217d3605776",
+      "bytes": 586,
+      "sha256": "a2d1db3250f6f1a6f5fb4d39fd8079f4c85812a05c88e3fa0ff5274995b85a8f",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/archive.svg",
-      "bytes": 348,
-      "sha256": "88f911ce04462a9ef5e5d502d4ea7c47478d3b228e333887d4c4f6831967f8ad",
+      "bytes": 616,
+      "sha256": "3e3ebd83a7d68142e8c302da762c0a3ef6045d12a1ccd039df7dc7b356737a4a",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/public/static/app/icons/default/tasks.svg",
-      "bytes": 322,
-      "sha256": "ed78cd226165abaae606528e426020afa158efe1e4a62fbe41229e5e7d1d6d52",
+      "bytes": 590,
+      "sha256": "e769b270994cbac4057eb6ba05d3955b8c67fd3383bce1c760e1ae5e65b2024f",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "apps/extension/public/static/app/icons/default/app.svg",
+      "bytes": 726,
+      "sha256": "a10279afebdcf73b6bf64eb570b8ee1fb87d365d1a218e62bfc6f3eb6afc47f5",
       "width": 64,
       "height": 64
     },
     {
       "path": "apps/extension/src/shared/appearance/appearance.ts",
-      "bytes": 3651,
-      "sha256": "9492c817d84a2c021478c6a2f1cd111b99d81931d26fa9599edc82609ac92962",
+      "bytes": 3911,
+      "sha256": "7b042f16cc0b7764e18a10f0df3dc6f99dd0739cb6d5893829f9b38105bdc19c",
       "kind": "procedural-css-no-bitmap"
     },
     {
       "path": "apps/extension/public/startupAppearance.js",
-      "bytes": 2770,
-      "sha256": "d22afc66874dddf79237df97b0d6fafcedb6404f693b51f56793d495f57e622d",
+      "bytes": 3030,
+      "sha256": "7dc2e503e0027aed75e3f559bf2354d630d2edf9d04d4c440d0ac952d8e73270",
       "kind": "local-startup-prepaint-script"
-    },
-    {
-      "path": "apps/extension/public/static/app/icons/default/music.png",
-      "bytes": 32881,
-      "sha256": "20f4aee697078df64492bdfb46495367d2eb04a2f7db5a0943cff3e5f1ba40d1",
-      "width": 512,
-      "height": 512,
-      "kind": "Maintainer-provided local PNG from C:\\Users\\ben.luo\\Downloads\\Compressed\\um-web.extension.v1.10.8\\img\\icons\\android-chrome-512x512.png; copied unchanged on 2026-09-22; local development only, public distribution approval remains pending"
     },
     {
       "path": "apps/extension/public/icons/icon16.png",

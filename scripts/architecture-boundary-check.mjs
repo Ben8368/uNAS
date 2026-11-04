@@ -106,6 +106,17 @@ const layerRules = [
 ]
 const hardRules = [
   (file, specifier, resolved) => {
+    const source = rel(file)
+    if (source === 'apps/extension/src/shell/apps/appCatalog.ts'
+      && !['#contracts', 'unas-src/shared/icons/appIcons'].includes(specifier)) {
+      return 'App catalog 只允许契约类型和图标路径；React、feature 与懒加载实现必须留在 appRegistry'
+    }
+    if (resolved && rel(resolved) === 'apps/extension/src/shell/apps/appRegistry.ts'
+      && !source.endsWith('.test.ts') && source !== 'apps/extension/src/shell/windows/WindowContainer.tsx') {
+      return 'App 懒加载注册表只由窗口宿主消费；Desktop、启动器和窗口状态应读取 appCatalog'
+    }
+  },
+  (file, specifier, resolved) => {
     const target = resolved ? rel(resolved) : specifier
     if (/(^|\/)sources\/[^/]+(\/|$)/.test(target)) return '禁止依赖已移除的 sources/；uNAS 源码事实源是 packages/password-compat'
     if (/(^|\/)packages\/password-compat\/(?!node_modules)/.test(target)) return '禁止通过文件路径深导入 packages/password-compat；只能经由 package public export'

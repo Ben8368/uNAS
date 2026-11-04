@@ -67,10 +67,10 @@ test('Liquid Glass refinement keeps environment transmission while the content s
   })
   const dark = evidence.find((entry) => entry.theme === 'dark' && !entry.reduceTransparency)!
   const reduced = evidence.find((entry) => entry.reduceTransparency)!
-  expect(dark.navigation.background).toContain('0.48')
-  expect(dark.window.background).toContain('0.44')
+  expect(dark.navigation.background).toContain('0.66')
+  expect(dark.window.background).toContain('0.66')
   expect(dark.body.background).toContain('rgba(0, 0, 0, 0)')
-  expect(dark.launcher.background).toContain('0.58')
+  expect(dark.launcher.background).toContain('0.78')
   expect(dark.window.backdropFilter).toContain('saturate(1.38)')
   expect(reduced.window.backdropFilter).toBe('none')
 

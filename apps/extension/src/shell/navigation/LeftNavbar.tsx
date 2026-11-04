@@ -1,8 +1,8 @@
+import { AppIcon } from 'unas-src/shared/icons/AppIcon'
 import { useState } from 'react'
-import { Palette } from 'lucide-react'
+import { Bell, Grid2X2, Monitor, Palette, Settings, UserRound } from 'lucide-react'
 import { WALLPAPERS } from 'unas-src/shared/appearance/appearance'
 import { getAppIcon } from 'unas-src/shared/icons'
-import { IconBell, IconGear, IconGrid, IconMonitor, IconUser } from 'unas-src/shell/navigation/LeftNavbarIcons'
 import { useSystemStore } from 'unas-src/shared/preferences/store'
 import { useWindowStore } from 'unas-src/shell/windows/windowStore'
 
@@ -20,19 +20,19 @@ export function LeftNavbar() {
   return (
     <nav className="mt-left-nav" aria-label="桌面导航">
       <div className="mt-left-nav__section mt-left-nav__section--top">
-        <NavButton icon={<IconMonitor />} label="显示桌面" onClick={() => windows.forEach((item) => minimizeWindow(item.id))} />
-        <NavButton icon={<IconGrid />} label="所有应用" active={showLauncher} onClick={toggleLauncher} />
+        <NavButton icon={<Monitor aria-hidden="true" />} label="显示桌面" onClick={() => windows.forEach((item) => minimizeWindow(item.id))} />
+        <NavButton icon={<Grid2X2 aria-hidden="true" />} label="所有应用" active={showLauncher} onClick={toggleLauncher} />
       </div>
       <div className="mt-left-nav__sep" />
       <div className="mt-left-nav__section mt-left-nav__section--apps">
         {windows.map((item) => <button key={item.id} type="button" title={item.title} aria-label={`切换到${item.title}`} onClick={() => activate(item.appType)}
-          className={`mt-left-nav__app-btn ${item.zIndex === topZ && !item.isMinimized ? 'mt-left-nav__app-btn--active' : ''}`}><img src={getAppIcon(item.appType)} alt="" /></button>)}
+          className={`mt-left-nav__app-btn ${item.zIndex === topZ && !item.isMinimized ? 'mt-left-nav__app-btn--active' : ''}`}><AppIcon src={getAppIcon(item.appType)} variant="dock" /></button>)}
       </div>
       <div className="mt-left-nav__section mt-left-nav__section--bottom">
-        <NavButton icon={<IconBell />} label="演示日志" onClick={() => openWindow('logs')} />
-        <NavButton icon={<IconUser />} label="账号" active={showAccount} onClick={() => setShowAccount(!showAccount)} />
+        <NavButton icon={<Bell aria-hidden="true" />} label="演示日志" onClick={() => openWindow('logs')} />
+        <NavButton icon={<UserRound aria-hidden="true" />} label="账号" active={showAccount} onClick={() => setShowAccount(!showAccount)} />
         <NavButton icon={<Palette aria-hidden="true" />} label={`切换外观：当前${WALLPAPERS[wallpaper].name}，下一款${WALLPAPERS[(wallpaper + 1) % WALLPAPERS.length].name}`} onClick={() => setWallpaper((wallpaper + 1) % WALLPAPERS.length)} />
-        <NavButton icon={<IconGear />} label="设置" onClick={() => openWindow('settings')} />
+        <NavButton icon={<Settings aria-hidden="true" />} label="设置" onClick={() => openWindow('settings')} />
       </div>
       {showAccount && <div className="mt-left-nav__account-menu" role="status"><p>账号服务尚未接入；当前不会读取或上传任何账号信息。</p><button type="button" className="mt-btn" onClick={() => setShowAccount(false)}>知道了</button></div>}
     </nav>

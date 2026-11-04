@@ -33,7 +33,7 @@ test(`New Tab ignores legacy ${legacyTheme} and pre-paints the saved wallpaper b
     theme: 'dark',
     colorScheme: 'dark',
     desktopMounted: false,
-    wallpaperSrgb: expect.stringContaining('148 117 68'),
+    wallpaperSrgb: expect.stringContaining('110 96 76'),
     wallpaperP3: expect.stringContaining('color(display-p3'),
   })
 

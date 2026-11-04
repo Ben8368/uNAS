@@ -1,6 +1,6 @@
 # 前端实现指南
 
-本文只规定 UI 的工程接入、mock 与真实 adapter 边界；当前实现状态见 [CONTEXT](../CONTEXT.md)，固定视觉和交互规则见 [DESIGN_SYSTEM](DESIGN_SYSTEM.md)，验证门禁见 [QUALITY](QUALITY.md)。
+本文规定 UI 接入及 mock/adapter 边界；状态见 [CONTEXT](../CONTEXT.md)，视觉规则见 [DESIGN_SYSTEM](DESIGN_SYSTEM.md)，验证门禁见 [QUALITY](QUALITY.md)。
 
 ## 1. 开工路径
 
@@ -13,18 +13,19 @@
 
 - React + TypeScript strict；Vite 用于本地 Demo，WXT 承载 MV3。精确版本以 [package.json](../apps/extension/package.json) 和锁文件为准，不在本文复制版本或权限清单。
 - CSS Custom Properties 承载语义 token，现有共享窗口主题入口是 [window-theme.css](../apps/extension/src/shared/styles/window-theme.css)；[globals.css](../apps/extension/src/shared/styles/globals.css) 组织样式，src/shared/styles/ 按职责拆分，不使用 CSS Modules。
-- Zustand 管理本地 UI 状态，Lucide React 提供统一图标。布局/样式/状态优先复用现有公开组件，不引入另一套设计库或私有主题。
+- Zustand 管理 UI 状态；Lucide 用于操作图标，App 用 `shared/icons/AppIcon` 与本地 SVG。不另建控件库或私有主题。
 - token 值按 Design System 映射；兼容别名只能引用同一语义源。App 私有样式只处理领域布局，不覆盖主题、玻璃材料、窗口壳与基础控件状态。
 - 原生 Dialog/Popover、容器查询与动效迁移遵循 [ADR 0008](ADR/0008-private-preview-modern-chrome.md)；平台 API 不自动提供完整的键盘、焦点、定位或可访问性验收。
 
 ### 共享窗口与内容布局
 
-以下为公共复用边界；AppLayout 仍是待抽取目标。复用现有入口，禁止并行建设另一套 Window。
+复用以下公共入口；AppLayout 待抽取，不另建 Window。
 
 | 归属 | 复用边界 |
 | --- | --- |
 | AppWindow / DesktopWindow | 共用加载/错误边界、标题栏、窗口控制、拖动缩放和焦点；只接收通用元数据、内容和可选 headerStatus |
-| appPresentation / windowStore / windowGeometry | 单一尺寸预设、实例状态与可视区约束；不按 App 复制默认值，CSS 与几何计算必须对齐 |
+| appCatalog / appRegistry | shell/apps 分离元数据与懒加载；桌面/启动器/store 只读元数据 |
+| windowPresentation / windowStore / windowGeometry | 单一尺寸预设、实例状态与可视区约束；不按 App 复制默认值，CSS 与几何计算必须对齐 |
 | AppLayout（待抽取） | 组合 sidebar、navigation、actions、filters、notice、content、inspector、footer 槽位；拥有网格、间距、收缩及滚动规则 |
 | 公共控件 | 侧栏复用 ResizableAppSidebar + app-sidebar/app-nav/app-nav-item；按钮复用 mt-btn，视觉参数使用共享 app-* Token |
 | App 业务层 | 提供槽位内容和回调；文件授权、任务订阅、字段校验留在各自 controller/port，不进入通用布局 |

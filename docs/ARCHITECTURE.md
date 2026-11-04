@@ -52,43 +52,39 @@ Service Worker + Content Script
 
 固定依赖方向：Entrypoint → Screen → Application Port → Contract/Core → Adapter。下层不导入 React、WXT 页面组件、Desktop store 或 App View。
 
-## 4. 规划仓库结构
+## 4. 仓库结构与扩展点
+
+按运行面与职责划分，不为每个目录建立 workspace 包：
 
 ```text
-apps/
-└── extension/
-    ├── entrypoints/
-    │   ├── newtab/
-    │   ├── workspace/
-    │   ├── background/
-    │   ├── content/
-    │   └── offscreen/        仅在探针批准后
-    └── app/
-packages/
-├── app-contracts/            AppManifest、Intent、窗口与文件关联
-├── contracts/                File、Task、Progress、Error、消息 schema
-├── app-runtime/              注册、启动、实例与 Workspace 所有权
-├── desktop-shell/            Desktop、Dock、Window、Command Palette
-├── design-system/            token、primitive、system component
-├── application/              Files/Tasks/Settings 用例与 ports
-├── mock-runtime/             确定性 Demo adapters
-├── core/                     Job 状态机、planner、策略、资源预算
-├── capabilities/             浏览器、codec、存储与扩展能力探针
-├── file-system/              File/Handle/IndexedDB/OPFS/导出 adapters
-├── engine-image/
-├── engine-archive/
-├── engine-pdf/
-└── engine-media/
-workers/
-├── image/
-├── archive/
-├── pdf/
-└── media/
-scripts/                      治理、视觉、基准、供应链和发布检查
-fixtures/                     小型、可授权、带 manifest 的固定夹具
+apps/extension/
+├── entrypoints/              WXT 页面、background/content 的薄启动入口
+├── contracts/               宿主内稳定类型与消息契约（#contracts）
+├── src/
+│   ├── shell/               Desktop 与 App 宿主，不承载业务实现
+│   │   ├── app/             页面 bootstrap / composition
+│   │   ├── apps/            appCatalog 纯元数据 + appRegistry 懒加载组合
+│   │   ├── desktop/         桌面布局与快捷方式
+│   │   ├── launcher/        搜索和启动器交互
+│   │   ├── navigation/      Dock 与全局入口
+│   │   ├── windows/         窗口状态、几何、生命周期与内容宿主
+│   │   └── right-panel/     状态抽屉
+│   ├── features/            App 业务，跨模块仅消费公开入口
+│   ├── platform/            浏览器、文件、存储、Workspace 的 port/adapter
+│   └── shared/              无上层依赖的图标、控件、样式和通用能力
+├── public/                  随扩展打包的静态资源
+└── e2e/                     解包 MV3 浏览器回归
+packages/password-compat/    既有密码兼容实现，仅通过明确 public export 接入
+scripts/                    治理、边界、素材生成与质量门禁
+assets/                     素材来源、哈希与分发约束
+benchmarks/                 真实能力探针与证据
 ```
 
-目录是目标边界，不代表当前已经创建或依赖已锁定。前端 Demo 只创建当前 Gate 允许的最小包。
+- App 名称、顺序、状态与入口可见性只在 `shell/apps/appCatalog.ts` 声明；Desktop、启动器和窗口状态只读目录，不导入组件加载实现。
+- `shell/apps/appRegistry.ts` 将目录与 feature 公开入口的 lazy 组件组合，只有 WindowContainer 消费；新增 App 必须同时满足契约 ID、目录与实现映射，状态标签不代表能力验证。
+- `shared/icons` 维护图标路径与渲染，`shared/styles/app-icons.css` 维护尺寸和形状；各 surface 不再各自实现加载失败回退。素材由仓库脚本生成并记录来源，不拉取远端图标。
+- 结构边界由 `scripts/architecture-boundary-check.mjs` 校验；`src` 不新增含义模糊的顶层分类桶，不允许 shared 反向引用 shell/feature。
+- 未来只有真实复用与 Gate 需要时，才抽出 `packages/contracts/core/application/app-runtime/design-system` 等包；引擎与 Worker 按各自探针落地，不预建空包或把目录存在当能力实现。
 
 ## 5. 前端先行的替换缝
 

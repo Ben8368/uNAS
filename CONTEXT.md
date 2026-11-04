@@ -1,6 +1,6 @@
 # 当前状态
 
-> **最后确认：** 2026-10-20
+> **最后确认：** 2026-11-03
 > **阶段：** Phase 2 / uNAS native module integration
 > **产品代码：** WXT MV3 已接入密码管家、广告拦截、WebDAV Vault、Legacy adapter 和 closed Shadow DOM 浮窗；桌面 App 共用下载外观基线；Files 有 WebDAV 文件实验切片、Chrome 下载记录面板和 OPFS 临时缓存/回收站，边界见 ADR 0015；`manage.html` 兼容保留。
 
@@ -11,7 +11,7 @@
 - 产品尚未对外开放；已接受 [ADR 0008](docs/ADR/0008-private-preview-modern-chrome.md) 的现代 Chrome 优先方向。扩展声明 Chrome 148 下限，使用原生 `browser.*` 与 Promise 消息响应。
 - New Tab 承载轻量 Desktop，内置 App 按需在当前标签页打开，逻辑 Workspace 管理任务所有权（ADR 0007）；System/Tool App 随包发布，Link App 只做 HTTPS 跳转。
 - 维护者已确认进入 Frontend Demo 阶段；Demo 以 mock adapter 验证桌面、App、文件和任务流程，并提供 WXT Manifest V3 壳；系统面板使用浏览器能力探针，GPU 不可用时明确降级。
-- 维护者已授权前端打磨：优先收敛桌面层级、App 启动入口、状态抽屉、响应式与无障碍；不改变 mock/真实边界。
+- 本地 SVG 图标与 App 目录已分离；UI v1.10 收敛为石墨/雾灰/鼠尾草配色，人工验收归 TD-002。
 - 视觉采用原创的 macOS/iPadOS 启发式桌面层级与 Liquid Glass 原则，玻璃限于导航/控制层，并提供无障碍和性能降级。
 - uNAS Glass 工作包 A–C 已实现：`window-theme.css` 是主题与材质唯一来源；窗口根承担 blur，正文按内容分组使用可读面；Desktop/Dock/启动器/文件管理器已消费共享 Token。后续 D–E 见 [Development Blueprint](docs/DEVELOPMENT_BLUEPRINT.md#uNAS-glass-后续迁移顺序)。
 - 本仓库只维护 uNAS 品牌；密码兼容实现归 `packages/password-compat`，不与其他独立项目同步、导出或发布（[ADR 0021](docs/ADR/0021-unas-only-brand.md)）。
@@ -33,8 +33,8 @@
 
 ## 最近验证
 
+- 2026-11-03：桌面配色刷新；`pnpm verify`、系统 Chrome 颜色/主题回归（18）通过；[验证记录](docs/archive/reviews/2026-11-03-palette-refresh.md)。人工确认见 TD-002。
 - 2026-10-20：音乐 QMC musicex/legacy 用户 ekey 清单导入完成；`pnpm verify`、扩展单测（495/3）、合成夹具 MV3 E2E（3）通过；[验证记录](docs/archive/reviews/2026-10-20-music-ekey-import.md)。
-- 2026-10-10：项目 WebDAV 共用连接与 Files 排版完成；`pnpm verify`（476/1）、MV3 E2E（106/3）、Web E2E（8）、Chrome 定向测试通过；[验证记录](docs/archive/reviews/2026-10-10-project-webdav.md)。真实 NAS 与人工体验待验收。
 
 ## 按需入口
 

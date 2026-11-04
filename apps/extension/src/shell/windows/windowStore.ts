@@ -1,7 +1,7 @@
 ﻿import { create } from 'zustand'
 
-import { getAppMetadata } from 'unas-src/shell/launcher/appRegistry'
-import { DEFAULT_WINDOW_PRESET } from 'unas-src/shell/launcher/appPresentation'
+import { getAppMetadata } from 'unas-src/shell/apps/appCatalog'
+import { DEFAULT_WINDOW_PRESET } from 'unas-src/shell/windows/windowPresentation'
 import { launchStatus } from 'unas-src/platform/workspace/launchStatus'
 import { canCloseWindow } from 'unas-src/shared/window-close/windowCloseGuards'
 
