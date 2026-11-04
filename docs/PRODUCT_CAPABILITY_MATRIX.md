@@ -25,7 +25,7 @@
 ## 2. 实际运行面、权限与证据边界
 
 - 产品只有一个 WXT MV3 扩展。实际代码集中在 `apps/extension`；Architecture 中顶层 `packages/`、`workers/` 是目标结构，当前未创建。真实 ZIP Worker 位于扩展内部。
-- [App Registry](../apps/extension/src/shell/launcher/appRegistry.tsx) 注册添加 App、文件管理、下载、设置、日志、密码管家和广告拦截；`stable`/`beta` 是注册标签，不是能力验收结论。没有 Media、Transcode 或独立 Archive 的可启动 App。
+- [App Registry](../apps/extension/src/shell/apps/appCatalog.ts) 注册添加 App、文件管理、下载、设置、日志、密码管家和广告拦截；`stable`/`beta` 是注册标签，不是能力验收结论。没有 Media、Transcode 或独立 Archive 的可启动 App。
 - [bootstrap](../apps/extension/src/platform/workspace/api/bootstrap.ts) 将通用 API 接到 `demoApi`。真实文件通过独立 File Workspace port，下载通过扩展消息 adapter，密码管家和广告拦截通过独立 background services 接入；不能用全局 `isRealApiRuntime() === false` 推断所有功能都是 mock。
 - [inlineWorkspace](../apps/extension/src/platform/workspace/inlineWorkspace.ts) 使用 Web Lock/BroadcastChannel 确定 owner；真实目录写入只允许 owner，其他页只读投影。它的任务快照及 `beforeunload` 判断仍来自 mock；不是覆盖 ZIP/Vault/下载的统一真实 Task Core。
 - [background entry](../apps/extension/entrypoints/background.ts) 安装密码管家、广告拦截 hooks 与唯一 [消息路由](../apps/extension/src/platform/extension/router.ts)。文件/ZIP 不在 Service Worker 中计算，Vault Crypto/同步及广告规则编译则实际在 Service Worker 内执行。无 offscreen、Native Helper、服务端转码或浏览器外常驻任务进程。
@@ -83,7 +83,7 @@
 | 性能与资源 | 未验证任何容器/codec、seek、时长、分辨率、帧率、内存、首帧或后台行为；不存在当前可承诺的播放大小上限 |
 | 下一步最小交付 / 阻断 | 建议先做一个合成本地文件的原生播放隔离探针，记录加载、seek、损坏输入、页面关闭和 object URL 释放。依赖真实只读 FileRef/Blob 接入及精确 Chrome 夹具证据；远程流媒体另受 RISK-013 限制 |
 
-源码依据：[App Registry](../apps/extension/src/shell/launcher/appRegistry.tsx)、[mock 资产](../apps/extension/src/platform/demo/runtime.ts)、[Files real adapter](../apps/extension/src/platform/filesystem/real/fileWorkspace.ts)。规划与门禁：[Media 策略](ARCHITECTURE.md)、[SP-06](DEVELOPMENT_BLUEPRINT.md#sp-06-media-native)、[RISK-006/013](RISK_REGISTER.md)。
+源码依据：[App Registry](../apps/extension/src/shell/apps/appCatalog.ts)、[mock 资产](../apps/extension/src/platform/demo/runtime.ts)、[Files real adapter](../apps/extension/src/platform/filesystem/real/fileWorkspace.ts)。规划与门禁：[Media 策略](ARCHITECTURE.md)、[SP-06](DEVELOPMENT_BLUEPRINT.md#sp-06-media-native)、[RISK-006/013](RISK_REGISTER.md)。
 
 ## 6. 视频转码矩阵
 

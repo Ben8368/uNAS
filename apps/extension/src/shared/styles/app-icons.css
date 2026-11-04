@@ -1,0 +1,33 @@
+/* App identity belongs to shared presentation, never to an individual feature. */
+.app-icon-img {
+  display: block;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  object-fit: contain;
+  border-radius: 25%;
+  user-select: none;
+}
+
+.app-icon-img--desktop,
+.app-icon-img--launcher {
+  box-shadow: 0 5px 12px rgb(0 0 0 / .24), 0 1px 2px rgb(0 0 0 / .18);
+}
+
+.app-icon-img--desktop { margin-bottom: var(--window-space-2); }
+
+.app-icon-img--dock {
+  width: 32px;
+  height: 32px;
+  flex-basis: 32px;
+}
+
+.app-icon-img--window {
+  width: var(--app-window-brand-icon-size);
+  height: var(--app-window-brand-icon-size);
+  flex: 0 0 auto;
+}
+
+@media (forced-colors: active) {
+  .app-icon-img { outline: 1px solid CanvasText; outline-offset: 1px; }
+}

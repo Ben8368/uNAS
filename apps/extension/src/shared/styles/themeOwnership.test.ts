@@ -24,9 +24,9 @@ describe('shared control material', () => {
   it('centralizes translucent App controls and their opaque accessibility fallback in the token source', () => {
     const source = readFileSync(path.join(styles, 'window-theme.css'), 'utf8')
 
-    expect(source).toContain('--window-surface-raised: rgb(35 57 75 / .66)')
-    expect(source).toContain('--window-surface-control: rgb(48 72 91 / .62)')
-    expect(source).toContain('--window-scrollbar-track: rgb(7 20 33 / .24)')
+    expect(source).toContain('--window-surface-raised: rgb(48 49 58 / .78)')
+    expect(source).toContain('--window-surface-control: rgb(58 59 71 / .74)')
+    expect(source).toContain('--window-scrollbar-track: rgb(16 17 21 / .26)')
     expect(source).toContain("html[data-reduce-transparency='true']")
     expect(source).toContain('--window-surface-control: var(--window-surface-control-solid)')
     expect(source).toContain("html[data-high-contrast='true']")

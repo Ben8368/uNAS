@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 
-import { getLauncherApps } from 'unas-src/shell/launcher/appRegistry'
-import { AppIconImage } from 'unas-src/shell/launcher/AppIconImage'
+import { getLauncherApps } from 'unas-src/shell/apps/appCatalog'
+import { AppIcon } from 'unas-src/shared/icons/AppIcon'
 import { APP_ICON_PATHS } from 'unas-src/shared/icons'
 import { openLink, readLinks, subscribeLinks, type LinkApp } from 'unas-src/shared/link-apps/linkApps'
 
@@ -62,7 +62,7 @@ export function DesktopIcons({ onOpenApp }: { onOpenApp: (id: string) => void })
           title={app.label}
           onClick={() => onOpenApp(app.id)}
         >
-          <AppIconImage src={app.icon} alt={app.label} variant="desktop" />
+          <AppIcon src={app.icon} variant="desktop" />
           <span className="app-icon-label">{app.label}</span>
         </button>
       ))}
@@ -73,7 +73,7 @@ export function DesktopIcons({ onOpenApp }: { onOpenApp: (id: string) => void })
           title={link.name}
           onClick={() => openLink(link.url)}
         >
-          <AppIconImage src={APP_ICON_PATHS.browser} alt={link.name} variant="desktop" />
+          <AppIcon src={APP_ICON_PATHS.link} variant="desktop" />
           <span className="app-icon-label">{link.name}</span>
         </button>
       ))}

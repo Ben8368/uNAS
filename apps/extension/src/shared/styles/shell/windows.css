@@ -29,7 +29,7 @@
 }
 
 .mt-window--active {
-  border-color: color-mix(in srgb, var(--window-focus-ring) 28%, transparent);
+  border-color: color-mix(in srgb, var(--window-focus-ring) 38%, transparent);
 }
 
 .mt-window--maximized { border-radius: var(--app-window-radius); box-shadow: none; }
@@ -73,15 +73,8 @@
   gap: var(--app-window-brand-gap);
   color: var(--window-text);
   font-size: var(--app-window-title-font-size);
-  font-weight: 800;
-}
-
-.mt-window-brand img {
-  width: var(--app-window-brand-icon-size);
-  height: var(--app-window-brand-icon-size);
-  flex: 0 0 auto;
-  border-radius: var(--app-window-brand-icon-radius);
-  object-fit: cover;
+  font-weight: 600;
+  letter-spacing: .01em;
 }
 
 .mt-window-brand strong {

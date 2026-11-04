@@ -9,6 +9,6 @@ describe('LeftNavbar', () => {
 
     expect(markup.indexOf('aria-label="账号"')).toBeLessThan(markup.indexOf('aria-label="设置"'))
     expect(markup).not.toContain('演示能力说明')
-    expect(markup).toContain('cx="12" cy="12" r="9"')
+    expect(markup).toMatch(/aria-label="账号"[^>]*><svg[^>]*aria-hidden="true"/)
   })
 })

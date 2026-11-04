@@ -6,14 +6,14 @@ html, body, #root {
   overflow: hidden;
   font-family: 'PingFang SC','Lantinghei SC','Microsoft YaHei','HanHei SC','Helvetica Neue',sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: #0a0e1a;
+  background: #1d1e22;
 }
 
 :root {
   --mt-wp-srgb:
-    radial-gradient(100% 90% at 2% 0%, rgb(62 122 164 / .46), transparent 64%),
-    radial-gradient(90% 85% at 100% 100%, rgb(31 145 133 / .34), transparent 68%),
-    linear-gradient(in oklab 130deg, #102237 0%, #173b51 50%, #176264 100%);
+    radial-gradient(100% 90% at 2% 0%, rgb(79 70 91 / .46), transparent 64%),
+    radial-gradient(90% 85% at 100% 100%, rgb(101 82 99 / .34), transparent 68%),
+    linear-gradient(in oklab 130deg, #17171c 0%, #24212b 50%, #30263a 100%);
   --mt-wp-p3: var(--mt-wp-srgb);
   --mt-wp: var(--mt-wp-srgb);
 }
@@ -91,8 +91,9 @@ html, body, #root {
 }
 
 .sb-btn--active {
-  background: color-mix(in srgb, var(--window-accent) 22%, transparent);
+  background: color-mix(in srgb, var(--window-accent) 18%, var(--window-surface-control));
   color: var(--window-text);
+  box-shadow: inset 0 0 0 1px var(--window-content-border);
 }
 
 .sb-btn:focus-visible,
@@ -195,14 +196,9 @@ html, body, #root {
 }
 
 .mt-left-nav__app-btn--active {
-  /* Keep the active window discernible without competing with the App icon. */
+  /* A quiet rim makes the active window visible without changing its hit area. */
   background: color-mix(in srgb, var(--window-accent) 8%, transparent);
-}
-
-.mt-left-nav__app-btn img {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
+  box-shadow: inset 0 0 0 1px var(--window-content-border);
 }
 
 .mt-left-nav__notify-wrap {
@@ -376,6 +372,7 @@ html, body, #root {
 }
 
 .app-icon:hover {
+  border-color: var(--window-content-border);
   background: var(--window-surface-control);
 }
 
@@ -388,36 +385,6 @@ html, body, #root {
 
 .app-icon:active {
   transform: scale(.98);
-}
-
-.app-icon-img {
-  position: relative;
-  width: 48px;
-  height: 48px;
-  margin-bottom: var(--window-space-2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 26.5625%;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgb(0 0 0 / .28);
-  flex: 0 0 48px;
-}
-
-/* The Music Unlock PNG has a circular silhouette, so it keeps its source shape. */
-.app-icon--music .app-icon-img {
-  border-radius: 50%;
-}
-
-.app-icon-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.app-icon-img--launcher {
-  flex-shrink: 0;
 }
 
 .app-icon-label {

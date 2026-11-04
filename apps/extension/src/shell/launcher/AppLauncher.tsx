@@ -1,6 +1,7 @@
+import { Search } from 'lucide-react'
 import { useLayoutEffect, useRef, useState } from 'react'
-import { getLauncherApps } from 'unas-src/shell/launcher/appRegistry'
-import { AppIconImage } from 'unas-src/shell/launcher/AppIconImage'
+import { getLauncherApps } from 'unas-src/shell/apps/appCatalog'
+import { AppIcon } from 'unas-src/shared/icons/AppIcon'
 import { useSystemStore } from 'unas-src/shared/preferences/store'
 
 export function AppLauncher({ onOpenApp }: { onOpenApp: (id: string) => void }) {
@@ -32,6 +33,7 @@ export function AppLauncher({ onOpenApp }: { onOpenApp: (id: string) => void }) 
       onClick={(event) => { if (event.target === event.currentTarget) closeLauncher() }}
     >
         <div className="mt-launcher-search">
+          <Search className="mt-launcher-search__icon" aria-hidden="true" />
           <input ref={inputRef} type="search" aria-label="搜索应用" placeholder="搜索应用或功能" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <div className="mt-launcher-grid">
@@ -43,7 +45,7 @@ export function AppLauncher({ onOpenApp }: { onOpenApp: (id: string) => void }) 
                 title={app.label}
                 onClick={() => { onOpenApp(app.id); closeLauncher() }}
               >
-                <AppIconImage src={app.icon} alt={app.label} variant="launcher" />
+                <AppIcon src={app.icon} variant="launcher" />
                 <span className="launcher-app-name">{app.label}</span>
               </button>
             ))}

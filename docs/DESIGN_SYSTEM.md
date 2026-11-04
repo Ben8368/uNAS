@@ -2,11 +2,11 @@
 
 桌面 App 视觉规范；工程接入见 [FRONTEND_GUIDE](FRONTEND_GUIDE.md)，验收见 [QUALITY](QUALITY.md)。
 
-**基线 UI v1.8 · 2026-09-23**：实现与验收按影响范围核对，不追认旧截图。
+**UI v1.10 · 2026-11-03**：按影响范围验收，不追认旧截图。
 
 ## UI-01 视觉方向与材料
 
-现有及后续桌面 App 以“下载”为外观母版，复用导航、控件和密度，保留业务布局。采用原创、克制的桌面语言：中性内容面、蓝色主操作、清晰层级，玻璃仅用于导航和临时控制。参考 [Apple Materials](https://developer.apple.com/design/human-interface-guidelines/materials)，禁止复制其素材或逐像素布局。
+桌面 App 以“下载”为母版，复用导航、控件和密度。采用暖石墨灰、雾灰玻璃与鼠尾草绿主操作；壁纸和图标低饱和，几何与交互不变。参考 [Apple Materials](https://developer.apple.com/design/human-interface-guidelines/materials)，禁止复制其素材或逐像素布局。
 
 | 层 | 用途 | 固定规则 |
 | --- | --- | --- |
@@ -15,11 +15,11 @@
 | 控制 | Dock、窗口标题栏、导航 | navigation glass；窗口根是唯一采样/blur 层，内部工具栏不得叠加 blur |
 | 临时层 | 菜单、Popover、Dialog、Sheet、Toast | floating/dialog glass；长表单及正文仍用实色 |
 
-仅透明度、边缘高光和静态阴影表现材料，不做实时折射或鼠标追光。不在内容卡片嵌套玻璃。壁纸影响可读性时用实色面，不加重文字阴影。
+材料仅用透明度、高光与静态阴影；不做折射或鼠标追光。不在内容卡片嵌套玻璃。壁纸影响可读性时用实色面，不加重文字阴影。
 
 密码浮窗的薄荷绿映射 `window-theme.css` 的 `--window-vault-accent{,-strong,-text}`；其余复用窗口 Token，不重复定义主题值。浮窗保留自身主题映射与视觉基线，不被 Desktop 组件强制替换。
 
-New Tab / Workspace 及 App 固定深色，无主题选项；Light Token 仅供密码浮窗独立切换。App 图标以广告拦截、音乐解锁为亮度参照，保留色相与白色图形对比，不加全局滤镜。
+New Tab / Workspace 及 App 固定深色；Light Token 仅供密码浮窗。App 图标遵循 UI-02，不加全局滤镜。
 
 ## UI-02 语义 Token
 
@@ -27,20 +27,20 @@ New Tab / Workspace 及 App 固定深色，无主题选项；Light Token 仅供�
 
 | 颜色 Token | Light | Dark | 用途 |
 | --- | --- | --- | --- |
-| color.background | #EFF1F3 | #1B1D20 | 壁纸回退、侧栏 |
-| color.content | #F8F9FA | #202225 | 正文主面 |
-| color.raised | rgb(255 255 255 / .74) | rgb(35 57 75 / .66) | 浮层、抬升面 |
-| color.control | rgb(231 234 238 / .76) | rgb(48 72 91 / .62) | 控件底色 |
-| color.text | #24282E | #F1F3F5 | 正文 |
-| color.muted | #5B6470 | #B0B6BE | 次要说明，不用透明度再淡化 |
-| color.divider | #DCE0E5 | #373B41 | 装饰分隔线 |
-| color.border | #7B8490 | #87919D | 输入框等必要识别边界 |
-| color.primary / on-primary | #2467CD / #FFFFFF | #2467CD / #FFFFFF | 主按钮 |
-| color.accent | #185EB3 | #81BDFF | 链接、选中标识 |
-| color.danger | #B32332 | #FF9999 | 错误、危险操作 |
-| color.warning | #835500 | #F2C66D | 警告 |
-| color.success | #21643E | #85D6A5 | 成功 |
-| color.focus | #165DAB | #B6DCFF | 键盘焦点 |
+| color.background | #EFEEE8 | #1D1E22 | 壁纸回退、侧栏 |
+| color.content | #F8F7F2 | #24252A | 正文主面 |
+| color.raised | rgb(250 250 244 / .80) | rgb(48 49 58 / .78) | 浮层、抬升面 |
+| color.control | rgb(231 233 224 / .80) | rgb(58 59 71 / .74) | 控件底色 |
+| color.text | #292E28 | #F2F2ED | 正文 |
+| color.muted | #5D675A | #B9BDB5 | 次要说明，不用透明度再淡化 |
+| color.divider | #DCE0D5 | #41463F | 装饰分隔线 |
+| color.border | #7D8976 | #848C82 | 输入框等必要识别边界 |
+| color.primary / on-primary | #806DA7 / #FFFFFF | #806DA7 / #FFFFFF | 主按钮 |
+| color.accent | #63517F | #D2BFE2 | 链接、选中标识 |
+| color.danger | #A93F3A | #E7A09A | 错误、危险操作 |
+| color.warning | #7A5A28 | #DFBF84 | 警告 |
+| color.success | #346047 | #9CC6A9 | 成功 |
+| color.focus | #39654D | #D2E2CB | 键盘焦点 |
 
 状态色配图标与文字，默认放在 content/raised 上；不把状态文字色直接当按钮底色。选中使用 control 底色 + accent 边标/勾选，不只换颜色。主按钮 hover/pressed 用 8%/16% 黑色遮罩；中性控件用 text 色 4%/8% 覆层；焦点环始终保留。
 
@@ -48,18 +48,20 @@ New Tab / Workspace 及 App 固定深色，无主题选项；Light Token 仅供�
 | --- | --- |
 | space.1…8 | 4 / 8 / 12 / 16 / 20 / 24 / 32 / 48；控件内距 8–12，组内 12，区块 24 |
 | type | system-ui, 'Microsoft YaHei', sans-serif；caption 12/18、body 14/22、section 16/24、title 20/28（字号/行高）；字重 400/500/600 |
-| icon | Lucide 矢量体系，24 视盒、stroke 2；列表 16、控件 20、空态 32；独立图标必须有可访问名称 |
+| icon | 操作图标用 Lucide，24 视盒、stroke 2；列表 16、控件 20、空态 32；App 身份图标用原创 64 视盒 SVG，圆角 16、stroke 2.8、不透明同色系渐变与白色主体；独立图标必须有可访问名称 |
 | size | 桌面工具栏按钮高 32、表单字段高 34；紧凑列表行最小 40；表格行最小 44；coarse pointer 命中区至少 44×44；不得重叠 |
 | radius | 桌面 control 6、panel/menu 12、window 20、dialog 16；胶囊仅用于状态标记，不作为通用卡片 |
 | border / focus | 边框 1；焦点环 3、外偏移 2；禁止只用阴影表示焦点 |
-| material.navigation | Light rgb(235 244 249 / .60)，Dark rgb(17 28 39 / .48)；blur 18、saturate 138%、contrast 104% |
-| material.floating | Light rgb(238 247 250 / .58)，Dark rgb(18 30 41 / .50)；blur 20、saturate 142%、contrast 103% |
-| material.window | Light rgb(239 247 250 / .56)，Dark rgb(18 30 41 / .44)；唯一 backdrop-filter 外壳，带非对称反射、单一边框 |
-| material.readable | Light rgb(248 249 250 / .90)，Dark rgb(31 42 52 / .82)；无 blur，作为窗口正文内层，四周保留外壳可见边缘 |
-| material.dialog | Light rgb(247 251 252 / .68)，Dark rgb(22 35 47 / .58)；blur 22、saturate 138%、contrast 104% |
+| material.navigation | Light rgb(241 242 233 / .60)，Dark rgb(28 28 34 / .72)；blur 18、saturate 138%、contrast 104% |
+| material.floating | Light rgb(245 240 248 / .58)，Dark rgb(35 34 42 / .76)；blur 20、saturate 142%、contrast 103% |
+| material.window | Light rgb(245 241 248 / .56)，Dark rgb(37 36 44 / .70)；唯一 backdrop-filter 外壳，带非对称反射、单一边框 |
+| material.readable | Light rgb(248 247 242 / .90)，Dark rgb(34 34 40 / .92)；无 blur，作为窗口正文内层，四周保留外壳可见边缘 |
+| material.dialog | Light rgb(249 249 242 / .68)，Dark rgb(42 40 49 / .80)；blur 22、saturate 138%、contrast 104% |
 | shadow | window：0 22px 62px + 0 3px 12px；floating：0 12px 32px + 0 2px 8px（分别按主题调色） |
 | motion | fast 120ms、normal 180ms、slow 240ms；ease-out；仅 transform/opacity，不动画 blur |
 | layer | desktop 0、window 100–199（聚焦排序）、shell 200、drawer 300、popover 400、modal 500、toast 600；原生 top layer 按打开顺序管理 |
+
+App 图标共用尺寸与形状；已有名称时设为装饰。加载失败只回退一次本地图标。白色主体与背景端点对比度 ≥3:1，仍需实机确认。
 
 控件可透出窗口环境，不叠加 blur。透明度减少或 blur 不可用时，导航和控件回退实色；高对比用实色边界，forced-colors 尊重系统色。减少动态时取消非必要动画。降级由用户设置或已验证检测触发，不宣称未实测的自动判断。
 
@@ -99,7 +101,7 @@ New Tab / Workspace 及 App 固定深色，无主题选项；Light Token 仅供�
 
 ## UI-05 组件与状态
 
-依赖顺序固定为 Token → Primitive → System Component → Desktop/File Pattern → App View。复用 Button、Field、Progress、Dialog、Sheet、Menu、Toast、EmptyState、WindowFrame、FileList 等公开组件，不在 App 内复制私有版本；新增变体先确认无法用现有组合表达。
+依赖顺序：Token → Primitive → System Component → Desktop/File Pattern → App View。复用 Button、Field、Dialog、WindowFrame、FileList 等公开组件；优先组合，不在 App 内复制私有版本。
 
 | 组件/状态 | 必须呈现的行为 |
 | --- | --- |

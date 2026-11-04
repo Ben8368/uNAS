@@ -2,6 +2,7 @@
 @import './app-window.css';
 @import './app-controls.css';
 @import './app-navigation.css';
+@import './app-icons.css';
 @import './shell.css';
 @import './file-manager.css';
 @import './file-manager/local-directory.css';

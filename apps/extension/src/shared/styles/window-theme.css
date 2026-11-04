@@ -5,39 +5,39 @@
  */
 :root {
   /* Layer 0–2: ambient fallback, readable content, and raised controls. */
-  --window-background: #1b1d20;
-  --window-surface: #202225;
+  --window-background: #1d1e22;
+  --window-surface: #24252a;
   /* Navigation remains distinct without becoming an opaque black strip. */
-  --window-surface-sidebar: rgb(25 42 56 / .58);
+  --window-surface-sidebar: rgb(37 35 45 / .72);
   /* Shared control material: one translucent layer for every built-in App. */
-  --window-surface-raised-solid: #23394b;
-  --window-surface-control-solid: #30485b;
-  --window-surface-field-solid: #273d50;
-  --window-surface-panel-solid: #1f3749;
-  --window-surface-raised: rgb(35 57 75 / .66);
-  --window-surface-control: rgb(48 72 91 / .62);
-  /* Blue-gray readable surfaces for app content; controls stay lighter than the body. */
-  --window-surface-content: #1b3143;
-  --window-surface-panel: rgb(31 55 73 / .62);
-  --window-surface-field: rgb(39 61 80 / .72);
-  --window-surface-preview: #203a4d;
-  --window-scrollbar-track: rgb(7 20 33 / .24);
-  --window-scrollbar-thumb: rgb(148 196 255 / .54);
-  --window-scrollbar-thumb-hover: rgb(181 216 255 / .72);
-  --window-content-border: rgb(171 220 255 / .19);
-  --window-content-highlight: rgb(224 246 255 / .12);
-  --window-content-shadow: 0 10px 28px rgb(4 15 25 / .16);
-  --window-text: #f1f3f5;
-  --window-text-muted: #b0b6be;
-  --window-border: #87919d;
-  --window-divider: #373b41;
-  --window-primary: #2467cd;
+  --window-surface-raised-solid: #30313a;
+  --window-surface-control-solid: #3a3b47;
+  --window-surface-field-solid: #2b2c34;
+  --window-surface-panel-solid: #292a31;
+  --window-surface-raised: rgb(48 49 58 / .78);
+  --window-surface-control: rgb(58 59 71 / .74);
+  /* Neutral graphite readable surfaces for app content; controls stay lighter than the body. */
+  --window-surface-content: #25262b;
+  --window-surface-panel: rgb(41 42 49 / .76);
+  --window-surface-field: rgb(43 44 52 / .82);
+  --window-surface-preview: #202126;
+  --window-scrollbar-track: rgb(16 17 21 / .26);
+  --window-scrollbar-thumb: rgb(169 159 188 / .50);
+  --window-scrollbar-thumb-hover: rgb(206 193 221 / .68);
+  --window-content-border: rgb(219 205 225 / .17);
+  --window-content-highlight: rgb(248 238 248 / .10);
+  --window-content-shadow: 0 10px 28px rgb(0 0 0 / .18);
+  --window-text: #f4f0f5;
+  --window-text-muted: #bdb8c2;
+  --window-border: #85818e;
+  --window-divider: #41414a;
+  --window-primary: #806da7;
   --window-on-primary: #ffffff;
-  --window-accent: #81bdff;
-  --window-success: #85d6a5;
-  --window-warning: #f2c66d;
-  --window-danger: #ff9999;
-  --window-focus-ring: #b6dcff;
+  --window-accent: #d2bfe2;
+  --window-success: #99c7b0;
+  --window-warning: #e0bd79;
+  --window-danger: #e6a09e;
+  --window-focus-ring: #decdf0;
   /* 密码浮窗 retains its mint identity through the shared theme source. */
   --window-vault-accent: #41d39b;
   --window-vault-accent-strong: #23b983;
@@ -48,19 +48,19 @@
    * samples its environment at the outer shell only; readable content stays
    * calm without adding a second blur layer.
    */
-  --window-glass-navigation: rgb(17 28 39 / .48);
-  --window-glass-floating: rgb(18 30 41 / .50);
-  --window-glass-window: rgb(18 30 41 / .44);
-  --window-glass-dialog: rgb(22 35 47 / .58);
-  --window-surface-readable: rgb(31 42 52 / .82);
-  --window-glass-rim: linear-gradient(154deg, rgb(255 255 255 / .44) 0%, rgb(255 255 255 / .13) 19%, rgb(177 224 255 / .03) 47%, rgb(255 255 255 / .10) 74%, rgb(255 255 255 / .34) 100%);
-  --window-glass-reflection: radial-gradient(118% 76% at 4% -27%, rgb(255 255 255 / .29) 0%, rgb(215 240 255 / .12) 27%, transparent 58%), linear-gradient(112deg, rgb(255 255 255 / .10) 0%, transparent 30% 70%, rgb(102 205 207 / .08) 100%);
-  --window-glass-highlight: rgb(255 255 255 / .16);
+  --window-glass-navigation: rgb(28 28 34 / .72);
+  --window-glass-floating: rgb(35 34 42 / .76);
+  --window-glass-window: rgb(37 36 44 / .70);
+  --window-glass-dialog: rgb(42 40 49 / .80);
+  --window-surface-readable: rgb(34 34 40 / .92);
+  --window-glass-rim: linear-gradient(154deg, rgb(248 238 248 / .32) 0%, rgb(248 238 248 / .10) 19%, rgb(226 211 232 / .03) 47%, rgb(248 238 248 / .07) 74%, rgb(248 238 248 / .22) 100%);
+  --window-glass-reflection: radial-gradient(118% 76% at 4% -27%, rgb(248 238 248 / .16) 0%, rgb(232 216 235 / .07) 27%, transparent 58%), linear-gradient(112deg, rgb(248 238 248 / .06) 0%, transparent 30% 70%, rgb(194 168 199 / .05) 100%);
+  --window-glass-highlight: rgb(248 238 248 / .12);
   --window-glass-filter: blur(18px) saturate(138%) contrast(104%);
   --window-floating-filter: blur(20px) saturate(142%) contrast(103%);
   --window-dialog-filter: blur(22px) saturate(138%) contrast(104%);
-  --window-shadow: 0 22px 62px rgb(0 10 20 / .38), 0 3px 12px rgb(0 8 16 / .24);
-  --window-shadow-floating: 0 12px 32px rgb(0 10 20 / .30), 0 2px 8px rgb(0 8 16 / .18);
+  --window-shadow: 0 22px 62px rgb(0 0 0 / .42), 0 3px 12px rgb(0 0 0 / .26);
+  --window-shadow-floating: 0 12px 32px rgb(0 0 0 / .32), 0 2px 8px rgb(0 0 0 / .20);
 
   /* Desktop App baseline extracted from Downloader (UI v1.8). */
   --app-nav-selected: color-mix(in srgb, var(--window-accent) 14%, var(--window-surface-raised));
@@ -123,44 +123,44 @@
   --window-vault-accent: #159a6b;
   --window-vault-accent-strong: #138558;
   --window-vault-accent-text: #08734e;
-  --window-background: #eff1f3;
-  --window-surface: #f8f9fa;
-  --window-surface-sidebar: rgb(247 250 252 / .72);
-  --window-surface-raised-solid: #ffffff;
-  --window-surface-control-solid: #e7eaee;
-  --window-surface-field-solid: #e6f0f5;
-  --window-surface-panel-solid: #f5fafc;
-  --window-surface-raised: rgb(255 255 255 / .74);
-  --window-surface-control: rgb(231 234 238 / .76);
-  --window-surface-content: #edf5f9;
-  --window-surface-panel: rgb(245 250 252 / .72);
-  --window-surface-field: rgb(230 240 245 / .78);
-  --window-surface-preview: #edf6fa;
-  --window-scrollbar-track: rgb(86 121 142 / .14);
-  --window-scrollbar-thumb: rgb(52 105 135 / .42);
-  --window-scrollbar-thumb-hover: rgb(38 91 124 / .60);
-  --window-content-border: rgb(52 105 135 / .22);
+  --window-background: #efeee8;
+  --window-surface: #f8f7f2;
+  --window-surface-sidebar: rgb(237 237 229 / .68);
+  --window-surface-raised-solid: #f8f8f2;
+  --window-surface-control-solid: #e7e9e0;
+  --window-surface-field-solid: #f0f1e9;
+  --window-surface-panel-solid: #f5f5ee;
+  --window-surface-raised: rgb(250 250 244 / .80);
+  --window-surface-control: rgb(231 233 224 / .80);
+  --window-surface-content: #f0f1ea;
+  --window-surface-panel: rgb(245 245 238 / .78);
+  --window-surface-field: rgb(240 241 233 / .84);
+  --window-surface-preview: #eeefe7;
+  --window-scrollbar-track: rgb(87 99 84 / .14);
+  --window-scrollbar-thumb: rgb(90 111 91 / .42);
+  --window-scrollbar-thumb-hover: rgb(63 87 68 / .60);
+  --window-content-border: rgb(87 103 83 / .22);
   --window-content-highlight: rgb(255 255 255 / .78);
-  --window-content-shadow: 0 10px 28px rgb(36 60 74 / .10);
-  --window-text: #24282e;
-  --window-text-muted: #5b6470;
-  --window-border: #7b8490;
-  --window-divider: #dce0e5;
-  --window-accent: #185eb3;
-  --window-success: #21643e;
-  --window-warning: #835500;
-  --window-danger: #b32332;
-  --window-focus-ring: #165dab;
-  --window-glass-navigation: rgb(235 244 249 / .60);
-  --window-glass-floating: rgb(238 247 250 / .58);
-  --window-glass-window: rgb(239 247 250 / .56);
-  --window-glass-dialog: rgb(247 251 252 / .68);
-  --window-surface-readable: rgb(248 249 250 / .90);
-  --window-glass-rim: linear-gradient(154deg, rgb(255 255 255 / .94) 0%, rgb(255 255 255 / .47) 22%, rgb(82 136 161 / .08) 49%, rgb(255 255 255 / .32) 73%, rgb(255 255 255 / .88) 100%);
-  --window-glass-reflection: radial-gradient(118% 76% at 4% -27%, rgb(255 255 255 / .82) 0%, rgb(255 255 255 / .35) 29%, transparent 60%), linear-gradient(112deg, rgb(255 255 255 / .38) 0%, transparent 32% 69%, rgb(110 192 194 / .12) 100%);
+  --window-content-shadow: 0 10px 28px rgb(39 47 36 / .10);
+  --window-text: #292e28;
+  --window-text-muted: #5d675a;
+  --window-border: #7d8976;
+  --window-divider: #dce0d5;
+  --window-accent: #365d48;
+  --window-success: #346047;
+  --window-warning: #7a5a28;
+  --window-danger: #a93f3a;
+  --window-focus-ring: #39654d;
+  --window-glass-navigation: rgb(237 239 228 / .60);
+  --window-glass-floating: rgb(241 242 233 / .58);
+  --window-glass-window: rgb(241 242 233 / .56);
+  --window-glass-dialog: rgb(249 249 242 / .68);
+  --window-surface-readable: rgb(248 247 242 / .90);
+  --window-glass-rim: linear-gradient(154deg, rgb(255 255 250 / .94) 0%, rgb(255 255 250 / .47) 22%, rgb(112 133 99 / .08) 49%, rgb(255 255 250 / .32) 73%, rgb(255 255 250 / .88) 100%);
+  --window-glass-reflection: radial-gradient(118% 76% at 4% -27%, rgb(255 255 250 / .82) 0%, rgb(255 255 250 / .35) 29%, transparent 60%), linear-gradient(112deg, rgb(255 255 250 / .38) 0%, transparent 32% 69%, rgb(161 181 148 / .12) 100%);
   --window-glass-highlight: rgb(255 255 255 / .70);
-  --window-shadow: 0 22px 62px rgb(36 60 74 / .19), 0 3px 12px rgb(36 60 74 / .12);
-  --window-shadow-floating: 0 12px 32px rgb(36 60 74 / .15), 0 2px 8px rgb(36 60 74 / .10);
+  --window-shadow: 0 22px 62px rgb(39 47 36 / .19), 0 3px 12px rgb(39 47 36 / .12);
+  --window-shadow-floating: 0 12px 32px rgb(39 47 36 / .15), 0 2px 8px rgb(39 47 36 / .10);
 }
 
 /* Glass has a complete opaque fallback, including user-requested reduction. */
@@ -189,16 +189,16 @@ html[data-reduce-transparency='true'] {
 }
 
 html[data-high-contrast='true'] {
-  --window-background: #050b14;
-  --window-surface: #050b14;
+  --window-background: #111216;
+  --window-surface: #111216;
   --window-surface-sidebar: var(--window-surface);
-  --window-surface-raised-solid: #050b14;
-  --window-surface-control-solid: #142e4b;
-  --window-surface-field-solid: #142e4b;
-  --window-surface-panel-solid: #050b14;
-  --window-surface-raised: #050b14;
-  --window-surface-control: #142e4b;
-  --window-scrollbar-track: #050b14;
+  --window-surface-raised-solid: #111216;
+  --window-surface-control-solid: #363343;
+  --window-surface-field-solid: #363343;
+  --window-surface-panel-solid: #111216;
+  --window-surface-raised: #111216;
+  --window-surface-control: #363343;
+  --window-scrollbar-track: #111216;
   --window-scrollbar-thumb: #ffffff;
   --window-scrollbar-thumb-hover: #ffffff;
   --window-text: #ffffff;

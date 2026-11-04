@@ -1,3 +1,4 @@
+import { AppIcon } from 'unas-src/shared/icons/AppIcon'
 import { useLayoutEffect, useRef, useState, type ReactNode, type PointerEvent } from 'react'
 import { getAppIcon } from 'unas-src/shared/icons'
 import { fitWindow } from 'unas-src/shell/windows/windowGeometry'
@@ -56,7 +57,7 @@ export function DesktopWindow({ windowId, title, width = 960, height = 640, x = 
       onPointerDown={() => onFocus(windowId)} onFocusCapture={() => { if (!isActive) onFocus(windowId) }}>
       <div className="mt-window-header" onPointerDown={(event) => start(event)} onPointerMove={move} onPointerUp={finish} onPointerCancel={finish} onLostPointerCapture={finish}
         onDoubleClick={(event) => { if (!(event.target as HTMLElement).closest('button')) onMaximize(windowId) }}>
-        <div className="mt-window-brand"><img src={getAppIcon(appType ?? '')} alt="" /><strong>{title}</strong></div>
+        <div className="mt-window-brand"><AppIcon src={getAppIcon(appType ?? '')} variant="window" /><strong>{title}</strong></div>
         <div className="mt-window-controls">
           {headerStatus}
           <button type="button" className="mt-window-btn" aria-label={`最小化${title}`} title="最小化" onClick={() => onMinimize(windowId)}><WindowControlIcon kind="minimize" /></button>

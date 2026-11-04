@@ -1,4 +1,4 @@
-import { getRegisteredApp } from 'unas-src/shell/launcher/appRegistry'
+import { getRegisteredApp } from 'unas-src/shell/apps/appRegistry'
 import { Suspense, useEffect, useLayoutEffect, useRef } from 'react'
 
 import { AppWindow } from 'unas-src/shell/windows/AppWindow'

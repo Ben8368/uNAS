@@ -1,6 +1,7 @@
 const BASE = '/static/app/icons/default'
 
 export const APP_ICON_PATHS = {
+  link:        `${BASE}/link.svg`,
   adblock:     `${BASE}/adblock.svg`,
   'password-manager': `${BASE}/password.svg`,
   browser:     `${BASE}/browser.svg`,
@@ -8,7 +9,7 @@ export const APP_ICON_PATHS = {
   fileManager: `${BASE}/files.svg`,
   'file-manager': `${BASE}/files.svg`,
   transcode:   `${BASE}/media.svg`,
-  music:       `${BASE}/music.png`,
+  music:       `${BASE}/music.svg`,
   ps:          `${BASE}/layers.svg`,
   settings:    `${BASE}/settings.svg`,
   logs:        `${BASE}/logs.svg`,
@@ -20,8 +21,8 @@ export const APP_ICON_PATHS = {
 
 export type AppId = keyof typeof APP_ICON_PATHS
 
-export const FALLBACK_ICON = `${BASE}/settings.svg`
+export const FALLBACK_ICON = `${BASE}/app.svg`
 
 export function getAppIcon(appId: string): string {
-  return (APP_ICON_PATHS as Record<string, string>)[appId] ?? FALLBACK_ICON
+  return Object.hasOwn(APP_ICON_PATHS, appId) ? APP_ICON_PATHS[appId as AppId] : FALLBACK_ICON
 }
